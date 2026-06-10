@@ -749,7 +749,14 @@ const LANE_AXES={
  '서폿': [['vspm','시야'],['kp','킬관여'],['kda','교전'],['surv','생존'],['ccpm','변수(CC)'],['utilpm','케어']]
 };
 const GENERIC_AXES=[['dpm','화력'],['kda','교전'],['surv','생존'],['cspm','성장'],['objpm','오브젝트'],['vspm','시야']];
-function ratesMap(){ // 전 선수의 분당·효율 지표 일괄 계산
+function playerLanes(id){ // 이 선수가 뛴 라인과 판수 (많은 순)
+  const cnt={};
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    if(p.playerId===id&&p.lane&&LANE_KO[p.lane])cnt[LANE_KO[p.lane]]=(cnt[LANE_KO[p.lane]]||0)+1;
+  }));
+  return Object.entries(cnt).map(([lane,games])=>({lane,games})).sort((a,b)=>b.games-a.games);
+}
+function ratesMap(laneKo){ // 분당·효율 지표 일괄 계산 (laneKo 주면 그 라인 출전 기록만)
   const agg=new Map();
   state.matches.forEach(m=>{
     const mins=(m.durationMin&&m.durationMin>=5)?m.durationMin:28; // 시간 없으면 평균 28분 가정
@@ -757,6 +764,7 @@ function ratesMap(){ // 전 선수의 분당·효율 지표 일괄 계산
     m.participants.forEach(p=>{if(p.playerId)tk[p.team]+=num(p.kills)});
     m.participants.forEach(p=>{
       if(!p.playerId)return;
+      if(laneKo&&LANE_KO[p.lane]!==laneKo)return;
       if(!agg.has(p.playerId))agg.set(p.playerId,{g:0,min:0,dmg:0,cs:0,vis:0,obj:0,tur:0,gold:0,cc:0,heal:0,taken:0,mitig:0,d:0,k:0,a:0,kpSum:0,kpG:0,solo:0});
       const s=agg.get(p.playerId),st=p.stats||{};
       s.g++;s.min+=mins;
@@ -784,17 +792,21 @@ function ratesMap(){ // 전 선수의 분당·효율 지표 일괄 계산
 }
 const RATE_GET={dpm:r=>r.dpm,kda:r=>r.kda,surv:r=>-r.deathsPg,cspm:r=>r.cspm,objpm:r=>r.objpm,
  vspm:r=>r.vspm,kp:r=>r.kp,dpg:r=>r.dpg,demolpm:r=>r.demolpm,ccpm:r=>r.ccpm,utilpm:r=>r.utilpm,tankpm:r=>r.tankpm};
-function playerHex(id){
-  const rates=ratesMap(); const mine=rates.get(id);
+function playerHex(id,laneSel){
+  const myLane=laneSel||playerMainLane(id);
+  const rates=ratesMap(myLane||undefined); // 그 라인에서 뛴 기록끼리만 비교
+  const mine=rates.get(id);
   if(!mine)return null;
-  const myLane=playerMainLane(id);
   const axes=LANE_AXES[myLane]||GENERIC_AXES;
   let poolIds=[...rates.keys()];
-  let laneScoped=false;
-  if(myLane){
-    const same=poolIds.filter(pid=>playerMainLane(pid)===myLane);
-    if(same.length>=3){poolIds=same;laneScoped=true}
+  let laneScoped=!!myLane&&poolIds.length>=3;
+  if(myLane&&!laneScoped){ // 그 라인 표본이 너무 적으면 전체 기준으로 폴백
+    const all=ratesMap();poolIds=[...all.keys()];
+    return hexFrom(all.get(id)?all:new Map([[id,mine]]),id,axes,poolIds,myLane,false,mine);
   }
+  return hexFrom(rates,id,axes,poolIds,myLane,laneScoped,mine);
+}
+function hexFrom(rates,id,axes,poolIds,lane,laneScoped,mine){
   const vals=[];
   for(const[k]of axes){
     const arr=poolIds.map(pid=>RATE_GET[k](rates.get(pid)));
@@ -802,7 +814,7 @@ function playerHex(id){
     const v=mx===mn?0.5:(RATE_GET[k](mine)-mn)/(mx-mn);
     vals.push(Math.max(0,Math.min(1,v)));
   }
-  return{vals,labels:axes.map(x=>x[1]),me:{games:mine.games},rates:mine,lane:myLane,laneScoped};
+  return{vals,labels:axes.map(x=>x[1]),me:{games:mine.games},rates:mine,lane,laneScoped};
 }
 function radarSvg(vals,labels,size=290){
   const cx=size/2,cy=size/2,R=size*0.34,n=vals.length;
@@ -851,6 +863,11 @@ const PRO_TYPES=[
  PT('탑','Wunder',[.6,.65,.72,.74,.6,.6],'챔프폭 넓은 유연한 운영가'),
  PT('탑','Doran',[.68,.6,.45,.62,.5,.55],'기복을 이겨내고 결정적 순간에 터뜨리는 성장형'),
  PT('탑','Morgan',[.5,.58,.65,.6,.45,.7],'꾸준히 진화하는 노력형'),
+
+ PT('탑','Flame',[.8,.62,.6,.95,.55,.4],'CS 차이로 상대를 지워버리는 라인 압살형. 미니언이 곧 무기'),
+ PT('탑','GimGoon',[.45,.6,.9,.55,.4,.9],'굶어도 무너지지 않는 월드클래스 약사이드 장인'),
+ PT('탑','Ale',[.93,.5,.2,.7,.7,.3],'안정은 버렸다. 칼챔을 들면 게임을 찢는 고점형'),
+ PT('탑','Ssumday',[.75,.7,.6,.78,.62,.55],'긴 시간 정상권을 지킨 베테랑 라인전 강자'),
  // 정글 [교전,오브젝트,킬관여,시야,생존,골드효율]
  PT('정글','Canyon',[.7,.95,.7,.5,.6,.7],'용과 전령을 수확하는 오브젝트 설계자. 맵 전체가 농장'),
  PT('정글','Oner',[.65,.8,.8,.55,.45,.6],'싸움을 먼저 여는 돌격형. 이니시는 내가 건다'),
@@ -868,6 +885,11 @@ const PRO_TYPES=[
  PT('정글','Lucid',[.68,.78,.7,.55,.6,.62],'공수 밸런스가 좋은 차세대형'),
  PT('정글','Croco',[.64,.74,.7,.56,.62,.58],'성실함이 곧 무기인 꾸준형'),
  PT('정글','Malrang',[.6,.68,.75,.62,.55,.5],'팀을 위해 기꺼이 구르는 헌신형'),
+
+ PT('정글','DanDy',[.6,.95,.65,.9,.8,.55],'동선과 정보로 게임을 설계한 운영형 암살자'),
+ PT('정글','Ning',[.85,.55,.85,.4,.3,.6],'계산보다 돌파가 먼저. 리스크를 끌어안는 이니시 정글'),
+ PT('정글','SofM',[.65,.85,.6,.95,.5,.75],'상대 정글을 맵에서 지우는 변칙 동선의 예술가'),
+ PT('정글','inSec',[.85,.5,.8,.45,.35,.55],'기술 하나로 정글러의 상징을 만든 변수 창조자'),
  // 미드 [화력,교전,생존,성장,킬관여,골드효율]
  PT('미드','Faker',[.6,.85,.7,.6,.7,.6],'큰 경기에 강한 클러치 메이커. 미드의 교과서'),
  PT('미드','Chovy',[.7,.9,.8,.97,.55,.7],'CS 한 개에 진심인 무결점 라인전 장인'),
@@ -885,6 +907,11 @@ const PRO_TYPES=[
  PT('미드','Dove',[.56,.62,.6,.62,.56,.5],'묵묵히 할 일 하는 성실형'),
  PT('미드','FATE',[.6,.64,.58,.64,.58,.55],'군더더기 없는 깔끔한 정석파'),
  PT('미드','Karis',[.62,.6,.52,.6,.6,.55],'도전을 멈추지 않는 개척자형'),
+
+ PT('미드','Doinb',[.55,.7,.75,.5,.95,.5],'라인보다 맵 전체를 움직이는 지휘관형 미드'),
+ PT('미드','Scout',[.72,.78,.68,.78,.66,.66],'중요한 교전 각을 놓치지 않는 베테랑 에이스'),
+ PT('미드','Xiaohu',[.7,.74,.7,.72,.78,.6],'전환과 합류로 국제전을 흔드는 변환형 미드'),
+ PT('미드','Easyhoon',[.62,.8,.9,.85,.45,.6],'정교한 메이지 운영으로 게임을 안정화하는 장인'),
  // 원딜 [화력,교전,생존,성장,골드효율,철거]
  PT('원딜','Ruler',[.9,.8,.7,.85,.7,.6],'후반을 보장하는 정석 캐리. 키우면 반드시 보답한다'),
  PT('원딜','Gumayusi',[.85,.75,.6,.8,.68,.55],'자신감이 곧 실력인 공격형 원딜'),
@@ -902,6 +929,11 @@ const PRO_TYPES=[
  PT('원딜','Mystic',[.68,.7,.66,.74,.6,.52],'모나지 않게 다 잘하는 밸런스형'),
  PT('원딜','Piglet',[.74,.68,.58,.76,.62,.52],'근성으로 증명하는 노력의 화신'),
  PT('원딜','Hena',[.72,.7,.6,.75,.6,.52],'매 시즌 성장하는 잠재주'),
+
+ PT('원딜','JackeyLove',[.92,.6,.35,.78,.78,.55],'앞으로 치며 한타를 터뜨리는 돌파형 원딜'),
+ PT('원딜','GALA',[.9,.78,.6,.85,.8,.5],'진입각 하나로 킬을 끝내는 폭발형 원딜'),
+ PT('원딜','Elk',[.93,.65,.4,.8,.82,.5],'앞으로 치는 각이 선명한 공격 본능형'),
+ PT('원딜','Doublelift',[.8,.66,.5,.8,.66,.6],'라인전 자신감과 캐리 자의식의 상징'),
  // 서폿 [시야,킬관여,교전,생존,변수(CC),케어]
  PT('서폿','Keria',[.95,.78,.75,.5,.7,.6],'시야와 변수 창출의 마법사. 게임을 디자인한다'),
  PT('서폿','Lehends',[.9,.75,.6,.45,.72,.65],'창의적 픽과 헌신적 서포팅의 장인'),
@@ -918,7 +950,11 @@ const PRO_TYPES=[
  PT('서폿','Ming',[.87,.72,.68,.58,.74,.6],'정교한 스킬샷의 메이지 서폿형'),
  PT('서폿','Kael',[.8,.7,.6,.54,.62,.7],'팀 분위기를 끌어올리는 에너지 메이커'),
  PT('서폿','Mikyx',[.85,.7,.66,.52,.72,.58],'예측을 벗어나는 변칙 플레이어'),
- PT('서폿','Duro',[.83,.72,.63,.56,.66,.6],'패기로 무장한 차세대 신성')
+ PT('서폿','Duro',[.83,.72,.63,.56,.66,.6],'패기로 무장한 차세대 신성'),
+ PT('서폿','Hylissang',[.6,.85,.5,.25,.95,.45],'죽더라도 게임을 움직이는 초공격 이니시에이터'),
+ PT('서폿','Crisp',[.78,.82,.7,.5,.8,.55],'난전 구조를 완성하는 활동형 서포터'),
+ PT('서폿','ON',[.6,.8,.65,.45,.92,.4],'과감한 개시와 리스크로 게임을 흔드는 고점형'),
+ PT('서폿','IgNar',[.62,.78,.6,.4,.9,.45],'레오나·블리츠 감성, 한 방 각을 보는 돌격형')
 ];
 
 function playerMainLane(id){
@@ -1807,7 +1843,7 @@ function playerListItems(){
 }
 function playerListHtml(list){
   return list.map(x=>`
-        <div class="pItem ${x.id===selPlayer?'on':''} ${x.active?'':'off'}" onclick="selPlayer='${x.id}';render()">
+        <div class="pItem ${x.id===selPlayer?'on':''} ${x.active?'':'off'}" onclick="selPlayer='${x.id}';window._pLane=null;render()">
           <div><b>${esc(x.displayName)}</b>${x.riotName?`<div class="ign">${esc(x.riotName)}${x.riotTag?'#'+esc(x.riotTag):''}</div>`:''}</div>
           ${x.active?'':'<span class="pill">휴면</span>'}
         </div>`).join('')||'<p class="mini dim" style="padding:6px 2px">검색 결과가 없어요.</p>';
@@ -1870,15 +1906,19 @@ function playerDetail(p){
     </div>
     ${(()=>{const sd=statPlayerSides(1).find(x=>x.id===p.id);return sd?`<p class="mini" style="margin:12px 0 0">진영별: <b class="tBlue">블루 ${sd.bW}승 ${sd.bG-sd.bW}패${sd.bG?` (${sd.bRate}%)`:''}</b> · <b class="tRed">레드 ${sd.rW}승 ${sd.rG-sd.rW}패${sd.rG?` (${sd.rRate}%)`:''}</b></p>`:''})()}
     ${(()=>{
-      const hex=playerHex(p.id); if(!hex)return'';
-      const mainLane=playerMainLane(p.id);
-      const pro=matchPro(hex,mainLane);
+      const lanes=playerLanes(p.id);
+      const activeLane=(window._pLane&&lanes.some(l=>l.lane===window._pLane))?window._pLane:(lanes[0]?.lane||null);
+      const hex=playerHex(p.id,activeLane); if(!hex)return'';
+      const pro=matchPro(hex,activeLane);
       const rep=styleReport(hex);
+      const laneTabs=lanes.length>1?`<div class="row" style="justify-content:center;gap:6px;margin-bottom:8px">${lanes.map(l=>
+        `<button class="btn sm ${l.lane===activeLane?'gold':''}" onclick="window._pLane='${l.lane}';render()">${esc(l.lane)} ${l.games}판</button>`).join('')}</div>`
+        :(lanes.length===1?`<p class="mini dim" style="text-align:center;margin:0 0 6px">${esc(lanes[0].lane)} ${lanes[0].games}판 기준</p>`:'');
       const mine=makeAwards().filter(a=>a.target===p.displayName||(a.target.includes(p.displayName)&&(a.target.includes('+')||a.target.includes('vs')))).slice(0,12);
       return`<div class="grid c2" style="margin-top:16px;align-items:center">
-        <div style="text-align:center">${radarSvg(hex.vals,hex.labels)}<p class="mini dim" style="margin:4px 0 0">${hex.lane?`${esc(hex.lane)} 전용 지표`:'공통 지표'} · ${hex.laneScoped?'같은 포지션끼리 상대평가':'전체 기준 상대평가'} · 분당 환산</p></div>
+        <div style="text-align:center">${laneTabs}${radarSvg(hex.vals,hex.labels)}<p class="mini dim" style="margin:4px 0 0">${hex.lane?`${esc(hex.lane)} 전용 지표 · 이 라인에서 뛴 ${hex.me.games}판만 집계`:'공통 지표'} · ${hex.laneScoped?'같은 라인 출전자끼리 상대평가':'표본 부족이라 전체 기준'}</p></div>
         <div>
-          <h3 style="font-size:14px;margin:0 0 6px">플레이 스타일 닮은꼴${pro.mainLane?` <span class="dim" style="font-weight:600;font-size:12px">— 주 포지션 ${esc(pro.mainLane)} · 해당 라인 16타입 중</span>`:''}</h3>
+          <h3 style="font-size:14px;margin:0 0 6px">플레이 스타일 닮은꼴${pro.mainLane?` <span class="dim" style="font-weight:600;font-size:12px">— ${esc(pro.mainLane)} 출전 기록 기준 · 해당 라인 20타입 중</span>`:''}</h3>
           <span class="pill ${pro.pro?'gold':'violet'}" style="font-size:13px">🎯 ${esc(pro.name)}${pro.lane?` · ${esc(pro.lane)}`:''}${pro.sim?` · ${pro.sim}% 일치`:''}</span>
           <p class="mini" style="margin:7px 0 4px">${esc(pro.desc)}</p>
           ${pro.second?`<p class="mini dim" style="margin:0 0 12px">그다음으로 가까운 타입: ${esc(pro.second)}${pro.secondSim?` (${pro.secondSim}%)`:''}</p>`:'<span style="display:block;margin-bottom:12px"></span>'}
