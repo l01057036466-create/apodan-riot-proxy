@@ -51,7 +51,9 @@ nav.tabs button.on{color:#1a1408;background:var(--gold);border-color:var(--gold)
 /* 시그니처: 최근 경기 주식 티커 */
 .ticker{border-top:1px solid var(--line);overflow:hidden;height:32px;display:flex;align-items:center;background:var(--bg2)}
 .ticker .lbl{flex:none;padding:0 14px;font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--gold);border-right:1px solid var(--line);height:100%;display:flex;align-items:center;background:var(--gold-dim)}
-.tickerTrack{display:flex;gap:34px;white-space:nowrap;animation:tick 38s linear infinite;padding-left:20px;font-size:12.5px;color:var(--mut)}
+.tickerView{flex:1;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 26px,#000 calc(100% - 26px),transparent)}
+.tickerTrack{display:flex;gap:34px;white-space:nowrap;animation:tick 38s linear infinite;padding-left:26px;font-size:12.5px;color:var(--mut);width:max-content}
+.derby{background:linear-gradient(135deg,rgba(242,184,75,.12),rgba(63,217,197,.08) 60%,rgba(255,92,122,.1));border:1px solid rgba(242,184,75,.35);border-radius:var(--r);padding:16px;text-align:center}
 .tickerTrack b{color:var(--text);font-weight:700}
 .tk-up{color:var(--win);font-weight:700}.tk-dn{color:var(--lose);font-weight:700}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -218,7 +220,7 @@ details.fold[open]{padding-bottom:14px}
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
-  <div class="ticker"><div class="lbl">LIVE</div><div class="tickerTrack" id="ticker"></div></div>
+  <div class="ticker"><div class="lbl">LIVE</div><div class="tickerView"><div class="tickerTrack" id="ticker"></div></div></div>
 </header>
 
 <main class="wrap"><div id="view"></div></main>
@@ -397,6 +399,17 @@ function fixState(s){
   }));
   s.voteRooms=Array.isArray(s.voteRooms)?s.voteRooms:[];
   s.settings=Object.assign({mvpMinutes:10},s.settings||{});
+  s.liveBoards=(s.liveBoards&&typeof s.liveBoards==='object')?s.liveBoards:{};
+  if(s.liveDraft&&s.liveDraft.date&&Array.isArray(s.liveDraft.items)){ // 구버전 이행
+    s.liveBoards[s.liveDraft.date]=s.liveDraft.items;
+  }
+  delete s.liveDraft;
+  Object.keys(s.liveBoards).forEach(d=>{
+    s.liveBoards[d]=(Array.isArray(s.liveBoards[d])?s.liveBoards[d]:[]).map(x=>({id:x.id||uid('lv'),champ:String(x.champ||''),type:x.type==='ban'?'ban':'pick'}));
+  });
+  s.lineup=(s.lineup&&typeof s.lineup==='object')?{date:s.lineup.date||'',note:s.lineup.note||'',
+    blue:Array.isArray(s.lineup.blue)?s.lineup.blue.filter(Boolean):[],
+    red:Array.isArray(s.lineup.red)?s.lineup.red.filter(Boolean):[]}:null;
   return s;
 }
 function loadState(){
@@ -559,18 +572,26 @@ function statChamps(){
     const s=map.get(canonChamp(p.championId)); if(!s)return;
     s.recent++; if(p.team===m.winnerTeam)s.recentW++;
   }));
-  return [...map.values()].map(s=>{
+  const arr=[...map.values()].map(s=>{
     const wr=pct(s.wins,s.picks), pickRate=pct(s.picks,totalPicks||1);
-    const bayes=(s.wins+2)/(s.picks+4); // 표본 보정(사전확률 50%)
+    const bayes=(s.wins+4)/(s.picks+8); // 강한 표본 보정: 8판 50% 사전확률 (1판 1승 과대평가 차단)
     const recWr=s.recent?pct(s.recentW,s.recent):50;
-    const score=Math.round(((bayes-.5)*100 + pickRate*.55 + pct(s.bans,Math.max(1,state.matches.length))*.06 + (recWr-50)*.08 - (s.picks<2?8:0))*10)/10;
-    let tier='C';
-    if(s.picks<2)tier='표본 부족';
-    else if(s.picks>=3&&wr<=33)tier='봉인 검토';
-    else if(score>=16)tier='OP'; else if(score>=11)tier='S';
-    else if(score>=6)tier='A'; else if(score>=1)tier='B';
-    return{...s,winRate:wr,pickRate,score,tier};
-  }).sort((a,b)=>b.score-a.score||b.picks-a.picks);
+    const score=Math.round(((bayes-.5)*100 + Math.min(pickRate,20)*.4 + (recWr-50)*.1)*10)/10;
+    return{...s,winRate:wr,pickRate,score,grade:null};
+  });
+  // 한국 등급표식 1~9등급: 3판 이상만 등급 부여, 백분위 배치 + 1등급 정원 2
+  const graded=arr.filter(c=>c.picks>=3).sort((a,b)=>b.score-a.score||b.picks-a.picks);
+  graded.forEach((c,i)=>{
+    const p=(i+0.5)/graded.length;
+    c.grade=p<.05?1:p<.15?2:p<.30?3:p<.50?4:p<.70?5:p<.85?6:p<.93?7:p<.98?8:9;
+  });
+  if(graded.length&&!graded.some(c=>c.grade===1))graded[0].grade=1;
+  graded.filter(c=>c.grade===1).slice(2).forEach(c=>c.grade=2); // 1등급 최대 2개
+  graded.forEach(c=>{if(c.picks>=4&&c.winRate<=30)c.grade=9}); // 확실한 부진은 봉인 강등
+  arr.forEach(c=>{
+    c.tier=c.grade==null?'표본 부족':c.grade===1?'OP':c.grade<=2?'S':c.grade<=3?'A':c.grade<=6?'B':c.grade<=8?'C':'봉인 검토';
+  });
+  return arr.sort((a,b)=>(a.grade??99)-(b.grade??99)||b.score-a.score||b.picks-a.picks);
 }
 function statSides(){
   let blue=0,red=0;
@@ -862,7 +883,7 @@ const PRO_TYPES=[
  PT('탑','369',[.72,.64,.55,.7,.55,.55],'탱커도 칼챔도 되는 다재다능 밸런스형'),
  PT('탑','Wunder',[.6,.65,.72,.74,.6,.6],'챔프폭 넓은 유연한 운영가'),
  PT('탑','Doran',[.68,.6,.45,.62,.5,.55],'기복을 이겨내고 결정적 순간에 터뜨리는 성장형'),
- PT('탑','Morgan',[.5,.58,.65,.6,.45,.7],'꾸준히 진화하는 노력형'),
+ PT('탑','Looper',[.5,.6,.78,.66,.55,.7],'라인보다 팀 설계를 완성하는 운영형 월드 챔피언'),
 
  PT('탑','Flame',[.8,.62,.6,.95,.55,.4],'CS 차이로 상대를 지워버리는 라인 압살형. 미니언이 곧 무기'),
  PT('탑','GimGoon',[.45,.6,.9,.55,.4,.9],'굶어도 무너지지 않는 월드클래스 약사이드 장인'),
@@ -883,8 +904,8 @@ const PRO_TYPES=[
  PT('정글','Willer',[.6,.72,.78,.55,.5,.55],'이니시에 진심인 선봉장'),
  PT('정글','UmTi',[.62,.7,.8,.52,.48,.58],'싸움을 사랑하는 파이터'),
  PT('정글','Lucid',[.68,.78,.7,.55,.6,.62],'공수 밸런스가 좋은 차세대형'),
- PT('정글','Croco',[.64,.74,.7,.56,.62,.58],'성실함이 곧 무기인 꾸준형'),
- PT('정글','Malrang',[.6,.68,.75,.62,.55,.5],'팀을 위해 기꺼이 구르는 헌신형'),
+ PT('정글','Tian',[.72,.78,.8,.5,.5,.6],'월즈 결승을 지배한 FMVP. 미드와 함께 판을 부순다'),
+ PT('정글','Jiejie',[.66,.8,.74,.55,.55,.58],'오브젝트 한타에서 가장 빛나는 월즈 우승 정글'),
 
  PT('정글','DanDy',[.6,.95,.65,.9,.8,.55],'동선과 정보로 게임을 설계한 운영형 암살자'),
  PT('정글','Ning',[.85,.55,.85,.4,.3,.6],'계산보다 돌파가 먼저. 리스크를 끌어안는 이니시 정글'),
@@ -904,9 +925,9 @@ const PRO_TYPES=[
  PT('미드','Kuro',[.6,.72,.7,.7,.6,.55],'팀을 살리는 안정적 살림형 미드'),
  PT('미드','Fly',[.58,.66,.65,.66,.58,.52],'완급 조절이 능한 노련형'),
  PT('미드','Clozer',[.72,.68,.5,.66,.65,.6],'패기로 부딪히는 젊은 돌격형'),
- PT('미드','Dove',[.56,.62,.6,.62,.56,.5],'묵묵히 할 일 하는 성실형'),
- PT('미드','FATE',[.6,.64,.58,.64,.58,.55],'군더더기 없는 깔끔한 정석파'),
- PT('미드','Karis',[.62,.6,.52,.6,.6,.55],'도전을 멈추지 않는 개척자형'),
+ PT('미드','Bjergsen',[.66,.78,.78,.74,.55,.6],'한 시대의 북미 그 자체였던 안정형 황제'),
+ PT('미드','xPeke',[.7,.66,.5,.66,.6,.62],'백도어 한 번으로 영원이 된 변수의 대명사'),
+ PT('미드','Maple',[.72,.7,.6,.7,.62,.6],'부드러운 손목의 기교파, 대만의 자존심'),
 
  PT('미드','Doinb',[.55,.7,.75,.5,.95,.5],'라인보다 맵 전체를 움직이는 지휘관형 미드'),
  PT('미드','Scout',[.72,.78,.68,.78,.66,.66],'중요한 교전 각을 놓치지 않는 베테랑 에이스'),
@@ -928,7 +949,7 @@ const PRO_TYPES=[
  PT('원딜','Rekkles',[.7,.78,.8,.78,.6,.5],'안 죽는 것이 곧 캐리, 극단적 안정 지향'),
  PT('원딜','Mystic',[.68,.7,.66,.74,.6,.52],'모나지 않게 다 잘하는 밸런스형'),
  PT('원딜','Piglet',[.74,.68,.58,.76,.62,.52],'근성으로 증명하는 노력의 화신'),
- PT('원딜','Hena',[.72,.7,.6,.75,.6,.52],'매 시즌 성장하는 잠재주'),
+ PT('원딜','Lwx',[.74,.72,.7,.72,.62,.55],'난전 속에서도 죽지 않고 딜을 완성한 월즈 우승 원딜'),
 
  PT('원딜','JackeyLove',[.92,.6,.35,.78,.78,.55],'앞으로 치며 한타를 터뜨리는 돌파형 원딜'),
  PT('원딜','GALA',[.9,.78,.6,.85,.8,.5],'진입각 하나로 킬을 끝내는 폭발형 원딜'),
@@ -948,9 +969,9 @@ const PRO_TYPES=[
  PT('서폿','Effort',[.8,.7,.6,.62,.6,.65],'이름 그대로 노력으로 증명하는 성실형'),
  PT('서폿','Meiko',[.88,.74,.7,.56,.7,.62],'못 하는 게 없는 만능 서포터'),
  PT('서폿','Ming',[.87,.72,.68,.58,.74,.6],'정교한 스킬샷의 메이지 서폿형'),
- PT('서폿','Kael',[.8,.7,.6,.54,.62,.7],'팀 분위기를 끌어올리는 에너지 메이커'),
+ PT('서폿','SwordArt',[.85,.75,.62,.55,.65,.6],'팀 전체의 움직임을 잡아주는 월즈 결승의 지휘자'),
  PT('서폿','Mikyx',[.85,.7,.66,.52,.72,.58],'예측을 벗어나는 변칙 플레이어'),
- PT('서폿','Duro',[.83,.72,.63,.56,.66,.6],'패기로 무장한 차세대 신성'),
+ PT('서폿','PoohManDu',[.8,.7,.6,.6,.6,.78],'헌신과 케어의 원조, 첫 왕조의 숨은 설계자'),
  PT('서폿','Hylissang',[.6,.85,.5,.25,.95,.45],'죽더라도 게임을 움직이는 초공격 이니시에이터'),
  PT('서폿','Crisp',[.78,.82,.7,.5,.8,.55],'난전 구조를 완성하는 활동형 서포터'),
  PT('서폿','ON',[.6,.8,.65,.45,.92,.4],'과감한 개시와 리스크로 게임을 흔드는 고점형'),
@@ -1113,17 +1134,18 @@ function makeAwards(){
     const redSon=sided.filter(x=>x.rRate-x.bRate>=25).sort((a,b)=>(b.rRate-b.bRate)-(a.rRate-a.bRate))[0];
     if(redSon)push('레드의 후예',redSon.name,`레드 ${redSon.rRate}% vs 블루 ${redSon.bRate}% · 빨간 맛을 아는 자`);
   }
-  // 듀오 / 상대
-  D.forEach(d=>{
-    if(d.winRate>=75)push('국밥 듀오',d.names,`같이 하면 ${d.winRate}% (${d.games}판) · 든든하다`);
-    if(d.winRate<=30)push('서사가 필요한 듀오',d.names,`같이 하면 ${d.winRate}% · 아직 세계관 구축 중`);
-  });
-  const together=statDuos(4)[0]?[...statDuos(4)].sort((a,b)=>b.games-a.games)[0]:null;
+  // 듀오 / 상대 — 칭호는 희소해야 가치가 있다: 부문별 1쌍만
+  const bestDuo=[...D].filter(d=>d.games>=3&&d.winRate>=70).sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
+  if(bestDuo)push('국밥 듀오',bestDuo.names,`같이 하면 ${bestDuo.winRate}% (${bestDuo.games}판) · 아포단 공식 1호 듀오`);
+  const worstDuo=[...D].filter(d=>d.games>=3&&d.winRate<=35&&d!==bestDuo).sort((a,b)=>a.winRate-b.winRate||b.games-a.games)[0];
+  if(worstDuo)push('서사가 필요한 듀오',worstDuo.names,`같이 하면 ${worstDuo.winRate}% · 아직 세계관 구축 중`);
+  const together=[...statDuos(4)].sort((a,b)=>b.games-a.games)[0];
   if(together)push('쌍둥이 텔레파시',together.names,`함께 ${together.games}판 · 사실상 한 몸`);
-  R.forEach(r=>{
-    if(Math.max(...r.w)/r.games>=.75)push('천적 관계',r.names.join(' vs '),`${r.leader} 우세 ${r.w[0]}:${r.w[1]} · 만나면 결과 정해져 있음`);
-    else if(r.games>=4&&r.gap<=1)push('영혼의 라이벌',r.names.join(' vs '),`${r.w[0]}:${r.w[1]} · 다음 판이 진짜 결승`);
-  });
+  const nemesis=[...R].filter(r=>r.games>=3&&Math.max(...r.w)/r.games>=.75)
+    .sort((a,b)=>(Math.max(...b.w)/b.games)-(Math.max(...a.w)/a.games)||b.games-a.games)[0];
+  if(nemesis)push('천적 관계',nemesis.names.join(' vs '),`${nemesis.leader} 우세 ${nemesis.w[0]}:${nemesis.w[1]} · 만나면 결과가 정해져 있음`);
+  const soulRival=[...R].filter(r=>r.games>=4&&r.gap<=1&&r!==nemesis).sort((a,b)=>b.games-a.games)[0];
+  if(soulRival)push('영혼의 라이벌',soulRival.names.join(' vs '),`${soulRival.w[0]}:${soulRival.w[1]} (${soulRival.games}전) · 아포단 엘 클라시코`);
   // 챔피언
   C.forEach(c=>{
     if(c.picks>=3&&c.winRate>=75)push('승리 부적',c.champion,`픽하면 ${c.winRate}% · 가보로 물려줄 픽`);
@@ -1630,10 +1652,140 @@ function swapSides(id){
   m.winnerTeam=m.winnerTeam==='BLUE'?'RED':'BLUE';
   save();render();toast('진영을 반전했어요. 승자(사람)는 동일하게 유지됩니다.');
 }
+
+
+/* ───── 멤버끼리 결 비교 (공통축) ───── */
+function genericHexAll(){
+  const rates=ratesMap(); const out=new Map();
+  const ids=[...rates.keys()].filter(id=>rates.get(id).games>=2);
+  if(ids.length<2)return out;
+  const mm=GENERIC_AXES.map(([k])=>{const a=ids.map(id=>RATE_GET[k](rates.get(id)));return[Math.min(...a),Math.max(...a)]});
+  ids.forEach(id=>out.set(id,GENERIC_AXES.map(([k],i)=>{
+    const[mn,mx]=mm[i];const v=mx===mn?.5:(RATE_GET[k](rates.get(id))-mn)/(mx-mn);
+    return Math.max(0,Math.min(1,v));
+  })));
+  return out;
+}
+function memberMatch(id){
+  const all=genericHexAll(); const me=all.get(id); if(!me)return null;
+  let best=null,worst=null;
+  all.forEach((v,pid)=>{
+    if(pid===id)return;
+    let d=0;for(let i=0;i<v.length;i++)d+=(v[i]-me[i])**2;
+    const sim=Math.max(1,Math.min(99,Math.round(100-(Math.sqrt(d)/Math.sqrt(v.length))*100)));
+    if(!best||sim>best.sim)best={id:pid,sim};
+    if(!worst||sim<worst.sim)worst={id:pid,sim};
+  });
+  return best?{similar:{name:nameOf(best.id),sim:best.sim},opposite:{name:nameOf(worst.id),sim:worst.sim}}:null;
+}
+
+/* ───── 라인업 공지 + 자동 배당 + 관전 포인트 ───── */
+function saveLineup(){
+  if(needAdmin())return;
+  const pick=i=>$('lu'+i)?.value||'';
+  const blue=[1,2,3,4,5].map(pick).filter(Boolean);
+  const red=[6,7,8,9,10].map(pick).filter(Boolean);
+  if(blue.length<2||red.length<2)return toast('각 팀 2명 이상 골라주세요.',true);
+  const all=[...blue,...red];
+  if(new Set(all).size!==all.length)return toast('같은 사람이 두 자리에 들어가 있어요. 한 자리만 남겨주세요.',true);
+  state.lineup={date:$('luDate')?.value||todayStr(),note:($('luNote')?.value||'').trim(),blue,red};
+  window._luDraft=null;
+  save();render();toast('라인업을 공지했어요. 대시보드에 배당과 관전 포인트가 떴습니다.');
+}
+function clearLineup(){if(needAdmin())return;state.lineup=null;window._luDraft=null;save();render();toast('라인업 공지를 내렸어요.')}
+function teamPower(ids){ // 폼 주가 60% + 통산 승률 40%
+  const P=statPlayers();
+  const vals=ids.map(id=>{
+    const s=P.find(x=>x.id===id);
+    const price=formSeries(id).arr.at(-1)||100;
+    const wr=(s&&s.games?s.winRate:50)*2;
+    return price*.6+wr*.4;
+  });
+  return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:100;
+}
+function lineupOdds(){
+  const L=state.lineup; if(!L||!L.blue.length||!L.red.length)return null;
+  const pb=teamPower(L.blue),pr=teamPower(L.red);
+  const prob=1/(1+Math.pow(10,(pr-pb)/40)); // 엘로식 승률 예측
+  const margin=.97;
+  return{probBlue:Math.round(prob*100),
+    oddsBlue:Math.max(1.05,Math.round(1/(prob*margin)*100)/100),
+    oddsRed:Math.max(1.05,Math.round(1/((1-prob)*margin)*100)/100),
+    powBlue:Math.round(pb),powRed:Math.round(pr)};
+}
+function lineupPoints(){
+  const L=state.lineup;if(!L)return[];
+  const pts=[];
+  const Rv=statRivals(2);
+  L.blue.forEach(a=>L.red.forEach(b=>{
+    const r=Rv.find(r=>r.ids.includes(a)&&r.ids.includes(b));
+    if(r&&r.games>=3){
+      const lead=r.w[0]===r.w[1]?'백중세':`${r.leader} 우세`;
+      pts.push(`🔥 더비: ${r.names.join(' vs ')} — 상대전적 ${r.w[0]}:${r.w[1]}, ${lead}`);
+    }
+  }));
+  statDuos(3).filter(d=>d.winRate>=70).forEach(d=>{
+    const[x,y]=d.ids;
+    if((L.blue.includes(x)&&L.red.includes(y))||(L.blue.includes(y)&&L.red.includes(x)))
+      pts.push(`💔 이별 더비: 승률 ${d.winRate}%의 ${d.names}, 오늘은 적이다`);
+  });
+  const act=state.players.filter(p=>playerHistory(p.id).length>0&&[...L.blue,...L.red].includes(p.id));
+  if(act.length){
+    const ranked=act.map(p=>({p,price:formSeries(p.id).arr.at(-1)})).sort((a,b)=>b.price-a.price);
+    const hot=ranked[0],cold=ranked.at(-1);
+    if(hot&&hot.price>=115)pts.push(`📈 폼 주가 ${hot.price}의 ${hot.p.displayName} 출전 — 오늘도 상한가 도전`);
+    if(cold&&cold.price<=85&&cold!==hot)pts.push(`💎 반등 노리는 ${cold.p.displayName}(주가 ${cold.price}) — 저점 매수 타이밍?`);
+  }
+  return[...new Set(pts)].slice(0,4);
+}
+
+/* ───── 중복 의심 검사 (같은 날짜·같은 멤버 구성) ───── */
+function suspectDups(){
+  const g=new Map();
+  state.matches.forEach(m=>{
+    const who=m.participants.map(p=>p.playerId||norm(p.rawName||'')).sort().join(',');
+    const key=m.playedAt+'|'+who;
+    if(!g.has(key))g.set(key,[]);
+    g.get(key).push(m);
+  });
+  return[...g.values()].filter(a=>a.length>1);
+}
+
+
+/* ───── 당일 밴픽 라이브 보드 (날짜별, 경기 기록과 독립) ───── */
+function liveBoardOf(date){
+  state.liveBoards=state.liveBoards&&typeof state.liveBoards==='object'?state.liveBoards:{};
+  if(!Array.isArray(state.liveBoards[date]))state.liveBoards[date]=[];
+  return state.liveBoards[date];
+}
+function liveAdd(type){
+  if(needAdmin())return;
+  const c=canonChamp($('lvChamp')?.value||'');
+  if(!c||!CHAMPIONS.includes(c))return toast('챔피언 목록에 없는 이름이에요. 자동완성에서 골라주세요.',true);
+  const date=window._todayDate||todayStr();
+  const b=liveBoardOf(date);
+  if(b.some(x=>x.champ===c))return toast(`${c}는 이미 보드에 있어요.`,true);
+  b.push({id:uid('lv'),champ:c,type:type==='ban'?'ban':'pick'});
+  if($('lvChamp')){$('lvChamp').value=''}
+  save();render();
+  setTimeout(()=>{const el=$('lvChamp');if(el)el.focus()});
+}
+function liveDel(date,id){
+  if(needAdmin())return;
+  const b=liveBoardOf(date);
+  state.liveBoards[date]=b.filter(x=>x.id!==id);
+  save();render();
+}
+function liveClear(date){
+  if(needAdmin())return;
+  if(!confirm(`${date} 보드를 비울까요?`))return;
+  delete state.liveBoards[date];
+  save();render();
+}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['champions','챔피언'],['form','폼 주식'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['champions','챔피언'],['form','폼 주식'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
 ];
 function go(id){tab=id;render();window.scrollTo({top:0})}
 const ADMIN_ONLY_PAGES=new Set(['record','mvp']);
@@ -1667,18 +1819,37 @@ function head(title,sub){
 function render(){
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
   renderNav();renderTicker();fillDatalists();
-  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,
+  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,
     champions:pgChampions,form:pgForm,awards:pgAwards,mvp:pgMvp,settings:pgSettings};
   $('view').innerHTML=(R[tab]||pgDashboard)();
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
 }
 
 /* ───── 대시보드 ───── */
+function lineupCard(){
+  const L=state.lineup; if(!L)return'';
+  const O=lineupOdds(),pts=lineupPoints();
+  const names=ids=>ids.map(id=>`<b>${esc(nameOf(id))}</b>`).join(', ');
+  return`<div class="card derby" style="margin-bottom:14px;text-align:left">
+    <div class="row" style="justify-content:space-between">
+      <h3 style="margin:0">🏟 다음 내전 ${esc(L.date)}</h3>
+      ${O?`<span class="pill gold">알파팀 승률 예측 ${O.probBlue}%</span>`:''}
+    </div>
+    <div class="grid c2" style="margin-top:10px">
+      <div><p class="mini" style="margin:0"><span style="font-weight:800;color:var(--gold)">🅰 알파팀</span> ${O?`<span class="pill" style="font-weight:800">배당 ${O.oddsBlue}</span>`:''}</p><p class="mini" style="margin:4px 0 0">${names(L.blue)}</p></div>
+      <div><p class="mini" style="margin:0"><span style="font-weight:800;color:var(--win)">🅱 베타팀</span> ${O?`<span class="pill" style="font-weight:800">배당 ${O.oddsRed}</span>`:''}</p><p class="mini" style="margin:4px 0 0">${names(L.red)}</p></div>
+    </div>
+    ${pts.length?`<div class="hr"></div><p class="mini" style="margin:0 0 4px;color:var(--gold);font-weight:800">관전 포인트</p>${pts.map(t=>`<p class="mini" style="margin:0 0 4px">${esc(t)}</p>`).join('')}`:''}
+    ${O?`<p class="mini dim" style="margin:8px 0 0">배당은 양 팀의 폼 주가(60%)+통산 승률(40%)로 계산한 재미용 예측이에요. 낮은 배당 = 이길 확률이 높다고 본다는 뜻. 블루/레드 진영은 당일 가위바위보로! 진짜 돈은 안 됩니다 😄</p>`:''}
+    ${L.note?`<p class="mini" style="margin:6px 0 0">📌 ${esc(L.note)}</p>`:''}
+  </div>`;
+}
 function pgDashboard(){
   const P=statPlayers(),A=makeAwards().slice(0,6);
   const recent=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))[0];
   const meta=statChamps().filter(c=>c.picks>=2)[0];
   return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
+  ${lineupCard()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
     <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
@@ -1695,11 +1866,34 @@ function pgDashboard(){
 }
 
 /* ───── 기록하기 (스크린샷 분석 = 메인) ───── */
+function lineupEditor(){
+  const L=state.lineup||{date:todayStr(),blue:[],red:[],note:''};
+  const D=window._luDraft||{};
+  const slotVal=i=>D[i]!==undefined?D[i]:((i<=5?L.blue[(i-1)%5]:L.red[(i-1)%5])||'');
+  const taken=new Set([1,2,3,4,5,6,7,8,9,10].map(slotVal).filter(Boolean));
+  const opts=(self)=>'<option value="">—</option>'+state.players.filter(p=>p.active&&(p.id===self||!taken.has(p.id)))
+    .map(p=>`<option value="${p.id}"${self===p.id?' selected':''}>${esc(p.displayName)}</option>`).join('');
+  const laneNames=['탑','정글','미드','원딜','서폿'];
+  const row=i=>{const v=slotVal(i);
+    return`<div class="f"><label>${laneNames[(i-1)%5]}</label><select id="lu${i}" onchange="window._luDraft=window._luDraft||{};window._luDraft[${i}]=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${opts(v)}</select></div>`};
+  return`<div class="card" style="margin-bottom:14px"><h3>🏟 다음 내전 라인업 공지 <span class="tag">한 번 뽑힌 사람은 다른 칸 목록에서 사라져요</span></h3>
+    <div class="grid c2" style="margin-bottom:10px">
+      <div class="f"><label>날짜</label><input id="luDate" type="date" value="${esc(D.date!==undefined?D.date:(L.date||todayStr()))}" onclick="if(this.showPicker)try{this.showPicker()}catch(e){}" onchange="if(/^\\d{4}-\\d{2}-\\d{2}$/.test(this.value)){window._luDraft=window._luDraft||{};window._luDraft.date=this.value}" style="cursor:pointer"></div>
+      <div class="f"><label>메모 (선택)</label><input id="luNote" value="${esc(D.note!==undefined?D.note:(L.note||''))}" oninput="window._luDraft=window._luDraft||{};window._luDraft.note=this.value" placeholder="예: 금요 내전 8시"></div>
+    </div>
+    <div class="grid c2">
+      <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--gold)">🅰 알파팀</p><div class="grid c2">${[1,2,3,4,5].map(row).join('')}</div></div>
+      <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--win)">🅱 베타팀</p><div class="grid c2">${[6,7,8,9,10].map(row).join('')}</div></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn gold" onclick="saveLineup()">라인업 공지하기</button>${state.lineup?'<button class="btn" onclick="clearLineup()">공지 내리기</button>':''}</div>
+  </div>`;
+}
 function pgRecord(){
   draft=null;draftEditId=null;
   const anchors=state.players.filter(p=>p.active&&p.riotName);
   const anchorSel=state.settings.riotAnchor||anchors[0]?.id||'';
   return head('기록하기','라이엇 연동이 가장 정확해요(딜량·시야·밴·챔피언까지 자동). 어떤 방법이든 자동 저장은 없고, 항상 검수 후 저장됩니다.')+`
+  ${lineupEditor()}
   <div class="card" style="border-color:rgba(242,184,75,.45)">
     <h3>① 라이엇 자동 불러오기 <span class="tag">정확도 100% · 추천</span></h3>
     <p class="mini">중계 서버를 한 번만 연결해두면, 경기 끝나고 버튼 하나로 10명 전적이 통째로 들어와요. 설정 방법은 채팅 가이드 참고 (라이엇 키 발급 → Vercel 배포 → 주소 입력).</p>
@@ -1926,6 +2120,9 @@ function playerDetail(p){
           ${rep.str.map(x=>`<p class="mini" style="margin:0 0 5px">💪 <b style="color:var(--win)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].hi)}</p>`).join('')}
           ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
           ${hex.rates&&hex.rates.solo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 누적 ${hex.rates.solo}회</b> · 1:1에서 증명된 손맛</p>`:''}
+          ${(()=>{const mm=memberMatch(p.id);if(!mm)return'';
+            if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)</p>`;
+            return`<p class="mini" style="margin:6px 0 0">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) &nbsp;·&nbsp; 🌗 정반대 스타일: <b>${esc(mm.opposite.name)}</b> (${mm.opposite.sim}%)</p>`})()}
           <div style="height:10px"></div>
           <h3 style="font-size:14px;margin:0 0 6px">보유 칭호 ${mine.length?`(${mine.length})`:''}</h3>
           ${mine.length?`<div class="row" style="gap:6px">${mine.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div><p class="mini dim" style="margin:6px 0 0">칭호에 마우스를 올리면 사유가 보여요.</p>`:'<p class="mini dim" style="margin:0">아직 획득한 칭호가 없어요. 곧 생깁니다.</p>'}
@@ -2053,8 +2250,12 @@ function pgCompare(){
   if(!window._cmpB||!P.some(s=>s.id===window._cmpB)||window._cmpB===window._cmpA)window._cmpB=(P.find(s=>s.id!==window._cmpA)||P[1]).id;
   const A=P.find(s=>s.id===window._cmpA),B=P.find(s=>s.id===window._cmpB);
   const rA=rates.get(A.id),rB=rates.get(B.id);
-  const hA=playerHex(A.id),hB=playerHex(B.id);
-  const sel=(id,val)=>`<select onchange="window._cmp${id}=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%">${P.map(s=>`<option value="${s.id}"${s.id===val?' selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+  const lanesA=playerLanes(A.id),lanesB=playerLanes(B.id);
+  const laneA=(window._cmpLA&&lanesA.some(l=>l.lane===window._cmpLA))?window._cmpLA:(lanesA[0]?.lane||null);
+  const laneB=(window._cmpLB&&lanesB.some(l=>l.lane===window._cmpLB))?window._cmpLB:(lanesB[0]?.lane||null);
+  const hA=playerHex(A.id,laneA),hB=playerHex(B.id,laneB);
+  const sel=(id,val)=>`<select onchange="window._cmp${id}=this.value;window._cmpL${id}=null;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%">${P.map(s=>`<option value="${s.id}"${s.id===val?' selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+  const laneSel=(id,lanes,val)=>lanes.length>1?`<select onchange="window._cmpL${id}=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%;margin-top:6px">${lanes.map(l=>`<option value="${l.lane}"${l.lane===val?' selected':''}>${esc(l.lane)} (${l.games}판)</option>`).join('')}</select>`:(lanes[0]?`<p class="mini dim" style="margin:6px 0 0">${esc(lanes[0].lane)} ${lanes[0].games}판</p>`:'');
   const f1=v=>Math.round(v*10)/10;
   const rows=[
     ['승률',A.winRate,B.winRate,'%','높을수록'],
@@ -2079,11 +2280,29 @@ function pgCompare(){
       <td class="num ${bw?'up':''}" style="${bw?'font-weight:800':''}">${fmt(b)}${unit}</td></tr>`;
   }).join('');
   const laneNote=x=>x.laneScoped?`${x.lane} 포지션 내 상대평가`:'전체 멤버 기준 상대평가';
+  // 더비 데이터: 맞대결 + 한 팀 동행 기록
+  let meet=0,awin=0,recent=[];let dgames=0,dwins=0;
+  [...state.matches].sort((x,y)=>sortKey(x).localeCompare(sortKey(y))).forEach(m=>{
+    const pa=m.participants.find(p=>p.playerId===A.id),pb=m.participants.find(p=>p.playerId===B.id);
+    if(!pa||!pb)return;
+    if(pa.team!==pb.team){meet++;const w=pa.team===m.winnerTeam;if(w)awin++;recent.push(w)}
+    else{dgames++;if(pa.team===m.winnerTeam)dwins++}
+  });
+  const derbyTitle=meet>=4&&Math.abs(awin-(meet-awin))<=1?'⚡ 아포단 엘 클라시코'
+    :meet>=3&&(awin/meet>=.75||awin/meet<=.25)?'🦁 천적 매치':meet>=1?'🤜🤛 맞대결':'';
+  const derby=meet?`<div class="derby">
+    <div class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:800">${derbyTitle}</div>
+    <div style="font-size:22px;font-weight:900;margin:4px 0"><span style="color:var(--gold)">${esc(A.name)}</span> <span class="dim" style="font-size:15px">${meet}전</span> <span style="color:var(--win)">${esc(B.name)}</span></div>
+    <div style="font-size:17px;font-weight:800">${awin} <span class="dim mini">vs</span> ${meet-awin}</div>
+    <div class="row" style="justify-content:center;gap:5px;margin-top:7px">${recent.slice(-5).map(w=>`<span class="pill" style="background:${w?'rgba(242,184,75,.25)':'rgba(63,217,197,.25)'};font-weight:800">${w?esc(A.name).slice(0,4):esc(B.name).slice(0,4)} 승`).map(x=>x+'</span>').join('')}</div>
+    ${dgames?`<p class="mini dim" style="margin:8px 0 0">같은 팀이었을 땐 ${dgames}판 ${pct(dwins,dgames)}% — ${pct(dwins,dgames)>=60?'적보다 아군일 때 무서운 조합':'한 팀이어도 화학반응은 미지수'}</p>`:''}
+  </div>`:'';
   return head('1:1 비교','LCK 맞대결 그래픽처럼. 육각형은 각자 "자기 포지션 안에서의 위치", 표는 실제 수치예요.')+`
   <div class="card">
-    <div class="grid c2" style="margin-bottom:14px">
-      <div class="f"><label style="color:var(--gold)">🟡 선수 A</label>${sel('A',A.id)}</div>
-      <div class="f"><label style="color:var(--win)">🟢 선수 B</label>${sel('B',B.id)}</div>
+    ${derby}
+    <div class="grid c2" style="margin:14px 0">
+      <div class="f"><label style="color:var(--gold)">🟡 선수 A</label>${sel('A',A.id)}${laneSel('A',lanesA,laneA)}</div>
+      <div class="f"><label style="color:var(--win)">🟢 선수 B</label>${sel('B',B.id)}${laneSel('B',lanesB,laneB)}</div>
     </div>
     <div class="grid c2" style="align-items:center">
       <div style="text-align:center">${hA.labels.join()===hB.labels.join()
@@ -2099,6 +2318,46 @@ function pgCompare(){
   </div>`;
 }
 
+/* ───── 당일 밴픽 (하드 피어리스 보드) ───── */
+function pgToday(){
+  const sel=window._todayDate||todayStr();
+  const items=(state.liveBoards&&state.liveBoards[sel])||[];
+  const picks=items.filter(x=>x.type==='pick');
+  const bans=items.filter(x=>x.type==='ban');
+  const x=it=>isAdmin()?`<span onclick="liveDel('${sel}','${it.id}')" style="cursor:pointer;margin-left:5px;color:var(--lose);font-weight:900" title="빼기">✕</span>`:'';
+  const pickChip=it=>`<span class="pill" style="background:rgba(255,92,122,.14);border:1px solid rgba(255,92,122,.45);font-weight:800;font-size:14px;padding:7px 12px">${esc(it.champ)}${x(it)}</span>`;
+  const banChip=it=>`<span class="pill" style="border:1px dashed var(--line);color:var(--mut);font-weight:700;font-size:13px;padding:6px 11px">${esc(it.champ)}${x(it)}</span>`;
+  return head('당일 밴픽','하드 피어리스 보드 — 오늘 뭐가 잠겼는지만 깔끔하게.')+`
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
+      <h3 style="margin:0">📅 ${esc(sel)} <span class="tag">픽 ${picks.length} · 밴 ${bans.length}</span></h3>
+      <span class="row" style="gap:8px">
+        <input type="date" value="${esc(sel)}" onclick="if(this.showPicker)try{this.showPicker()}catch(e){}" onchange="if(/^\\d{4}-\\d{2}-\\d{2}$/.test(this.value)){window._todayDate=this.value;render()}" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;color:var(--text);cursor:pointer">
+        ${isAdmin()&&items.length?`<button class="btn sm" onclick="liveClear('${sel}')">보드 비우기</button>`:''}
+      </span>
+    </div>
+    ${isAdmin()?`
+    <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+      <input id="lvChamp" list="dlChamps" placeholder="챔피언 입력 후 엔터 = 픽" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter')liveAdd('pick')">
+      <button class="btn lose" onclick="liveAdd('pick')" style="font-weight:800">⚔ 픽 잠금</button>
+      <button class="btn" onclick="liveAdd('ban')" style="font-weight:800">🚫 밴</button>
+    </div>`:`
+    <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap;align-items:center">
+      <span class="mini dim">지금은 보기 전용 — 보드를 편집하려면 운영자 PIN 인증:</span>
+      <input id="adminPin" type="password" placeholder="PIN" style="width:120px" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="btn sm gold" onclick="adminLogin()">🔑 인증</button>
+    </div>`}
+  </div>
+  <div class="card" style="margin-bottom:14px;border-color:rgba(255,92,122,.35)">
+    <h3 style="color:var(--lose)">☠️ 다음 판 픽 불가 <span class="tag">하드 피어리스 — 오늘 픽된 챔피언</span></h3>
+    <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:6px">${picks.length?picks.map(pickChip).join(''):'<span class="mini dim">아직 없음 — 첫 세트 픽이 끝나면 여기에 쌓여요.</span>'}</div>
+  </div>
+  <div class="card">
+    <h3>🚫 재밴 불가 <span class="tag">중복 밴 금지 — 픽은 가능</span></h3>
+    <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:6px">${bans.length?bans.map(banChip).join(''):'<span class="mini dim">아직 없음</span>'}</div>
+  </div>`;
+}
+
 /* ───── 챔피언 ───── */
 function tierCls(t){return{OP:'tOP',S:'tS',A:'tA',B:'tB',C:'tC','봉인 검토':'tSEAL','표본 부족':'tNA'}[t]||'tC'}
 function pgChampions(){
@@ -2106,9 +2365,10 @@ function pgChampions(){
   const order=['OP','S','A','B','C','봉인 검토','표본 부족'];
   const board=C.length?`<div class="card" style="margin-bottom:14px"><h3>아포단 티어 보드 <span class="tag">내전 메타 기준</span></h3>
     <div class="tierBoard">${order.map(t=>{const list=C.filter(c=>c.tier===t);
-      return`<div class="tierCol"><div class="tierHead ${tierCls(t)}">${t}</div>
-      ${list.length?list.map(c=>`<div class="tierItem"><b>${esc(c.champion)}</b><span class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span></div>`).join(''):'<div class="mini dim" style="text-align:center;padding:10px 0">—</div>'}</div>`}).join('')}</div></div>`:'';
-  return head('챔피언 티어표','승률·픽률·밴·최근 폼에 표본 보정(1판 1승 과대평가 방지)을 적용한 아포단 전용 티어.')+board+`
+      return`<div class="tierCol"><div class="tierHead ${tierCls(t)}">${t}${t==='OP'?' 👑':''}</div>
+      ${list.length?list.map(c=>`<div class="tierItem"><b>${esc(c.champion)}</b><span class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span></div>`).join(''):'<div class="mini dim" style="text-align:center;padding:10px 0">—</div>'}</div>`}).join('')}</div>
+    <p class="mini dim" style="margin:8px 0 0">OP는 최대 2개만 — 진짜 사기캐만 들어갑니다. 3판 미만은 "표본 부족"으로 보류 (적은 판의 좋은 지표는 운일 수 있어서, 8판 50% 기준의 가상 전적을 섞어 보정해요).</p></div>`:'';
+  return head('챔피언 티어표','승률·픽률·최근 폼에 강한 표본 보정을 적용한 아포단 전용 티어. OP는 정원 2개.')+board+`
   <div class="card">
     <div class="row" style="margin-bottom:10px"><span class="chip">목록: ${esc(champSource)}</span><button class="btn sm" onclick="ddragonRefresh()">Riot 최신 패치로 갱신</button></div>
     ${C.length?`<div class="scrollx"><table class="tbl" style="min-width:700px"><thead><tr><th>티어</th><th>챔피언</th><th class="num">픽</th><th class="num">승률</th><th class="num">픽률</th><th class="num">밴</th><th class="num">점수</th><th>아포단 평가</th></tr></thead><tbody>
@@ -2290,6 +2550,15 @@ function pgSettings(){
     <p class="mini">이 사이트와 백업 데이터를 Vercel(깃허브 저장소)에 올리면, 멤버들이 링크로 접속해서 전적을 볼 수 있어요. 운영 순서: ① 여기서 <b>JSON 백업 다운로드</b> → 파일명을 <code>data.json</code>으로 변경 → ② 깃허브 저장소에 <code>index.html</code>과 <code>data.json</code> 업로드 → 자동 배포. 멤버가 링크로 열면 공유 데이터가 자동 로드되고, 화면은 관전 모드로 열립니다.</p>
     <button class="btn" onclick="loadShared(true)">공유 데이터(data.json) 지금 다시 받기</button>
   </div>
+  ${(()=>{const sus=suspectDups();if(!sus.length)return'';
+    return`<div class="card" style="margin-top:14px"><h3>⚠ 중복 의심 경기 ${sus.reduce((a,g)=>a+g.length,0)}건</h3>
+    <p class="mini">같은 날짜에 같은 멤버 구성으로 기록된 경기들이에요. 여러 사람에게 데이터를 받으면 생기기 쉬워요. 진짜 중복이면 한 판만 남기고 삭제하세요. (같은 날 같은 멤버로 2판 한 거면 정상이니 세트·승자·시간을 보고 판단!)</p>
+    ${sus.map(g=>`<div style="border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:8px">
+      ${g.map(m=>{const tk=m.participants.reduce((a,p)=>a+num(p.kills),0);
+        return`<div class="row" style="justify-content:space-between;padding:4px 0">
+        <span class="mini">${esc(m.playedAt)} ${m.setNumber}세트 · ${m.winnerTeam==='BLUE'?'<span class=tBlue>블루 승</span>':'<span class=tRed>레드 승</span>'} · ${m.durationMin?m.durationMin+'분 · ':''}총 ${tk}킬${m.gameId?' · ID '+esc(m.gameId):''}${m.memo?' · '+esc(m.memo):''}</span>
+        <button class="btn sm lose" onclick="delMatch('${m.id}')">이 판 삭제</button></div>`}).join('')}
+    </div>`).join('')}</div>`})()}
   <div class="card" style="margin-top:14px"><h3>정리 · 초기화</h3>
     <div class="row">
       <button class="btn win" onclick="dedupeMatches()">중복 경기 정리</button>
