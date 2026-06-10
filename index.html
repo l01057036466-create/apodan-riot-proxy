@@ -1617,20 +1617,43 @@ async function loadShared(manual){
 }
 
 
-function dedupeMatches(){
-  if(needAdmin())return; // 이미 저장된 중복 경기 정리 (게임ID 또는 날짜·승팀·KDA 구성이 동일)
-  const seen=new Set();const keep=[];let removed=0;
-  [...state.matches].sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))).forEach(m=>{
-    const keys=[m.gameId?'g:'+m.gameId:null,matchSig(m)].filter(Boolean);
-    if(keys.some(k=>seen.has(k))){removed++;return}
-    keys.forEach(k=>seen.add(k));keep.push(m);
-  });
-  if(!removed)return toast('중복 경기가 없어요.');
-  if(!confirm(`중복으로 보이는 경기 ${removed}판을 삭제할까요?\n(같은 게임ID, 또는 날짜·승리팀·10명 KDA 구성이 완전히 같은 경기)`))return;
-  state.matches=keep;save();render();toast(`중복 ${removed}판을 정리했어요.`);
+function matchFingerprint(m){ // 내용 지문: 날짜 + 10명의 챔피언·KDA (승패 표기 제외 — 한쪽만 반전된 사본도 잡기 위해)
+  const parts=(m.participants||[]).map(p=>`${canonChamp(p.championId)||p.championId}|${num(p.kills)}/${num(p.deaths)}/${num(p.assists)}`).sort().join(',');
+  return'x:'+m.playedAt+'|'+parts;
 }
-
-
+function dedupeMatches(){
+  if(needAdmin())return;
+  // 유니온 그룹핑: ①내용 지문이 같으면 한 그룹 ②게임ID가 같으면 무조건 한 그룹
+  const N=state.matches.length;
+  const parent=Array.from({length:N},(_,i)=>i);
+  const find=a=>{while(parent[a]!==a){parent[a]=parent[parent[a]];a=parent[a]}return a};
+  const uni=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent[b]=a};
+  const byKey=new Map();
+  state.matches.forEach((m,i)=>{
+    const keys=[matchFingerprint(m)];
+    if(m.gameId)keys.push('g:'+m.gameId);
+    keys.forEach(k=>{if(byKey.has(k))uni(byKey.get(k),i);else byKey.set(k,i)});
+  });
+  const groups=new Map();
+  state.matches.forEach((m,i)=>{const r=find(i);if(!groups.has(r))groups.set(r,[]);groups.get(r).push(m)});
+  const dupGroups=[...groups.values()].filter(g=>g.length>1);
+  if(!dupGroups.length)return toast('중복 경기가 없어요. (기준: 같은 게임ID, 또는 날짜·챔피언·KDA 완전 일치)');
+  let byGid=0,byExact=0;
+  const removeIds=new Set();
+  const quality=m=>(m.gameId?8:0)+(m.durationMin?4:0)+((m.bans||[]).length?2:0)+((m.participants||[]).some(p=>p.stats&&Object.keys(p.stats).length>3)?1:0);
+  dupGroups.forEach(g=>{
+    const keep=[...g].sort((a,b)=>quality(b)-quality(a)||String(a.createdAt).localeCompare(String(b.createdAt)))[0];
+    g.forEach(m=>{
+      if(m===keep)return;
+      removeIds.add(m.id);
+      if(m.gameId&&keep.gameId&&m.gameId===keep.gameId)byGid++;else byExact++;
+    });
+  });
+  if(!confirm(`중복 ${removeIds.size}판 발견!\n· 게임ID 동일: ${byGid}건\n· 내용 완전 일치(날짜·챔피언·KDA): ${byExact}건\n\n각 그룹에서 데이터가 가장 충실한 1판만 남기고 나머지를 삭제할까요?\n(승패 표기만 다른 사본도 같은 판으로 묶어요 — 남는 판의 승패가 맞는지 정리 후 확인!)`))return;
+  state.matches=state.matches.filter(m=>!removeIds.has(m.id));
+  state.voteRooms=(state.voteRooms||[]).filter(v=>state.matches.some(m=>m.id===v.matchId));
+  save();render();toast(`딸깍! 중복 ${removeIds.size}판 정리 완료 — 각 경기는 1판씩 안전하게 남았어요.`);
+}
 function cleanGhosts(){
   if(needAdmin())return; // 이미 저장된 무효 경기(다시하기 등) 정리
   const isGhost=m=>(m.durationMin!=null&&m.durationMin<5)||(m.participants||[]).every(p=>num(p.kills)+num(p.deaths)+num(p.assists)===0);
@@ -1740,7 +1763,7 @@ function lineupPoints(){
 }
 
 /* ───── 중복 의심 검사 (같은 날짜·같은 멤버 구성) ───── */
-function suspectDups(){
+function suspectDups(){ // 같은 날·같은 멤버라도 게임ID가 서로 다르면 정상 (여러 세트). 의심 = ID 없는 판이 섞였거나 ID가 겹칠 때만
   const g=new Map();
   state.matches.forEach(m=>{
     const who=m.participants.map(p=>p.playerId||norm(p.rawName||'')).sort().join(',');
@@ -1748,7 +1771,36 @@ function suspectDups(){
     if(!g.has(key))g.set(key,[]);
     g.get(key).push(m);
   });
-  return[...g.values()].filter(a=>a.length>1);
+  return[...g.values()].filter(a=>{
+    if(a.length<2)return false;
+    const ids=a.map(m=>m.gameId).filter(Boolean);
+    const allHaveId=ids.length===a.length;
+    const allUnique=new Set(ids).size===ids.length;
+    return!(allHaveId&&allUnique); // 전부 고유 게임ID면 그냥 여러 판 한 것
+  });
+}
+
+/* ───── 닉변·미확인 닉네임 연결 시스템 ───── */
+function unmatchedNames(){ // 명단과 못 맞춘 닉네임 목록 (판수 많은 순)
+  const map=new Map();
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    if(!p.playerId&&(p.rawName||'').trim())map.set(p.rawName.trim(),(map.get(p.rawName.trim())||0)+1);
+  }));
+  return[...map.entries()].sort((a,b)=>b[1]-a[1]);
+}
+function linkNick(i){
+  if(needAdmin())return;
+  const raw=(window._unm||[])[i]; if(!raw)return;
+  const pid=$('lnkSel'+i)?.value;
+  if(!pid)return toast('연결할 멤버를 먼저 골라주세요.',true);
+  const p=byId(pid); if(!p)return;
+  let n=0;
+  state.matches.forEach(m=>m.participants.forEach(pp=>{
+    if(!pp.playerId&&(pp.rawName||'').trim()===raw){pp.playerId=pid;n++}
+  }));
+  p.aliases=[...new Set([...(p.aliases||[]),raw,raw.replace(/\s+/g,'')])];
+  save();render();
+  toast(`"${raw}" → ${p.displayName} 연결 완료! 경기 ${n}판이 합쳐지고 별명으로 등록돼 다음부터 자동 인식돼요.`);
 }
 
 
@@ -1781,6 +1833,49 @@ function liveClear(date){
   if(!confirm(`${date} 보드를 비울까요?`))return;
   delete state.liveBoards[date];
   save();render();
+}
+
+
+/* ───── 데이터 게시: 깃허브 원클릭 + data.json 직다운 ───── */
+const GH_KEY='apodan_gh_v1';
+function ghCfg(){try{return JSON.parse(lsGet(GH_KEY)||'{}')}catch(e){return{}}}
+function ghSave(){
+  if(needAdmin())return;
+  const repo=($('ghRepo')?.value||'').trim(),token=($('ghToken')?.value||'').trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo))return toast('저장소는 "아이디/저장소이름" 형식이에요. 예: gildong/apodan-riot-proxy',true);
+  if(!token)return toast('토큰을 입력해주세요.',true);
+  lsSet(GH_KEY,JSON.stringify({repo,token}));
+  toast('연결 완료! 토큰은 이 브라우저에만 저장되고, 백업·공유 파일에는 절대 포함되지 않아요.');render();
+}
+async function publishData(){
+  if(needAdmin())return;
+  const cfg=ghCfg();
+  if(!cfg.repo||!cfg.token)return toast('먼저 아래 "깃허브 연결"에 저장소와 토큰을 저장해주세요.',true);
+  const btn=$('pubBtn');if(btn){btn.disabled=true;btn.textContent='게시 중...'}
+  try{
+    const api=`https://api.github.com/repos/${cfg.repo}/contents/data.json`;
+    const H={Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'};
+    let sha=null;
+    const g=await fetch(api,{headers:H});
+    if(g.status===200)sha=(await g.json()).sha;
+    else if(g.status!==404)throw new Error('저장소 확인 실패('+g.status+') — 저장소 이름과 토큰 권한(Contents 읽기/쓰기)을 확인해주세요.');
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(state,null,1))));
+    const body={message:'아포단 데이터 갱신 '+new Date().toISOString().slice(0,16).replace('T',' '),content};
+    if(sha)body.sha=sha;
+    const r=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});
+    if(!r.ok)throw new Error('업로드 실패('+r.status+')');
+    state.settings.lastBackupAt=new Date().toISOString();save();
+    toast('🚀 게시 완료! 1분 안에 멤버들 화면에 반영돼요.');
+  }catch(e){toast('게시 실패: '+(e&&e.message||e),true)}
+  finally{if(btn){btn.disabled=false;btn.textContent='🚀 사이트에 게시 (딸깍)'}render()}
+}
+function downloadDataJson(){ // 이름 그대로 data.json — 수동 업로드 시 개명 불필요
+  if(needAdmin())return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,1)],{type:'application/json'}));
+  a.download='data.json';a.click();
+  state.settings.lastBackupAt=new Date().toISOString();save();render();
+  toast('data.json 다운로드! 깃허브에 끌어다 놓기만 하면 돼요. (이름 바꿀 필요 없음)');
 }
 /* ───── 내비게이션 ───── */
 const PAGES=[
@@ -2546,22 +2641,46 @@ function pgSettings(){
     </div>
     <p class="mini dim" style="margin-top:8px">⚠ 처음 설치 기본 PIN은 <b>2026</b>이에요. 꼭 바꿔서 쓰세요. 바꾼 PIN은 백업(data.json)에 함께 저장돼 어디서 열어도 동일하게 적용됩니다.</p>
   </div>
-  <div class="card" style="margin-top:14px"><h3>멤버들에게 공유 (링크 호스팅)</h3>
-    <p class="mini">이 사이트와 백업 데이터를 Vercel(깃허브 저장소)에 올리면, 멤버들이 링크로 접속해서 전적을 볼 수 있어요. 운영 순서: ① 여기서 <b>JSON 백업 다운로드</b> → 파일명을 <code>data.json</code>으로 변경 → ② 깃허브 저장소에 <code>index.html</code>과 <code>data.json</code> 업로드 → 자동 배포. 멤버가 링크로 열면 공유 데이터가 자동 로드되고, 화면은 관전 모드로 열립니다.</p>
-    <button class="btn" onclick="loadShared(true)">공유 데이터(data.json) 지금 다시 받기</button>
+  <div class="card" style="margin-top:14px"><h3>🚀 데이터 게시 — 멤버들 화면에 반영하기</h3>
+    <p class="mini">기록을 갱신했으면 아래 버튼 하나로 끝. 깃허브의 <code>data.json</code>이 자동으로 교체되고, 1분 안에 링크로 접속하는 모든 멤버에게 반영돼요. (라인업 공지·당일 밴픽 보드도 함께 공유됩니다)</p>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn gold" id="pubBtn" onclick="publishData()" style="font-size:15px">🚀 사이트에 게시 (딸깍)</button>
+      <button class="btn" onclick="downloadDataJson()">data.json 다운로드 (수동 업로드용)</button>
+      <button class="btn ghost sm" onclick="loadShared(true)">사이트 데이터 다시 받기</button>
+    </div>
+    <details class="fold"><summary>🔗 깃허브 연결 설정 — 최초 1회만 (현재: ${ghCfg().repo?`<b>${esc(ghCfg().repo)}</b> 연결됨`:'미연결'})</summary>
+      <div class="grid c3" style="margin-top:10px">
+        <div class="f"><label>저장소 (아이디/이름)</label><input id="ghRepo" value="${esc(ghCfg().repo||'')}" placeholder="예: gildong/apodan-riot-proxy"></div>
+        <div class="f"><label>토큰 (Fine-grained)</label><input id="ghToken" type="password" value="${esc(ghCfg().token||'')}" placeholder="github_pat_..."></div>
+        <div class="f" style="align-self:end"><button class="btn" onclick="ghSave()">연결 저장</button></div>
+      </div>
+      <p class="mini" style="margin-top:8px"><b>토큰 만드는 법 (2분)</b>: 깃허브 → 우상단 프로필 → Settings → 맨 아래 <b>Developer settings</b> → <b>Fine-grained tokens</b> → Generate new token → 이름 아무거나, 만료 1년 → <b>Repository access: Only select repositories</b>에서 우리 저장소만 선택 → <b>Permissions → Contents: Read and write</b> → Generate → 복사해서 위에 붙여넣기. 토큰은 <b>이 브라우저에만</b> 저장되고 백업·공유 파일엔 절대 안 들어가요.</p>
+    </details>
   </div>
+  ${(()=>{const un=unmatchedNames();if(!un.length)return'';
+    window._unm=un.map(([r])=>r);
+    const opts='<option value="">멤버 선택…</option>'+state.players.map(p=>`<option value="${p.id}">${esc(p.displayName)}</option>`).join('');
+    return`<div class="card" style="margin-top:14px;border-color:rgba(242,184,75,.4)"><h3>🔗 미확인 닉네임 연결 <span class="tag">${un.length}명 — 닉변·신규 인원 정리</span></h3>
+    <p class="mini">경기 기록엔 있는데 명단과 못 맞춘 닉네임이에요. 멤버를 골라 <b>연결</b>하면 ① 이 닉으로 기록된 <b>모든 판</b>이 그 멤버 전적으로 합쳐지고 ② <b>별명으로 자동 등록</b>돼 다음 가져오기부터는 알아서 인식돼요. 닉변이면 본인에게, 새 멤버라면 플레이어 탭에서 등록 후 연결!</p>
+    ${un.map(([raw,cnt],idx)=>`<div class="row" style="justify-content:space-between;gap:8px;padding:7px 0;border-top:1px dashed var(--line);flex-wrap:wrap">
+      <span><b>${esc(raw)}</b> <span class="mini dim">${cnt}판 기록</span></span>
+      <span class="row" style="gap:6px">
+        <select id="lnkSel${idx}" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:7px">${opts}</select>
+        <button class="btn sm gold" onclick="linkNick(${idx})">연결</button>
+      </span></div>`).join('')}
+    </div>`})()}
   ${(()=>{const sus=suspectDups();if(!sus.length)return'';
-    return`<div class="card" style="margin-top:14px"><h3>⚠ 중복 의심 경기 ${sus.reduce((a,g)=>a+g.length,0)}건</h3>
-    <p class="mini">같은 날짜에 같은 멤버 구성으로 기록된 경기들이에요. 여러 사람에게 데이터를 받으면 생기기 쉬워요. 진짜 중복이면 한 판만 남기고 삭제하세요. (같은 날 같은 멤버로 2판 한 거면 정상이니 세트·승자·시간을 보고 판단!)</p>
+    return`<div class="card" style="margin-top:14px"><details class="fold"><summary>⚠ 중복 의심 경기 ${sus.reduce((a,g)=>a+g.length,0)}건 — 펼쳐서 확인</summary>
+    <p class="mini" style="margin-top:8px">게임ID가 없는 판이 섞여 있거나 ID가 겹치는 그룹만 보여줘요. (게임ID가 전부 다른 같은 날 경기는 정상이라 안 나옵니다)</p>
     ${sus.map(g=>`<div style="border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:8px">
       ${g.map(m=>{const tk=m.participants.reduce((a,p)=>a+num(p.kills),0);
         return`<div class="row" style="justify-content:space-between;padding:4px 0">
-        <span class="mini">${esc(m.playedAt)} ${m.setNumber}세트 · ${m.winnerTeam==='BLUE'?'<span class=tBlue>블루 승</span>':'<span class=tRed>레드 승</span>'} · ${m.durationMin?m.durationMin+'분 · ':''}총 ${tk}킬${m.gameId?' · ID '+esc(m.gameId):''}${m.memo?' · '+esc(m.memo):''}</span>
+        <span class="mini">${esc(m.playedAt)} ${m.setNumber}세트 · ${m.winnerTeam==='BLUE'?'<span class=tBlue>블루 승</span>':'<span class=tRed>레드 승</span>'} · ${m.durationMin?m.durationMin+'분 · ':''}총 ${tk}킬${m.gameId?' · ID '+esc(m.gameId):' · <b style=color:var(--gold)>ID 없음</b>'}${m.memo?' · '+esc(m.memo):''}</span>
         <button class="btn sm lose" onclick="delMatch('${m.id}')">이 판 삭제</button></div>`}).join('')}
-    </div>`).join('')}</div>`})()}
+    </div>`).join('')}</details></div>`})()}
   <div class="card" style="margin-top:14px"><h3>정리 · 초기화</h3>
     <div class="row">
-      <button class="btn win" onclick="dedupeMatches()">중복 경기 정리</button>
+      <button class="btn win" onclick="dedupeMatches()">🧹 중복 경기 정리 (딸깍 — 그룹당 1판 보존)</button>
       <button class="btn win" onclick="cleanGhosts()">무효 게임 정리 (다시하기 등)</button>
       <button class="btn" onclick="if(needAdmin())return;if(confirm('경기 기록만 모두 삭제할까요?')){state.matches=[];state.voteRooms=[];save();render()}">경기 기록만 삭제</button>
       <button class="btn" onclick="if(needAdmin())return;if(confirm('확정 명단만 남기고 전부 초기화할까요?')){state=freshState();save();render()}">확정 명단으로 초기화</button>
