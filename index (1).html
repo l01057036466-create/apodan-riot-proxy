@@ -1,0 +1,2089 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>아포단 내전실록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+/* ─────────────────────────────────────────────
+   아포단 내전실록 · 디자인 토큰
+   먹지 같은 잉크 블랙 + 우승 트로피 골드 + 승/패 틸·로즈
+────────────────────────────────────────────── */
+:root{
+  --bg:#101319; --bg2:#0B0E13;
+  --panel:#171C26; --panel2:#121722; --inset:#0E1320;
+  --line:#27303F; --line2:#323D50;
+  --text:#EAEFF7; --mut:#9AA6B9; --dim:#6B7689;
+  --gold:#F2B84B; --gold-dim:rgba(242,184,75,.14);
+  --win:#3FD9C5;  --win-dim:rgba(63,217,197,.12);
+  --lose:#FF5C7A; --lose-dim:rgba(255,92,122,.12);
+  --blue:#6AA6FF; --blue-dim:rgba(106,166,255,.13);
+  --violet:#B58CFF;
+  --r:14px; --r-sm:10px;
+  --shadow:0 14px 44px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box}
+html{font-size:15px}
+body{
+  margin:0; background:var(--bg) radial-gradient(1100px 480px at 80% -10%, rgba(242,184,75,.05), transparent 60%);
+  color:var(--text); line-height:1.55;
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue)} button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+::selection{background:rgba(242,184,75,.3)}
+
+/* ── 헤더 + 결과 티커 ── */
+.top{position:sticky;top:0;z-index:30;background:rgba(11,14,19,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.topIn{max-width:1480px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:21px;
+  background:linear-gradient(150deg,#3a2e12,#16120a);border:1px solid rgba(242,184,75,.45);box-shadow:0 0 24px rgba(242,184,75,.12)}
+.brand h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.brand p{margin:1px 0 0;font-size:11.5px;color:var(--mut);letter-spacing:.14em;font-weight:600}
+.brand p b{color:var(--gold);font-weight:700}
+nav.tabs{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs button{border:1px solid transparent;background:transparent;color:var(--mut);padding:8px 13px;border-radius:999px;font-weight:600;font-size:13.5px;transition:.15s}
+nav.tabs button:hover{color:var(--text);background:var(--panel)}
+nav.tabs button.on{color:#1a1408;background:var(--gold);border-color:var(--gold);font-weight:800}
+/* 시그니처: 최근 경기 주식 티커 */
+.ticker{border-top:1px solid var(--line);overflow:hidden;height:32px;display:flex;align-items:center;background:var(--bg2)}
+.ticker .lbl{flex:none;padding:0 14px;font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--gold);border-right:1px solid var(--line);height:100%;display:flex;align-items:center;background:var(--gold-dim)}
+.tickerTrack{display:flex;gap:34px;white-space:nowrap;animation:tick 38s linear infinite;padding-left:20px;font-size:12.5px;color:var(--mut)}
+.tickerTrack b{color:var(--text);font-weight:700}
+.tk-up{color:var(--win);font-weight:700}.tk-dn{color:var(--lose);font-weight:700}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tickerTrack{animation:none}}
+
+/* ── 레이아웃 ── */
+.wrap{max-width:1480px;margin:0 auto;padding:26px 20px 70px}
+.pageHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.pageHead h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.pageHead .sub{margin:5px 0 0;color:var(--mut);font-size:13.5px;max-width:760px}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:12px;color:var(--mut);font-weight:600}
+.grid{display:grid;gap:14px}
+.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
+.card>h3{margin:0 0 12px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px}
+.card>h3 .tag{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(242,184,75,.3);padding:2px 8px;border-radius:999px}
+.mini{font-size:12.5px;color:var(--mut)} .dim{color:var(--dim)} .hide{display:none!important}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .grow{flex:1} .right{margin-left:auto}
+.hr{height:1px;background:var(--line);margin:14px 0}
+
+/* ── 통계 숫자 카드 ── */
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpi .n{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.kpi .l{font-size:12px;color:var(--mut);margin-top:3px;font-weight:600}
+.kpi.gold .n{color:var(--gold)}
+
+/* ── 폼 요소 ── */
+.f{display:grid;gap:6px}
+.f label{font-size:12px;color:var(--mut);font-weight:700}
+.f input,.f select,.f textarea,
+table input,table select{
+  width:100%;background:var(--inset);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:9px 11px;color:var(--text);outline:none;min-width:0}
+.f textarea{min-height:96px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus,table input:focus,table select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(242,184,75,.13)}
+.btn{border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px 14px;background:var(--panel2);color:var(--text);font-weight:700;font-size:13.5px;transition:.13s}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#1a1408}
+.btn.gold:hover{filter:brightness(1.08);color:#1a1408}
+.btn.gold:disabled{opacity:.55;cursor:wait}
+.btn.win{background:rgba(63,217,197,.12);border-color:rgba(63,217,197,.45);color:var(--win)}
+.btn.lose{background:rgba(255,92,122,.1);border-color:rgba(255,92,122,.4);color:var(--lose)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn.ghost{background:transparent}
+
+/* ── 테이블 ── */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-size:11.5px;text-align:left;color:var(--dim);font-weight:700;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.022)}
+.scrollx{overflow-x:auto} .scrolly{overflow-y:auto}
+.num{text-align:right}
+.tbl th.num{text-align:right}
+.tbl td.num{text-align:right}
+
+/* ── 색 의미 ── */
+.tBlue{color:var(--blue)} .tRed{color:var(--lose)}
+.up{color:var(--win);font-weight:700} .dn{color:var(--lose);font-weight:700} .even{color:var(--mut)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;border:1px solid var(--line);background:var(--inset);color:var(--mut)}
+.pill.win{border-color:rgba(63,217,197,.45);color:var(--win);background:var(--win-dim)}
+.pill.lose{border-color:rgba(255,92,122,.45);color:var(--lose);background:var(--lose-dim)}
+.pill.blue{border-color:rgba(106,166,255,.45);color:var(--blue);background:var(--blue-dim)}
+.pill.gold{border-color:rgba(242,184,75,.5);color:var(--gold);background:var(--gold-dim)}
+.pill.violet{border-color:rgba(181,140,255,.45);color:var(--violet);background:rgba(181,140,255,.1)}
+.bar{height:7px;border-radius:99px;background:var(--inset);overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--win),var(--blue));border-radius:99px}
+
+/* ── 빈 상태 / 토스트 / 모달 ── */
+.empty{padding:30px;border:1px dashed var(--line2);border-radius:var(--r);color:var(--dim);text-align:center;background:var(--panel2);font-size:13.5px}
+#toast{position:fixed;right:22px;bottom:22px;z-index:60;display:grid;gap:8px}
+.toastMsg{background:var(--panel);border:1px solid var(--line2);border-left:3px solid var(--gold);border-radius:12px;padding:11px 15px;box-shadow:var(--shadow);max-width:380px;font-size:13.5px;animation:pop .18s ease-out}
+.toastMsg.bad{border-left-color:var(--lose)}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,7,10,.66);display:none;align-items:flex-start;justify-content:center;padding:34px 16px;overflow:auto}
+.modal.open{display:flex}
+.modalBox{width:min(1060px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+
+/* ── 스크린샷 분석기 ── */
+.drop{border:2px dashed var(--line2);border-radius:var(--r);background:var(--panel2);padding:26px;text-align:center;transition:.15s;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--gold);background:rgba(242,184,75,.05)}
+.drop b{font-size:15px} .drop .mini{margin-top:5px}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.thumb{position:relative;width:120px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--line2);background:#000}
+.thumb img{width:100%;height:100%;object-fit:cover;opacity:.9}
+.thumb button{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:6px;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:11px;line-height:1;display:grid;place-items:center}
+.prog{height:8px;border-radius:99px;background:var(--inset);overflow:hidden;margin-top:10px}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--win));transition:width .25s}
+.ocrNote{margin-top:12px;padding:12px 14px;border-radius:var(--r-sm);background:var(--lose-dim);border:1px solid rgba(255,92,122,.35);font-size:13px;display:none}
+
+/* ── 검수 화면 ── */
+.review .tbl td{padding:6px}
+.review input,.review select{padding:7px 9px;font-size:13px}
+.conf{font-size:11px;font-weight:800;white-space:nowrap}
+.conf.ok{color:var(--win)} .conf.mid{color:var(--gold)} .conf.bad{color:var(--lose)}
+details.fold{border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:0 14px;margin:14px 0}
+details.fold summary{cursor:pointer;font-weight:800;padding:12px 0;font-size:14px}
+details.fold[open]{padding-bottom:14px}
+
+/* ── 챔피언 티어 보드 ── */
+.tierBoard{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.tierCol{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tierHead{text-align:center;font-weight:900;padding:8px 4px;font-size:12.5px;letter-spacing:.06em;border-bottom:1px solid var(--line);background:var(--inset)}
+.tOP{color:#FF8AD4}.tS{color:var(--gold)}.tA{color:var(--blue)}.tB{color:var(--win)}.tC{color:#C7CFDC}.tSEAL{color:var(--lose)}.tNA{color:var(--dim)}
+.tierItem{display:flex;justify-content:space-between;gap:6px;padding:7px 10px;font-size:12.5px;border-bottom:1px solid rgba(39,48,63,.5)}
+.tierItem:last-child{border-bottom:none}
+
+/* ── 폼 주식 ── */
+.spark{width:170px;height:42px;display:block}
+.priceUp{color:var(--win)} .priceDn{color:var(--lose)}
+
+/* ── 칭호 ── */
+.awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}
+.award{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
+.award::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--gold)}
+.award b{display:block;font-size:14px;color:var(--gold)}
+.award .who{font-weight:800;margin:3px 0 1px;font-size:15px}
+.award .mini{line-height:1.45}
+
+/* ── 칭호 명예의 전당 ── */
+.owners{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.ownerCard{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.ownerCard .oname{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:17px;font-weight:800;margin-bottom:6px}
+.ownerCard .arow{padding:8px 0;border-top:1px dashed var(--line)}
+.ownerCard .arow b{color:var(--gold);font-size:13.5px;display:block}
+.ownerCard .arow .mini{display:block;margin-top:2px;line-height:1.4}
+
+/* ── 플레이어 리스트 ── */
+.pList{max-height:560px;overflow:auto;display:grid;gap:6px;padding-right:4px}
+.pItem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer;color:var(--mut)}
+.pItem:hover{background:var(--panel2);color:var(--text)}
+.pItem.on{background:var(--panel2);border-color:var(--line2);color:var(--text)}
+.pItem .ign{font-size:11px;color:var(--dim);margin-top:1px}
+.pItem.off{opacity:.45}
+
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+@media (max-width:1080px){.c4{grid-template-columns:repeat(2,minmax(0,1fr))}.c3{grid-template-columns:repeat(2,minmax(0,1fr))}.tierBoard{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:720px){
+  html{font-size:14px}
+  .c2,.c3,.c4{grid-template-columns:1fr}
+  .tierBoard{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pageHead h2{font-size:22px}
+  nav.tabs{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}
+  nav.tabs button{flex:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topIn">
+    <div class="mark">🏆</div>
+    <div class="brand">
+      <h1>아포단 내전실록</h1>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v3.1</b></p>
+    </div>
+    <nav class="tabs" id="nav"></nav>
+  </div>
+  <div class="ticker"><div class="lbl">LIVE</div><div class="tickerTrack" id="ticker"></div></div>
+</header>
+
+<main class="wrap"><div id="view"></div></main>
+
+<div id="toast"></div>
+<div class="modal" id="modal"><div class="modalBox" id="modalBox"></div></div>
+<datalist id="dlPlayers"></datalist>
+<datalist id="dlChamps"></datalist>
+
+<script>
+'use strict';
+/* ============================================================
+   아포단 내전실록 v3.1 — 단일 파일 로컬 앱
+   데이터는 이 브라우저 localStorage에 저장됩니다.
+   ============================================================ */
+
+/* ───── 상수 ───── */
+const DB_KEY='apodan_v3';
+const LEGACY_KEYS=['apodan_records_v2','apodan_records_v1'];
+const TEAMS=['BLUE','RED'];
+const LANES=['TOP','JUNGLE','MID','ADC','SUPPORT'];
+const LANE_KO={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'};
+
+/* 2026-06-10 기준 전체 챔피언 173종 (신챔 로크 포함: 26.13 패치 합류) */
+let CHAMPIONS=['가렌','갈리오','갱플랭크','그라가스','그레이브즈','그웬','나르','나미','나서스','나피리','노틸러스','녹턴','누누와 윌럼프','니달리','니코','닐라','다리우스','다이애나','드레이븐','라이즈','라칸','람머스','럭스','럼블','레나타 글라스크','레넥톤','레오나','렉사이','렐','렝가','로크','루시안','룰루','르블랑','리 신','리븐','리산드라','릴리아','마스터 이','마오카이','말자하','말파이트','멜','모데카이저','모르가나','문도 박사','미스 포츈','밀리오','바드','바루스','바이','베이가','베인','벡스','벨베스','벨코즈','볼리베어','브라움','브라이어','브랜드','블라디미르','블리츠크랭크','비에고','빅토르','뽀삐','사미라','사이온','사일러스','샤코','세나','세라핀','세주아니','세트','소나','소라카','쉔','쉬바나','스몰더','스웨인','스카너','시비르','신 짜오','신드라','신지드','쓰레쉬','아리','아무무','아우렐리온 솔','아이번','아지르','아칼리','아크샨','아트록스','아펠리오스','알리스타','암베사','애니','애니비아','애쉬','야스오','에코','엘리스','오공','오로라','오른','오리아나','올라프','요네','요릭','우디르','우르곳','워윅','유나라','유미','이렐리아','이블린','이즈리얼','일라오이','자르반 4세','자야','자이라','자크','자헨','잔나','잭스','제드','제라스','제리','제이스','조이','직스','진','질리언','징크스','초가스','카르마','카밀','카사딘','카서스','카시오페아','카이사','카직스','카타리나','칼리스타','케넨','케이틀린','케인','케일','코그모','코르키','퀸','크산테','클레드','키아나','킨드레드','타릭','탈론','탈리야','탐 켄치','트런들','트리스타나','트린다미어','트위스티드 페이트','트위치','티모','파이크','판테온','피들스틱','피오라','피즈','하이머딩거','헤카림','흐웨이'];
+let champSource='내장 목록 (2026-06-10 · 로크 포함)';
+
+const CHAMP_ALIAS={'리신':'리 신','신짜오':'신 짜오','짜오':'신 짜오','트페':'트위스티드 페이트','탐켄치':'탐 켄치','누누':'누누와 윌럼프','문도':'문도 박사','문도박사':'문도 박사','미포':'미스 포츈','미스포츈':'미스 포츈','아솔':'아우렐리온 솔','자르반':'자르반 4세','자르반4세':'자르반 4세','초가':'초가스','카시':'카시오페아','크샨테':'크산테','아트':'아트록스','아펠':'아펠리오스','블츠':'블리츠크랭크','레나타':'레나타 글라스크','마이':'마스터 이','마스터이':'마스터 이','요내':'요네','locke':'로크','rok':'로크','zaahen':'자헨','yunara':'유나라','mel':'멜'};
+
+/* 확정 명단 — 카톡 닉네임(연도 접두) + 롤 닉네임#태그 */
+const ROSTER=[
+ {n:'98 물방울', r:'물방울#미르애완묘'},
+ {n:'02 미드',   r:'하남시김수현#kr1'},
+ {n:'96 콜라',   r:'저주받은콜라#kr666'},
+ {n:'96 스티븐', r:'스티븐제라스#0917'},
+ {n:'00 성민',   r:'권성민#000'},
+ {n:'00 미르',   r:'미르수리#000'},
+ {n:'00 이래',   r:'차연서#0616'},
+ {n:'99 잭슨',   r:'잭 슨#고양이'},
+ {n:'00 라떼',   r:'모카라떼#누나야'},
+ {n:'용',        r:'테무산 안재현#KOR1'},
+ {n:'02 외않되', r:'지갑보부#KR1'},
+ {n:'04 잔성',   r:'잔 성#여명성'},
+ {n:'00 나깅',   r:'우나깅#KR1'},
+ {n:'02 우정',   r:'첫 새싹#2002'},
+ {n:'01 백정',   r:'백 정#허 상'},
+ {n:'01 걸비',   r:'계양산폭격기#9292'},
+ {n:'04 서하',   r:'이서하#9299'},
+ {n:'96 세혀닝', r:'세혀닝#먹먹파'},
+ {n:'05 도연',   r:'Bam#sky'},
+ {n:'96 팀분위기곱창났네', r:'팀분위기곱창났네#그만싸워'},
+ {n:'00 누워',   r:'관악산 산군#sgp'},
+ {n:'01 성용찬', r:'김명준#311'},
+ {n:'96 여썬',   r:'여 썬#kr1'},
+ {n:'04 수아',   r:'수 아#0626'},
+ {n:'99 언지',   r:'댕댕이소탕강형욱#개같은가락'},
+ {n:'99 건이',   r:'건뭉이#멍 멍'},
+ {n:'01 준표',   r:'nriah#kr2'},
+ {n:'01 혀농',   r:'혀 농#KR4'},
+ {n:'99 유메',   r:'딜폿하면원딜안함#kr1'},
+ {n:'01 사과',   r:'경 민#DOHI'},
+ {n:'02 부륵',   r:'강후추#kr1'},
+ {n:'00 메비',   r:'Mevius01#kr1'},
+ {n:'99 소리',   r:'날아라찐빵#끼얏호우'},
+ {n:'00 대수',   r:'대 수#대수야'},
+ {n:'05 체인',   r:'Killer tune#m e'},
+ {n:'00 루혁',   r:'루 혁#kr1'},
+ {n:'04 우악',   r:'세계최강초절정미소녀혜지공쥬등장#CUTE'},
+ {n:'05 루덴',   r:'Savege#0518'},
+ {n:'98 Lucky Grasp', r:'Lucky Grasp#777'},
+ {n:'03 소혁',   r:'뭔데 말걸지#0311'},
+ {n:'01 초보',   r:'죄 인#죄송합니다'},
+ {n:'01 구구',   r:'탑숭이#KR3'},
+ {n:'01 자야',   r:'자야놀자야#kr1'},
+ {n:'02 봄꽃',   r:'봄의꽃#0531'},
+ {n:'01 팀죽',   r:'팀원죽이기#1111'},
+ {n:'01 국물',   r:''},
+ {n:'98 씽 긋',  r:''},
+ {n:'99 존 윅',  r:''}
+];
+
+/* 상세 스탯 필드 (검수/집계 공용) */
+const STAT_FIELDS=[
+ ['cs','CS'],['goldEarned','골드'],['damageToChampions','챔피언 딜량'],['damageTaken','받은 피해'],
+ ['visionScore','시야 점수'],['wardsPlaced','와드 설치'],['wardsKilled','와드 파괴'],['controlWardsBought','제어 와드'],
+ ['crowdControlScore','군중 제어'],['damageToObjectives','오브젝트 피해'],['damageToTurrets','포탑 피해'],
+ ['healing','회복량'],['selfMitigatedDamage','피해 감소']
+];
+const STAT_LABEL=Object.fromEntries(STAT_FIELDS);
+
+/* ───── 유틸 ───── */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const uid=p=>(p||'id')+'_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const norm=s=>String(s||'').toLowerCase().replace(/[#\s_\-\.·:;'"\[\]\(\){}|]/g,'');
+const num=v=>{if(v==null||v==='')return 0;const n=Number(String(v).replace(/[,\s]/g,''));return isFinite(n)?n:0};
+const fmt=n=>Number(n||0).toLocaleString('ko-KR');
+const pct=(a,b)=>b?Math.round(a/b*1000)/10:0;
+const sortKey=m=>String(m.playedAt||'')+String(m.setNumber||0).padStart(3,'0')+String(m.createdAt||'');
+
+function lev(a,b){ // 편집 거리 (퍼지 매칭용)
+  a=norm(a);b=norm(b);
+  if(!a.length)return b.length; if(!b.length)return a.length;
+  let prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const cur=[i];
+    for(let j=1;j<=b.length;j++)
+      cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[b.length];
+}
+function toast(msg,bad){
+  const box=document.createElement('div');
+  box.className='toastMsg'+(bad?' bad':'');box.textContent=msg;
+  $('toast').appendChild(box);
+  setTimeout(()=>{box.style.opacity='0';box.style.transition='.3s';setTimeout(()=>box.remove(),320)},3200);
+}
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
+
+/* ───── 상태 ───── */
+let state=loadState();
+let tab='dashboard';
+let draft=null;          // 검수 대기 데이터
+let draftEditId=null;    // 기존 경기 수정 중일 때
+let editingPlayer=null;
+let shots=[];            // 분석 대기 스크린샷 {file,url}
+let ocrBusy=false;
+
+function parseRiot(s){const i=String(s||'').indexOf('#');return i<0?{riotName:String(s||'').trim(),riotTag:''}:{riotName:s.slice(0,i).trim(),riotTag:s.slice(i+1).trim()}}
+function aliasGuess(name){
+  const out=new Set();
+  const bare=String(name||'').replace(/^\d{2}\s*/,'').trim();
+  if(bare&&bare!==name)out.add(bare);
+  out.add(String(name||'').replace(/\s+/g,''));
+  if(bare)out.add(bare.replace(/\s+/g,''));
+  return [...out].filter(Boolean);
+}
+function makePlayer(name){return{id:uid('p'),displayName:name,kakaoName:name,riotName:'',riotTag:'',aliases:aliasGuess(name),active:true,memo:''}}
+function rosterToPlayer(e){
+  const p=makePlayer(e.n);
+  const {riotName,riotTag}=parseRiot(e.r);
+  p.riotName=riotName;p.riotTag=riotTag;
+  if(riotName)p.aliases=[...new Set([...p.aliases,riotName.replace(/\s+/g,'')])];
+  return p;
+}
+function freshState(){return fixState({version:3,players:ROSTER.map(rosterToPlayer),matches:[],voteRooms:[],settings:{mvpMinutes:10}})}
+function fixState(s){
+  s=s&&typeof s==='object'?s:{};
+  s.version=3;
+  s.players=(Array.isArray(s.players)?s.players:[]).map(p=>({
+    id:p.id||uid('p'),
+    displayName:p.displayName||p.name||p.kakaoName||'이름없음',
+    kakaoName:p.kakaoName||p.displayName||p.name||'',
+    riotName:p.riotName||'',riotTag:p.riotTag||'',
+    aliases:Array.isArray(p.aliases)?p.aliases.filter(Boolean):aliasGuess(p.displayName||p.name||''),
+    active:p.active!==false, memo:p.memo||''
+  }));
+  s.matches=(Array.isArray(s.matches)?s.matches:[]).map(m=>({
+    id:m.id||uid('m'),
+    playedAt:m.playedAt||m.date||todayStr(),
+    setNumber:num(m.setNumber||m.set||1)||1,
+    winnerTeam:String(m.winnerTeam||m.winner||'BLUE').toUpperCase().includes('RED')?'RED':'BLUE',
+    memo:m.memo||'', mvpId:m.mvpId||null, gameId:m.gameId!=null?String(m.gameId):null, durationMin:m.durationMin!=null?num(m.durationMin):null,
+    createdAt:m.createdAt||new Date().toISOString(),
+    participants:(Array.isArray(m.participants)?m.participants:[]).map(p=>({
+      team:String(p.team||'BLUE').toUpperCase().includes('RED')?'RED':'BLUE',
+      lane:LANES.includes(p.lane)?p.lane:'',
+      playerId:p.playerId||'', rawName:p.rawName||'',
+      championId:p.championId||p.champ||'', kills:num(p.kills),deaths:num(p.deaths),assists:num(p.assists),
+      stats:Object.fromEntries(Object.entries(p.stats||{}).map(([k,v])=>[k,num(v)]))
+    })),
+    bans:Array.isArray(m.bans)?m.bans:[]
+  }));
+  s.voteRooms=Array.isArray(s.voteRooms)?s.voteRooms:[];
+  s.settings=Object.assign({mvpMinutes:10},s.settings||{});
+  return s;
+}
+function loadState(){
+  const raw=lsGet(DB_KEY);
+  if(raw){try{return fixState(JSON.parse(raw))}catch(e){console.warn('상태 복구 실패',e)}}
+  for(const k of LEGACY_KEYS){ // 이전 버전 데이터 자동 이전
+    const old=lsGet(k);
+    if(old){try{const s=fixState(JSON.parse(old));if(s.players.length||s.matches.length){toast('이전 버전 데이터를 가져왔어요.');return s}}catch(e){}}
+  }
+  return freshState();
+}
+function save(){
+  if(!lsSet(DB_KEY,JSON.stringify(state)))
+    toast('이 환경에서는 저장이 안 돼요. 다운로드한 파일을 직접 열면 저장됩니다.',true);
+}
+
+/* ───── 플레이어 검색/매칭 ───── */
+const byId=id=>state.players.find(p=>p.id===id);
+const nameOf=id=>byId(id)?.displayName||'미확인';
+function labelsOf(p){return[p.displayName,p.kakaoName,p.riotName,p.riotName&&p.riotTag?p.riotName+'#'+p.riotTag:'',...(p.aliases||[])].filter(Boolean)}
+function findPlayer(text){
+  const k=norm(text); if(!k)return null;
+  let hit=state.players.find(p=>labelsOf(p).some(x=>norm(x)===k));
+  if(hit)return hit;
+  if(k.length<2)return null;
+  return state.players.find(p=>labelsOf(p).some(x=>{const n=norm(x);return n.length>=2&&(n.includes(k)||k.includes(n))}))||null;
+}
+function fuzzyPlayer(text){ // OCR 결과용: 오타 허용 매칭
+  const exact=findPlayer(text); if(exact)return{player:exact,score:0};
+  const k=norm(text); if(k.length<2)return{player:null,score:99};
+  let best=null,bestD=99;
+  for(const p of state.players){
+    for(const lb of labelsOf(p)){
+      const n=norm(lb); if(n.length<2)continue;
+      const d=lev(k,n);
+      const tol=Math.max(1,Math.floor(Math.max(k.length,n.length)*0.34));
+      if(d<=tol&&d<bestD){best=p;bestD=d}
+    }
+  }
+  return{player:best,score:bestD};
+}
+function canonChamp(text){
+  if(!text)return'';
+  const raw=String(text).trim(),k=norm(raw);
+  if(CHAMP_ALIAS[k])return CHAMP_ALIAS[k];
+  const exact=CHAMPIONS.find(c=>norm(c)===k); if(exact)return exact;
+  const part=k.length>=2?CHAMPIONS.find(c=>{const n=norm(c);return n.length>=2&&(n.includes(k)||k.includes(n))}):null; if(part)return part;
+  if(k.length>=2){ // 퍼지
+    let best='',bd=99;
+    for(const c of CHAMPIONS){const d=lev(k,norm(c));const tol=Math.max(1,Math.floor(norm(c).length*0.3));if(d<=tol&&d<bd){best=c;bd=d}}
+    if(best)return best;
+  }
+  return raw;
+}
+async function ddragonRefresh(){
+  try{
+    toast('Riot Data Dragon에서 챔피언 목록을 가져오는 중...');
+    const vers=await fetch('https://ddragon.leagueoflegends.com/api/versions.json').then(r=>r.json());
+    const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${vers[0]}/data/ko_KR/champion.json`).then(r=>r.json());
+    const names=Object.values(data.data).map(x=>x.name).sort((a,b)=>a.localeCompare(b,'ko'));
+    if(names.length>150){CHAMPIONS=names;champSource='Riot Data Dragon '+vers[0];fillDatalists();render();toast(`챔피언 ${names.length}종으로 갱신했어요.`)}
+  }catch(e){toast('갱신 실패: 인터넷 연결을 확인해주세요.',true)}
+}
+function fillDatalists(){
+  $('dlPlayers').innerHTML=state.players.filter(p=>p.active).flatMap(labelsOf).map(x=>`<option value="${esc(x)}">`).join('');
+  $('dlChamps').innerHTML=CHAMPIONS.map(c=>`<option value="${esc(c)}">`).join('');
+}
+function playerOpts(sel){
+  return state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'))
+    .map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${esc(p.displayName)}${p.riotName?' · '+esc(p.riotName):''}</option>`).join('');
+}
+/* ───── 통계 엔진 ───── */
+function statPlayers(){
+  const map=new Map();
+  state.players.forEach(p=>map.set(p.id,{id:p.id,name:p.displayName,games:0,wins:0,kills:0,deaths:0,assists:0,mvp:0,
+    ...Object.fromEntries(STAT_FIELDS.map(([k])=>[k,0]))}));
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    const s=map.get(p.playerId); if(!s)return;
+    s.games++; if(p.team===m.winnerTeam)s.wins++;
+    s.kills+=p.kills;s.deaths+=p.deaths;s.assists+=p.assists;
+    if(m.mvpId===p.playerId)s.mvp++;
+    STAT_FIELDS.forEach(([k])=>s[k]+=num(p.stats?.[k]));
+  }));
+  return [...map.values()].filter(s=>s.games>0).map(s=>({...s,
+    losses:s.games-s.wins, winRate:pct(s.wins,s.games),
+    kda:s.deaths?Math.round((s.kills+s.assists)/s.deaths*100)/100:(s.kills+s.assists),
+    avgDmg:Math.round(s.damageToChampions/s.games), avgTaken:Math.round(s.damageTaken/s.games),
+    avgVision:Math.round(s.visionScore/s.games*10)/10, avgCs:Math.round(s.cs/s.games*10)/10,
+    avgGold:Math.round(s.goldEarned/s.games)
+  })).sort((a,b)=>b.winRate-a.winRate||b.games-a.games);
+}
+function statDuos(min=2){
+  const map=new Map();
+  state.matches.forEach(m=>TEAMS.forEach(t=>{
+    const ids=m.participants.filter(p=>p.team===t&&p.playerId).map(p=>p.playerId).sort();
+    for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
+      const k=ids[i]+'|'+ids[j];
+      if(!map.has(k))map.set(k,{ids:[ids[i],ids[j]],games:0,wins:0});
+      const d=map.get(k);d.games++;if(t===m.winnerTeam)d.wins++;
+    }
+  }));
+  return [...map.values()].filter(d=>d.games>=min)
+    .map(d=>({...d,names:d.ids.map(nameOf).join(' + '),winRate:pct(d.wins,d.games)}))
+    .sort((a,b)=>b.winRate-a.winRate||b.games-a.games);
+}
+function statRivals(min=2){
+  const map=new Map();
+  state.matches.forEach(m=>{
+    const blue=m.participants.filter(p=>p.team==='BLUE'&&p.playerId);
+    const red=m.participants.filter(p=>p.team==='RED'&&p.playerId);
+    blue.forEach(a=>red.forEach(b=>{
+      const ids=[a.playerId,b.playerId].sort(); const k=ids.join('|');
+      if(!map.has(k))map.set(k,{ids,w:[0,0],games:0});
+      const r=map.get(k); r.games++;
+      const winnerId=m.winnerTeam==='BLUE'?a.playerId:b.playerId;
+      r.w[ids.indexOf(winnerId)]++;
+    }));
+  });
+  return [...map.values()].filter(r=>r.games>=min).map(r=>({...r,
+    names:r.ids.map(nameOf),
+    leader:r.w[0]===r.w[1]?'동률':nameOf(r.ids[r.w[0]>r.w[1]?0:1]),
+    gap:Math.abs(r.w[0]-r.w[1])
+  })).sort((a,b)=>b.gap-a.gap||b.games-a.games);
+}
+function statChamps(){
+  const map=new Map(); let totalPicks=0;
+  const ensure=c=>{if(!map.has(c))map.set(c,{champion:c,picks:0,wins:0,bans:0,recent:0,recentW:0});return map.get(c)};
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    const c=canonChamp(p.championId); if(!c)return;
+    const s=ensure(c); s.picks++; totalPicks++; if(p.team===m.winnerTeam)s.wins++;
+  }));
+  state.matches.forEach(m=>(m.bans||[]).forEach(b=>{const c=canonChamp(b.championId||b);if(c)ensure(c).bans++}));
+  const recent=[...state.matches].sort((a,b)=>sortKey(a).localeCompare(sortKey(b))).slice(-10);
+  recent.forEach(m=>m.participants.forEach(p=>{
+    const s=map.get(canonChamp(p.championId)); if(!s)return;
+    s.recent++; if(p.team===m.winnerTeam)s.recentW++;
+  }));
+  return [...map.values()].map(s=>{
+    const wr=pct(s.wins,s.picks), pickRate=pct(s.picks,totalPicks||1);
+    const bayes=(s.wins+2)/(s.picks+4); // 표본 보정(사전확률 50%)
+    const recWr=s.recent?pct(s.recentW,s.recent):50;
+    const score=Math.round(((bayes-.5)*100 + pickRate*.55 + pct(s.bans,Math.max(1,state.matches.length))*.06 + (recWr-50)*.08 - (s.picks<2?8:0))*10)/10;
+    let tier='C';
+    if(s.picks<2)tier='표본 부족';
+    else if(s.picks>=3&&wr<=33)tier='봉인 검토';
+    else if(score>=16)tier='OP'; else if(score>=11)tier='S';
+    else if(score>=6)tier='A'; else if(score>=1)tier='B';
+    return{...s,winRate:wr,pickRate,score,tier};
+  }).sort((a,b)=>b.score-a.score||b.picks-a.picks);
+}
+function statSides(){
+  let blue=0,red=0;
+  state.matches.forEach(m=>m.winnerTeam==='BLUE'?blue++:red++);
+  return{blue,red,total:blue+red,blueRate:pct(blue,blue+red),redRate:pct(red,blue+red)};
+}
+function statPlayerSides(min=1){ // 개인별 진영 승률
+  const map=new Map();
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    if(!p.playerId)return;
+    if(!map.has(p.playerId))map.set(p.playerId,{id:p.playerId,bG:0,bW:0,rG:0,rW:0});
+    const s=map.get(p.playerId),win=p.team===m.winnerTeam;
+    if(p.team==='BLUE'){s.bG++;if(win)s.bW++}else{s.rG++;if(win)s.rW++}
+  }));
+  return[...map.values()].filter(s=>s.bG+s.rG>=min)
+    .map(s=>({...s,name:nameOf(s.id),bRate:pct(s.bW,s.bG),rRate:pct(s.rW,s.rG)}))
+    .sort((a,b)=>(b.bG+b.rG)-(a.bG+a.rG));
+}
+function champComment(c){
+  const seed=c.picks*7+Math.round((c.score||0)*3)+norm(c.champion).length;
+  const P=p=>pickSeeded(p,seed);
+  if(c.tier==='표본 부족')return P([
+    `${c.picks}판으로는 판단 보류. 두어 판 더 나오면 평가 시작합니다`,
+    `아직 스카우팅 단계. 다음 픽이 운명을 가릅니다`]);
+  if(c.tier==='OP')return P([
+    `${c.picks}판 승률 ${c.winRate}% — 풀리는 순간 게임이 기울어요. 다음 내전 1순위 밴 후보`,
+    `이걸 안 밴하면 책임은 픽창에 있습니다 (승률 ${c.winRate}%)`,
+    `아포단 공인 사기캐. 너프(밴) 없이는 협곡 평화가 없어요`]);
+  if(c.tier==='봉인 검토')return P([
+    `${c.picks}판 ${c.winRate}% — 협곡 출입 정지 심의 중. 픽 버튼에 잠금장치 요망`,
+    `사랑만으로는 이길 수 없다는 걸 ${c.picks}판으로 증명`,
+    `승률 ${c.winRate}%. 봉인 해제 조건: 장인 등판 또는 패치`]);
+  if(c.bans>=2&&c.winRate<50)return P([
+    `밴은 ${c.bans}번 당했는데 풀리면 승률 ${c.winRate}% — 명성에 거품이 끼었습니다`,
+    `밴카드만 ${c.bans}장 소모시킨 심리전의 승리자. 실속은 글쎄요`]);
+  if(c.pickRate>=15)return P([
+    `픽률 ${c.pickRate}% — 아포단 국민픽. 못 잡으면 서운한 챔피언`,
+    `픽률 ${c.pickRate}%에 승률 ${c.winRate}%. 유행과 실속을 다 잡았는지는 표를 보세요`]);
+  if(c.tier==='S')return P([
+    `${c.picks}판 ${c.winRate}% — 픽하면 든든한 승리 부적. 선픽 가치 충분`,
+    `최근 폼까지 좋은 검증된 메타픽. 가위바위보 이기면 가져가세요`]);
+  if(c.tier==='A')return P([
+    `승률 ${c.winRate}% — 안정적인 1티어 식단. 모험이 싫은 날의 정답`,
+    `${c.picks}판 동안 꾸준했습니다. 화려하진 않아도 배신하지 않는 픽`]);
+  if(c.tier==='B')return P([
+    `나쁘지 않지만 결정적이지도 않은 ${c.winRate}%. 숙련도가 답입니다`,
+    `반반 가는 픽. 이기면 실력, 지면 팀운으로 정리됩니다`]);
+  return P([
+    `승률 ${c.winRate}% — 낭만은 있는데 승점이 없어요. 연습 모드 추천`,
+    `데이터는 말리고 있지만, 장인의 손에선 다를 수도 있습니다`,
+    `현재로선 관상용. 다음 패치 버프를 기다려봅니다`]);
+}
+function statPlayerChamps(min=2){
+  const map=new Map();
+  state.matches.forEach(m=>m.participants.forEach(p=>{
+    const c=canonChamp(p.championId); if(!c||!p.playerId)return;
+    const k=p.playerId+'|'+c;
+    if(!map.has(k))map.set(k,{playerId:p.playerId,champion:c,games:0,wins:0});
+    const s=map.get(k); s.games++; if(p.team===m.winnerTeam)s.wins++;
+  }));
+  return [...map.values()].filter(x=>x.games>=min)
+    .map(x=>({...x,name:nameOf(x.playerId),winRate:pct(x.wins,x.games)}))
+    .sort((a,b)=>b.winRate-a.winRate||b.games-a.games);
+}
+function playerHistory(id){
+  return [...state.matches].filter(m=>m.participants.some(p=>p.playerId===id))
+    .sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
+}
+function formSeries(id){ // 폼 주가: 승패+연승+MVP+KDA 반영
+  let v=100,streak=0; const arr=[100],wl=[];
+  playerHistory(id).forEach(m=>{
+    const p=m.participants.find(x=>x.playerId===id);
+    const win=p.team===m.winnerTeam;
+    streak=win?Math.max(1,streak+1):Math.min(-1,streak-1);
+    v+=win?8:-6;
+    if(Math.abs(streak)>=2)v+=win?3:-3;
+    if(m.mvpId===id)v+=6;
+    const kda=(p.kills+p.assists)/Math.max(1,p.deaths);
+    if(kda>=4)v+=3; else if(kda<1.5)v-=2;
+    v=Math.max(20,Math.round(v)); arr.push(v); wl.push(win);
+  });
+  return{arr,wl};
+}
+function pickSeeded(pool,seed){return pool[Math.abs(Math.round(seed))%pool.length]}
+function formComment(arr,wl){
+  const price=arr[arr.length-1],n=wl.length;
+  const r5=wl.slice(-5),w=r5.filter(Boolean).length;
+  const slope=price-arr[Math.max(0,arr.length-6)];
+  let streak=0;
+  for(let i=wl.length-1;i>=0;i--){
+    if(streak===0)streak=wl[i]?1:-1;
+    else if(wl[i]===(streak>0))streak+=streak>0?1:-1;
+    else break;
+  }
+  let flips=0;const r6=wl.slice(-6);
+  for(let i=1;i<r6.length;i++)if(r6[i]!==r6[i-1])flips++;
+  const seed=price*3+n*7;
+  const P=pool=>pickSeeded(pool,seed);
+  if(n<3)return P([
+    '신규 상장주. 공모가 거품인지 진짜인지 검증 중',
+    '상장 첫 주, 따상 갈지 상폐 갈지 아무도 모름',
+    '거래량 부족으로 분석 불가. 일단 관망 의견',
+    '공모주 청약 경쟁률은 좋았습니다. 이제 실적을 보여줄 때']);
+  if(streak>=5)return P([
+    '5연속 점상한가. VI도 못 막는 기세',
+    '신고가 행진 중. 어깨가 어딘지 본인도 모름',
+    '세력 매집 완료. 지금부터는 가즈아 구간',
+    '이 종목 산 사람 벌써 졸업 준비 중']);
+  if(streak<=-5)return P([
+    '5연속 하한가. 상장폐지 실질심사 대상',
+    '바닥인 줄 알았죠? 지하실 밑에 광산 있습니다',
+    '곱버스 탔으면 강남 갔을 차트',
+    '거래정지 권고. 며칠 쉬는 것도 투자입니다']);
+  if(w===5)return P([
+    '최근 5판 전승, 어닝 서프라이즈',
+    '지금 하이닉스급 불장입니다',
+    '묻고 더블로 가도 되는 구간',
+    '연기금이 조용히 담고 있다는 소문']);
+  if(w>=4)return P([
+    '골든크로스 발생. 레버리지 검토 가능',
+    '우량주 인증 완료. 배당만 주면 완벽',
+    '목표가 상향. 증권사들 뒷북 리포트 발행 중',
+    '무릎에 산 사람들 지금 웃고 있습니다']);
+  if(w===0)return P([
+    '서킷브레이커 발동. 매매(출전) 일시 정지 권고',
+    '패닉셀 금지. 이미 늦었거든요',
+    '개미 구조대 출동 바랍니다. 고점에 물린 분 다수',
+    '인버스 추종자들만 행복한 차트']);
+  if(w<=1)return P([
+    '손절 말고 분할매수... 라고 말은 합니다',
+    '비자발적 장기투자 구간 진입',
+    '물타다가 수영장 완공 직전',
+    '데드캣 바운스조차 안 나오는 중']);
+  if(slope>=25)return P([
+    '급등 사유 없음 공시. 그게 더 무섭다',
+    '작전주 의혹으로 조회공시 요청 들어감',
+    '단기과열 종목 지정. 근데 그래도 간다',
+    '공매도 세력 비명소리 들리는 구간']);
+  if(slope>=10)return P([
+    '우상향. 아직 안 늦었다는 게 중론',
+    '조정 없이 꾸준히, 연금에 담고 싶은 차트',
+    '거래량 동반 상승. 이건 진짜일 수 있다',
+    '저점에서 줍줍한 사람이 승자']);
+  if(slope<=-18)return P([
+    '개미털기라고 믿고 싶지만 그냥 추세 하락',
+    '어닝 쇼크. 목표가 줄하향',
+    '설거지 당한 흔적이 차트에 선명함',
+    '떨어지는 칼날, 줍지 마세요']);
+  if(slope<=-8)return P([
+    '조정장인지 하락장인지 일주일 더 관찰 요망',
+    '평단 사수 실패. 물량 늘리기 전 심호흡',
+    '지지선 테스트 중. 깨지면 도망']);
+  if(flips>=4)return P([
+    'VI 단골 종목. 변동성으로 심장 단련 가능',
+    '이기고 지고 반복. 단타족의 성지',
+    '하루 오르고 하루 빠짐. 출렁임이 곧 정체성']);
+  if(price>=160)return P([
+    '역사적 신고가. 대주주 등극이 머지않음',
+    '이쯤 되면 익절각인데 본인은 더 간다고 함']);
+  if(price<=55)return P([
+    '동전주 전락 위기. 그래도 저점매수 세력 존재',
+    '감자만은 피하자. 제발']);
+  return P([
+    '박스권 횡보. 거래량마저 한산함',
+    '코스피보다 안정적. 재미는 없음',
+    '특이사항 없음. 그게 제일 무서운 종목',
+    '단타족도 떠난 무빙. 장기투자자만 남음']);
+}
+/* ───── 플레이어 육각형 지표 + 닮은꼴 프로 ───── */
+const HEX_KEYS=[['dmg','화력'],['kda','교전'],['surv','생존'],['cs','성장'],['obj','오브젝트'],['vision','시야']];
+function playerHex(id){
+  const P=statPlayers(); const me=P.find(s=>s.id===id);
+  if(!me)return null;
+  const pool=P.filter(s=>s.games>=1); if(!pool.length)return null;
+  const get={dmg:s=>s.damageToChampions/s.games, kda:s=>s.kda, surv:s=>-(s.deaths/s.games),
+    cs:s=>s.cs/s.games, obj:s=>s.damageToObjectives/s.games, vision:s=>s.visionScore/s.games};
+  const vals=[];
+  for(const[k]of HEX_KEYS){
+    const arr=pool.map(get[k]); const mn=Math.min(...arr),mx=Math.max(...arr);
+    const v=mx===mn?0.5:(get[k](me)-mn)/(mx-mn);
+    vals.push(Math.max(0,Math.min(1,v)));
+  }
+  return{vals,labels:HEX_KEYS.map(x=>x[1]),me};
+}
+function radarSvg(vals,labels,size=290){
+  const cx=size/2,cy=size/2,R=size*0.34,n=vals.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[+(cx+Math.cos(a)*r).toFixed(1),+(cy+Math.sin(a)*r).toFixed(1)]};
+  let grid='';
+  for(const f of[0.25,0.5,0.75,1])grid+=`<polygon points="${Array.from({length:n},(_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+  let axes='',lbl='';
+  for(let i=0;i<n;i++){
+    const[ax,ay]=pt(i,R);axes+=`<line x1="${cx}" y1="${cy}" x2="${ax}" y2="${ay}" stroke="var(--line)" stroke-width="1"/>`;
+    const[lx,ly]=pt(i,R+20);lbl+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="var(--mut)" font-size="11.5" font-weight="700">${esc(labels[i])}</text>`;
+  }
+  const poly=Array.from({length:n},(_,i)=>pt(i,R*Math.max(0.05,vals[i])).join(',')).join(' ');
+  const dots=Array.from({length:n},(_,i)=>{const[dx,dy]=pt(i,R*Math.max(0.05,vals[i]));return`<circle cx="${dx}" cy="${dy}" r="3" fill="var(--gold)"/>`}).join('');
+  return`<svg viewBox="0 0 ${size} ${size}" style="max-width:${size}px;width:100%" role="img" aria-label="플레이어 지표 육각형">${grid}${axes}<polygon points="${poly}" fill="rgba(242,184,75,.2)" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round"/>${dots}${lbl}</svg>`;
+}
+/* 닮은꼴 프로 (지표 순서: 화력·교전·생존·성장·오브젝트·시야) */
+/* 닮은꼴 풀: 라인별 16명, 지표 순서 [화력,교전,생존,성장,오브젝트,시야] */
+function PT(lane,name,v,desc){return{lane,name,v,desc}}
+const PRO_TYPES=[
+ // ── 탑 16
+ PT('탑','Zeus',[.85,.6,.4,.7,.6,.3],'공격으로 답을 찾는 탑 카리스마. 들어갈 타이밍을 본능으로 안다'),
+ PT('탑','TheShy',[.95,.5,.15,.6,.5,.3],'데스를 겁내지 않는 하이리스크 하이리턴. 죽어도 본전, 살면 캐리'),
+ PT('탑','Kiin',[.6,.7,.75,.75,.65,.4],'어떤 폭풍에도 라인은 지키는 흔들림 없는 안정감'),
+ PT('탑','Nuguri',[.9,.55,.25,.8,.55,.3],'라인전부터 찍어 누르는 압박의 화신'),
+ PT('탑','Khan',[.88,.65,.35,.78,.5,.3],'칼챔을 잡는 순간 게임을 찢는 슈퍼스타형'),
+ PT('탑','Smeb',[.8,.7,.5,.7,.6,.35],'캐리와 희생을 자유롭게 오가는 만능 탑'),
+ PT('탑','MaRin',[.75,.75,.55,.72,.68,.4],'큰 무대에서 더 강해지는 결승전의 사나이'),
+ PT('탑','Impact',[.55,.68,.8,.65,.6,.45],'화려하진 않아도 늘 제 몫, 팀 우선 베테랑'),
+ PT('탑','CuVee',[.58,.66,.7,.68,.62,.4],'궂은일 도맡는 든든한 살림꾼'),
+ PT('탑','Canna',[.7,.6,.5,.66,.55,.38],'기세를 타면 무서워지는 상승세형'),
+ PT('탑','Rascal',[.5,.62,.78,.6,.58,.42],'먼저 안 죽는 게 이기는 길, 단단한 수비형'),
+ PT('탑','Bin',[.92,.58,.2,.68,.52,.28],'전투 본능 그 자체. 1:1은 거절하지 않는다'),
+ PT('탑','369',[.72,.64,.55,.7,.6,.35],'탱커도 칼챔도 되는 다재다능 밸런스형'),
+ PT('탑','Wunder',[.6,.65,.72,.74,.55,.4],'챔프폭 넓은 유연한 운영가'),
+ PT('탑','Doran',[.68,.6,.45,.62,.55,.35],'기복을 이겨내고 결정적 순간에 터뜨리는 성장형'),
+ PT('탑','Morgan',[.55,.58,.65,.6,.5,.4],'꾸준히 진화하는 노력형'),
+ // ── 정글 16
+ PT('정글','Canyon',[.6,.7,.6,.5,.95,.5],'용과 전령을 수확하는 오브젝트 설계자. 맵 전체가 농장'),
+ PT('정글','Oner',[.7,.65,.45,.4,.8,.55],'싸움을 먼저 여는 돌격형. 이니시는 내가 건다'),
+ PT('정글','Peanut',[.5,.7,.6,.45,.75,.6],'판을 읽고 움직이는 노련한 운영형'),
+ PT('정글','bengi',[.35,.75,.8,.35,.65,.7],'그림자처럼 팀을 받치는 안정·시야의 조력자'),
+ PT('정글','Score',[.45,.72,.7,.5,.92,.6],'오브젝트의 신. 정석 정글의 교과서'),
+ PT('정글','Ambition',[.4,.7,.75,.45,.7,.65],'노련미로 후반을 지배하는 대기만성형'),
+ PT('정글','Tarzan',[.55,.78,.7,.55,.8,.55],'동선 설계의 천재. 정글이 깨끗하다'),
+ PT('정글','Clid',[.72,.68,.5,.5,.72,.5],'갱킹으로 게임을 여는 공격적 개입형'),
+ PT('정글','Kanavi',[.75,.7,.45,.55,.7,.45],'본인이 캐리가 되는 정글 캐리의 표본'),
+ PT('정글','Pyosik',[.6,.6,.45,.4,.75,.5],'변수를 만들어내는 승부사. 스틸은 예술'),
+ PT('정글','Cuzz',[.5,.65,.68,.45,.7,.58],'팀에 맞춰 스며드는 부드러운 안정형'),
+ PT('정글','Willer',[.62,.6,.5,.42,.72,.55],'이니시에 진심인 선봉장'),
+ PT('정글','UmTi',[.68,.62,.48,.44,.7,.52],'싸움을 사랑하는 파이터'),
+ PT('정글','Lucid',[.58,.68,.6,.5,.78,.55],'공수 밸런스가 좋은 차세대형'),
+ PT('정글','Croco',[.52,.64,.62,.48,.74,.56],'성실함이 곧 무기인 꾸준형'),
+ PT('정글','Malrang',[.45,.6,.55,.4,.68,.62],'팀을 위해 기꺼이 구르는 헌신형'),
+ // ── 미드 16
+ PT('미드','Faker',[.6,.85,.7,.6,.5,.5],'큰 경기에 강한 클러치 메이커. 미드의 교과서'),
+ PT('미드','Chovy',[.7,.9,.8,.97,.5,.4],'CS 한 개에 진심인 무결점 라인전 장인'),
+ PT('미드','ShowMaker',[.75,.8,.6,.7,.55,.5],'어떤 챔프든 본인 스타일로 소화하는 다재다능형'),
+ PT('미드','Bdd',[.65,.82,.75,.8,.5,.45],'부드럽고 정확한 정석 운영가'),
+ PT('미드','Zeka',[.85,.72,.45,.65,.5,.4],'큰 경기에서 폭발하는 슈퍼 에이스'),
+ PT('미드','Caps',[.82,.7,.4,.68,.5,.4],'예측 불가 창의적 슈퍼플레이형'),
+ PT('미드','Knight',[.8,.78,.6,.82,.5,.4],'라인전 깡패. 솔킬은 일상'),
+ PT('미드','Rookie',[.75,.8,.65,.75,.52,.45],'기복 없는 꾸준한 월드클래스'),
+ PT('미드','PawN',[.7,.74,.6,.7,.5,.42],'상대가 누구든 맞상대하는 상성 파괴자'),
+ PT('미드','Crown',[.55,.7,.78,.72,.48,.45],'버티고 버텨서 이기는 인내의 화신'),
+ PT('미드','Kuro',[.6,.72,.7,.7,.5,.45],'팀을 살리는 안정적 살림형 미드'),
+ PT('미드','Fly',[.58,.66,.65,.66,.48,.45],'완급 조절이 능한 노련형'),
+ PT('미드','Clozer',[.72,.68,.5,.66,.5,.4],'패기로 부딪히는 젊은 돌격형'),
+ PT('미드','Dove',[.56,.62,.6,.62,.5,.42],'묵묵히 할 일 하는 성실형'),
+ PT('미드','FATE',[.6,.64,.58,.64,.5,.44],'군더더기 없는 깔끔한 정석파'),
+ PT('미드','Karis',[.62,.6,.52,.6,.5,.4],'도전을 멈추지 않는 개척자형'),
+ // ── 원딜 16
+ PT('원딜','Ruler',[.9,.8,.7,.85,.55,.35],'후반을 보장하는 정석 캐리. 키우면 반드시 보답한다'),
+ PT('원딜','Gumayusi',[.85,.75,.6,.8,.5,.4],'자신감이 곧 실력인 공격형 원딜'),
+ PT('원딜','Deft',[.8,.7,.65,.85,.5,.4],'꾸준함의 대명사. 폼 유지력의 정점'),
+ PT('원딜','Viper',[.88,.78,.68,.86,.52,.35],'무결점 포지셔닝의 교과서'),
+ PT('원딜','Uzi',[.95,.72,.45,.82,.5,.3],'공격 본능으로 게임을 끝내는 전설형'),
+ PT('원딜','Bang',[.78,.76,.72,.8,.5,.38],'안정 속에서 캐리하는 완성형'),
+ PT('원딜','PraY',[.72,.74,.7,.76,.55,.42],'한타 각을 아는 노련한 장인'),
+ PT('원딜','Teddy',[.8,.72,.6,.82,.48,.35],'묵묵히 딜만 넣는 대미지 머신'),
+ PT('원딜','Aiming',[.82,.68,.5,.78,.5,.35],'정면승부를 피하지 않는 화끈함'),
+ PT('원딜','Peyz',[.78,.74,.62,.8,.5,.38],'나이답지 않게 침착한 신예 에이스'),
+ PT('원딜','Ghost',[.55,.7,.75,.7,.52,.45],'팀 조합에 맞춰 헌신하는 맞춤형 원딜'),
+ PT('원딜','Imp',[.85,.66,.45,.74,.5,.32],'낭만과 화력을 모두 가진 파이터'),
+ PT('원딜','Rekkles',[.7,.78,.8,.78,.48,.4],'안 죽는 것이 곧 캐리, 극단적 안정 지향'),
+ PT('원딜','Mystic',[.68,.7,.66,.74,.5,.4],'모나지 않게 다 잘하는 밸런스형'),
+ PT('원딜','Piglet',[.74,.68,.58,.76,.5,.38],'근성으로 증명하는 노력의 화신'),
+ PT('원딜','Hena',[.72,.7,.6,.75,.5,.4],'매 시즌 성장하는 잠재주'),
+ // ── 서폿 16
+ PT('서폿','Keria',[.3,.75,.5,.15,.4,.95],'시야와 변수 창출의 마법사. 게임을 디자인한다'),
+ PT('서폿','Lehends',[.25,.6,.45,.1,.35,.9],'창의적 픽과 헌신적 서포팅의 장인'),
+ PT('서폿','BeryL',[.35,.65,.55,.2,.5,.6],'와드보다 본능. 자유로운 영혼의 우승 청부사'),
+ PT('서폿','MadLife',[.3,.7,.5,.12,.38,.88],'상대가 움직일 곳을 미리 아는 예측의 신'),
+ PT('서폿','Wolf',[.28,.68,.6,.12,.4,.85],'쉴 새 없이 움직이는 액티브 플레이메이커'),
+ PT('서폿','GorillA',[.26,.66,.62,.1,.42,.86],'팀을 품는 든든한 큰형님'),
+ PT('서폿','CoreJJ',[.3,.72,.58,.14,.45,.9],'오더와 시야를 모두 지휘하는 야전사령관'),
+ PT('서폿','Mata',[.28,.74,.6,.12,.44,.92],'운영이라는 개념을 만든 설계자'),
+ PT('서폿','Life',[.32,.64,.5,.14,.4,.82],'과감한 이니시로 판을 뒤집는 승부사'),
+ PT('서폿','Delight',[.27,.62,.6,.12,.4,.84],'티 안 나게 다 해주는 안정 서포팅'),
+ PT('서폿','Effort',[.26,.6,.62,.1,.38,.8],'이름 그대로 노력으로 증명하는 성실형'),
+ PT('서폿','Meiko',[.3,.7,.56,.13,.42,.88],'못 하는 게 없는 만능 서포터'),
+ PT('서폿','Ming',[.29,.68,.58,.12,.4,.87],'정교한 스킬샷의 메이지 서폿형'),
+ PT('서폿','Kael',[.27,.6,.54,.11,.38,.8],'팀 분위기를 끌어올리는 에너지 메이커'),
+ PT('서폿','Mikyx',[.3,.66,.52,.13,.4,.85],'예측을 벗어나는 변칙 플레이어'),
+ PT('서폿','Duro',[.28,.63,.56,.12,.4,.83],'패기로 무장한 차세대 신성')
+];
+function playerMainLane(id){
+  const cnt={};
+  state.matches.forEach(m=>m.participants.forEach(p=>{if(p.playerId===id&&p.lane)cnt[p.lane]=(cnt[p.lane]||0)+1}));
+  const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+  return best?({TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'}[best[0]]||null):null;
+}
+/* ───── ④ 강점/보완점 해석 (LCK 중계 스타일, 쉬운 말) ───── */
+const AXIS_NOTE={
+ '화력':{hi:'한타 대미지를 책임지는 팀의 화력 엔진이에요.',lo:'대미지 기여가 낮은 편이에요. 교전에서 스킬 한 번만 더 적중시켜도 확 달라져요.'},
+ '교전':{hi:'킬에 잘 관여하면서 잘 안 죽는, 싸움 효율(KDA)이 뛰어난 타입이에요.',lo:'교전에서 손해 보는 편이에요. 들어가는 타이밍을 반 박자만 늦춰보세요.'},
+ '생존':{hi:'잘 안 죽어요. 상대 입장에선 도무지 잡히지 않는 미꾸라지.',lo:'데스가 많은 편이에요. 시야 없는 곳에 혼자 가지 않는 것만으로도 좋아져요.'},
+ '성장':{hi:'CS를 차곡차곡 챙기는 성장형이에요. 같은 시간에 더 부자가 됩니다.',lo:'CS 수급이 아쉬워요. 라인 밀고 정글 캠프 하나 먹는 습관을 추천해요.'},
+ '오브젝트':{hi:'용·전령·포탑 같은 목표물에 진심인 운영가예요. 게임을 굴릴 줄 압니다.',lo:'오브젝트 관여가 적은 편이에요. 킬보다 용이 게임을 끝냅니다.'},
+ '시야':{hi:'와드와 시야 장악에 투자하는 팀의 등불이에요.',lo:'시야 점수가 낮은 편이에요. 제어 와드 하나가 목숨 하나예요.'}
+};
+function styleReport(hex){
+  const pair=hex.labels.map((l,i)=>({l,v:hex.vals[i]})).sort((a,b)=>b.v-a.v);
+  return{str:pair.slice(0,2),weak:pair.slice(-2).reverse()};
+}
+function matchPro(hex,laneKo){
+  if(!hex)return null;
+  const me=hex.me;
+  if(me.games<3)return{name:'스카우트 진행 중',desc:`표본 ${me.games}판 — 3판 이상 쌓이면 닮은꼴 프로 판정이 나옵니다.`,pro:false};
+  const avg=hex.vals.reduce((a,b)=>a+b,0)/hex.vals.length;
+  if(avg<0.32){
+    const pool=['각성 전 주인공형','잠재력 매장량 전국 1위','대기만성 스토브리그 유망주','폼은 일시적, 클래스는 오는 중'];
+    return{name:pickSeeded(pool,me.games*13+Math.round(avg*100)),desc:'아직 지표가 만개하지 않았을 뿐. 서사는 지금부터 쓰입니다.',pro:false};
+  }
+  const pool=laneKo?PRO_TYPES.filter(t=>t.lane===laneKo):PRO_TYPES;
+  const ranked=pool.map(t=>{
+    let d=0;for(let i=0;i<6;i++)d+=(hex.vals[i]-t.v[i])**2;
+    return{t,d};
+  }).sort((a,b)=>a.d-b.d);
+  const best=ranked[0].t,second=ranked[1].t;
+  return{name:best.name+'형',lane:best.lane,desc:best.desc,second:second.name+'형',mainLane:laneKo||null,pro:true};
+}
+function sparkSvg(arr,w=170,h=42){
+  if(arr.length<2)return'<span class="dim mini">데이터 부족</span>';
+  const min=Math.min(...arr,100),max=Math.max(...arr,100),rg=max-min||1;
+  const X=i=>(i/(arr.length-1)*(w-8)+4),Y=v=>(h-((v-min)/rg)*(h*.74)-h*.13);
+  const pts=arr.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const up=arr[arr.length-1]>=arr[0];
+  const col=up?'var(--win)':'var(--lose)';
+  const fill=up?'rgba(63,217,197,.14)':'rgba(255,92,122,.12)';
+  const area=`${X(0).toFixed(1)},${(h-2).toFixed(1)} ${pts} ${X(arr.length-1).toFixed(1)},${(h-2).toFixed(1)}`;
+  const base=Y(100).toFixed(1); // 기준가 100 점선
+  const lx=X(arr.length-1).toFixed(1),ly=Y(arr[arr.length-1]).toFixed(1);
+  return`<svg class="spark" style="width:${w}px;height:${h}px" viewBox="0 0 ${w} ${h}">
+    <line x1="4" y1="${base}" x2="${w-4}" y2="${base}" stroke="var(--dim)" stroke-width="1" stroke-dasharray="3 4" opacity=".6"/>
+    <polygon points="${area}" fill="${fill}"/>
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${lx}" cy="${ly}" r="3.4" fill="${col}"/>
+  </svg>`;
+}
+
+/* ───── 칭호 ───── */
+function streaksOf(id){
+  let cw=0,cl=0,mw=0,ml=0;
+  playerHistory(id).forEach(m=>{
+    const p=m.participants.find(x=>x.playerId===id);
+    if(p.team===m.winnerTeam){cw++;cl=0}else{cl++;cw=0}
+    mw=Math.max(mw,cw);ml=Math.max(ml,cl);
+  });
+  return{mw,ml};
+}
+function makeAwards(){
+  const P=statPlayers(),D=statDuos(3),R=statRivals(3),C=statChamps(),PC=statPlayerChamps(2),SDp=statPlayerSides(1),out=[];
+  const push=(title,target,desc)=>out.push({title,target,desc});
+  const top=(arr,key,minGames=1)=>arr.filter(p=>p.games>=minGames&&p[key]>0).sort((x,y)=>y[key]-x[key])[0];
+  const per=(p,key)=>p.games?p[key]/p.games:0;
+
+  if(P.length){
+    const best=P[0];
+    if(best.games>=2)push('승리요정',best.name,`승률 ${best.winRate}% · 같은 팀이면 반은 먹고 들어감`);
+    P.forEach(p=>{
+      if(p.games>=5&&p.winRate>=80)push('내전 재앙',p.name,`${p.games}판 ${p.winRate}% · 팀 배정 공정성 논란의 중심`);
+      if(p.games>=5&&p.winRate<=25)push('서킷브레이커',p.name,`승률 ${p.winRate}% · 매매(출전) 일시 정지 권고`);
+      if(p.games>=3&&p.kda>=4&&p.winRate<50)push('억까 피해자',p.name,`KDA ${p.kda}에 승률 ${p.winRate}% · 팀운 환불 요청`);
+      if(p.games>=4&&p.winRate>=60&&p.kda<2)push('버스 승객',p.name,`승률 ${p.winRate}%인데 KDA ${p.kda} · 뒷좌석 정기권 보유`);
+      if(p.mvp>=2)push('여론의 왕',p.name,`MVP ${p.mvp}회 · 민심을 다스리는 자`);
+    });
+    // 경기당 지표
+    const kpg=top(P.map(p=>({...p,v:per(p,'kills')})),'v',3);
+    if(kpg)push('광기의 돌격대장',kpg.name,`경기당 ${kpg.v.toFixed(1)}킬 · 브레이크 없음`);
+    const apg=top(P.map(p=>({...p,v:per(p,'assists')})),'v',3);
+    if(apg)push('어시스트 자판기',apg.name,`경기당 ${apg.v.toFixed(1)}어시 · 퍼주기 장인`);
+    const dpg=top(P.map(p=>({...p,v:per(p,'deaths')})),'v',3);
+    if(dpg&&dpg.v>=5)push('데스 아티스트',dpg.name,`경기당 ${dpg.v.toFixed(1)}데스 · 죽음도 콘텐츠`);
+    const gandhi=P.filter(p=>p.games>=3).sort((a,b)=>per(a,'deaths')-per(b,'deaths'))[0];
+    if(gandhi&&per(gandhi,'deaths')<=2.5)push('협곡의 간디',gandhi.name,`경기당 ${per(gandhi,'deaths').toFixed(1)}데스 · 비폭력 생존주의`);
+    const kdaTop=P.filter(p=>p.games>=3&&p.kda>=4).sort((a,b)=>b.kda-a.kda)[0];
+    if(kdaTop)push('KDA 명품관',kdaTop.name,`KDA ${kdaTop.kda} · 전사자 명단에 이름이 없음`);
+    const att=top(P,'games',5);
+    if(att)push('출석왕',att.name,`${att.games}판 출석 · 내전이 본업, 회사가 부업`);
+    const driver=top(P,'wins',4);
+    if(driver)push('버스 기사',driver.name,`누적 ${driver.wins}승 · 오늘도 정시 운행`);
+    // 숟가락: 킬은 많은데 딜은 평균 이하
+    const dmgs=P.filter(p=>p.games>=3).map(p=>p.avgDmg).sort((a,b)=>a-b);
+    if(dmgs.length>=3){
+      const median=dmgs[Math.floor(dmgs.length/2)];
+      const spoon=P.filter(p=>p.games>=3&&p.avgDmg>0&&p.avgDmg<median).sort((a,b)=>per(b,'kills')-per(a,'kills'))[0];
+      if(spoon&&per(spoon,'kills')>=3)push('숟가락 장인',spoon.name,`경기당 ${per(spoon,'kills').toFixed(1)}킬, 평균 딜 ${fmt(spoon.avgDmg)} · 막타 강탈 전문`);
+    }
+    // 연승/연패 + 폼 주가
+    let bw=null,bl=null;
+    P.forEach(p=>{
+      const s=streaksOf(p.id);
+      if(s.mw>=3&&(!bw||s.mw>bw.n))bw={name:p.name,n:s.mw};
+      if(s.ml>=3&&(!bl||s.ml>bl.n))bl={name:p.name,n:s.ml};
+      if(p.games>=3){
+        const f=formSeries(p.id),pr=f.arr[f.arr.length-1];
+        if(pr>=140)push('지금이 고점 아님',p.name,`폼 주가 ${pr} · 신고가 행진 중`);
+        if(pr<=60)push('상장폐지 위기',p.name,`폼 주가 ${pr} · 거래정지 직전, 반등 기도 중`);
+      }
+    });
+    if(bw)push('연승 제조기',bw.name,`최다 ${bw.n}연승 · 불장의 주역`);
+    if(bl)push('멘탈 클리닉 VIP',bl.name,`최다 ${bl.n}연패 · 그래도 출석은 한다`);
+    // 퍼펙트 게임
+    outer:for(const m of [...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))){
+      for(const p of m.participants){
+        if(p.playerId&&p.deaths===0&&p.kills>=5&&p.team===m.winnerTeam){
+          push('퍼펙트 게임',nameOf(p.playerId),`${p.kills}/0/${p.assists} (${m.playedAt}) · 무결점 경기`);break outer;
+        }
+      }
+    }
+    // 누적 1위 시리즈
+    [['딜량왕','damageToChampions',v=>`누적 딜 ${fmt(v)} · 화력에는 세금이 없다`],
+     ['인간 가고일','damageTaken',v=>`받은 피해 ${fmt(v)} · 맞는 게 일상`],
+     ['시야 대통령','visionScore',v=>`시야 점수 ${fmt(v)} · 핑와에 월급 쓰는 사람`],
+     ['매의 눈','wardsKilled',v=>`와드 파괴 ${fmt(v)} · 상대 시야 청소업체`],
+     ['오브젝트 깎는 노인','damageToObjectives',v=>`오브젝트 피해 ${fmt(v)} · 용은 내 가족`],
+     ['철거반장','damageToTurrets',v=>`포탑 피해 ${fmt(v)} · 재개발 전문`],
+     ['힐링캠프 원장','healing',v=>`회복량 ${fmt(v)} · 사실상 보건소`],
+     ['피해감소 방화벽','selfMitigatedDamage',v=>`피해 감소 ${fmt(v)} · 물리·마법 모두 차단`],
+     ['CS 공장장','cs',v=>`누적 CS ${fmt(v)} · 미니언계의 재앙`],
+     ['골드 광산','goldEarned',v=>`누적 골드 ${fmt(v)} · 협곡의 자산가`],
+     ['CC 제조기','crowdControlScore',v=>`군중 제어 ${fmt(v)} · 상대 키보드 압수`]
+    ].forEach(([t,k,d])=>{const w=top(P,k);if(w)push(t,w.name,d(w[k]))});
+    // 진영 특화
+    const sided=SDp.filter(x=>x.bG>=2&&x.rG>=2);
+    const blueSon=sided.filter(x=>x.bRate-x.rRate>=25).sort((a,b)=>(b.bRate-b.rRate)-(a.bRate-a.rRate))[0];
+    if(blueSon)push('블루의 아들',blueSon.name,`블루 ${blueSon.bRate}% vs 레드 ${blueSon.rRate}% · 진영을 가리는 남자`);
+    const redSon=sided.filter(x=>x.rRate-x.bRate>=25).sort((a,b)=>(b.rRate-b.bRate)-(a.rRate-a.bRate))[0];
+    if(redSon)push('레드의 후예',redSon.name,`레드 ${redSon.rRate}% vs 블루 ${redSon.bRate}% · 빨간 맛을 아는 자`);
+  }
+  // 듀오 / 상대
+  D.forEach(d=>{
+    if(d.winRate>=75)push('국밥 듀오',d.names,`같이 하면 ${d.winRate}% (${d.games}판) · 든든하다`);
+    if(d.winRate<=30)push('서사가 필요한 듀오',d.names,`같이 하면 ${d.winRate}% · 아직 세계관 구축 중`);
+  });
+  const together=statDuos(4)[0]?[...statDuos(4)].sort((a,b)=>b.games-a.games)[0]:null;
+  if(together)push('쌍둥이 텔레파시',together.names,`함께 ${together.games}판 · 사실상 한 몸`);
+  R.forEach(r=>{
+    if(Math.max(...r.w)/r.games>=.75)push('천적 관계',r.names.join(' vs '),`${r.leader} 우세 ${r.w[0]}:${r.w[1]} · 만나면 결과 정해져 있음`);
+    else if(r.games>=4&&r.gap<=1)push('영혼의 라이벌',r.names.join(' vs '),`${r.w[0]}:${r.w[1]} · 다음 판이 진짜 결승`);
+  });
+  // 챔피언
+  C.forEach(c=>{
+    if(c.picks>=3&&c.winRate>=75)push('승리 부적',c.champion,`픽하면 ${c.winRate}% · 가보로 물려줄 픽`);
+    if(c.picks>=3&&c.winRate<=33)push('봉인픽',c.champion,`${c.picks}판 ${c.winRate}% · 협곡 출입 금지 검토`);
+    if(c.bans>=2&&c.winRate<50)push('밴카드 도둑',c.champion,`밴은 ${c.bans}번 당했는데 승률은 ${c.winRate}% · 명성 거품`);
+  });
+  const onetrick=[...PC].filter(x=>x.games>=4).sort((a,b)=>b.games-a.games)[0];
+  if(onetrick)push('원챔 장인',onetrick.name,`${onetrick.champion}만 ${onetrick.games}판 · 장인 정신 그 자체`);
+  return out.slice(0,100);
+}
+
+/* ============================================================
+   스크린샷 분석기 (내장 OCR · Tesseract.js)
+   외부 AI 키 없이 브라우저에서 직접 글자를 읽습니다.
+   ============================================================ */
+let _worker=null,_workerBlocked=false;
+function loadScript(src){return new Promise((ok,no)=>{
+  if(document.querySelector(`script[src="${src}"]`)&&window.Tesseract)return ok();
+  const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('스크립트 로드 실패: 인터넷 연결 확인'));document.head.appendChild(s);
+})}
+async function getWorker(onProg){
+  if(_worker)return _worker;
+  await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+  try{
+    _worker=await Tesseract.createWorker(['kor','eng'],1,{logger:m=>{
+      if(m.status==='recognizing text'&&onProg)onProg(m.progress);
+    }});
+    return _worker;
+  }catch(e){
+    if(/Worker|Security|blob/i.test(String(e))){_workerBlocked=true;}
+    throw e;
+  }
+}
+function fileToImage(file){return new Promise((ok,no)=>{
+  const img=new Image();
+  img.onload=()=>ok(img); img.onerror=()=>no(new Error('이미지 로드 실패'));
+  img.src=URL.createObjectURL(file);
+})}
+async function preprocess(file){ // 확대 + 흑백 + 대비 → 인식률 향상
+  const img=await fileToImage(file);
+  const scale=Math.min(3,Math.max(1,2200/img.naturalWidth));
+  const cv=document.createElement('canvas');
+  cv.width=Math.round(img.naturalWidth*scale); cv.height=Math.round(img.naturalHeight*scale);
+  const cx=cv.getContext('2d');
+  cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality='high';
+  cx.filter='grayscale(1) contrast(1.55) brightness(1.12)';
+  cx.drawImage(img,0,0,cv.width,cv.height);
+  URL.revokeObjectURL(img.src);
+  return cv;
+}
+async function analyzeShots(){
+  if(ocrBusy)return;
+  if(!shots.length)return toast('스크린샷을 먼저 추가해주세요.',true);
+  ocrBusy=true;
+  const bar=$('ocrBar'),lbl=$('ocrLbl'),btn=$('ocrGo');
+  btn.disabled=true;btn.textContent='분석 중...';
+  try{
+    lbl.textContent='OCR 엔진 준비 중... (최초 1회 5~15초)';
+    const total=shots.length;let done=0;
+    const worker=await getWorker(p=>{bar.style.width=((done+p)/total*100)+'%'});
+    let textAll='';
+    for(const s of shots){
+      lbl.textContent=`이미지 ${done+1}/${total} 판독 중...`;
+      const cv=await preprocess(s.file);
+      const {data}=await worker.recognize(cv);
+      textAll+='\n'+(data.text||'');
+      done++; bar.style.width=(done/total*100)+'%';
+    }
+    $('ocrText').value=textAll.trim();
+    lbl.textContent='판독 완료. 아래 텍스트를 보고 후보 생성을 눌러주세요.';
+    buildDraftFromText();
+  }catch(e){
+    console.error(e);
+    if(_workerBlocked){
+      $('ocrNote').style.display='block';
+      lbl.textContent='이 환경에서는 OCR이 차단됩니다.';
+    }else{
+      toast('분석 실패: '+(e.message||'이미지/인터넷 연결을 확인해주세요.'),true);
+      lbl.textContent='분석 실패. 다시 시도하거나 직접 입력을 이용하세요.';
+    }
+  }finally{
+    ocrBusy=false;btn.disabled=false;btn.textContent='스크린샷 분석 시작';
+  }
+}
+/* OCR 텍스트 → 참가자 후보 (닉네임·챔피언 퍼지 매칭 + KDA 패턴) */
+function parseScoreText(text){
+  const rows=[];
+  const lines=String(text||'').split('\n').map(l=>l.trim()).filter(l=>l.length>=3);
+  for(const line of lines){
+    const kda=line.match(/(\d{1,2})\s*[\/|]\s*(\d{1,2})\s*[\/|]\s*(\d{1,2})/);
+    const clean=kda?line.replace(kda[0],' '):line;
+    const words=clean.split(/\s{1,}/).filter(w=>w&&!/^[\d,\.%]+$/.test(w));
+    // 닉네임 후보: 단어 조합 중 가장 잘 맞는 것
+    let pBest=null,pScore=99,pRaw='';
+    const cands=[];
+    for(let i=0;i<words.length;i++){
+      cands.push(words[i]);
+      if(i+1<words.length)cands.push(words[i]+' '+words[i+1]);
+      if(i+2<words.length)cands.push(words[i]+' '+words[i+1]+' '+words[i+2]);
+    }
+    cands.push(clean);
+    for(const c of cands){
+      const{player,score}=fuzzyPlayer(c);
+      if(player&&score<pScore){pBest=player;pScore=score;pRaw=c}
+    }
+    // 챔피언 후보 — 닉네임으로 매칭된 부분(pRaw)은 제외하고 탐색
+    let champ='';
+    {
+      const champClean=pRaw?clean.replace(pRaw,' '):clean;
+      const cw=champClean.split(/\s{1,}/).filter(w=>w&&!/^[\d,\.%]+$/.test(w));
+      const cc2=[];
+      for(let i=0;i<cw.length;i++){
+        cc2.push(cw[i]);
+        if(i+1<cw.length)cc2.push(cw[i]+' '+cw[i+1]);
+        if(i+2<cw.length)cc2.push(cw[i]+' '+cw[i+1]+' '+cw[i+2]);
+      }
+      for(const c of cc2){
+        if(norm(c).length<2)continue;
+        const cv=canonChamp(c);
+        if(CHAMPIONS.includes(cv)){champ=cv;break}
+      }
+    }
+    // 큰 숫자들: 1000 이상 → 딜량/골드 후보, 0~400 → CS 후보
+    const nums=(line.match(/\d[\d,]{2,}/g)||[]).map(num).filter(n=>n>=1000).sort((a,b)=>b-a);
+    const small=(line.match(/(?<![\d\/,])\d{1,3}(?![\d\/,])/g)||[]).map(Number).filter(n=>n>=30&&n<=420);
+    if(!kda&&!pBest)continue;
+    const stats={};
+    if(nums[0])stats.damageToChampions=nums[0];
+    if(nums[1])stats.goldEarned=nums[1];
+    if(small.length)stats.cs=small[small.length-1];
+    rows.push({
+      rawName:pRaw||clean.slice(0,18), playerId:pBest?.id||'',
+      championId:champ, kills:kda?+kda[1]:0,deaths:kda?+kda[2]:0,assists:kda?+kda[3]:0,
+      stats
+    });
+    if(rows.length>=10)break;
+  }
+  return rows;
+}
+function buildDraftFromText(){
+  const rows=parseScoreText($('ocrText').value);
+  if(!rows.length)return toast('텍스트에서 선수/KDA를 찾지 못했어요. 텍스트를 정리하거나 직접 입력해주세요.',true);
+  while(rows.length<10)rows.push({rawName:'',playerId:'',championId:'',kills:0,deaths:0,assists:0,stats:{}});
+  draft={
+    playedAt:$('shotDate').value||todayStr(),
+    setNumber:num($('shotSet').value)||1,
+    winnerTeam:$('shotWin').value,
+    memo:'스크린샷 분석 입력', mvpId:'',
+    participants:rows.slice(0,10).map((r,i)=>({team:i<5?'BLUE':'RED',lane:LANES[i%5],...r})),
+    bans:[]
+  };
+  draftEditId=null;
+  renderReview('reviewBox');
+  $('reviewBox').scrollIntoView({behavior:'smooth',block:'start'});
+  toast(`${rows.filter(r=>r.playerId).length}명 자동 매칭. 검수표에서 확인 후 저장하세요.`);
+}
+
+/* ───── JSON 가져오기 (채팅 AI 판독 결과 붙여넣기) ───── */
+const STAT_ALIAS={cs:['cs','minionsKilled','미니언','씨에스'],goldEarned:['goldEarned','gold','골드','골드획득'],
+ damageToChampions:['damageToChampions','damage','championDamage','딜량','챔피언딜량'],
+ damageTaken:['damageTaken','taken','받은피해','받은피해량'],visionScore:['visionScore','vision','시야','시야점수'],
+ wardsPlaced:['wardsPlaced','와드설치'],wardsKilled:['wardsKilled','와드파괴'],controlWardsBought:['controlWardsBought','제어와드'],
+ crowdControlScore:['crowdControlScore','cc','군중제어'],damageToObjectives:['damageToObjectives','오브젝트피해','목표물피해량'],
+ damageToTurrets:['damageToTurrets','포탑피해','포탑피해량'],healing:['healing','heal','회복량'],
+ selfMitigatedDamage:['selfMitigatedDamage','mitigated','피해감소','피해감소량']};
+function pickStats(src){
+  const flat={...(src||{}),...(src?.stats||{})},out={};
+  for(const[key,names]of Object.entries(STAT_ALIAS))
+    for(const n of names){const hit=Object.keys(flat).find(k=>norm(k)===norm(n));if(hit&&flat[hit]!==''&&flat[hit]!=null){out[key]=num(flat[hit]);break}}
+  return out;
+}
+function jsonToMatch(obj){ // 외부 JSON 1건 → 경기 데이터 (단건/일괄 공용)
+  const list=obj.participants||obj.players||obj.rows||[];
+  if(!Array.isArray(list)||!list.length)return null;
+  const parts=list.slice(0,10).map((p,i)=>{
+    const rawName=p.player||p.name||p.nickname||p.ign||p.rawName||'';
+    const fp=findPlayer(rawName)||fuzzyPlayer(rawName).player;
+    const champ=canonChamp(p.champion||p.champ||p.championName||'');
+    return{team:String(p.team||p.side||(i<5?'BLUE':'RED')).toUpperCase().includes('RED')?'RED':'BLUE',
+      lane:LANES.includes(String(p.lane||'').toUpperCase())?String(p.lane).toUpperCase():LANES[i%5],
+      rawName, playerId:fp?.id||'', championId:champ,
+      kills:num(p.kills??p.k),deaths:num(p.deaths??p.d),assists:num(p.assists??p.a),
+      stats:pickStats(p)};
+  });
+  const bans=[];
+  if(obj.bans)TEAMS.forEach(t=>(Array.isArray(obj.bans[t])?obj.bans[t]:[]).forEach(c=>bans.push({team:t,championId:canonChamp(c)})));
+  return{playedAt:obj.playedAt||obj.date||todayStr(),setNumber:num(obj.setNumber||obj.set)||1,
+    winnerTeam:String(obj.winnerTeam||obj.winner||'BLUE').toUpperCase().includes('RED')?'RED':'BLUE',
+    gameId:obj.gameId!=null?String(obj.gameId):null,
+    durationMin:obj.durationMin!=null?num(obj.durationMin):null,
+    memo:obj.memo||'JSON 판독 입력',mvpId:findPlayer(obj.mvpName||obj.mvp||'')?.id||'',participants:parts,bans};
+}
+const matchSig=m=>String(m.playedAt)+'|'+String(m.winnerTeam)+'|'+(m.participants||[]).map(p=>p.kills+'/'+p.deaths+'/'+p.assists).sort().join(',');
+function importJson(){
+  let obj;
+  try{obj=JSON.parse($('jsonIn').value)}catch(e){return toast('JSON 형식이 잘못됐어요. 중괄호/따옴표를 확인해주세요.',true)}
+  let bulk=null;
+  if(Array.isArray(obj))bulk=obj;
+  else if(obj&&obj.matches)bulk=Array.isArray(obj.matches)?obj.matches:[obj.matches]; // PS가 1판 묶음의 배열 괄호를 벗기는 경우 대응
+  if(bulk)return importBulk(bulk);
+  const data=jsonToMatch(obj);
+  if(!data)return toast('participants 배열이 필요해요.',true);
+  draft=data; draftEditId=null;
+  renderReview('reviewBox');
+  $('reviewBox').scrollIntoView({behavior:'smooth',block:'start'});
+  toast('JSON을 검수 화면으로 불러왔어요.');
+}
+function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제외 + 일괄 저장
+  let datas=arr.map(jsonToMatch).filter(Boolean);
+  if(!datas.length)return toast('가져올 경기가 없어요.',true);
+  const isGhost=d=>(d.durationMin!=null&&d.durationMin<5)||(d.participants||[]).every(p=>num(p.kills)+num(p.deaths)+num(p.assists)===0);
+  const ghosts=datas.filter(isGhost).length;
+  if(ghosts)datas=datas.filter(d=>!isGhost(d));
+  if(!datas.length)return toast(`전부 5분 미만 무효 게임(다시하기 등)이라 건너뛰었어요.`);
+  const seenSig=new Set(state.matches.map(matchSig));
+  const seenGid=new Set(state.matches.map(m=>m.gameId).filter(Boolean));
+  const fresh=[];
+  for(const d of datas){
+    if((d.gameId&&seenGid.has(d.gameId))||seenSig.has(matchSig(d)))continue;
+    if(d.gameId)seenGid.add(d.gameId);
+    seenSig.add(matchSig(d));
+    fresh.push(d);
+  }
+  const dup=datas.length-fresh.length;
+  if(!fresh.length)return toast('전부 이미 저장된 경기예요. (중복 '+dup+'건 건너뜀)');
+  const unmatched=fresh.reduce((n,d)=>n+d.participants.filter(p=>!p.playerId&&p.rawName).length,0);
+  let msg=`${fresh.length}경기를 한 번에 저장할까요?`;
+  if(dup)msg+=` (이미 있는 ${dup}건은 제외)`;
+  if(unmatched)msg+=`\n\n명단과 안 맞는 닉네임 ${unmatched}명은 '미확인'으로 저장돼요. 저장 후 경기 탭에서 수정하거나, 플레이어 탭에서 롤닉을 등록하고 다시 가져오면 자동 매칭됩니다.`;
+  if(!confirm(msg))return;
+  fresh.sort((a,b)=>String(a.playedAt).localeCompare(String(b.playedAt)));
+  fresh.forEach(d=>{
+    d.setNumber=state.matches.filter(m=>m.playedAt===d.playedAt).length+1; // 날짜별 세트 자동
+    state.matches.push({id:uid('m'),createdAt:new Date().toISOString(),...d});
+  });
+  save();
+  toast(`내전 ${fresh.length}판을 저장했어요.`+(dup?` (중복 ${dup}건 제외)`:'')+(typeof ghosts!=='undefined'&&ghosts?` (무효 게임 ${ghosts}건 제외)`:''));
+  go('matches');
+}
+function jsonSample(){
+  $('jsonIn').value=JSON.stringify({playedAt:todayStr(),setNumber:1,winnerTeam:'BLUE',mvpName:'',
+    bans:{BLUE:['유미'],RED:['크산테']},
+    participants:[{team:'BLUE',lane:'TOP',player:'99 잭슨',champion:'아트록스',kills:11,deaths:3,assists:7,
+      stats:{cs:236,goldEarned:14209,damageToChampions:30829,damageTaken:32328,visionScore:30,wardsPlaced:13,wardsKilled:5,controlWardsBought:4,crowdControlScore:21,damageToObjectives:18486,damageToTurrets:10292,healing:11440,selfMitigatedDamage:25752}}]},null,2);
+}
+
+/* ───── 검수 화면 (모든 입력 경로가 여기로 모임) ───── */
+function confOf(p){
+  if(p.playerId&&p.championId&&CHAMPIONS.includes(canonChamp(p.championId)))return['확정','ok'];
+  if(p.playerId||p.championId)return['확인 필요','mid'];
+  return['미매칭','bad'];
+}
+function renderReview(targetId){
+  if(!draft)return;
+  const rows=draft.participants.map((p,i)=>{
+    const[ct,cc]=confOf(p);
+    return`<tr>
+      <td><select id="rT${i}">${TEAMS.map(t=>`<option value="${t}"${p.team===t?' selected':''}>${t==='BLUE'?'블루':'레드'}</option>`).join('')}</select></td>
+      <td><select id="rL${i}">${LANES.map(l=>`<option${p.lane===l?' selected':''}>${l}</option>`).join('')}</select></td>
+      <td><input id="rRaw${i}" value="${esc(p.rawName||'')}" placeholder="원본 텍스트" oninput="reMatch(${i})"></td>
+      <td><select id="rP${i}"><option value="">미매칭</option>${playerOpts(p.playerId)}</select></td>
+      <td><input id="rC${i}" list="dlChamps" value="${esc(p.championId||'')}" placeholder="챔피언"></td>
+      <td style="width:54px"><input id="rK${i}" type="number" min="0" value="${p.kills||0}"></td>
+      <td style="width:54px"><input id="rD${i}" type="number" min="0" value="${p.deaths||0}"></td>
+      <td style="width:54px"><input id="rA${i}" type="number" min="0" value="${p.assists||0}"></td>
+      <td><span class="conf ${cc}" id="rS${i}">${ct}</span></td>
+    </tr>`;
+  }).join('');
+  const hasStats=draft.participants.some(p=>p.stats&&Object.values(p.stats).some(v=>num(v)>0));
+  const statHead=STAT_FIELDS.map(([k,l])=>`<th>${l}</th>`).join('');
+  const statRows=draft.participants.map((p,i)=>`<tr><td><b id="rName${i}">${esc(nameOf(p.playerId)||p.rawName||('선수'+(i+1)))}</b></td>${STAT_FIELDS.map(([k])=>`<td style="min-width:86px"><input id="rv_${i}_${k}" type="text" inputmode="numeric" value="${p.stats?.[k]??''}" placeholder="0"></td>`).join('')}</tr>`).join('');
+  $(targetId).innerHTML=`
+  <div class="card review">
+    <h3>저장 전 검수 <span class="tag">${draftEditId?'경기 수정':'새 경기'}</span></h3>
+    <p class="mini">자동 판독은 틀릴 수 있어요. 이름·챔피언·KDA를 여기서 바로잡은 뒤 저장하세요. 챔피언은 아이콘이라 글자로 안 읽히는 경우가 많으니 직접 선택해주세요.</p>
+    <div class="grid c4" style="margin:12px 0">
+      <div class="f"><label>날짜</label><input type="date" id="rvDate" value="${esc(draft.playedAt)}"></div>
+      <div class="f"><label>세트</label><input type="number" min="1" id="rvSet" value="${draft.setNumber}"></div>
+      <div class="f"><label>승리팀</label><select id="rvWin"><option value="BLUE"${draft.winnerTeam==='BLUE'?' selected':''}>🔵 블루</option><option value="RED"${draft.winnerTeam==='RED'?' selected':''}>🔴 레드</option></select></div>
+      <div class="f"><label>MVP</label><select id="rvMvp"><option value="">스킵 / 나중에 투표</option>${playerOpts(draft.mvpId)}</select></div>
+    </div>
+    <div class="grid c2" style="margin-bottom:12px">
+      <div class="f"><label>🚫 블루 밴 (쉼표 구분)</label><input id="rvBanB" list="dlChamps" value="${esc((draft.bans||[]).filter(b=>b.team==='BLUE').map(b=>b.championId).join(', '))}" placeholder="예: 유미, 크산테"></div>
+      <div class="f"><label>🚫 레드 밴 (쉼표 구분)</label><input id="rvBanR" list="dlChamps" value="${esc((draft.bans||[]).filter(b=>b.team==='RED').map(b=>b.championId).join(', '))}" placeholder="예: 로크"></div>
+    </div>
+    <div class="f" style="margin-bottom:12px"><label>메모</label><input id="rvMemo" value="${esc(draft.memo||'')}" placeholder="예: 금요 내전 2일차"></div>
+    <div class="scrollx"><table class="tbl" style="min-width:880px"><thead><tr><th>팀</th><th>라인</th><th>원본</th><th>플레이어</th><th>챔피언</th><th>K</th><th>D</th><th>A</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <details class="fold"${hasStats?' open':''}><summary>상세 스탯 검수 — 딜량 · 골드 · 시야 · 오브젝트 (선택)</summary>
+      <p class="mini">스크린샷의 통계 탭 숫자를 채우면 칭호와 상세 지표가 풍부해져요. 빈 칸은 0으로 저장됩니다.</p>
+      <div class="scrollx"><table class="tbl" style="min-width:1280px"><thead><tr><th>플레이어</th>${statHead}</tr></thead><tbody>${statRows}</tbody></table></div>
+    </details>
+    <div class="row" style="margin-top:14px">
+      <button class="btn gold" onclick="saveDraft()">${draftEditId?'수정 내용 저장':'경기 최종 저장'}</button>
+      <button class="btn ghost" onclick="draft=null;draftEditId=null;render()">취소</button>
+    </div>
+  </div>`;
+}
+function reMatch(i){
+  const fp=fuzzyPlayer($(`rRaw${i}`).value);
+  if(fp.player){$(`rP${i}`).value=fp.player.id;const s=$(`rS${i}`);if(s){s.textContent='확인 필요';s.className='conf mid'}}
+}
+function readBans(){
+  const bans=[];
+  [['rvBanB','BLUE'],['rvBanR','RED']].forEach(([id,team])=>{
+    const el=$(id); if(!el)return;
+    String(el.value||'').split(',').map(x=>x.trim()).filter(Boolean)
+      .forEach(c=>{const cc=canonChamp(c);if(cc)bans.push({team,championId:cc})});
+  });
+  return bans.length?bans:(draft&&draft.bans)||[];
+}
+function readDraft(){
+  const parts=[];
+  for(let i=0;i<draft.participants.length;i++){
+    const playerId=$(`rP${i}`).value;
+    const rawName=$(`rRaw${i}`).value.trim();
+    const champ=canonChamp($(`rC${i}`).value.trim());
+    if(!playerId&&!rawName&&!champ)continue; // 빈 줄 스킵
+    if(!playerId){toast(`${i+1}번째 줄의 플레이어를 선택해주세요. (빈 줄이면 원본·챔피언도 비워주세요)`,true);return null}
+    const stats={};
+    STAT_FIELDS.forEach(([k])=>{const el=$(`rv_${i}_${k}`);const v=el?num(el.value):num(draft.participants[i].stats?.[k]);if(v)stats[k]=v});
+    parts.push({team:$(`rT${i}`).value,lane:$(`rL${i}`).value,playerId,rawName,
+      championId:champ,kills:num($(`rK${i}`).value),deaths:num($(`rD${i}`).value),assists:num($(`rA${i}`).value),stats});
+  }
+  if(parts.length<2){toast('최소 양 팀 1명씩은 있어야 해요.',true);return null}
+  const ids=parts.map(p=>p.playerId);
+  if(new Set(ids).size!==ids.length){toast('같은 플레이어가 두 번 들어가 있어요.',true);return null}
+  return{playedAt:$('rvDate').value||todayStr(),setNumber:num($('rvSet').value)||1,
+    winnerTeam:$('rvWin').value,memo:$('rvMemo').value.trim(),mvpId:$('rvMvp').value||null,
+    gameId:draft&&draft.gameId?draft.gameId:null,
+    durationMin:draft&&draft.durationMin!=null?draft.durationMin:null,
+    participants:parts,bans:readBans()};
+}
+function saveDraft(){
+  const data=readDraft(); if(!data)return;
+  if(draftEditId){
+    const i=state.matches.findIndex(m=>m.id===draftEditId);
+    if(i>=0)state.matches[i]={...state.matches[i],...data};
+    toast('경기를 수정했어요.');
+  }else{
+    state.matches.push({id:uid('m'),createdAt:new Date().toISOString(),...data});
+    toast('경기를 저장했어요.');
+  }
+  save(); draft=null; draftEditId=null;
+  $('modal').classList.remove('open');
+  go('matches');
+}
+
+/* ============================================================
+   라이엇 API 자동 불러오기 (Vercel 중계 서버 경유)
+   브라우저는 라이엇을 직접 못 부르므로(키 보안·CORS),
+   중계 함수 주소를 설정 후 사용합니다. 정확도 100%.
+   ============================================================ */
+async function riotApi(params){
+  const base=(state.settings.proxyUrl||'').trim().replace(/\/+$/,'');
+  if(!base)throw new Error('중계 서버 주소를 먼저 입력해주세요.');
+  const r=await fetch(`${base}/api/riot?${new URLSearchParams(params)}`);
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||j.error)throw new Error(j.error||('서버 응답 오류 '+r.status));
+  return j;
+}
+let ddMapKo=null; // 영문 챔피언 ID·숫자 키 → 한국어 이름
+async function ddragonMap(){
+  if(ddMapKo)return ddMapKo;
+  const vers=await fetch('https://ddragon.leagueoflegends.com/api/versions.json').then(r=>r.json());
+  const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${vers[0]}/data/ko_KR/champion.json`).then(r=>r.json());
+  ddMapKo={};
+  Object.values(data.data).forEach(v=>{ddMapKo[norm(v.id)]=v.name;ddMapKo[String(v.key)]=v.name;ddMapKo[norm(v.name)]=v.name});
+  return ddMapKo;
+}
+function champKo(x){
+  if(x==null||x==='')return'';
+  const k=String(x);
+  if(ddMapKo&&(ddMapKo[norm(k)]||ddMapKo[k]))return ddMapKo[norm(k)]||ddMapKo[k];
+  return canonChamp(k);
+}
+function saveProxyUrl(){const el=$('proxyUrl');if(el){state.settings.proxyUrl=el.value.trim();save()}}
+function saveAnchor(){const el=$('riotAnchor');if(el){state.settings.riotAnchor=el.value;save()}}
+async function riotFetchList(){
+  saveProxyUrl();saveAnchor();
+  const p=byId($('riotAnchor')?.value);
+  if(!p||!p.riotName)return toast('롤 닉네임이 등록된 멤버를 기준으로 선택해주세요.',true);
+  const box=$('riotList');
+  box.innerHTML='<div class="empty">라이엇에서 불러오는 중... (몇 초 걸려요)</div>';
+  try{
+    const acc=await riotApi({action:'resolve',name:p.riotName,tag:p.riotTag||'KR1'});
+    let ids=(await riotApi({action:'ids',puuid:acc.puuid,queue:0,count:10})).ids||[];
+    let onlyCustom=true;
+    if(!ids.length){ids=(await riotApi({action:'ids',puuid:acc.puuid,count:15})).ids||[];onlyCustom=false}
+    if(!ids.length){box.innerHTML='<div class="empty">이 계정의 최근 경기를 찾지 못했어요.</div>';return}
+    window._riotCache={};
+    const rows=[];
+    for(const id of ids.slice(0,12)){
+      const m=await riotApi({action:'match',id});
+      const isCustom=(m.info?.queueId===0)||(m.info?.gameType==='CUSTOM_GAME');
+      window._riotCache[id]=m;
+      rows.push({id,info:m.info||{},isCustom});
+      if(rows.filter(r=>r.isCustom).length>=6)break;
+    }
+    const customs=rows.filter(r=>r.isCustom),show=customs.length?customs:rows;
+    box.innerHTML=(customs.length||onlyCustom?'':'<p class="mini" style="margin:0 0 8px">최근 목록에서 사용자 설정 게임을 못 찾아 전체 경기를 보여드려요.</p>')+
+      show.map(r=>{
+        const d=new Date(r.info.gameStartTimestamp||r.info.gameCreation||Date.now());
+        const min=Math.round((r.info.gameDuration||0)/60);
+        const my=(r.info.participants||[]).find(x=>x.puuid===acc.puuid);
+        return`<div class="row" style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+          <span class="pill ${r.isCustom?'gold':''}">${r.isCustom?'내전 (사용자 설정)':'일반 매칭'}</span>
+          <b>${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</b>
+          <span class="dim mini">${min}분${my?' · '+esc(champKo(my.championName)||my.championName||'')+(my.win?' 승':' 패'):''}</span>
+          <button class="btn sm gold right" onclick="riotImport('${r.id}')">이 경기 불러오기</button>
+        </div>`;
+      }).join('');
+  }catch(e){
+    box.innerHTML=`<div class="empty">불러오기 실패: ${esc(e.message)}<br><span class="mini">중계 서버 주소가 맞는지, 라이엇 키가 만료되지 않았는지 확인해주세요.</span></div>`;
+  }
+}
+const RIOT_LANE={TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'ADC',UTILITY:'SUPPORT'};
+async function riotImport(id){
+  try{
+    const m=window._riotCache?.[id]||await riotApi({action:'match',id});
+    const info=m.info||{};
+    try{await ddragonMap()}catch(e){/* 매핑 실패 시 영문명 그대로, 검수에서 수정 */}
+    const parts=(info.participants||[]).slice(0,10).map((x,i)=>{
+      const rn=(x.riotIdGameName||x.summonerName||'')+(x.riotIdTagline?'#'+x.riotIdTagline:'');
+      const fp=findPlayer(x.riotIdGameName||x.summonerName||'')||fuzzyPlayer(rn).player;
+      return{team:x.teamId===200?'RED':'BLUE',lane:RIOT_LANE[x.teamPosition]||LANES[i%5],
+        rawName:rn,playerId:fp?.id||'',championId:champKo(x.championName??x.championId),
+        kills:num(x.kills),deaths:num(x.deaths),assists:num(x.assists),
+        stats:{cs:num(x.totalMinionsKilled)+num(x.neutralMinionsKilled),goldEarned:num(x.goldEarned),
+          damageToChampions:num(x.totalDamageDealtToChampions),damageTaken:num(x.totalDamageTaken),
+          visionScore:num(x.visionScore),wardsPlaced:num(x.wardsPlaced),wardsKilled:num(x.wardsKilled),
+          controlWardsBought:num(x.visionWardsBoughtInGame),crowdControlScore:num(x.timeCCingOthers),
+          damageToObjectives:num(x.damageDealtToObjectives),damageToTurrets:num(x.damageDealtToTurrets),
+          healing:num(x.totalHeal),selfMitigatedDamage:num(x.damageSelfMitigated)}};
+    });
+    const winTeam=(info.teams||[]).find(t=>t.win);
+    const bans=[];
+    (info.teams||[]).forEach(t=>(t.bans||[]).forEach(b=>{if(b&&b.championId>0)bans.push({team:t.teamId===200?'RED':'BLUE',championId:champKo(b.championId)})}));
+    const d=new Date(info.gameStartTimestamp||info.gameCreation||Date.now());
+    draft={playedAt:isFinite(d)?d.toISOString().slice(0,10):todayStr(),setNumber:1,
+      winnerTeam:winTeam?(winTeam.teamId===200?'RED':'BLUE'):'BLUE',
+      memo:'라이엇 API 자동 입력',mvpId:'',participants:parts,bans};
+    draftEditId=null;
+    renderReview('reviewBox');
+    $('reviewBox').scrollIntoView({behavior:'smooth'});
+    toast(`라이엇에서 ${parts.filter(q=>q.playerId).length}/${parts.length}명 자동 매칭. 검수 후 저장하세요.`);
+  }catch(e){toast('경기 불러오기 실패: '+e.message,true)}
+}
+
+
+/* ───── 공유 데이터 (호스팅된 사이트의 data.json) ───── */
+async function loadShared(manual){
+  try{
+    const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw 0;
+    const shared=fixState(await r.json());
+    if(!shared.matches.length&&!shared.players.length)throw 0;
+    const localN=state.matches.length;
+    if(manual){
+      if(!confirm(`공유 데이터(경기 ${shared.matches.length}판)로 교체할까요?\n이 브라우저의 현재 데이터(${localN}판)는 덮어써져요.`))return;
+      state=shared;save();render();toast('공유 데이터로 교체했어요.');return;
+    }
+    if(shared.matches.length>localN){
+      if(localN===0){state=shared;save();render();toast(`공유 데이터를 불러왔어요 — 경기 ${shared.matches.length}판`);}
+      else if(confirm(`더 최신인 공유 데이터(${shared.matches.length}판)가 있어요. 불러올까요? (현재 ${localN}판)`)){state=shared;save();render();toast('공유 데이터로 갱신했어요.');}
+    }
+  }catch(e){if(manual)toast('공유 데이터(data.json)를 찾지 못했어요. 호스팅된 링크에서 열었을 때만 작동해요.',true)}
+}
+
+
+function dedupeMatches(){ // 이미 저장된 중복 경기 정리 (게임ID 또는 날짜·승팀·KDA 구성이 동일)
+  const seen=new Set();const keep=[];let removed=0;
+  [...state.matches].sort((a,b)=>String(a.createdAt).localeCompare(String(b.createdAt))).forEach(m=>{
+    const keys=[m.gameId?'g:'+m.gameId:null,matchSig(m)].filter(Boolean);
+    if(keys.some(k=>seen.has(k))){removed++;return}
+    keys.forEach(k=>seen.add(k));keep.push(m);
+  });
+  if(!removed)return toast('중복 경기가 없어요.');
+  if(!confirm(`중복으로 보이는 경기 ${removed}판을 삭제할까요?\n(같은 게임ID, 또는 날짜·승리팀·10명 KDA 구성이 완전히 같은 경기)`))return;
+  state.matches=keep;save();render();toast(`중복 ${removed}판을 정리했어요.`);
+}
+
+
+function cleanGhosts(){ // 이미 저장된 무효 경기(다시하기 등) 정리
+  const isGhost=m=>(m.durationMin!=null&&m.durationMin<5)||(m.participants||[]).every(p=>num(p.kills)+num(p.deaths)+num(p.assists)===0);
+  const ghosts=state.matches.filter(isGhost);
+  if(!ghosts.length)return toast('무효로 보이는 경기가 없어요.');
+  if(!confirm(`무효 게임으로 보이는 ${ghosts.length}판을 삭제할까요?\n(5분 미만이거나, 10명 전원 KDA가 0/0/0인 경기 — 다시하기·접속실패 흔적)`))return;
+  state.matches=state.matches.filter(m=>!isGhost(m));
+  state.voteRooms=state.voteRooms.filter(v=>state.matches.some(m=>m.id===v.matchId));
+  save();render();toast(`무효 게임 ${ghosts.length}판을 정리했어요.`);
+}
+
+
+function swapSides(id){ // 블루↔레드 통째 미러 (선수·밴·승리팀) — 누가 이겼는지는 유지
+  const m=state.matches.find(x=>x.id===id); if(!m)return;
+  if(!confirm('블루팀과 레드팀을 통째로 맞바꿀까요?\n선수 배치·밴·승리팀이 함께 거울처럼 뒤집혀서, "누가 이겼는지"는 그대로 유지되고 진영 기록만 바로잡힙니다.'))return;
+  m.participants.forEach(p=>p.team=p.team==='BLUE'?'RED':'BLUE');
+  (m.bans||[]).forEach(b=>{if(b&&b.team)b.team=b.team==='BLUE'?'RED':'BLUE'});
+  m.winnerTeam=m.winnerTeam==='BLUE'?'RED':'BLUE';
+  save();render();toast('진영을 반전했어요. 승자(사람)는 동일하게 유지됩니다.');
+}
+/* ───── 내비게이션 ───── */
+const PAGES=[
+ ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
+ ['stats','통계'],['champions','챔피언'],['form','폼 주식'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
+];
+function go(id){tab=id;render();window.scrollTo({top:0})}
+function renderNav(){
+  $('nav').innerHTML=PAGES.map(([id,l])=>`<button class="${tab===id?'on':''}" onclick="go('${id}')">${l}</button>`).join('');
+}
+function renderTicker(){
+  const ms=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a))).slice(0,8);
+  let items;
+  if(!ms.length){
+    items=['아직 기록된 내전이 없습니다 — 기록하기 탭에서 첫 경기를 등록해보세요','챔피언 173종 수록 (신챔 로크 포함)'];
+  }else{
+    items=ms.map(m=>{
+      const mvp=m.mvpId?` · MVP <b>${esc(nameOf(m.mvpId))}</b>`:'';
+      return`${esc(m.playedAt)} ${m.setNumber}세트 <span class="${m.winnerTeam==='BLUE'?'tk-up':'tk-dn'}">${m.winnerTeam==='BLUE'?'블루 ▲':'레드 ▲'}</span>${mvp}`;
+    });
+    const P=statPlayers().slice(0,3);
+    P.forEach(p=>items.push(`<b>${esc(p.name)}</b> 승률 <span class="${p.winRate>=50?'tk-up':'tk-dn'}">${p.winRate}%</span> (${p.games}판)`));
+  }
+  const html=items.map(t=>`<span>${t}</span>`).join('');
+  $('ticker').innerHTML=html+html; // 무한 루프용 2배
+}
+function head(title,sub){
+  return`<div class="pageHead"><div><h2>${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>
+  <div class="meta"><span class="chip">플레이어 ${state.players.filter(p=>p.active).length}명</span><span class="chip">경기 ${state.matches.length}판</span><span class="chip">챔피언 ${CHAMPIONS.length}종</span></div></div>`;
+}
+function render(){
+  renderNav();renderTicker();fillDatalists();
+  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,
+    champions:pgChampions,form:pgForm,awards:pgAwards,mvp:pgMvp,settings:pgSettings};
+  $('view').innerHTML=(R[tab]||pgDashboard)();
+  const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
+}
+
+/* ───── 대시보드 ───── */
+function pgDashboard(){
+  const P=statPlayers(),A=makeAwards().slice(0,6);
+  const recent=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))[0];
+  const meta=statChamps().filter(c=>c.picks>=2)[0];
+  return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
+  <div class="grid c4">
+    <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
+    <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
+    <div class="kpi gold"><div class="n">${P[0]?esc(P[0].name):'—'}</div><div class="l">개인 승률 1위${P[0]?` · ${P[0].winRate}%`:''}</div></div>
+    <div class="kpi"><div class="n">${meta?esc(meta.champion):'—'}</div><div class="l">아포단 메타픽</div></div>
+  </div>
+  <div class="grid c2" style="margin-top:14px">
+    <div class="card"><h3>최근 경기</h3>${recent?matchInner(recent,true):'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
+    <div class="card"><h3>오늘의 칭호 <span class="tag">AUTO</span></h3>
+      ${A.length?`<div class="awards">${A.map(awardCard).join('')}</div>`:'<div class="empty">경기를 몇 판 기록하면 칭호가 자동으로 생겨요.</div>'}
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>종합 리더보드</h3>${tblPlayers(P)}</div>`;
+}
+
+/* ───── 기록하기 (스크린샷 분석 = 메인) ───── */
+function pgRecord(){
+  draft=null;draftEditId=null;
+  const anchors=state.players.filter(p=>p.active&&p.riotName);
+  const anchorSel=state.settings.riotAnchor||anchors[0]?.id||'';
+  return head('기록하기','라이엇 연동이 가장 정확해요(딜량·시야·밴·챔피언까지 자동). 어떤 방법이든 자동 저장은 없고, 항상 검수 후 저장됩니다.')+`
+  <div class="card" style="border-color:rgba(242,184,75,.45)">
+    <h3>① 라이엇 자동 불러오기 <span class="tag">정확도 100% · 추천</span></h3>
+    <p class="mini">중계 서버를 한 번만 연결해두면, 경기 끝나고 버튼 하나로 10명 전적이 통째로 들어와요. 설정 방법은 채팅 가이드 참고 (라이엇 키 발급 → Vercel 배포 → 주소 입력).</p>
+    <div class="grid c3" style="margin-top:10px">
+      <div class="f"><label>중계 서버 주소 (Vercel)</label><input id="proxyUrl" placeholder="https://apodan-riot-proxy.vercel.app" value="${esc(state.settings.proxyUrl||'')}" onchange="saveProxyUrl()"></div>
+      <div class="f"><label>기준 멤버 (이 사람 전적에서 검색)</label><select id="riotAnchor" onchange="saveAnchor()">${anchors.map(p=>`<option value="${p.id}"${p.id===anchorSel?' selected':''}>${esc(p.displayName)} · ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}</option>`).join('')}</select></div>
+      <div class="f" style="align-self:end"><button class="btn gold" onclick="riotFetchList()">최근 내전 목록 불러오기</button></div>
+    </div>
+    <div id="riotList" style="margin-top:12px"></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3>② 스크린샷 분석 <span class="tag">백업 · 내장 OCR</span></h3>
+    <div class="drop" id="drop" onclick="$('shotFile').click()">
+      <b>결과창 스크린샷을 끌어다 놓거나 클릭해서 선택</b>
+      <p class="mini">여러 장 동시 가능 · 캡처 후 Ctrl+V 붙여넣기도 돼요 · 점수판이 크게 나온 사진일수록 정확합니다</p>
+    </div>
+    <input type="file" id="shotFile" accept="image/*" multiple class="hide">
+    <div class="thumbs" id="thumbs"></div>
+    <div class="grid c4" style="margin-top:14px">
+      <div class="f"><label>날짜</label><input type="date" id="shotDate" value="${todayStr()}"></div>
+      <div class="f"><label>세트</label><input type="number" id="shotSet" min="1" value="1"></div>
+      <div class="f"><label>승리팀</label><select id="shotWin"><option value="BLUE">🔵 블루</option><option value="RED">🔴 레드</option></select></div>
+      <div class="f" style="align-self:end"><button class="btn gold" id="ocrGo" onclick="analyzeShots()">스크린샷 분석 시작</button></div>
+    </div>
+    <div class="prog"><i id="ocrBar"></i></div>
+    <p class="mini" id="ocrLbl" style="margin-top:8px">한국어+영어 닉네임, KDA(예: 11/3/7), 큰 숫자(딜량·골드)를 찾아냅니다. 챔피언은 아이콘이라 검수표에서 직접 고르는 게 정확해요.</p>
+    <div class="ocrNote" id="ocrNote"><b>⚠ 이 미리보기 환경에서는 브라우저가 OCR 엔진(Web Worker)을 차단해요.</b><br>
+    이 파일을 <b>다운로드해서 내 컴퓨터에서 직접 열면</b> 정상 작동합니다. 지금 당장은 아래 ②(텍스트)나 ③(JSON)·④(직접 입력)를 이용해주세요.</div>
+    <details class="fold"><summary>판독된 텍스트 확인 / 직접 붙여넣기</summary>
+      <p class="mini">OCR 결과가 여기 담겨요. 닉네임이 깨졌다면 고친 뒤 다시 후보를 생성할 수 있고, 다른 곳에서 복사한 텍스트를 붙여넣어도 됩니다. 형식: <code>닉네임 챔피언 11/3/7</code> 한 줄에 한 명.</p>
+      <div class="f"><textarea id="ocrText" placeholder="99 잭슨 아트록스 11/3/7&#10;00 미르 리 신 4/2/10&#10;..."></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="buildDraftFromText()">텍스트에서 후보 생성</button></div>
+    </details>
+  </div>
+  <div class="grid c2" style="margin-top:14px">
+    <div class="card"><h3>③ JSON 붙여넣기 <span class="tag">채팅 AI 판독</span></h3>
+      <p class="mini">라이엇 연동을 아직 안 했거나 키가 만료됐을 때: 경기 사진을 이 채팅(AI)에 올려 JSON으로 판독받아 붙여넣으면 딜량·시야까지 전부 들어가요.</p>
+      <div class="f"><textarea id="jsonIn" style="min-height:150px" placeholder='{"winnerTeam":"BLUE","participants":[...]}'></textarea></div>
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="importJson()">검수 화면으로 불러오기</button><button class="btn ghost sm" onclick="jsonSample()">형식 샘플 보기</button></div>
+    </div>
+    <div class="card"><h3>④ 직접 입력</h3>
+      <p class="mini">사진 없이 손으로 적을 때. 10칸 빈 검수표가 열립니다.</p>
+      <button class="btn" onclick="manualDraft()">빈 검수표 열기</button>
+      <div class="hr"></div>
+      <p class="mini"><b>추천 흐름</b><br>경기 종료 → ①에서 최근 내전 불러오기 → 검수표 확인 → 저장. 끝. 라이엇 키가 만료된 날엔 ②(스크린샷)나 ③(JSON)으로.</p>
+    </div>
+  </div>
+  <div id="reviewBox" style="margin-top:14px"></div>`;
+}
+function afterRecord(){
+  const drop=$('drop'),input=$('shotFile');
+  input.onchange=e=>addShots([...e.target.files]);
+  ['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+  drop.addEventListener('drop',e=>addShots([...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'))));
+  renderThumbs();
+}
+document.addEventListener('paste',e=>{ // 캡처 후 Ctrl+V
+  if(tab!=='record')return;
+  const files=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
+  if(files.length){addShots(files);toast('클립보드 이미지를 추가했어요.')}
+});
+function addShots(files){
+  files.forEach(f=>shots.push({file:f,url:URL.createObjectURL(f)}));
+  renderThumbs();
+}
+function delShot(i){URL.revokeObjectURL(shots[i].url);shots.splice(i,1);renderThumbs()}
+function renderThumbs(){
+  const el=$('thumbs'); if(!el)return;
+  el.innerHTML=shots.map((s,i)=>`<div class="thumb"><img src="${s.url}" alt=""><button onclick="delShot(${i})" title="제거">✕</button></div>`).join('');
+}
+function manualDraft(){
+  draft={playedAt:todayStr(),setNumber:1,winnerTeam:'BLUE',memo:'',mvpId:'',
+    participants:Array.from({length:10},(_,i)=>({team:i<5?'BLUE':'RED',lane:LANES[i%5],rawName:'',playerId:'',championId:'',kills:0,deaths:0,assists:0,stats:{}})),bans:[]};
+  draftEditId=null;
+  renderReview('reviewBox');
+  $('reviewBox').scrollIntoView({behavior:'smooth'});
+}
+
+/* ───── 경기 목록 ───── */
+function teamRows(m,t){
+  return`<table class="tbl"><thead><tr><th class="${t==='BLUE'?'tBlue':'tRed'}">${t==='BLUE'?'블루팀':'레드팀'}</th><th>챔피언</th><th>KDA</th><th class="num">딜량</th></tr></thead><tbody>
+  ${m.participants.filter(p=>p.team===t).map(p=>`<tr>
+    <td><b>${esc(nameOf(p.playerId))}</b> <span class="dim mini">${LANE_KO[p.lane]||''}</span></td>
+    <td>${esc(p.championId||'-')}</td>
+    <td>${p.kills}/${p.deaths}/${p.assists}</td>
+    <td class="num dim">${p.stats?.damageToChampions?fmt(p.stats.damageToChampions):'-'}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function matchInner(m,compact){
+  return`<div class="row" style="margin-bottom:10px">
+    <span class="pill ${m.winnerTeam==='BLUE'?'blue':'lose'}">${m.winnerTeam==='BLUE'?'블루 승리':'레드 승리'}</span>
+    <b>${esc(m.playedAt)} · ${m.setNumber}세트</b>
+    ${m.durationMin?`<span class="dim mini">${m.durationMin}분</span>`:''}
+    ${m.mvpId?`<span class="pill gold">👑 MVP ${esc(nameOf(m.mvpId))}</span>`:''}
+    <span class="mini dim">${esc(m.memo||'')}</span>
+    ${compact?'':`<span class="right row"><button class="btn sm" title="승리팀 표기만 뒤집기" onclick="flipWinner('${m.id}')">승패 반전</button><button class="btn sm" title="블루↔레드 선수·밴·승자를 통째로 미러 (진영 승률 보존)" onclick="swapSides('${m.id}')">진영 반전</button><button class="btn sm" onclick="editMatch('${m.id}')">수정</button><button class="btn sm" onclick="go('mvp')">MVP 투표</button><button class="btn sm lose" onclick="delMatch('${m.id}')">삭제</button></span>`}
+  </div>
+  <div class="grid c2">${teamRows(m,'BLUE')}${teamRows(m,'RED')}</div>
+  ${(()=>{const bb=(m.bans||[]).filter(b=>b.team==='BLUE').map(b=>esc(b.championId||b)).filter(Boolean);
+          const br=(m.bans||[]).filter(b=>b.team==='RED').map(b=>esc(b.championId||b)).filter(Boolean);
+          return(bb.length||br.length)?`<p class="mini" style="margin:10px 0 0">🚫 밴 — <span class="tBlue">블루:</span> ${bb.join(', ')||'-'} &nbsp;·&nbsp; <span class="tRed">레드:</span> ${br.join(', ')||'-'}</p>`:''})()}`;
+}
+function pgMatches(){
+  const ms=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)));
+  return head('경기 기록','저장된 모든 경기. 수정·삭제할 수 있어요.')+
+    (ms.length?ms.map(m=>`<div class="card" style="margin-bottom:14px">${matchInner(m)}</div>`).join('')
+    :'<div class="empty">아직 저장된 경기가 없어요. 기록하기 탭에서 첫 경기를 등록해보세요.</div>');
+}
+function flipWinner(id){
+  const m=state.matches.find(x=>x.id===id); if(!m)return;
+  m.winnerTeam=m.winnerTeam==='BLUE'?'RED':'BLUE';
+  save();render();
+  toast(`이 경기의 승리팀을 ${m.winnerTeam==='BLUE'?'블루':'레드'}로 바꿨어요.`);
+}
+function delMatch(id){
+  if(!confirm('이 경기를 삭제할까요?'))return;
+  state.matches=state.matches.filter(m=>m.id!==id);
+  state.voteRooms=state.voteRooms.filter(v=>v.matchId!==id);
+  save();render();toast('경기를 삭제했어요.');
+}
+function editMatch(id){
+  const m=state.matches.find(x=>x.id===id); if(!m)return;
+  draft=JSON.parse(JSON.stringify(m)); draftEditId=id;
+  $('modal').classList.add('open');
+  $('modalBox').innerHTML='<div id="modalReview"></div>';
+  renderReview('modalReview');
+}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal'){$('modal').classList.remove('open');draft=null;draftEditId=null}});
+
+/* ───── 플레이어 ───── */
+let selPlayer=null;
+function pgPlayers(){
+  const q=norm(window._pq||'');
+  const list=[...state.players].sort((a,b)=>(b.active-a.active)||a.displayName.localeCompare(b.displayName,'ko'))
+    .filter(p=>!q||labelsOf(p).some(x=>norm(x).includes(q)));
+  if(!selPlayer||!byId(selPlayer))selPlayer=list[0]?.id||null;
+  const p=byId(selPlayer);
+  const e=editingPlayer?byId(editingPlayer):null;
+  return head('플레이어 관리','통계는 이름 글자가 아니라 고유 ID로 묶여서, 닉네임이 바뀌어도 같은 사람으로 유지돼요.')+`
+  <div class="grid" style="grid-template-columns:330px minmax(0,1fr)">
+    <div class="card">
+      <h3>명단 (${list.filter(x=>x.active).length}명)</h3>
+      <div class="f" style="margin-bottom:10px"><input id="pq" placeholder="이름·롤닉 검색" value="${esc(window._pq||'')}" oninput="window._pq=this.value;render();setTimeout(()=>{const el=$('pq');el.focus();el.setSelectionRange(el.value.length,el.value.length)})"></div>
+      <div class="pList">${list.map(x=>`
+        <div class="pItem ${x.id===selPlayer?'on':''} ${x.active?'':'off'}" onclick="selPlayer='${x.id}';render()">
+          <div><b>${esc(x.displayName)}</b>${x.riotName?`<div class="ign">${esc(x.riotName)}${x.riotTag?'#'+esc(x.riotTag):''}</div>`:''}</div>
+          ${x.active?'':'<span class="pill">휴면</span>'}
+        </div>`).join('')}</div>
+      <div class="hr"></div>
+      <button class="btn" style="width:100%" onclick="editingPlayer='__new__';render()">＋ 새 플레이어 등록</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="syncRoster()">확정 명단과 동기화</button>
+    </div>
+    <div style="display:grid;gap:14px">
+      ${editingPlayer?playerForm(e):p?playerDetail(p):'<div class="empty">왼쪽에서 플레이어를 선택해주세요.</div>'}
+      <div class="card"><h3>두 명을 한 명으로 합치기</h3>
+        <p class="mini">같은 사람이 두 번 등록됐을 때. 보내는 쪽의 모든 경기·투표가 받는 쪽으로 이동하고 보내는 쪽은 삭제돼요.</p>
+        <div class="row"><select id="mgFrom" style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px">${playerOpts()}</select>
+        <span class="dim">→</span>
+        <select id="mgTo" style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px">${playerOpts()}</select>
+        <button class="btn" onclick="mergePlayers()">병합</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+function afterPlayers(){}
+function playerDetail(p){
+  const S=statPlayers().find(s=>s.id===p.id);
+  const syn=statDuos(1).filter(d=>d.ids.includes(p.id)).slice(0,6);
+  const riv=statRivals(1).filter(r=>r.ids.includes(p.id)).slice(0,6);
+  const{arr,wl}=formSeries(p.id);
+  return`<div class="card">
+    <div class="row">
+      <div><h3 style="margin:0">${esc(p.displayName)} ${p.active?'':'<span class="pill">휴면</span>'}</h3>
+      <p class="mini" style="margin:4px 0 0">${p.riotName?`🎮 ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}`:'<span class="dim">롤 닉네임 미등록</span>'} ${p.memo?` · ${esc(p.memo)}`:''}</p>
+      ${p.aliases?.length?`<p class="mini dim" style="margin:3px 0 0">별명: ${p.aliases.map(esc).join(', ')}</p>`:''}</div>
+      <span class="right row">
+        <button class="btn sm" onclick="editingPlayer='${p.id}';render()">수정</button>
+        <button class="btn sm" onclick="togglePlayer('${p.id}')">${p.active?'휴면 처리':'활동 복귀'}</button>
+        <button class="btn sm lose" onclick="delPlayer('${p.id}')">삭제</button>
+      </span>
+    </div>
+    <div class="hr"></div>
+    ${S?`<div class="grid c4">
+      <div class="kpi"><div class="n">${S.wins}<span class="dim" style="font-size:16px">승</span> ${S.losses}<span class="dim" style="font-size:16px">패</span></div><div class="l">전적 · 승률 ${S.winRate}%</div></div>
+      <div class="kpi"><div class="n">${S.kda}</div><div class="l">평균 KDA</div></div>
+      <div class="kpi"><div class="n">${S.avgDmg?fmt(S.avgDmg):'-'}</div><div class="l">평균 딜량</div></div>
+      <div class="kpi gold"><div class="n">${S.mvp}</div><div class="l">MVP 횟수</div></div>
+    </div>
+    ${(()=>{const sd=statPlayerSides(1).find(x=>x.id===p.id);return sd?`<p class="mini" style="margin:12px 0 0">진영별: <b class="tBlue">블루 ${sd.bW}승 ${sd.bG-sd.bW}패${sd.bG?` (${sd.bRate}%)`:''}</b> · <b class="tRed">레드 ${sd.rW}승 ${sd.rG-sd.rW}패${sd.rG?` (${sd.rRate}%)`:''}</b></p>`:''})()}
+    ${(()=>{
+      const hex=playerHex(p.id); if(!hex)return'';
+      const mainLane=playerMainLane(p.id);
+      const pro=matchPro(hex,mainLane);
+      const rep=styleReport(hex);
+      const mine=makeAwards().filter(a=>a.target===p.displayName||(a.target.includes(p.displayName)&&(a.target.includes('+')||a.target.includes('vs')))).slice(0,12);
+      return`<div class="grid c2" style="margin-top:16px;align-items:center">
+        <div style="text-align:center">${radarSvg(hex.vals,hex.labels)}<p class="mini dim" style="margin:4px 0 0">아포단 내 상대평가 (경기당 기준)</p></div>
+        <div>
+          <h3 style="font-size:14px;margin:0 0 6px">플레이 스타일 닮은꼴${pro.mainLane?` <span class="dim" style="font-weight:600;font-size:12px">— 주 포지션 ${esc(pro.mainLane)} · 해당 라인 16타입 중</span>`:''}</h3>
+          <span class="pill ${pro.pro?'gold':'violet'}" style="font-size:13px">🎯 ${esc(pro.name)}${pro.lane?` · ${esc(pro.lane)}`:''}</span>
+          <p class="mini" style="margin:7px 0 4px">${esc(pro.desc)}</p>
+          ${pro.second?`<p class="mini dim" style="margin:0 0 12px">그다음으로 가까운 타입: ${esc(pro.second)}</p>`:'<span style="display:block;margin-bottom:12px"></span>'}
+          <h3 style="font-size:14px;margin:0 0 6px">스카우팅 리포트 <span class="dim" style="font-weight:600;font-size:12px">— 아포단 내 상대평가 100점 만점</span></h3>
+          ${rep.str.map(x=>`<p class="mini" style="margin:0 0 5px">💪 <b style="color:var(--win)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].hi)}</p>`).join('')}
+          ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
+          <div style="height:10px"></div>
+          <h3 style="font-size:14px;margin:0 0 6px">보유 칭호 ${mine.length?`(${mine.length})`:''}</h3>
+          ${mine.length?`<div class="row" style="gap:6px">${mine.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div><p class="mini dim" style="margin:6px 0 0">칭호에 마우스를 올리면 사유가 보여요.</p>`:'<p class="mini dim" style="margin:0">아직 획득한 칭호가 없어요. 곧 생깁니다.</p>'}
+        </div>
+      </div>`})()}
+    <div class="row" style="margin-top:14px">${sparkSvg(arr)}<div><b class="${arr.at(-1)>=100?'priceUp':'priceDn'}" style="font-size:19px">${arr.at(-1)}</b><div class="mini">${formComment(arr,wl)}</div></div></div>
+    <div class="grid c2" style="margin-top:14px">
+      <div><h3 style="font-size:14px">듀오 시너지</h3>${syn.length?`<table class="tbl">${syn.map(d=>{const mate=d.ids.find(x=>x!==p.id);return`<tr><td>${esc(nameOf(mate))}</td><td class="num">${d.wins}승 ${d.games-d.wins}패</td><td class="num ${d.winRate>=60?'up':d.winRate<=40?'dn':'even'}">${d.winRate}%</td></tr>`}).join('')}</table>`:'<p class="mini dim">함께한 기록이 없어요.</p>'}</div>
+      <div><h3 style="font-size:14px">상대 전적</h3>${riv.length?`<table class="tbl">${riv.map(r=>{const me=r.ids.indexOf(p.id);const opp=r.ids[1-me];return`<tr><td>vs ${esc(nameOf(opp))}</td><td class="num">${r.w[me]}승 ${r.w[1-me]}패</td><td class="num">${r.w[me]>r.w[1-me]?'<span class="up">우세</span>':r.w[me]<r.w[1-me]?'<span class="dn">열세</span>':'<span class="even">동률</span>'}</td></tr>`}).join('')}</table>`:'<p class="mini dim">상대로 만난 기록이 없어요.</p>'}</div>
+    </div>`:'<div class="empty">아직 경기 기록이 없어요.</div>'}
+  </div>`;
+}
+function playerForm(p){
+  const isNew=!p;
+  return`<div class="card"><h3>${isNew?'새 플레이어 등록':'플레이어 수정'}</h3>
+  <div class="grid c2">
+    <div class="f"><label>표시 이름 (카톡 닉네임) *</label><input id="fpName" value="${esc(p?.displayName||'')}" placeholder="예: 99 잭슨"></div>
+    <div class="f"><label>롤 닉네임#태그</label><input id="fpRiot" value="${esc(p?(p.riotName+(p.riotTag?'#'+p.riotTag:'')):'')}" placeholder="예: 잭 슨#고양이"></div>
+    <div class="f"><label>별명 (쉼표 구분, 사진 판독 매칭용)</label><input id="fpAlias" value="${esc((p?.aliases||[]).join(', '))}" placeholder="잭슨, 잭손"></div>
+    <div class="f"><label>메모</label><input id="fpMemo" value="${esc(p?.memo||'')}"></div>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn gold" onclick="savePlayerForm()">${isNew?'등록':'저장'}</button>
+    <button class="btn ghost" onclick="editingPlayer=null;render()">취소</button>
+  </div></div>`;
+}
+function savePlayerForm(){
+  const name=$('fpName').value.trim();
+  if(!name)return toast('표시 이름은 필수예요.',true);
+  const{riotName,riotTag}=parseRiot($('fpRiot').value.trim());
+  const aliases=$('fpAlias').value.split(',').map(x=>x.trim()).filter(Boolean);
+  const memo=$('fpMemo').value.trim();
+  if(editingPlayer==='__new__'){
+    if(findPlayer(name))return toast('이미 비슷한 이름이 있어요. 필요하면 병합 기능을 쓰세요.',true);
+    const p=makePlayer(name);
+    Object.assign(p,{riotName,riotTag,memo,aliases:aliases.length?aliases:p.aliases});
+    state.players.push(p);selPlayer=p.id;toast('플레이어를 등록했어요.');
+  }else{
+    const p=byId(editingPlayer); if(!p)return;
+    Object.assign(p,{displayName:name,kakaoName:name,riotName,riotTag,memo,aliases:aliases.length?aliases:aliasGuess(name)});
+    toast('플레이어를 수정했어요.');
+  }
+  editingPlayer=null;save();render();
+}
+function togglePlayer(id){const p=byId(id);p.active=!p.active;save();render()}
+function delPlayer(id){
+  const used=state.matches.some(m=>m.participants.some(p=>p.playerId===id));
+  if(used)return toast('경기 기록이 있는 사람은 삭제 대신 휴면 처리하거나 병합해주세요.',true);
+  if(!confirm('완전히 삭제할까요?'))return;
+  state.players=state.players.filter(p=>p.id!==id);
+  if(selPlayer===id)selPlayer=null;
+  save();render();
+}
+function mergePlayers(){
+  const from=$('mgFrom').value,to=$('mgTo').value;
+  if(!from||!to||from===to)return toast('서로 다른 두 명을 선택해주세요.',true);
+  const f=byId(from),t=byId(to);
+  t.aliases=[...new Set([...(t.aliases||[]),f.displayName,f.kakaoName,f.riotName,...(f.aliases||[])].filter(Boolean))];
+  if(!t.riotName&&f.riotName){t.riotName=f.riotName;t.riotTag=f.riotTag}
+  state.matches.forEach(m=>{
+    m.participants.forEach(p=>{if(p.playerId===from)p.playerId=to});
+    if(m.mvpId===from)m.mvpId=to;
+  });
+  state.voteRooms.forEach(v=>(v.votes||[]).forEach(x=>{if(x.playerId===from)x.playerId=to}));
+  state.players=state.players.filter(p=>p.id!==from);
+  save();render();toast(`${f.displayName} 기록을 ${t.displayName}(으)로 합쳤어요.`);
+}
+function syncRoster(){
+  let added=0,filled=0;
+  ROSTER.forEach(e=>{
+    const hit=findPlayer(e.n)||(e.r?findPlayer(e.r):null);
+    if(!hit){state.players.push(rosterToPlayer(e));added++}
+    else if(!hit.riotName&&e.r){const{riotName,riotTag}=parseRiot(e.r);hit.riotName=riotName;hit.riotTag=riotTag;filled++}
+  });
+  save();render();toast(`누락 ${added}명 추가, 롤 닉네임 ${filled}건 보강했어요.`);
+}
+
+/* ───── 통계 ───── */
+function tblPlayers(P){
+  if(!P.length)return'<div class="empty">경기 기록이 필요해요.</div>';
+  return`<div class="scrollx"><table class="tbl" style="min-width:760px"><thead><tr><th>#</th><th>플레이어</th><th>승률</th><th>전적</th><th class="num">KDA</th><th class="num">평균 딜</th><th class="num">평균 시야</th><th class="num">MVP</th></tr></thead><tbody>
+  ${P.map((s,i)=>`<tr><td class="dim">${i+1}</td><td><b>${esc(s.name)}</b></td>
+    <td><div class="row" style="gap:8px;flex-wrap:nowrap"><span class="${s.winRate>=55?'up':s.winRate<45?'dn':'even'}" style="min-width:46px">${s.winRate}%</span><span class="bar grow"><i style="width:${s.winRate}%"></i></span></div></td>
+    <td class="dim">${s.wins}승 ${s.losses}패</td><td class="num">${s.kda}</td>
+    <td class="num">${s.avgDmg?fmt(s.avgDmg):'-'}</td><td class="num">${s.avgVision||'-'}</td>
+    <td class="num">${s.mvp?'👑 '+s.mvp:'-'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function pgStats(){
+  const D=statDuos(),R=statRivals(),PC=statPlayerChamps(),P=statPlayers();
+  const SD=statSides(),PS=statPlayerSides(2);
+  return head('통계','개인 승률 · 진영 밸런스 · 듀오 시너지 · 상대전적 · 챔피언 궁합. 전부 플레이어 고유 ID 기준입니다.')+`
+  ${SD.total?`<div class="card" style="margin-bottom:14px"><h3>진영 밸런스 <span class="tag">블루 vs 레드</span></h3>
+    <div class="row" style="gap:14px">
+      <b class="tBlue" style="font-size:18px">블루 ${SD.blue}승 (${SD.blueRate}%)</b>
+      <div class="bar grow" style="height:12px;background:rgba(255,92,122,.25)"><i style="width:${SD.blueRate}%;background:var(--blue)"></i></div>
+      <b class="tRed" style="font-size:18px">레드 ${SD.red}승 (${SD.redRate}%)</b>
+    </div>
+    ${PS.length?`<div class="hr"></div><p class="mini" style="margin:0 0 8px">개인별 진영 승률 (2판 이상)</p>
+    <div class="scrollx"><table class="tbl" style="min-width:620px"><thead><tr><th>플레이어</th><th class="num">블루 전적</th><th class="num">블루 승률</th><th class="num">레드 전적</th><th class="num">레드 승률</th><th>특화 진영</th></tr></thead><tbody>
+    ${PS.slice(0,30).map(x=>{const diff=x.bRate-x.rRate;const note=(x.bG<1||x.rG<1)?'<span class="pill">표본 부족</span>':Math.abs(diff)<10?'<span class="pill">밸런스형</span>':diff>0?'<span class="pill blue">블루 특화</span>':'<span class="pill lose">레드 특화</span>';
+      return`<tr><td><b>${esc(x.name)}</b></td><td class="num dim">${x.bW}승 ${x.bG-x.bW}패</td><td class="num ${x.bRate>=50?'up':'dn'}">${x.bG?x.bRate+'%':'-'}</td><td class="num dim">${x.rW}승 ${x.rG-x.rW}패</td><td class="num ${x.rRate>=50?'up':'dn'}">${x.rG?x.rRate+'%':'-'}</td><td>${note}</td></tr>`}).join('')}</tbody></table></div>`:''}
+  </div>`:''}
+  <div class="card"><h3>개인 승률</h3>${tblPlayers(P)}</div>
+  <div class="grid c2" style="margin-top:14px">
+    <div class="card"><h3>듀오 시너지 <span class="tag">2판 이상</span></h3>
+      ${D.length?`<table class="tbl">${D.slice(0,14).map(d=>`<tr><td><b>${esc(d.names)}</b></td><td class="num dim">${d.wins}승 ${d.games-d.wins}패</td><td class="num ${d.winRate>=60?'up':d.winRate<=40?'dn':'even'}">${d.winRate}%</td><td>${d.games>=3&&d.winRate>=70?'<span class="pill win">국밥 듀오</span>':d.games>=3&&d.winRate<=35?'<span class="pill lose">서사 필요</span>':'<span class="pill">표본 수집</span>'}</td></tr>`).join('')}</table>`:'<div class="empty">같은 팀으로 2판 이상 한 조합이 필요해요.</div>'}</div>
+    <div class="card"><h3>상대전적 <span class="tag">2판 이상</span></h3>
+      ${R.length?`<table class="tbl">${R.slice(0,14).map(r=>`<tr><td><b>${esc(r.names.join(' vs '))}</b></td><td class="num dim">${r.w[0]} : ${r.w[1]}</td><td>${r.leader==='동률'?'<span class="pill blue">라이벌</span>':`<span class="pill lose">${esc(r.leader)} 천적 의심</span>`}</td></tr>`).join('')}</table>`:'<div class="empty">상대팀으로 2판 이상 만난 기록이 필요해요.</div>'}</div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>사람 × 챔피언 궁합 <span class="tag">2판 이상</span></h3>
+    ${PC.length?`<div class="scrollx"><table class="tbl" style="min-width:560px">${PC.slice(0,40).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.champion)}</td><td class="num dim">${x.wins}승 ${x.games-x.wins}패</td><td class="num ${x.winRate>=60?'up':x.winRate<=40?'dn':'even'}">${x.winRate}%</td><td>${x.winRate>=70?'<span class="pill win">믿고 보는 픽</span>':x.winRate<=35?'<span class="pill lose">봉인 검토</span>':'<span class="pill">무난픽</span>'}</td></tr>`).join('')}</table></div>`:'<div class="empty">같은 사람이 같은 챔피언을 2판 이상 해야 나와요.</div>'}</div>`;
+}
+
+/* ───── 챔피언 ───── */
+function tierCls(t){return{OP:'tOP',S:'tS',A:'tA',B:'tB',C:'tC','봉인 검토':'tSEAL','표본 부족':'tNA'}[t]||'tC'}
+function pgChampions(){
+  const C=statChamps();
+  const order=['OP','S','A','B','C','봉인 검토','표본 부족'];
+  const board=C.length?`<div class="card" style="margin-bottom:14px"><h3>아포단 티어 보드 <span class="tag">내전 메타 기준</span></h3>
+    <div class="tierBoard">${order.map(t=>{const list=C.filter(c=>c.tier===t);
+      return`<div class="tierCol"><div class="tierHead ${tierCls(t)}">${t}</div>
+      ${list.length?list.map(c=>`<div class="tierItem"><b>${esc(c.champion)}</b><span class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span></div>`).join(''):'<div class="mini dim" style="text-align:center;padding:10px 0">—</div>'}</div>`}).join('')}</div></div>`:'';
+  return head('챔피언 티어표','승률·픽률·밴·최근 폼에 표본 보정(1판 1승 과대평가 방지)을 적용한 아포단 전용 티어.')+board+`
+  <div class="card">
+    <div class="row" style="margin-bottom:10px"><span class="chip">목록: ${esc(champSource)}</span><button class="btn sm" onclick="ddragonRefresh()">Riot 최신 패치로 갱신</button></div>
+    ${C.length?`<div class="scrollx"><table class="tbl" style="min-width:700px"><thead><tr><th>티어</th><th>챔피언</th><th class="num">픽</th><th class="num">승률</th><th class="num">픽률</th><th class="num">밴</th><th class="num">점수</th><th>아포단 평가</th></tr></thead><tbody>
+    ${C.map(c=>`<tr><td class="${tierCls(c.tier)}" style="font-weight:900">${esc(c.tier)}</td><td><b>${esc(c.champion)}</b></td><td class="num">${c.picks}</td><td class="num ${c.winRate>=50?'up':'dn'}">${c.winRate}%</td><td class="num dim">${c.pickRate}%</td><td class="num dim">${c.bans||'-'}</td><td class="num">${c.score}</td><td class="mini" style="max-width:340px;min-width:240px">${esc(champComment(c))}</td></tr>`).join('')}</tbody></table></div>`
+    :'<div class="empty">경기를 기록하면 아포단만의 티어표가 만들어져요. 챔피언 목록에는 173종(신챔 로크 포함)이 들어 있습니다.</div>'}
+  </div>`;
+}
+
+
+/* ───── 폼 주식 ───── */
+function pgForm(){
+  const rows=state.players.filter(p=>playerHistory(p.id).length>0).map(p=>{
+    const{arr,wl}=formSeries(p.id);
+    const r5=wl.slice(-5),w=r5.filter(Boolean).length;
+    const delta=arr[arr.length-1]-arr[Math.max(0,arr.length-6)];
+    return{p,arr,wl,price:arr[arr.length-1],w,g:r5.length,delta};
+  }).sort((a,b)=>b.price-a.price);
+  let market='';
+  if(rows.length){
+    const hi=rows[0];
+    const surge=[...rows].sort((a,b)=>b.delta-a.delta)[0];
+    const crash=[...rows].sort((a,b)=>a.delta-b.delta)[0];
+    const value=[...rows].filter(r=>r.price<100&&r.w>=3).sort((a,b)=>b.w-a.w||a.price-b.price)[0];
+    const card=(label,r,note,cls)=>r?`<div class="kpi ${cls||''}"><div class="l">${label}</div><div class="n" style="font-size:21px">${esc(r.p.displayName)}</div><div class="l">${note}</div></div>`:`<div class="kpi"><div class="l">${label}</div><div class="n" style="font-size:21px">—</div><div class="l">해당 종목 없음</div></div>`;
+    market=`<div class="grid c4" style="margin-bottom:14px">
+      ${card('🏆 현재 최고가 종목',hi,`지수 ${hi.price} · 지금 폼이 제일 좋다는 뜻`,'gold')}
+      ${card('📈 단기 급등주',surge&&surge.delta>0?surge:null,surge&&surge.delta>0?`최근 ${surge.delta>=0?'+':''}${surge.delta} · 폼이 급상승 중`:'')}
+      ${card('📉 단기 급락주',crash&&crash.delta<0?crash:null,crash&&crash.delta<0?`최근 ${crash.delta} · 위로의 박수를`:'')}
+      ${card('💎 저평가 우량주',value,value?`지수 ${value.price}인데 최근 5판 ${value.w}승 · 곧 오를 종목`:'')}
+    </div>`;
+  }
+  return head('최근 폼 주식','승패를 주가처럼 보는 재미 지표예요. 어렵지 않아요 — 아래 "주가가 뭐예요?"부터 보세요.')+market+`
+  <div class="card">${rows.length?`<div class="scrollx"><table class="tbl" style="min-width:860px"><thead><tr><th>종목 (멤버)</th><th>차트 (점선 = 기준가 100)</th><th class="num">현재가</th><th class="num">등락</th><th class="num">최근 5판</th><th>애널리스트 코멘트</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><td><b>${esc(r.p.displayName)}</b></td><td>${sparkSvg(r.arr,300,62)}</td>
+    <td class="num"><b class="${r.price>=100?'priceUp':'priceDn'}" style="font-size:17px">${r.price}</b></td>
+    <td class="num ${r.delta>0?'up':r.delta<0?'dn':'even'}">${r.delta>0?'▲ +'+r.delta:r.delta<0?'▼ '+r.delta:'-'}</td>
+    <td class="num dim">${r.w}승 ${r.g-r.w}패</td><td class="mini" style="max-width:300px">${esc(formComment(r.arr,r.wl))}</td></tr>`).join('')}</tbody></table></div>`
+  :'<div class="empty">경기를 기록하면 종목이 상장됩니다.</div>'}
+  <details class="fold" style="margin-top:14px"><summary>📖 주가가 뭐예요? — 주식 처음이어도 30초면 이해됩니다</summary>
+    <p class="mini"><b>규칙은 간단해요.</b> 모든 멤버는 <b>지수 100에서 시작</b>합니다. 한 판 <b>이기면 +8, 지면 −6</b>이 붙고, <b>연승·연패 중이면 ±3 가속</b>, <b>MVP를 받으면 +6</b>, 그 판 KDA가 아주 좋으면 +3 / 많이 망하면 −2 보정이 들어가요. 그래서 <b>100보다 위 = 요즘 잘하고 있다, 아래 = 폼이 내려갔다</b>는 뜻이에요. 차트의 <b>점선이 기준가 100</b>입니다.</p>
+    <p class="mini"><b>시황판 카드 읽는 법</b> — <b>최고가 종목</b>: 지금 폼 지수가 가장 높은 사람. <b>급등주</b>: 최근 몇 판 사이 지수가 가장 많이 오른 사람(=폼이 갑자기 좋아짐). <b>급락주</b>: 반대. <b>저평가 우량주</b>: 지수는 아직 100 아래인데 최근 5판 성적이 좋은 사람 — 주식으로 치면 "가격은 싼데 실적이 좋아서 곧 오를 종목"이라는 칭찬이에요.</p>
+    <p class="mini"><b>코멘트에 나오는 주식 용어 미니사전</b> 🔸<b>상한가/하한가·점상</b>: 하루에 오를/내릴 수 있는 최대치를 친 것. 점상 = 시작하자마자 상한가 🔸<b>VI·서킷브레이커</b>: 너무 급하게 움직이면 거래를 잠깐 멈추는 장치 → "폼 변화가 과격하다"는 농담 🔸<b>존버</b>: 손해여도 버티기 🔸<b>물타기</b>: 떨어질 때 더 사서 평균 단가 낮추기 → "지는데 계속 출전" 🔸<b>손절/익절</b>: 손해/이익 보고 정리하기 🔸<b>곱버스</b>: 떨어질수록 2배로 버는 상품 → "쟤 진다에 걸었으면 부자" 🔸<b>설거지</b>: 고점에서 물량을 떠넘기는 것 → "좋던 폼이 갑자기 무너짐" 🔸<b>데드캣 바운스</b>: 폭락 중 잠깐 반등 (죽은 고양이도 높은 데서 떨어지면 튀어오른다는 무서운 농담) 🔸<b>박스권</b>: 일정 범위에서만 왔다갔다 → "폼이 그냥 평범" 🔸<b>따상</b>: 신규 상장 첫날 대박 → "신규 멤버가 데뷔전부터 잘함"</p>
+  </details>
+  </div>`;
+}
+
+/* ───── 칭호 ───── */
+function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
+function pgAwards(){
+  const A=makeAwards();
+  const DUO=new Set(['국밥 듀오','서사가 필요한 듀오','쌍둥이 텔레파시']);
+  const RIV=new Set(['천적 관계','영혼의 라이벌']);
+  const CHAMP=new Set(['승리 부적','봉인픽','밴카드 도둑']);
+  const duo=A.filter(a=>DUO.has(a.title)),riv=A.filter(a=>RIV.has(a.title)),champ=A.filter(a=>CHAMP.has(a.title));
+  const personal=A.filter(a=>!DUO.has(a.title)&&!RIV.has(a.title)&&!CHAMP.has(a.title));
+  const byPlayer=new Map();
+  personal.forEach(a=>{if(!byPlayer.has(a.target))byPlayer.set(a.target,[]);byPlayer.get(a.target).push(a)});
+  const owners=[...byPlayer.entries()].sort((a,b)=>b[1].length-a[1].length);
+  const ownerCards=owners.map(([name,list])=>`
+    <div class="ownerCard">
+      <div class="oname"><span>${esc(name)}</span><span class="pill gold">칭호 ${list.length}개</span></div>
+      ${list.map(a=>`<div class="arow"><b>${esc(a.title)}</b><span class="mini">${esc(a.desc)}</span></div>`).join('')}
+    </div>`).join('');
+  const pairCard=(title,emoji,list)=>`
+    <div class="card"><h3>${emoji} ${title}</h3>
+    ${list.length?list.map(a=>`<div class="arow" style="padding:9px 0;border-top:1px dashed var(--line)"><b style="color:var(--gold)">${esc(a.title)}</b> — <b>${esc(a.target)}</b><span class="mini" style="display:block;margin-top:1px">${esc(a.desc)}</span></div>`).join(''):'<p class="mini dim">아직 없어요. 판이 더 쌓이면 생깁니다.</p>'}
+    </div>`;
+  return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+`
+  <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
+    ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
+  </div>
+  <div class="grid c3" style="margin-top:14px">
+    ${pairCard('듀오 칭호','🤝',duo)}
+    ${pairCard('천적 · 라이벌','⚔️',riv)}
+    ${pairCard('챔피언 칭호','🐲',champ)}
+  </div>
+  <div class="card" style="margin-top:14px"><h3>칭호 규칙 한눈에</h3>
+    <div class="grid c3">
+      <div><b class="mini" style="color:var(--gold)">전적·폼</b><p class="mini">승리요정 · 내전 재앙 · 서킷브레이커 · 억까 피해자 · 버스 기사 · 버스 승객 · 출석왕 · 연승 제조기 · 멘탈 클리닉 VIP · 지금이 고점 아님 · 상장폐지 위기 · 블루의 아들 · 레드의 후예 · 여론의 왕 · 퍼펙트 게임</p></div>
+      <div><b class="mini" style="color:var(--gold)">플레이 스타일</b><p class="mini">KDA 명품관 · 광기의 돌격대장 · 어시스트 자판기 · 협곡의 간디 · 데스 아티스트 · 숟가락 장인 · 딜량왕 · 인간 가고일 · 시야 대통령 · 매의 눈 · 오브젝트 깎는 노인 · 철거반장 · 힐링캠프 원장 · 피해감소 방화벽 · CS 공장장 · 골드 광산 · CC 제조기</p></div>
+      <div><b class="mini" style="color:var(--gold)">듀오 · 상대 · 챔피언</b><p class="mini">국밥 듀오 · 서사가 필요한 듀오 · 쌍둥이 텔레파시 · 천적 관계 · 영혼의 라이벌 · 승리 부적 · 봉인픽 · 밴카드 도둑 · 원챔 장인</p></div>
+    </div></div>`;
+}
+
+/* ───── MVP 투표 (로컬 베타) ───── */
+function pgMvp(){
+  const ms=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)));
+  return head('MVP 투표','로컬 베타: 같은 브라우저에서 모여서 투표할 때 사용. 카톡 링크 공유형 투표는 온라인화 후 완성됩니다.')+`
+  <div class="grid c2">
+    <div class="card"><h3>투표 열기</h3>
+      ${ms.length?`<div class="f"><label>경기 선택</label><select id="vmMatch">${ms.map(m=>`<option value="${m.id}">${esc(m.playedAt)} ${m.setNumber}세트 · ${m.winnerTeam==='BLUE'?'블루':'레드'} 승</option>`).join('')}</select></div>
+      <div class="f" style="margin-top:10px"><label>제한 시간 (분)</label><input id="vmMin" type="number" min="1" value="${state.settings.mvpMinutes||10}"></div>
+      <button class="btn gold" style="margin-top:12px" onclick="openVote()">투표 열기</button>`:'<div class="empty">먼저 경기를 기록해주세요.</div>'}
+    </div>
+    <div class="card"><h3>진행 중인 투표</h3>${voteList()}</div>
+  </div>`;
+}
+function voteList(){
+  if(!state.voteRooms.length)return'<div class="empty">열린 투표가 없어요.</div>';
+  return state.voteRooms.map(v=>{
+    const m=state.matches.find(x=>x.id===v.matchId); if(!m)return'';
+    const left=Math.max(0,v.endsAt-Date.now()),closed=left<=0;
+    const cnt={};(v.votes||[]).forEach(x=>cnt[x.playerId]=(cnt[x.playerId]||0)+1);
+    return`<div style="border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px;background:var(--panel2)">
+      <div class="row"><b>${esc(m.playedAt)} ${m.setNumber}세트</b><span class="pill ${closed?'lose':'win'}">${closed?'마감':'진행 중 · '+Math.ceil(left/60000)+'분'}</span></div>
+      <div class="f" style="margin:10px 0"><label>투표자 이름 (중복 방지)</label><input id="voter_${v.id}" placeholder="예: 잭슨"></div>
+      <div class="row">${m.participants.filter(p=>p.playerId).map(p=>`<button class="btn sm" onclick="castVote('${v.id}','${p.playerId}')">${esc(nameOf(p.playerId))} (${cnt[p.playerId]||0})</button>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button class="btn sm win" onclick="closeVote('${v.id}')">마감하고 MVP 반영</button><button class="btn sm lose" onclick="delVote('${v.id}')">삭제</button></div>
+    </div>`;
+  }).join('');
+}
+function openVote(){
+  const matchId=$('vmMatch').value; if(!matchId)return;
+  const min=num($('vmMin').value)||10;
+  state.settings.mvpMinutes=min;
+  state.voteRooms=state.voteRooms.filter(v=>v.matchId!==matchId);
+  state.voteRooms.push({id:uid('v'),matchId,endsAt:Date.now()+min*60000,votes:[]});
+  save();render();toast('투표를 열었어요.');
+}
+function castVote(vid,pid){
+  const v=state.voteRooms.find(x=>x.id===vid); if(!v)return;
+  if(Date.now()>v.endsAt)return toast('투표 시간이 끝났어요.',true);
+  const voter=$(`voter_${vid}`).value.trim();
+  if(!voter)return toast('투표자 이름을 먼저 입력해주세요.',true);
+  const key=norm(voter);
+  v.votes=v.votes.filter(x=>x.voterKey!==key);
+  v.votes.push({voter,voterKey:key,playerId:pid,at:Date.now()});
+  save();render();toast('투표 완료. 같은 이름은 마지막 표로 갱신돼요.');
+}
+function closeVote(vid){
+  const v=state.voteRooms.find(x=>x.id===vid);
+  const m=state.matches.find(x=>x.id===v?.matchId); if(!v||!m)return;
+  const cnt={};(v.votes||[]).forEach(x=>cnt[x.playerId]=(cnt[x.playerId]||0)+1);
+  const win=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+  if(!win)return toast('아직 표가 없어요.',true);
+  m.mvpId=win[0];
+  state.voteRooms=state.voteRooms.filter(x=>x.id!==vid);
+  save();render();toast(`MVP를 ${nameOf(win[0])}(으)로 반영했어요.`);
+}
+function delVote(vid){state.voteRooms=state.voteRooms.filter(v=>v.id!==vid);save();render()}
+
+/* ───── 설정 ───── */
+function pgSettings(){
+  return head('설정 · 백업','데이터는 이 브라우저 localStorage에만 저장돼요. 브라우저나 PC를 바꾸기 전에 꼭 백업하세요.')+`
+  <div class="grid c2">
+    <div class="card"><h3>백업</h3>
+      <div class="row"><button class="btn gold" onclick="backup()">JSON 백업 다운로드</button><button class="btn" onclick="copySummary()">카톡 공유용 요약 복사</button></div>
+      <p class="mini" style="margin-top:10px">마지막 백업: <b>${state.settings.lastBackupAt?new Date(state.settings.lastBackupAt).toLocaleString('ko-KR'):'아직 없음'}</b><br>
+      데이터는 index.html 파일이 아니라 <b>이 브라우저 안</b>에 저장돼요. 그래서 파일을 새 버전으로 바꿔도 데이터는 그대로입니다. 단, 브라우저나 PC를 바꾸면 사라지니 백업은 습관처럼!</p></div>
+    <div class="card"><h3>복원</h3>
+      <input type="file" id="restoreFile" accept="application/json">
+      <button class="btn win" style="margin-top:10px" onclick="restore()">백업 파일 복원</button></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>초기화</h3>
+    <div class="row">
+      <button class="btn win" onclick="dedupeMatches()">중복 경기 정리</button>
+      <button class="btn win" onclick="cleanGhosts()">무효 게임 정리 (다시하기 등)</button>
+      <button class="btn" onclick="if(confirm('경기 기록만 모두 삭제할까요?')){state.matches=[];state.voteRooms=[];save();render()}">경기 기록만 삭제</button>
+      <button class="btn" onclick="if(confirm('확정 명단만 남기고 전부 초기화할까요?')){state=freshState();save();render()}">확정 명단으로 초기화</button>
+      <button class="btn lose" onclick="if(confirm('명단과 경기를 전부 삭제할까요?')){state=fixState({});save();render()}">완전 초기화</button>
+    </div></div>
+  <div class="card" style="margin-top:14px"><h3>멤버들에게 공유 (링크 호스팅)</h3>
+    <p class="mini">이 사이트와 백업 데이터를 Vercel(깃허브 저장소)에 올리면, 멤버들이 링크로 접속해서 전적을 볼 수 있어요. 운영 순서: ① 여기서 <b>JSON 백업 다운로드</b> → 파일명을 <code>data.json</code>으로 변경 → ② 깃허브 저장소에 <code>index.html</code>과 <code>data.json</code> 업로드 → 자동 배포. 멤버가 링크로 열면 공유 데이터가 자동으로 로드됩니다.</p>
+    <button class="btn" onclick="loadShared(true)">공유 데이터(data.json) 지금 다시 받기</button>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>온라인화 로드맵</h3>
+    <p class="mini">현재는 운영자 1명용 로컬 버전이에요. 다음 단계: Supabase + Vercel로 온라인 DB를 붙이면 → 멤버 전원 접속, 카톡 링크 MVP 투표, 디스코드 <code>/전적</code> 연동까지 갑니다.</p></div>`;
+}
+function backup(){
+  state.settings.lastBackupAt=new Date().toISOString();save();render();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));
+  a.download=`apodan-backup-${todayStr()}.json`;a.click();
+}
+function restore(){
+  const f=$('restoreFile').files[0];
+  if(!f)return toast('백업 파일을 선택해주세요.',true);
+  const r=new FileReader();
+  r.onload=()=>{try{state=fixState(JSON.parse(r.result));save();render();toast('복원 완료!')}catch(e){toast('복원 실패: JSON 파일을 확인해주세요.',true)}};
+  r.readAsText(f);
+}
+function copySummary(){
+  const P=statPlayers(),D=statDuos(),C=statChamps();
+  const lines=['🏆 아포단 내전실록 요약',`누적 내전 ${state.matches.length}판 · 명단 ${state.players.filter(p=>p.active).length}명`];
+  if(P[0])lines.push(`승률 1위: ${P[0].name} ${P[0].winRate}% (${P[0].wins}승 ${P[0].losses}패)`);
+  if(D[0])lines.push(`국밥 듀오: ${D[0].names} ${D[0].winRate}%`);
+  if(C[0])lines.push(`메타픽: ${C[0].champion} [${C[0].tier}]`);
+  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(lines.join('\n')).then(()=>toast('요약을 복사했어요.'));
+  else toast('이 환경에서는 복사가 안 돼요.',true);
+}
+
+/* ───── 부트 ───── */
+render();
+loadShared(false); // 호스팅된 링크에서 열렸으면 공유 data.json 자동 확인
+setInterval(()=>{ // 투표 남은 시간 갱신 (입력 중엔 건너뜀)
+  const ae=document.activeElement;
+  const typing=ae&&['INPUT','TEXTAREA','SELECT'].includes(ae.tagName);
+  if(tab==='mvp'&&!typing)render();
+},30000);
+
+</script>
+</body>
+</html>
