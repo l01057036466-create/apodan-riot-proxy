@@ -47,8 +47,8 @@
    "riotName": "우나깅",
    "riotTag": "KR1",
    "aliases": [
-    "난깅",
-    "00난깅"
+    "나깅",
+    "00나깅"
    ],
    "active": true,
    "memo": ""
@@ -6880,7 +6880,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-10T18:30:47.176Z"
+  "lastBackupAt": "2026-06-10T18:31:09.085Z"
  },
  "lineup": null,
  "liveBoards": {
