@@ -2085,5 +2085,211 @@ setInterval(()=>{ // 투표 남은 시간 갱신 (입력 중엔 건너뜀)
 },30000);
 
 </script>
+   <script>
+(function () {
+  // 멤버용 보기 전용 모드
+  // 원본 코드는 수정하지 않고, 공개 사이트에서만 수정 기능을 숨기고 막습니다.
+
+  const APODAN_VIEW_ONLY = true;
+  if (!APODAN_VIEW_ONLY) return;
+
+  const BLOCKED_TABS = new Set(['record', 'players', 'mvp', 'settings']);
+  const BLOCKED_TAB_TEXTS = ['기록하기', '플레이어', 'MVP 투표', '설정'];
+
+  const DANGER_WORDS = [
+    '경기 최종 저장',
+    '수정 내용 저장',
+    '기록 추가',
+    '기록 삭제',
+    '기록 수정',
+    'MVP 수정',
+    '데이터 초기화',
+    '백업 불러오기',
+    '불러오기',
+    '초기화',
+    '삭제',
+    '수정',
+    '저장',
+    '추가',
+    '업로드',
+    '가져오기',
+    '복원',
+    '등록',
+    '동기화',
+    '병합',
+    '휴면 처리',
+    '활동 복귀',
+    '투표 열기',
+    '마감하고 MVP 반영',
+    '스크린샷 분석 시작',
+    '텍스트에서 후보 생성',
+    '검수 화면으로 불러오기',
+    '빈 검수표 열기',
+    '중복 경기 정리',
+    '무효 게임 정리',
+    'Riot 최신 패치로 갱신',
+    '승패 반전',
+    '진영 반전',
+    '이 경기 불러오기',
+    '최근 내전 목록 불러오기'
+  ];
+
+  const DANGER_ONCLICK =
+    /saveDraft|flipWinner|swapSides|editMatch|delMatch|syncRoster|mergePlayers|togglePlayer|delPlayer|savePlayerForm|openVote|castVote|closeVote|delVote|restore|dedupeMatches|cleanGhosts|riotImport|riotFetchList|analyzeShots|buildDraftFromText|importJson|manualDraft|freshState|fixState/i;
+
+  const BLOCKED_FUNCTIONS = [
+    'saveDraft',
+    'flipWinner',
+    'swapSides',
+    'editMatch',
+    'delMatch',
+    'manualDraft',
+    'addShots',
+    'delShot',
+    'analyzeShots',
+    'buildDraftFromText',
+    'importJson',
+    'importBulk',
+    'riotFetchList',
+    'riotImport',
+    'saveProxyUrl',
+    'saveAnchor',
+    'savePlayerForm',
+    'togglePlayer',
+    'delPlayer',
+    'mergePlayers',
+    'syncRoster',
+    'ddragonRefresh',
+    'openVote',
+    'castVote',
+    'closeVote',
+    'delVote',
+    'restore',
+    'dedupeMatches',
+    'cleanGhosts'
+  ];
+
+  function viewOnlyAlert() {
+    if (typeof toast === 'function') {
+      toast('멤버용 보기 전용 페이지에서는 수정할 수 없어요.', true);
+    } else {
+      alert('멤버용 보기 전용 페이지에서는 수정할 수 없어요.');
+    }
+    return false;
+  }
+
+  function blockFunctions() {
+    BLOCKED_FUNCTIONS.forEach(name => {
+      try {
+        if (typeof window[name] === 'function' && !window[name].__viewOnlyBlocked) {
+          const blocked = function () {
+            return viewOnlyAlert();
+          };
+          blocked.__viewOnlyBlocked = true;
+          window[name] = blocked;
+        }
+      } catch (e) {}
+    });
+  }
+
+  function addNotice() {
+    const noticeId = 'apodan-view-only-notice';
+    if (document.getElementById(noticeId)) return;
+
+    const notice = document.createElement('div');
+    notice.id = noticeId;
+    notice.innerText = '멤버용 보기 전용 페이지입니다. 공식 기록은 운영자가 갱신합니다.';
+    notice.style.position = 'fixed';
+    notice.style.bottom = '16px';
+    notice.style.left = '50%';
+    notice.style.transform = 'translateX(-50%)';
+    notice.style.zIndex = '99999';
+    notice.style.padding = '10px 16px';
+    notice.style.borderRadius = '999px';
+    notice.style.background = 'rgba(0, 0, 0, 0.75)';
+    notice.style.color = '#fff';
+    notice.style.fontSize = '14px';
+    notice.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+    document.body.appendChild(notice);
+  }
+
+  function hideDangerousControls() {
+    document.querySelectorAll('#nav button').forEach(btn => {
+      const text = (btn.innerText || btn.textContent || '').trim();
+
+      if (BLOCKED_TAB_TEXTS.includes(text)) {
+        btn.style.display = 'none';
+        btn.disabled = true;
+        btn.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    document.querySelectorAll('button, a, input[type="button"], input[type="submit"], label').forEach(el => {
+      const text = (el.innerText || el.textContent || el.value || '').trim();
+      const onclick = el.getAttribute ? (el.getAttribute('onclick') || '') : '';
+
+      if (DANGER_WORDS.some(word => text.includes(word)) || DANGER_ONCLICK.test(onclick)) {
+        el.style.display = 'none';
+        el.disabled = true;
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+      el.setAttribute('contenteditable', 'false');
+    });
+  }
+
+  let applying = false;
+
+  function applyViewOnlyMode() {
+    if (applying) return;
+    applying = true;
+
+    try {
+      blockFunctions();
+
+      if (typeof tab !== 'undefined' && BLOCKED_TABS.has(tab)) {
+        tab = 'dashboard';
+
+        if (typeof originalRender === 'function') {
+          originalRender();
+        }
+      }
+
+      hideDangerousControls();
+      addNotice();
+    } finally {
+      applying = false;
+    }
+  }
+
+  const originalGo = typeof go === 'function' ? go : null;
+
+  if (originalGo) {
+    go = function (id) {
+      if (BLOCKED_TABS.has(id)) {
+        return viewOnlyAlert();
+      }
+
+      return originalGo(id);
+    };
+  }
+
+  const originalRender = typeof render === 'function' ? render : null;
+
+  if (originalRender) {
+    render = function () {
+      const result = originalRender.apply(this, arguments);
+      setTimeout(applyViewOnlyMode, 0);
+      return result;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', applyViewOnlyMode);
+  setTimeout(applyViewOnlyMode, 0);
+  setInterval(applyViewOnlyMode, 1000);
+})();
+</script>
 </body>
 </html>
