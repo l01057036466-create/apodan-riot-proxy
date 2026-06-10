@@ -305,7 +305,7 @@ const STAT_FIELDS=[
  ['cs','CS'],['goldEarned','골드'],['damageToChampions','챔피언 딜량'],['damageTaken','받은 피해'],
  ['visionScore','시야 점수'],['wardsPlaced','와드 설치'],['wardsKilled','와드 파괴'],['controlWardsBought','제어 와드'],
  ['crowdControlScore','군중 제어'],['damageToObjectives','오브젝트 피해'],['damageToTurrets','포탑 피해'],
- ['healing','회복량'],['selfMitigatedDamage','피해 감소']
+ ['healing','회복량'],['selfMitigatedDamage','피해 감소'],['soloKills','솔로킬']
 ];
 const STAT_LABEL=Object.fromEntries(STAT_FIELDS);
 
@@ -739,21 +739,70 @@ function formComment(arr,wl){
     '특이사항 없음. 그게 제일 무서운 종목',
     '단타족도 떠난 무빙. 장기투자자만 남음']);
 }
-/* ───── 플레이어 육각형 지표 + 닮은꼴 프로 ───── */
-const HEX_KEYS=[['dmg','화력'],['kda','교전'],['surv','생존'],['cs','성장'],['obj','오브젝트'],['vision','시야']];
+/* ───── 플레이어 7축 지표 (LCK식: 분당 환산 + 킬관여) ───── */
+/* 라인별 전용 지표 세트 — 서폿·정글에게 CS를 묻지 않습니다 */
+const LANE_AXES={
+ '탑':   [['dpm','화력'],['kda','교전'],['surv','생존'],['cspm','성장'],['demolpm','철거'],['tankpm','맷집']],
+ '정글': [['kda','교전'],['objpm','오브젝트'],['kp','킬관여'],['vspm','시야'],['surv','생존'],['dpg','골드 효율']],
+ '미드': [['dpm','화력'],['kda','교전'],['surv','생존'],['cspm','성장'],['kp','킬관여'],['dpg','골드 효율']],
+ '원딜': [['dpm','화력'],['kda','교전'],['surv','생존'],['cspm','성장'],['dpg','골드 효율'],['demolpm','철거']],
+ '서폿': [['vspm','시야'],['kp','킬관여'],['kda','교전'],['surv','생존'],['ccpm','변수(CC)'],['utilpm','케어']]
+};
+const GENERIC_AXES=[['dpm','화력'],['kda','교전'],['surv','생존'],['cspm','성장'],['objpm','오브젝트'],['vspm','시야']];
+function ratesMap(){ // 전 선수의 분당·효율 지표 일괄 계산
+  const agg=new Map();
+  state.matches.forEach(m=>{
+    const mins=(m.durationMin&&m.durationMin>=5)?m.durationMin:28; // 시간 없으면 평균 28분 가정
+    const tk={BLUE:0,RED:0};
+    m.participants.forEach(p=>{if(p.playerId)tk[p.team]+=num(p.kills)});
+    m.participants.forEach(p=>{
+      if(!p.playerId)return;
+      if(!agg.has(p.playerId))agg.set(p.playerId,{g:0,min:0,dmg:0,cs:0,vis:0,obj:0,tur:0,gold:0,cc:0,heal:0,taken:0,mitig:0,d:0,k:0,a:0,kpSum:0,kpG:0,solo:0});
+      const s=agg.get(p.playerId),st=p.stats||{};
+      s.g++;s.min+=mins;
+      s.dmg+=num(st.damageToChampions);s.cs+=num(st.cs);s.vis+=num(st.visionScore);
+      s.obj+=num(st.damageToObjectives);s.tur+=num(st.damageToTurrets);s.gold+=num(st.goldEarned);
+      s.cc+=num(st.crowdControlScore);s.heal+=num(st.healing);
+      s.taken+=num(st.damageTaken);s.mitig+=num(st.selfMitigatedDamage);
+      s.solo+=num(st.soloKills);
+      s.d+=num(p.deaths);s.k+=num(p.kills);s.a+=num(p.assists);
+      const t=tk[p.team];if(t>0){s.kpSum+=Math.min(1,(num(p.kills)+num(p.assists))/t);s.kpG++}
+    });
+  });
+  const out=new Map();
+  agg.forEach((s,id)=>out.set(id,{
+    games:s.g,minutes:s.min,
+    dpm:s.min?s.dmg/s.min:0, cspm:s.min?s.cs/s.min:0, vspm:s.min?s.vis/s.min:0,
+    objpm:s.min?s.obj/s.min:0, demolpm:s.min?s.tur/s.min:0, ccpm:s.min?s.cc/s.min:0,
+    utilpm:s.min?(s.heal+s.mitig)/s.min:0, tankpm:s.min?(s.taken+s.mitig)/s.min:0,
+    dpg:s.gold>0?s.dmg/(s.gold/1000):0, gpm:s.min?s.gold/s.min:0,
+    deathsPg:s.g?s.d/s.g:0, kda:s.d?(s.k+s.a)/s.d:(s.k+s.a),
+    kp:s.kpG?Math.round(s.kpSum/s.kpG*1000)/10:0, solo:s.solo,
+    avgDmg:s.g?Math.round(s.dmg/s.g):0
+  }));
+  return out;
+}
+const RATE_GET={dpm:r=>r.dpm,kda:r=>r.kda,surv:r=>-r.deathsPg,cspm:r=>r.cspm,objpm:r=>r.objpm,
+ vspm:r=>r.vspm,kp:r=>r.kp,dpg:r=>r.dpg,demolpm:r=>r.demolpm,ccpm:r=>r.ccpm,utilpm:r=>r.utilpm,tankpm:r=>r.tankpm};
 function playerHex(id){
-  const P=statPlayers(); const me=P.find(s=>s.id===id);
-  if(!me)return null;
-  const pool=P.filter(s=>s.games>=1); if(!pool.length)return null;
-  const get={dmg:s=>s.damageToChampions/s.games, kda:s=>s.kda, surv:s=>-(s.deaths/s.games),
-    cs:s=>s.cs/s.games, obj:s=>s.damageToObjectives/s.games, vision:s=>s.visionScore/s.games};
+  const rates=ratesMap(); const mine=rates.get(id);
+  if(!mine)return null;
+  const myLane=playerMainLane(id);
+  const axes=LANE_AXES[myLane]||GENERIC_AXES;
+  let poolIds=[...rates.keys()];
+  let laneScoped=false;
+  if(myLane){
+    const same=poolIds.filter(pid=>playerMainLane(pid)===myLane);
+    if(same.length>=3){poolIds=same;laneScoped=true}
+  }
   const vals=[];
-  for(const[k]of HEX_KEYS){
-    const arr=pool.map(get[k]); const mn=Math.min(...arr),mx=Math.max(...arr);
-    const v=mx===mn?0.5:(get[k](me)-mn)/(mx-mn);
+  for(const[k]of axes){
+    const arr=poolIds.map(pid=>RATE_GET[k](rates.get(pid)));
+    const mn=Math.min(...arr),mx=Math.max(...arr);
+    const v=mx===mn?0.5:(RATE_GET[k](mine)-mn)/(mx-mn);
     vals.push(Math.max(0,Math.min(1,v)));
   }
-  return{vals,labels:HEX_KEYS.map(x=>x[1]),me};
+  return{vals,labels:axes.map(x=>x[1]),me:{games:mine.games},rates:mine,lane:myLane,laneScoped};
 }
 function radarSvg(vals,labels,size=290){
   const cx=size/2,cy=size/2,R=size*0.34,n=vals.length;
@@ -770,95 +819,108 @@ function radarSvg(vals,labels,size=290){
   return`<svg viewBox="0 0 ${size} ${size}" style="max-width:${size}px;width:100%" role="img" aria-label="플레이어 지표 육각형">${grid}${axes}<polygon points="${poly}" fill="rgba(242,184,75,.2)" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round"/>${dots}${lbl}</svg>`;
 }
 /* 닮은꼴 프로 (지표 순서: 화력·교전·생존·성장·오브젝트·시야) */
-/* 닮은꼴 풀: 라인별 16명, 지표 순서 [화력,교전,생존,성장,오브젝트,시야] */
+function radarSvg2(a,b,labels,size=320){ // 두 선수 겹쳐 보기 (금색 vs 청록)
+  const cx=size/2,cy=size/2,R=size*0.33,n=labels.length;
+  const pt=(i,r)=>{const ag=-Math.PI/2+i*2*Math.PI/n;return[+(cx+Math.cos(ag)*r).toFixed(1),+(cy+Math.sin(ag)*r).toFixed(1)]};
+  let grid='';for(const f of[0.25,0.5,0.75,1])grid+=`<polygon points="${Array.from({length:n},(_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+  let axes='',lbl='';
+  for(let i=0;i<n;i++){const[ax,ay]=pt(i,R);axes+=`<line x1="${cx}" y1="${cy}" x2="${ax}" y2="${ay}" stroke="var(--line)" stroke-width="1"/>`;
+    const[lx,ly]=pt(i,R+20);lbl+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="var(--mut)" font-size="11.5" font-weight="700">${esc(labels[i])}</text>`}
+  const poly=v=>Array.from({length:n},(_,i)=>pt(i,R*Math.max(0.05,v[i])).join(',')).join(' ');
+  return`<svg viewBox="0 0 ${size} ${size}" style="max-width:${size}px;width:100%">${grid}${axes}
+    <polygon points="${poly(a)}" fill="rgba(242,184,75,.18)" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round"/>
+    <polygon points="${poly(b)}" fill="rgba(63,217,197,.16)" stroke="var(--win)" stroke-width="2.2" stroke-linejoin="round"/>${lbl}</svg>`;
+}
+/* 닮은꼴 풀: 라인별 16명 — 좌표는 각 라인 전용 축 순서를 따름 */
 function PT(lane,name,v,desc){return{lane,name,v,desc}}
 const PRO_TYPES=[
- // ── 탑 16
- PT('탑','Zeus',[.85,.6,.4,.7,.6,.3],'공격으로 답을 찾는 탑 카리스마. 들어갈 타이밍을 본능으로 안다'),
- PT('탑','TheShy',[.95,.5,.15,.6,.5,.3],'데스를 겁내지 않는 하이리스크 하이리턴. 죽어도 본전, 살면 캐리'),
- PT('탑','Kiin',[.6,.7,.75,.75,.65,.4],'어떤 폭풍에도 라인은 지키는 흔들림 없는 안정감'),
- PT('탑','Nuguri',[.9,.55,.25,.8,.55,.3],'라인전부터 찍어 누르는 압박의 화신'),
- PT('탑','Khan',[.88,.65,.35,.78,.5,.3],'칼챔을 잡는 순간 게임을 찢는 슈퍼스타형'),
- PT('탑','Smeb',[.8,.7,.5,.7,.6,.35],'캐리와 희생을 자유롭게 오가는 만능 탑'),
- PT('탑','MaRin',[.75,.75,.55,.72,.68,.4],'큰 무대에서 더 강해지는 결승전의 사나이'),
- PT('탑','Impact',[.55,.68,.8,.65,.6,.45],'화려하진 않아도 늘 제 몫, 팀 우선 베테랑'),
- PT('탑','CuVee',[.58,.66,.7,.68,.62,.4],'궂은일 도맡는 든든한 살림꾼'),
- PT('탑','Canna',[.7,.6,.5,.66,.55,.38],'기세를 타면 무서워지는 상승세형'),
- PT('탑','Rascal',[.5,.62,.78,.6,.58,.42],'먼저 안 죽는 게 이기는 길, 단단한 수비형'),
- PT('탑','Bin',[.92,.58,.2,.68,.52,.28],'전투 본능 그 자체. 1:1은 거절하지 않는다'),
- PT('탑','369',[.72,.64,.55,.7,.6,.35],'탱커도 칼챔도 되는 다재다능 밸런스형'),
- PT('탑','Wunder',[.6,.65,.72,.74,.55,.4],'챔프폭 넓은 유연한 운영가'),
- PT('탑','Doran',[.68,.6,.45,.62,.55,.35],'기복을 이겨내고 결정적 순간에 터뜨리는 성장형'),
- PT('탑','Morgan',[.55,.58,.65,.6,.5,.4],'꾸준히 진화하는 노력형'),
- // ── 정글 16
- PT('정글','Canyon',[.6,.7,.6,.5,.95,.5],'용과 전령을 수확하는 오브젝트 설계자. 맵 전체가 농장'),
- PT('정글','Oner',[.7,.65,.45,.4,.8,.55],'싸움을 먼저 여는 돌격형. 이니시는 내가 건다'),
- PT('정글','Peanut',[.5,.7,.6,.45,.75,.6],'판을 읽고 움직이는 노련한 운영형'),
- PT('정글','bengi',[.35,.75,.8,.35,.65,.7],'그림자처럼 팀을 받치는 안정·시야의 조력자'),
- PT('정글','Score',[.45,.72,.7,.5,.92,.6],'오브젝트의 신. 정석 정글의 교과서'),
- PT('정글','Ambition',[.4,.7,.75,.45,.7,.65],'노련미로 후반을 지배하는 대기만성형'),
- PT('정글','Tarzan',[.55,.78,.7,.55,.8,.55],'동선 설계의 천재. 정글이 깨끗하다'),
- PT('정글','Clid',[.72,.68,.5,.5,.72,.5],'갱킹으로 게임을 여는 공격적 개입형'),
- PT('정글','Kanavi',[.75,.7,.45,.55,.7,.45],'본인이 캐리가 되는 정글 캐리의 표본'),
- PT('정글','Pyosik',[.6,.6,.45,.4,.75,.5],'변수를 만들어내는 승부사. 스틸은 예술'),
- PT('정글','Cuzz',[.5,.65,.68,.45,.7,.58],'팀에 맞춰 스며드는 부드러운 안정형'),
- PT('정글','Willer',[.62,.6,.5,.42,.72,.55],'이니시에 진심인 선봉장'),
- PT('정글','UmTi',[.68,.62,.48,.44,.7,.52],'싸움을 사랑하는 파이터'),
- PT('정글','Lucid',[.58,.68,.6,.5,.78,.55],'공수 밸런스가 좋은 차세대형'),
- PT('정글','Croco',[.52,.64,.62,.48,.74,.56],'성실함이 곧 무기인 꾸준형'),
- PT('정글','Malrang',[.45,.6,.55,.4,.68,.62],'팀을 위해 기꺼이 구르는 헌신형'),
- // ── 미드 16
- PT('미드','Faker',[.6,.85,.7,.6,.5,.5],'큰 경기에 강한 클러치 메이커. 미드의 교과서'),
- PT('미드','Chovy',[.7,.9,.8,.97,.5,.4],'CS 한 개에 진심인 무결점 라인전 장인'),
- PT('미드','ShowMaker',[.75,.8,.6,.7,.55,.5],'어떤 챔프든 본인 스타일로 소화하는 다재다능형'),
- PT('미드','Bdd',[.65,.82,.75,.8,.5,.45],'부드럽고 정확한 정석 운영가'),
- PT('미드','Zeka',[.85,.72,.45,.65,.5,.4],'큰 경기에서 폭발하는 슈퍼 에이스'),
- PT('미드','Caps',[.82,.7,.4,.68,.5,.4],'예측 불가 창의적 슈퍼플레이형'),
- PT('미드','Knight',[.8,.78,.6,.82,.5,.4],'라인전 깡패. 솔킬은 일상'),
- PT('미드','Rookie',[.75,.8,.65,.75,.52,.45],'기복 없는 꾸준한 월드클래스'),
- PT('미드','PawN',[.7,.74,.6,.7,.5,.42],'상대가 누구든 맞상대하는 상성 파괴자'),
- PT('미드','Crown',[.55,.7,.78,.72,.48,.45],'버티고 버텨서 이기는 인내의 화신'),
- PT('미드','Kuro',[.6,.72,.7,.7,.5,.45],'팀을 살리는 안정적 살림형 미드'),
- PT('미드','Fly',[.58,.66,.65,.66,.48,.45],'완급 조절이 능한 노련형'),
- PT('미드','Clozer',[.72,.68,.5,.66,.5,.4],'패기로 부딪히는 젊은 돌격형'),
- PT('미드','Dove',[.56,.62,.6,.62,.5,.42],'묵묵히 할 일 하는 성실형'),
- PT('미드','FATE',[.6,.64,.58,.64,.5,.44],'군더더기 없는 깔끔한 정석파'),
- PT('미드','Karis',[.62,.6,.52,.6,.5,.4],'도전을 멈추지 않는 개척자형'),
- // ── 원딜 16
- PT('원딜','Ruler',[.9,.8,.7,.85,.55,.35],'후반을 보장하는 정석 캐리. 키우면 반드시 보답한다'),
- PT('원딜','Gumayusi',[.85,.75,.6,.8,.5,.4],'자신감이 곧 실력인 공격형 원딜'),
- PT('원딜','Deft',[.8,.7,.65,.85,.5,.4],'꾸준함의 대명사. 폼 유지력의 정점'),
- PT('원딜','Viper',[.88,.78,.68,.86,.52,.35],'무결점 포지셔닝의 교과서'),
- PT('원딜','Uzi',[.95,.72,.45,.82,.5,.3],'공격 본능으로 게임을 끝내는 전설형'),
- PT('원딜','Bang',[.78,.76,.72,.8,.5,.38],'안정 속에서 캐리하는 완성형'),
- PT('원딜','PraY',[.72,.74,.7,.76,.55,.42],'한타 각을 아는 노련한 장인'),
- PT('원딜','Teddy',[.8,.72,.6,.82,.48,.35],'묵묵히 딜만 넣는 대미지 머신'),
- PT('원딜','Aiming',[.82,.68,.5,.78,.5,.35],'정면승부를 피하지 않는 화끈함'),
- PT('원딜','Peyz',[.78,.74,.62,.8,.5,.38],'나이답지 않게 침착한 신예 에이스'),
- PT('원딜','Ghost',[.55,.7,.75,.7,.52,.45],'팀 조합에 맞춰 헌신하는 맞춤형 원딜'),
- PT('원딜','Imp',[.85,.66,.45,.74,.5,.32],'낭만과 화력을 모두 가진 파이터'),
- PT('원딜','Rekkles',[.7,.78,.8,.78,.48,.4],'안 죽는 것이 곧 캐리, 극단적 안정 지향'),
- PT('원딜','Mystic',[.68,.7,.66,.74,.5,.4],'모나지 않게 다 잘하는 밸런스형'),
- PT('원딜','Piglet',[.74,.68,.58,.76,.5,.38],'근성으로 증명하는 노력의 화신'),
- PT('원딜','Hena',[.72,.7,.6,.75,.5,.4],'매 시즌 성장하는 잠재주'),
- // ── 서폿 16
- PT('서폿','Keria',[.3,.75,.5,.15,.4,.95],'시야와 변수 창출의 마법사. 게임을 디자인한다'),
- PT('서폿','Lehends',[.25,.6,.45,.1,.35,.9],'창의적 픽과 헌신적 서포팅의 장인'),
- PT('서폿','BeryL',[.35,.65,.55,.2,.5,.6],'와드보다 본능. 자유로운 영혼의 우승 청부사'),
- PT('서폿','MadLife',[.3,.7,.5,.12,.38,.88],'상대가 움직일 곳을 미리 아는 예측의 신'),
- PT('서폿','Wolf',[.28,.68,.6,.12,.4,.85],'쉴 새 없이 움직이는 액티브 플레이메이커'),
- PT('서폿','GorillA',[.26,.66,.62,.1,.42,.86],'팀을 품는 든든한 큰형님'),
- PT('서폿','CoreJJ',[.3,.72,.58,.14,.45,.9],'오더와 시야를 모두 지휘하는 야전사령관'),
- PT('서폿','Mata',[.28,.74,.6,.12,.44,.92],'운영이라는 개념을 만든 설계자'),
- PT('서폿','Life',[.32,.64,.5,.14,.4,.82],'과감한 이니시로 판을 뒤집는 승부사'),
- PT('서폿','Delight',[.27,.62,.6,.12,.4,.84],'티 안 나게 다 해주는 안정 서포팅'),
- PT('서폿','Effort',[.26,.6,.62,.1,.38,.8],'이름 그대로 노력으로 증명하는 성실형'),
- PT('서폿','Meiko',[.3,.7,.56,.13,.42,.88],'못 하는 게 없는 만능 서포터'),
- PT('서폿','Ming',[.29,.68,.58,.12,.4,.87],'정교한 스킬샷의 메이지 서폿형'),
- PT('서폿','Kael',[.27,.6,.54,.11,.38,.8],'팀 분위기를 끌어올리는 에너지 메이커'),
- PT('서폿','Mikyx',[.3,.66,.52,.13,.4,.85],'예측을 벗어나는 변칙 플레이어'),
- PT('서폿','Duro',[.28,.63,.56,.12,.4,.83],'패기로 무장한 차세대 신성')
+ // 탑 [화력,교전,생존,성장,철거,맷집]
+ PT('탑','Zeus',[.85,.6,.4,.7,.6,.45],'공격으로 답을 찾는 탑 카리스마. 들어갈 타이밍을 본능으로 안다'),
+ PT('탑','TheShy',[.95,.5,.15,.6,.5,.4],'데스를 겁내지 않는 하이리스크 하이리턴. 죽어도 본전, 살면 캐리'),
+ PT('탑','Kiin',[.6,.7,.75,.75,.6,.65],'어떤 폭풍에도 라인은 지키는 흔들림 없는 안정감'),
+ PT('탑','Nuguri',[.9,.55,.25,.8,.65,.35],'라인전부터 찍어 누르는 압박의 화신'),
+ PT('탑','Khan',[.88,.65,.35,.78,.55,.35],'칼챔을 잡는 순간 게임을 찢는 슈퍼스타형'),
+ PT('탑','Smeb',[.8,.7,.5,.7,.6,.5],'캐리와 희생을 자유롭게 오가는 만능 탑'),
+ PT('탑','MaRin',[.75,.75,.55,.72,.65,.5],'큰 무대에서 더 강해지는 결승전의 사나이'),
+ PT('탑','Impact',[.55,.68,.8,.65,.55,.75],'화려하진 않아도 늘 제 몫, 팀 우선 베테랑'),
+ PT('탑','CuVee',[.55,.66,.7,.68,.5,.75],'궂은일 도맡는 든든한 살림꾼'),
+ PT('탑','Canna',[.7,.6,.5,.66,.55,.5],'기세를 타면 무서워지는 상승세형'),
+ PT('탑','Rascal',[.45,.62,.78,.6,.45,.85],'맞으면서 버는 단단한 방패형'),
+ PT('탑','Bin',[.92,.58,.2,.68,.55,.35],'전투 본능 그 자체. 1:1은 거절하지 않는다'),
+ PT('탑','369',[.72,.64,.55,.7,.55,.55],'탱커도 칼챔도 되는 다재다능 밸런스형'),
+ PT('탑','Wunder',[.6,.65,.72,.74,.6,.6],'챔프폭 넓은 유연한 운영가'),
+ PT('탑','Doran',[.68,.6,.45,.62,.5,.55],'기복을 이겨내고 결정적 순간에 터뜨리는 성장형'),
+ PT('탑','Morgan',[.5,.58,.65,.6,.45,.7],'꾸준히 진화하는 노력형'),
+ // 정글 [교전,오브젝트,킬관여,시야,생존,골드효율]
+ PT('정글','Canyon',[.7,.95,.7,.5,.6,.7],'용과 전령을 수확하는 오브젝트 설계자. 맵 전체가 농장'),
+ PT('정글','Oner',[.65,.8,.8,.55,.45,.6],'싸움을 먼저 여는 돌격형. 이니시는 내가 건다'),
+ PT('정글','Peanut',[.7,.75,.72,.6,.6,.6],'판을 읽고 움직이는 노련한 운영형'),
+ PT('정글','bengi',[.75,.65,.7,.75,.8,.55],'그림자처럼 팀을 받치는 안정·시야의 조력자'),
+ PT('정글','Score',[.72,.92,.68,.6,.7,.6],'오브젝트의 신. 정석 정글의 교과서'),
+ PT('정글','Ambition',[.7,.7,.65,.65,.75,.55],'노련미로 후반을 지배하는 대기만성형'),
+ PT('정글','Tarzan',[.78,.8,.7,.55,.7,.65],'동선 설계의 천재. 정글이 깨끗하다'),
+ PT('정글','Clid',[.68,.72,.78,.5,.5,.62],'갱킹으로 게임을 여는 공격적 개입형'),
+ PT('정글','Kanavi',[.7,.7,.75,.45,.45,.75],'본인이 캐리가 되는 정글 캐리의 표본'),
+ PT('정글','Pyosik',[.6,.75,.7,.5,.45,.55],'변수를 만들어내는 승부사. 스틸은 예술'),
+ PT('정글','Cuzz',[.65,.7,.68,.58,.68,.55],'팀에 맞춰 스며드는 부드러운 안정형'),
+ PT('정글','Willer',[.6,.72,.78,.55,.5,.55],'이니시에 진심인 선봉장'),
+ PT('정글','UmTi',[.62,.7,.8,.52,.48,.58],'싸움을 사랑하는 파이터'),
+ PT('정글','Lucid',[.68,.78,.7,.55,.6,.62],'공수 밸런스가 좋은 차세대형'),
+ PT('정글','Croco',[.64,.74,.7,.56,.62,.58],'성실함이 곧 무기인 꾸준형'),
+ PT('정글','Malrang',[.6,.68,.75,.62,.55,.5],'팀을 위해 기꺼이 구르는 헌신형'),
+ // 미드 [화력,교전,생존,성장,킬관여,골드효율]
+ PT('미드','Faker',[.6,.85,.7,.6,.7,.6],'큰 경기에 강한 클러치 메이커. 미드의 교과서'),
+ PT('미드','Chovy',[.7,.9,.8,.97,.55,.7],'CS 한 개에 진심인 무결점 라인전 장인'),
+ PT('미드','ShowMaker',[.75,.8,.6,.7,.68,.65],'어떤 챔프든 본인 스타일로 소화하는 다재다능형'),
+ PT('미드','Bdd',[.65,.82,.75,.8,.62,.62],'부드럽고 정확한 정석 운영가'),
+ PT('미드','Zeka',[.85,.72,.45,.65,.68,.7],'큰 경기에서 폭발하는 슈퍼 에이스'),
+ PT('미드','Caps',[.82,.7,.4,.68,.7,.68],'예측 불가 창의적 슈퍼플레이형'),
+ PT('미드','Knight',[.8,.78,.6,.82,.6,.72],'라인전 깡패. 솔킬은 일상'),
+ PT('미드','Rookie',[.75,.8,.65,.75,.65,.65],'기복 없는 꾸준한 월드클래스'),
+ PT('미드','PawN',[.7,.74,.6,.7,.62,.6],'상대가 누구든 맞상대하는 상성 파괴자'),
+ PT('미드','Crown',[.55,.7,.78,.72,.55,.55],'버티고 버텨서 이기는 인내의 화신'),
+ PT('미드','Kuro',[.6,.72,.7,.7,.6,.55],'팀을 살리는 안정적 살림형 미드'),
+ PT('미드','Fly',[.58,.66,.65,.66,.58,.52],'완급 조절이 능한 노련형'),
+ PT('미드','Clozer',[.72,.68,.5,.66,.65,.6],'패기로 부딪히는 젊은 돌격형'),
+ PT('미드','Dove',[.56,.62,.6,.62,.56,.5],'묵묵히 할 일 하는 성실형'),
+ PT('미드','FATE',[.6,.64,.58,.64,.58,.55],'군더더기 없는 깔끔한 정석파'),
+ PT('미드','Karis',[.62,.6,.52,.6,.6,.55],'도전을 멈추지 않는 개척자형'),
+ // 원딜 [화력,교전,생존,성장,골드효율,철거]
+ PT('원딜','Ruler',[.9,.8,.7,.85,.7,.6],'후반을 보장하는 정석 캐리. 키우면 반드시 보답한다'),
+ PT('원딜','Gumayusi',[.85,.75,.6,.8,.68,.55],'자신감이 곧 실력인 공격형 원딜'),
+ PT('원딜','Deft',[.8,.7,.65,.85,.65,.55],'꾸준함의 대명사. 폼 유지력의 정점'),
+ PT('원딜','Viper',[.88,.78,.68,.86,.72,.58],'무결점 포지셔닝의 교과서'),
+ PT('원딜','Uzi',[.95,.72,.45,.82,.75,.5],'공격 본능으로 게임을 끝내는 전설형'),
+ PT('원딜','Bang',[.78,.76,.72,.8,.65,.55],'안정 속에서 캐리하는 완성형'),
+ PT('원딜','PraY',[.72,.74,.7,.76,.6,.6],'한타 각을 아는 노련한 장인'),
+ PT('원딜','Teddy',[.8,.72,.6,.82,.66,.55],'묵묵히 딜만 넣는 대미지 머신'),
+ PT('원딜','Aiming',[.82,.68,.5,.78,.68,.52],'정면승부를 피하지 않는 화끈함'),
+ PT('원딜','Peyz',[.78,.74,.62,.8,.64,.55],'나이답지 않게 침착한 신예 에이스'),
+ PT('원딜','Ghost',[.55,.7,.75,.7,.55,.5],'팀 조합에 맞춰 헌신하는 맞춤형 원딜'),
+ PT('원딜','Imp',[.85,.66,.45,.74,.7,.5],'낭만과 화력을 모두 가진 파이터'),
+ PT('원딜','Rekkles',[.7,.78,.8,.78,.6,.5],'안 죽는 것이 곧 캐리, 극단적 안정 지향'),
+ PT('원딜','Mystic',[.68,.7,.66,.74,.6,.52],'모나지 않게 다 잘하는 밸런스형'),
+ PT('원딜','Piglet',[.74,.68,.58,.76,.62,.52],'근성으로 증명하는 노력의 화신'),
+ PT('원딜','Hena',[.72,.7,.6,.75,.6,.52],'매 시즌 성장하는 잠재주'),
+ // 서폿 [시야,킬관여,교전,생존,변수(CC),케어]
+ PT('서폿','Keria',[.95,.78,.75,.5,.7,.6],'시야와 변수 창출의 마법사. 게임을 디자인한다'),
+ PT('서폿','Lehends',[.9,.75,.6,.45,.72,.65],'창의적 픽과 헌신적 서포팅의 장인'),
+ PT('서폿','BeryL',[.6,.78,.65,.55,.68,.6],'와드보다 본능. 자유로운 영혼의 우승 청부사'),
+ PT('서폿','MadLife',[.88,.72,.7,.5,.85,.5],'상대가 움직일 곳을 미리 아는 예측의 신'),
+ PT('서폿','Wolf',[.85,.78,.68,.6,.7,.6],'쉴 새 없이 움직이는 액티브 플레이메이커'),
+ PT('서폿','GorillA',[.86,.74,.66,.62,.65,.65],'팀을 품는 든든한 큰형님'),
+ PT('서폿','CoreJJ',[.9,.76,.72,.58,.68,.6],'오더와 시야를 모두 지휘하는 야전사령관'),
+ PT('서폿','Mata',[.92,.74,.74,.6,.7,.55],'운영이라는 개념을 만든 설계자'),
+ PT('서폿','Life',[.82,.78,.64,.5,.78,.5],'과감한 이니시로 판을 뒤집는 승부사'),
+ PT('서폿','Delight',[.84,.72,.62,.6,.66,.68],'티 안 나게 다 해주는 안정 서포팅'),
+ PT('서폿','Effort',[.8,.7,.6,.62,.6,.65],'이름 그대로 노력으로 증명하는 성실형'),
+ PT('서폿','Meiko',[.88,.74,.7,.56,.7,.62],'못 하는 게 없는 만능 서포터'),
+ PT('서폿','Ming',[.87,.72,.68,.58,.74,.6],'정교한 스킬샷의 메이지 서폿형'),
+ PT('서폿','Kael',[.8,.7,.6,.54,.62,.7],'팀 분위기를 끌어올리는 에너지 메이커'),
+ PT('서폿','Mikyx',[.85,.7,.66,.52,.72,.58],'예측을 벗어나는 변칙 플레이어'),
+ PT('서폿','Duro',[.83,.72,.63,.56,.66,.6],'패기로 무장한 차세대 신성')
 ];
+
 function playerMainLane(id){
   const cnt={};
   state.matches.forEach(m=>m.participants.forEach(p=>{if(p.playerId===id&&p.lane)cnt[p.lane]=(cnt[p.lane]||0)+1}));
@@ -867,12 +929,18 @@ function playerMainLane(id){
 }
 /* ───── ④ 강점/보완점 해석 (LCK 중계 스타일, 쉬운 말) ───── */
 const AXIS_NOTE={
- '화력':{hi:'한타 대미지를 책임지는 팀의 화력 엔진이에요.',lo:'대미지 기여가 낮은 편이에요. 교전에서 스킬 한 번만 더 적중시켜도 확 달라져요.'},
+ '철거':{hi:'분당 포탑 피해가 높아요. 라인을 밀고 건물을 부수는 재개발 전문가.',lo:'포탑 압박이 적은 편이에요. 이긴 라인에서 한 대라도 더 치는 습관 추천.'},
+ '맷집':{hi:'받아낸 피해+감소한 피해가 많아요. 팀 대신 맞아주는 방패.',lo:'앞라인 역할이 적은 편이에요. 챔피언 특성일 수도 있으니 참고만.'},
+ '골드 효율':{hi:'골드 1천당 딜이 높아요. 같은 돈으로 더 많이 때리는 가성비 끝판왕.',lo:'골드 대비 딜 환산이 아쉬워요. 아이템 골드가 화력으로 덜 이어지고 있다는 뜻.'},
+ '변수(CC)':{hi:'군중제어 시간이 길어요. 한타의 시작과 끝을 만드는 변수 제조기.',lo:'CC 기여가 적은 편이에요. 챔피언 풀에 CC 픽을 섞어보는 것도 방법.'},
+ '케어':{hi:'분당 회복·피해흡수가 높아요. 팀을 살리고 버티게 하는 보호막.',lo:'케어 지표가 낮은 편이에요. 유틸형 픽에선 더 올라갈 거예요.'},
+ '화력':{hi:'분당 대미지(DPM)가 높아요. 한타 화력을 책임지는 팀의 엔진.',lo:'분당 대미지가 낮은 편이에요. 교전에서 스킬 한 번만 더 적중시켜도 확 달라져요.'},
  '교전':{hi:'킬에 잘 관여하면서 잘 안 죽는, 싸움 효율(KDA)이 뛰어난 타입이에요.',lo:'교전에서 손해 보는 편이에요. 들어가는 타이밍을 반 박자만 늦춰보세요.'},
  '생존':{hi:'잘 안 죽어요. 상대 입장에선 도무지 잡히지 않는 미꾸라지.',lo:'데스가 많은 편이에요. 시야 없는 곳에 혼자 가지 않는 것만으로도 좋아져요.'},
- '성장':{hi:'CS를 차곡차곡 챙기는 성장형이에요. 같은 시간에 더 부자가 됩니다.',lo:'CS 수급이 아쉬워요. 라인 밀고 정글 캠프 하나 먹는 습관을 추천해요.'},
+ '성장':{hi:'분당 CS가 높은 성장형이에요. 같은 시간에 더 부자가 됩니다.',lo:'분당 CS가 아쉬워요. 라인 밀고 정글 캠프 하나 먹는 습관을 추천해요.'},
  '오브젝트':{hi:'용·전령·포탑 같은 목표물에 진심인 운영가예요. 게임을 굴릴 줄 압니다.',lo:'오브젝트 관여가 적은 편이에요. 킬보다 용이 게임을 끝냅니다.'},
- '시야':{hi:'와드와 시야 장악에 투자하는 팀의 등불이에요.',lo:'시야 점수가 낮은 편이에요. 제어 와드 하나가 목숨 하나예요.'}
+ '시야':{hi:'분당 시야 점수가 높은 팀의 등불이에요. 와드에 투자할 줄 압니다.',lo:'시야 점수가 낮은 편이에요. 제어 와드 하나가 목숨 하나예요.'},
+ '킬관여':{hi:'팀이 낸 킬의 대부분에 발자국이 찍혀 있어요. 어디서든 싸움에 함께합니다.',lo:'팀 교전 합류가 적은 편이에요. 사이드 운영형이거나, 합류 타이밍을 다듬을 여지가 있어요.'}
 };
 function styleReport(hex){
   const pair=hex.labels.map((l,i)=>({l,v:hex.vals[i]})).sort((a,b)=>b.v-a.v);
@@ -887,13 +955,17 @@ function matchPro(hex,laneKo){
     const pool=['각성 전 주인공형','잠재력 매장량 전국 1위','대기만성 스토브리그 유망주','폼은 일시적, 클래스는 오는 중'];
     return{name:pickSeeded(pool,me.games*13+Math.round(avg*100)),desc:'아직 지표가 만개하지 않았을 뿐. 서사는 지금부터 쓰입니다.',pro:false};
   }
-  const pool=laneKo?PRO_TYPES.filter(t=>t.lane===laneKo):PRO_TYPES;
+  if(!laneKo)return{name:'포지션 탐색 중',desc:'라인 기록이 쌓이면 그 포지션 16타입 중에서 닮은꼴을 찾아드려요.',pro:false};
+  const pool=PRO_TYPES.filter(t=>t.lane===laneKo);
+  const n=hex.vals.length;
   const ranked=pool.map(t=>{
-    let d=0;for(let i=0;i<6;i++)d+=(hex.vals[i]-t.v[i])**2;
-    return{t,d};
+    let d=0;for(let i=0;i<n;i++)d+=(hex.vals[i]-(t.v[i]??.5))**2;
+    return{t,d:Math.sqrt(d)};
   }).sort((a,b)=>a.d-b.d);
-  const best=ranked[0].t,second=ranked[1].t;
-  return{name:best.name+'형',lane:best.lane,desc:best.desc,second:second.name+'형',mainLane:laneKo||null,pro:true};
+  const sim=d=>Math.max(5,Math.min(99,Math.round(100-(d/Math.sqrt(n))*90))); // 축 수에 무관한 정규화 거리
+  const best=ranked[0],second=ranked[1];
+  return{name:best.t.name+'형',lane:best.t.lane,desc:best.t.desc,sim:sim(best.d),
+    second:second.t.name+'형',secondSim:sim(second.d),mainLane:laneKo||null,pro:true};
 }
 function sparkSvg(arr,w=170,h=42){
   if(arr.length<2)return'<span class="dim mini">데이터 부족</span>';
@@ -995,7 +1067,8 @@ function makeAwards(){
      ['피해감소 방화벽','selfMitigatedDamage',v=>`피해 감소 ${fmt(v)} · 물리·마법 모두 차단`],
      ['CS 공장장','cs',v=>`누적 CS ${fmt(v)} · 미니언계의 재앙`],
      ['골드 광산','goldEarned',v=>`누적 골드 ${fmt(v)} · 협곡의 자산가`],
-     ['CC 제조기','crowdControlScore',v=>`군중 제어 ${fmt(v)} · 상대 키보드 압수`]
+     ['CC 제조기','crowdControlScore',v=>`군중 제어 ${fmt(v)} · 상대 키보드 압수`],
+     ['솔로킬 머신','soloKills',v=>`솔로킬 ${fmt(v)}회 · 1:1은 거절하지 않는다`]
     ].forEach(([t,k,d])=>{const w=top(P,k);if(w)push(t,w.name,d(w[k]))});
     // 진영 특화
     const sided=SDp.filter(x=>x.bG>=2&&x.rG>=2);
@@ -1179,7 +1252,7 @@ const STAT_ALIAS={cs:['cs','minionsKilled','미니언','씨에스'],goldEarned:[
  wardsPlaced:['wardsPlaced','와드설치'],wardsKilled:['wardsKilled','와드파괴'],controlWardsBought:['controlWardsBought','제어와드'],
  crowdControlScore:['crowdControlScore','cc','군중제어'],damageToObjectives:['damageToObjectives','오브젝트피해','목표물피해량'],
  damageToTurrets:['damageToTurrets','포탑피해','포탑피해량'],healing:['healing','heal','회복량'],
- selfMitigatedDamage:['selfMitigatedDamage','mitigated','피해감소','피해감소량']};
+ selfMitigatedDamage:['selfMitigatedDamage','mitigated','피해감소','피해감소량'],soloKills:['soloKills','solokill','솔로킬','솔킬']};
 function pickStats(src){
   const flat={...(src||{}),...(src?.stats||{})},out={};
   for(const[key,names]of Object.entries(STAT_ALIAS))
@@ -1524,7 +1597,7 @@ function swapSides(id){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['champions','챔피언'],['form','폼 주식'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['champions','챔피언'],['form','폼 주식'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
 ];
 function go(id){tab=id;render();window.scrollTo({top:0})}
 const ADMIN_ONLY_PAGES=new Set(['record','mvp']);
@@ -1558,7 +1631,7 @@ function head(title,sub){
 function render(){
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
   renderNav();renderTicker();fillDatalists();
-  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,
+  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,
     champions:pgChampions,form:pgForm,awards:pgAwards,mvp:pgMvp,settings:pgSettings};
   $('view').innerHTML=(R[tab]||pgDashboard)();
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
@@ -1803,15 +1876,16 @@ function playerDetail(p){
       const rep=styleReport(hex);
       const mine=makeAwards().filter(a=>a.target===p.displayName||(a.target.includes(p.displayName)&&(a.target.includes('+')||a.target.includes('vs')))).slice(0,12);
       return`<div class="grid c2" style="margin-top:16px;align-items:center">
-        <div style="text-align:center">${radarSvg(hex.vals,hex.labels)}<p class="mini dim" style="margin:4px 0 0">아포단 내 상대평가 (경기당 기준)</p></div>
+        <div style="text-align:center">${radarSvg(hex.vals,hex.labels)}<p class="mini dim" style="margin:4px 0 0">${hex.lane?`${esc(hex.lane)} 전용 지표`:'공통 지표'} · ${hex.laneScoped?'같은 포지션끼리 상대평가':'전체 기준 상대평가'} · 분당 환산</p></div>
         <div>
           <h3 style="font-size:14px;margin:0 0 6px">플레이 스타일 닮은꼴${pro.mainLane?` <span class="dim" style="font-weight:600;font-size:12px">— 주 포지션 ${esc(pro.mainLane)} · 해당 라인 16타입 중</span>`:''}</h3>
-          <span class="pill ${pro.pro?'gold':'violet'}" style="font-size:13px">🎯 ${esc(pro.name)}${pro.lane?` · ${esc(pro.lane)}`:''}</span>
+          <span class="pill ${pro.pro?'gold':'violet'}" style="font-size:13px">🎯 ${esc(pro.name)}${pro.lane?` · ${esc(pro.lane)}`:''}${pro.sim?` · ${pro.sim}% 일치`:''}</span>
           <p class="mini" style="margin:7px 0 4px">${esc(pro.desc)}</p>
-          ${pro.second?`<p class="mini dim" style="margin:0 0 12px">그다음으로 가까운 타입: ${esc(pro.second)}</p>`:'<span style="display:block;margin-bottom:12px"></span>'}
+          ${pro.second?`<p class="mini dim" style="margin:0 0 12px">그다음으로 가까운 타입: ${esc(pro.second)}${pro.secondSim?` (${pro.secondSim}%)`:''}</p>`:'<span style="display:block;margin-bottom:12px"></span>'}
           <h3 style="font-size:14px;margin:0 0 6px">스카우팅 리포트 <span class="dim" style="font-weight:600;font-size:12px">— 아포단 내 상대평가 100점 만점</span></h3>
           ${rep.str.map(x=>`<p class="mini" style="margin:0 0 5px">💪 <b style="color:var(--win)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].hi)}</p>`).join('')}
           ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
+          ${hex.rates&&hex.rates.solo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 누적 ${hex.rates.solo}회</b> · 1:1에서 증명된 손맛</p>`:''}
           <div style="height:10px"></div>
           <h3 style="font-size:14px;margin:0 0 6px">보유 칭호 ${mine.length?`(${mine.length})`:''}</h3>
           ${mine.length?`<div class="row" style="gap:6px">${mine.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div><p class="mini dim" style="margin:6px 0 0">칭호에 마우스를 올리면 사유가 보여요.</p>`:'<p class="mini dim" style="margin:0">아직 획득한 칭호가 없어요. 곧 생깁니다.</p>'}
@@ -1928,6 +2002,61 @@ function pgStats(){
   </div>
   <div class="card" style="margin-top:14px"><h3>사람 × 챔피언 궁합 <span class="tag">2판 이상</span></h3>
     ${PC.length?`<div class="scrollx"><table class="tbl" style="min-width:560px">${PC.slice(0,40).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.champion)}</td><td class="num dim">${x.wins}승 ${x.games-x.wins}패</td><td class="num ${x.winRate>=60?'up':x.winRate<=40?'dn':'even'}">${x.winRate}%</td><td>${x.winRate>=70?'<span class="pill win">믿고 보는 픽</span>':x.winRate<=35?'<span class="pill lose">봉인 검토</span>':'<span class="pill">무난픽</span>'}</td></tr>`).join('')}</table></div>`:'<div class="empty">같은 사람이 같은 챔피언을 2판 이상 해야 나와요.</div>'}</div>`;
+}
+
+/* ───── 1:1 비교 ───── */
+function pgCompare(){
+  const rates=ratesMap();
+  const P=statPlayers().filter(s=>rates.get(s.id)?.games>=1);
+  if(P.length<2)return head('1:1 비교','두 명 이상 경기 기록이 있어야 비교할 수 있어요.')+'<div class="empty">경기를 더 기록해주세요.</div>';
+  if(!window._cmpA||!P.some(s=>s.id===window._cmpA))window._cmpA=P[0].id;
+  if(!window._cmpB||!P.some(s=>s.id===window._cmpB)||window._cmpB===window._cmpA)window._cmpB=(P.find(s=>s.id!==window._cmpA)||P[1]).id;
+  const A=P.find(s=>s.id===window._cmpA),B=P.find(s=>s.id===window._cmpB);
+  const rA=rates.get(A.id),rB=rates.get(B.id);
+  const hA=playerHex(A.id),hB=playerHex(B.id);
+  const sel=(id,val)=>`<select onchange="window._cmp${id}=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%">${P.map(s=>`<option value="${s.id}"${s.id===val?' selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+  const f1=v=>Math.round(v*10)/10;
+  const rows=[
+    ['승률',A.winRate,B.winRate,'%','높을수록'],
+    ['전적',null,null,'',''],
+    ['KDA',A.kda,B.kda,'','높을수록'],
+    ['분당 딜 (DPM)',Math.round(rA.dpm),Math.round(rB.dpm),'','높을수록'],
+    ['분당 CS (CSPM)',f1(rA.cspm),f1(rB.cspm),'','높을수록'],
+    ['분당 시야',f1(rA.vspm),f1(rB.vspm),'','높을수록'],
+    ['킬관여율',rA.kp,rB.kp,'%','높을수록'],
+    ['골드 효율 (1천골드당 딜)',Math.round(rA.dpg),Math.round(rB.dpg),'','높을수록'],
+    ['경기당 데스',f1(rA.deathsPg),f1(rB.deathsPg),'','낮을수록'],
+    ['평균 딜량',rA.avgDmg,rB.avgDmg,'','높을수록'],
+    ['솔로킬 누적',rA.solo,rB.solo,'','높을수록'],
+    ['MVP',A.mvp,B.mvp,'','높을수록']
+  ];
+  const tr=rows.map(([l,a,b,unit,dir])=>{
+    if(l==='전적')return`<tr><td>전적</td><td class="num">${A.wins}승 ${A.losses}패</td><td class="num">${B.wins}승 ${B.losses}패</td></tr>`;
+    if(l==='솔로킬 누적'&&!a&&!b)return'';
+    const aw=dir==='낮을수록'?a<b:a>b, bw=dir==='낮을수록'?b<a:b>a;
+    return`<tr><td>${l}</td>
+      <td class="num ${aw?'up':''}" style="${aw?'font-weight:800':''}">${fmt(a)}${unit}</td>
+      <td class="num ${bw?'up':''}" style="${bw?'font-weight:800':''}">${fmt(b)}${unit}</td></tr>`;
+  }).join('');
+  const laneNote=x=>x.laneScoped?`${x.lane} 포지션 내 상대평가`:'전체 멤버 기준 상대평가';
+  return head('1:1 비교','LCK 맞대결 그래픽처럼. 육각형은 각자 "자기 포지션 안에서의 위치", 표는 실제 수치예요.')+`
+  <div class="card">
+    <div class="grid c2" style="margin-bottom:14px">
+      <div class="f"><label style="color:var(--gold)">🟡 선수 A</label>${sel('A',A.id)}</div>
+      <div class="f"><label style="color:var(--win)">🟢 선수 B</label>${sel('B',B.id)}</div>
+    </div>
+    <div class="grid c2" style="align-items:center">
+      <div style="text-align:center">${hA.labels.join()===hB.labels.join()
+        ?radarSvg2(hA.vals,hB.vals,hA.labels)
+        :`<div class="grid c2">
+            <div>${radarSvg(hA.vals,hA.labels,250)}<p class="mini" style="margin:2px 0 0;color:var(--gold)">${esc(A.name)}</p></div>
+            <div>${radarSvg(hB.vals,hB.labels,250)}<p class="mini" style="margin:2px 0 0;color:var(--win)">${esc(B.name)}</p></div>
+          </div><p class="mini dim" style="margin:8px 0 0">두 선수의 포지션이 달라 측정 축이 달라요. 각자 자기 라인 기준 차트입니다.</p>`}
+        <p class="mini" style="margin:6px 0 0"><b style="color:var(--gold)">${esc(A.name)}</b> (${laneNote(hA)}) vs <b style="color:var(--win)">${esc(B.name)}</b> (${laneNote(hB)})</p></div>
+      <div class="scrollx"><table class="tbl"><thead><tr><th>지표</th><th class="num" style="color:var(--gold)">${esc(A.name)}</th><th class="num" style="color:var(--win)">${esc(B.name)}</th></tr></thead><tbody>${tr}</tbody></table>
+      <p class="mini dim" style="margin-top:8px">굵은 초록 = 우세. 분당 지표는 경기 시간이 기록된 판 기준이고, 시간이 없는 옛 기록은 28분으로 가정해 계산해요.</p></div>
+    </div>
+  </div>`;
 }
 
 /* ───── 챔피언 ───── */
