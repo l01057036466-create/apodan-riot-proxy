@@ -318,6 +318,10 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const uid=p=>(p||'id')+'_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);
 const todayStr=()=>new Date().toISOString().slice(0,10);
+function sessionDay(now){ // 내전일: 새벽 06시 이전은 전날 내전 (자정 넘는 경기 분리 방지)
+  const t=(now!==undefined?now:Date.now())+9*3600000-6*3600000; // KST−6h
+  return new Date(t).toISOString().slice(0,10);
+}
 const norm=s=>String(s||'').toLowerCase().replace(/[#\s_\-\.·:;'"\[\]\(\){}|]/g,'');
 const num=v=>{if(v==null||v==='')return 0;const n=Number(String(v).replace(/[,\s]/g,''));return isFinite(n)?n:0};
 const fmt=n=>Number(n||0).toLocaleString('ko-KR');
@@ -1146,6 +1150,19 @@ function makeAwards(){
     if(kdaTop)push('KDA 명품관',kdaTop.name,`KDA ${kdaTop.kda} · 전사자 명단에 이름이 없음`);
     const att=top(P,'games',5);
     if(att)push('출석왕',att.name,`${att.games}판 출석 · 내전이 본업, 회사가 부업`);
+    // 😱 불명예 칭호 — 들으면 "헐"
+    const ghost=P.filter(p=>p.games>=3&&p.avgDmg>0).sort((a,b)=>a.avgDmg-b.avgDmg)[0];
+    if(ghost)push('👻 유령 용병',ghost.name,`평균 딜 ${fmt(ghost.avgDmg)} · 분명 같이 게임했는데 흔적이 없음`);
+    const scrooge=P.filter(p=>p.games>=3).sort((a,b)=>per(a,'assists')-per(b,'assists'))[0];
+    if(scrooge&&per(scrooge,'assists')<5)push('🧊 어시 구두쇠',scrooge.name,`경기당 어시 ${per(scrooge,'assists').toFixed(1)} · 도움은 유료입니다`);
+    const bed=P.filter(p=>p.games>=3&&per(p,'deaths')>=4&&p.winRate<50).sort((a,b)=>per(b,'deaths')-per(a,'deaths'))[0];
+    if(bed)push('🛏 인간 침대',bed.name,`경기당 ${per(bed,'deaths').toFixed(1)}데스 · 협곡에 눕는 게 취미`);
+    const intRun=P.filter(p=>p.games>=4&&p.kda<1.5)[0];
+    if(intRun)push('🚨 9데스 보험사기',intRun.name,`KDA ${intRun.kda} · 고의성 조사 중 (무혐의 기원)`);
+    P.forEach(p=>{
+      const s=streaksOf(p.id);
+      if(s.ml>=4)push('📉 폭락 전문',p.name,`최장 ${s.ml}연패 · 차트가 절벽인 이유가 있다`);
+    });
     const driver=top(P,'wins',4);
     if(driver)push('버스 기사',driver.name,`누적 ${driver.wins}승 · 오늘도 정시 운행`);
     // 숟가락: 킬은 많은데 딜은 평균 이하
@@ -1354,7 +1371,7 @@ function buildDraftFromText(){
   if(!rows.length)return toast('텍스트에서 선수/KDA를 찾지 못했어요. 텍스트를 정리하거나 직접 입력해주세요.',true);
   while(rows.length<10)rows.push({rawName:'',playerId:'',championId:'',kills:0,deaths:0,assists:0,stats:{}});
   draft={
-    playedAt:$('shotDate').value||todayStr(),
+    playedAt:$('shotDate').value||sessionDay(),
     setNumber:num($('shotSet').value)||1,
     winnerTeam:$('shotWin').value,
     memo:'스크린샷 분석 입력', mvpId:'',
@@ -1889,16 +1906,17 @@ function saveLineup(){
   const all=[...blue,...red];
   if(new Set(all).size!==all.length)return toast('같은 사람이 두 자리에 들어가 있어요. 한 자리만 남겨주세요.',true);
   const round=$('luRound')?.value||'1차';
-  const date=$('luDate')?.value||todayStr();
+  const series=$('luSeries')?.value||'단판';
+  const date=$('luDate')?.value||sessionDay();
   state.lineups=allLineups().filter(l=>true);state.lineup=null;
   const dup=state.lineups.find(l=>l.date===date&&l.round===round&&l.id!==window._luEdit);
   if(dup)return toast(`${date} ${round} 공지가 이미 있어요. 그 공지를 수정하거나 다른 회차를 골라주세요.`,true);
-  const obj={id:window._luEdit||uid('lu'),date,round,note:($('luNote')?.value||'').trim(),blue,red};
+  const obj={id:window._luEdit||uid('lu'),date,round,series,note:($('luNote')?.value||'').trim(),blue,red};
   const idx=state.lineups.findIndex(l=>l.id===obj.id);
   if(idx>=0)state.lineups[idx]=obj;else state.lineups.push(obj);
   state.lineups.sort((a,b)=>a.date.localeCompare(b.date)||ROUNDS.indexOf(a.round)-ROUNDS.indexOf(b.round));
   window._luDraft=null;window._luEdit=null;
-  save();render();toast(`${date} ${round} 라인업 공지 완료! 대시보드에 떴습니다.`);
+  save();render();toast(`${date} ${round} (${series}) 라인업 공지 완료! 대시보드에 떴습니다.`);
 }
 function clearLineup(id){
   if(needAdmin())return;
@@ -3106,6 +3124,53 @@ async function mvpLock(date,open){
     await fetchMvp(date);render();
   }catch(e){toast('실패: '+e.message,true)}
 }
+
+
+/* ───── 🔥 확실한 라이벌 & 💙 최고의 친구 ───── */
+function rivalOf(id){ // 많이 만났고 전적이 팽팽한 상대
+  const opp={};
+  state.matches.forEach(m=>{
+    const me=m.participants.find(p=>p.playerId===id);if(!me)return;
+    const iWon=me.team===m.winnerTeam;
+    m.participants.filter(p=>p.playerId&&p.team!==me.team).forEach(p=>{
+      opp[p.playerId]=opp[p.playerId]||{g:0,w:0};
+      opp[p.playerId].g++;if(iWon)opp[p.playerId].w++;
+    });
+  });
+  let best=null;
+  Object.entries(opp).forEach(([pid,o])=>{
+    if(o.g<3)return;
+    const score=o.g*2-Math.abs(o.w*2-o.g)*3; // 다전 + 팽팽함
+    if(!best||score>best.score)best={pid,g:o.g,w:o.w,l:o.g-o.w,score};
+  });
+  return best?{id:best.pid,name:nameOf(best.pid),g:best.g,w:best.w,l:best.l}:null;
+}
+function bestieOf(id){ // 같은 팀일 때 가장 잘 풀리는 단짝
+  const tm={};
+  state.matches.forEach(m=>{
+    const me=m.participants.find(p=>p.playerId===id);if(!me)return;
+    const iWon=me.team===m.winnerTeam;
+    m.participants.filter(p=>p.playerId&&p.playerId!==id&&p.team===me.team).forEach(p=>{
+      tm[p.playerId]=tm[p.playerId]||{g:0,w:0};
+      tm[p.playerId].g++;if(iWon)tm[p.playerId].w++;
+    });
+  });
+  let best=null;
+  Object.entries(tm).forEach(([pid,o])=>{
+    if(o.g<3)return;
+    const wr=o.w/o.g;
+    const score=wr*100+o.g*2;
+    if(!best||score>best.score)best={pid,g:o.g,w:o.w,wr:Math.round(wr*100),score};
+  });
+  return best?{id:best.pid,name:nameOf(best.pid),g:best.g,w:best.w,wr:best.wr}:null;
+}
+function rivalPressure(myId,rivalId){ // 라이벌 상승세 감지 → 긴장 멘트
+  const d=id=>{const a=formSeries(id).arr;return(a.at(-1)||100)-(a[Math.max(0,a.length-6)]||100)};
+  const mine=d(myId),his=d(rivalId);
+  if(his-mine>=8)return{level:'danger',txt:`🚨 라이벌이 상승세(${his>=0?'+':''}${his})인데 나는 ${mine>=0?'+':''}${mine} — 격차 벌어지는 중, 긴장하세요!`};
+  if(mine-his>=8)return{level:'good',txt:`😎 지금은 내가 우위 — 내 폼 ${mine>=0?'+':''}${mine} vs 라이벌 ${his>=0?'+':''}${his}`};
+  return{level:'even',txt:`⚖ 둘 다 비슷한 흐름 (나 ${mine>=0?'+':''}${mine} · 라이벌 ${his>=0?'+':''}${his}) — 다음 맞대결이 분수령`};
+}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
@@ -3305,7 +3370,7 @@ function lineupCard(L){
   return`<div class="card derby" style="margin-bottom:14px;text-align:left">
     <div style="text-align:center;margin-bottom:4px">
       <div class="mini" style="letter-spacing:.3em;color:var(--gold);font-weight:900">MATCH DAY</div>
-      <h3 style="margin:2px 0;font-size:19px">🏟 ${esc(L.date)} <span class="pill gold" style="font-size:12px;vertical-align:middle">${esc(L.round||'1차')}</span> 내전${L.note?` <span class="dim" style="font-size:13px;font-weight:600">· ${esc(L.note)}</span>`:''}</h3>
+      <h3 style="margin:2px 0;font-size:19px">🏟 ${esc(L.date)} <span class="pill gold" style="font-size:12px;vertical-align:middle">${esc(L.round||'1차')}${L.series&&L.series!=='단판'?` · ${esc(L.series)}`:''}</span> 내전${L.note?` <span class="dim" style="font-size:13px;font-weight:600">· ${esc(L.note)}</span>`:''}</h3>
     </div>
     ${pBar}
     ${(()=>{ // 🎰 APO 베팅 창구
@@ -3442,7 +3507,7 @@ function lineupEditor(){
   return`<div class="card" style="margin-bottom:14px"><h3>🏟 다음 내전 라인업 공지 <span class="tag">칸에 타이핑하면 명단이 검색돼요</span></h3>
     <datalist id="dlLineup">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist>
     <div class="grid c2" style="margin-bottom:10px">
-      <div class="f"><label>날짜</label><input id="luDate" type="date" value="${esc(D.date!==undefined?D.date:(L.date||todayStr()))}" onclick="if(this.showPicker)try{this.showPicker()}catch(e){}" onchange="if(/^\\d{4}-\\d{2}-\\d{2}$/.test(this.value)){window._luDraft=window._luDraft||{};window._luDraft.date=this.value}" style="cursor:pointer"></div>
+      <div class="f"><label>날짜</label><input id="luDate" type="date" title="새벽(06시 전) 내전은 전날 날짜로 잡혀요" value="${esc(D.date!==undefined?D.date:(L.date||todayStr()))}" onclick="if(this.showPicker)try{this.showPicker()}catch(e){}" onchange="if(/^\\d{4}-\\d{2}-\\d{2}$/.test(this.value)){window._luDraft=window._luDraft||{};window._luDraft.date=this.value}" style="cursor:pointer"></div>
       <div class="f"><label>메모 (선택)</label><input id="luNote" value="${esc(D.note!==undefined?D.note:(L.note||''))}" oninput="window._luDraft=window._luDraft||{};window._luDraft.note=this.value" placeholder="예: 금요 내전 8시"></div>
     </div>
     <div class="f" style="margin-bottom:10px;max-width:240px"><label>회차 ${window._luEdit?'<span class="tag">수정 중</span>':''}</label>
@@ -3700,6 +3765,11 @@ function playerDetail(p){
             if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) — ${esc(mm.similar.why)}</p>`;
             return`<p class="mini" style="margin:6px 0 0;line-height:1.6">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)<br><span class="dim">${esc(mm.similar.why)}</span></p>
             <p class="mini" style="margin:5px 0 0;line-height:1.6">🌗 정반대 스타일: <b>${esc(mm.opposite.name)}</b> (${mm.opposite.sim}%)<br><span class="dim">${esc(mm.opposite.why)}</span></p>`})()}
+          ${(()=>{const rv=rivalOf(p.id);if(!rv)return'';
+            const pr=rivalPressure(p.id,rv.id);
+            return`<p class="mini" style="margin:6px 0 0;line-height:1.6">🔥 확실한 라이벌: <b>${esc(rv.name)}</b> (맞대결 ${rv.g}전 ${rv.w}승 ${rv.l}패)<br><span style="color:${pr.level==='danger'?'var(--lose)':pr.level==='good'?'var(--win)':'var(--mut)'};font-weight:700">${esc(pr.txt)}</span></p>`})()}
+          ${(()=>{const bf=bestieOf(p.id);if(!bf)return'';
+            return`<p class="mini" style="margin:5px 0 0">💙 최고의 친구: <b>${esc(bf.name)}</b> — 함께 ${bf.g}판 승률 ${bf.wr}% · 같은 팀이면 든든한 조합</p>`})()}
           <div style="height:10px"></div>
           <h3 style="font-size:14px;margin:0 0 6px">보유 칭호 ${mine.length?`(${mine.length})`:''}</h3>
           ${mine.length?`<div class="row" style="gap:6px">${mine.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div><p class="mini dim" style="margin:6px 0 0">칭호에 마우스를 올리면 사유가 보여요.</p>`:'<p class="mini dim" style="margin:0">아직 획득한 칭호가 없어요. 곧 생깁니다.</p>'}
@@ -3925,7 +3995,7 @@ function pgToday(){
     <p class="mini" style="margin:12px 0 8px;font-weight:800;color:var(--mut)">⛔ 밴 금지 — 직전 세트에 밴됨 (이번 세트만 밴 불가, <b>픽은 가능</b>) · ${FS.banBlocked.length}개</p>
     <div class="row" style="flex-wrap:wrap;gap:7px">${FS.banBlocked.length?FS.banBlocked.map(c=>`<span class="pill" style="border:1px dashed var(--gold);color:var(--gold);font-weight:800;font-size:13px;padding:6px 11px">${esc(c)}</span>`).join(''):'<span class="mini dim">없음</span>'}</div>
   </div>`:'';
-  return head('당일 밴픽','하드 피어리스(이전 세트 픽 = 영구 금지) + 중복 밴 금지(직전 세트 밴 = 이번 세트 밴 불가). 위반 입력은 자동 차단돼요.')+fzPanel+`
+  return head('당일 밴픽','하드 피어리스(이전 세트 픽 = 영구 금지) + 중복 밴 금지(직전 세트 밴 = 이번 세트 밴 불가). 위반 입력은 자동 차단돼요. 🌙 새벽 06시 전 경기는 자동으로 전날 내전으로 잡힙니다.')+fzPanel+`
   <div class="card" style="margin-bottom:14px">
     <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
       <h3 style="margin:0">📅 ${esc(sel)} <span class="tag">픽 ${picks.length} · 밴 ${bans.length}</span></h3>
@@ -4206,7 +4276,7 @@ function stockBoardHtml(q){
         ${H[sel]&&H[sel].length?`<p class="mini" style="margin:8px 0 0;font-weight:800">📜 주주 명부</p>
         ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}`:'<p class="mini dim" style="margin:8px 0 0">아직 주주가 없는 무주공산 — 1대 주주 자리가 비었습니다</p>'}
       </div>`:''}
-      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "폼가 상장"은 아직 거래가 없는 종목 — <b>첫 매수 순간 그 폼 주가 그대로 상장</b>돼요 (100 고정 아님!). <b>기준가는 폼 주식 페이지 가격과 완전히 동일</b>(1:1 연동)하고, 여기에 <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b>(±2% 한도)이 붙어요. 경기 결과가 나오면 폼이 변해 기준가도 따라 움직입니다. 본인 주식 거래는 시세에 영향 없음 + 수수료는 그대로라 셀프 펌핑은 무조건 손해예요 😉 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`}
+      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "폼가 상장"은 아직 거래가 없는 종목 — <b>첫 매수 순간 그 폼 주가 그대로 상장</b>돼요 (100 고정 아님!). 가격 = <b>기준가(폼)</b> + <b>수급 프리미엄(매수/매도 누적)</b> 두 층이에요. 사면 프리미엄이 쌓여 ▲, 팔면 ▼ — 이 프리미엄은 <b>경기로 폼이 변해도 그대로 보존</b>되고, 대신 <b>기준가의 ±30%를 넘을 수 없어요</b> — 폼이 왕, 수급은 신하입니다. "다들 샀는데 떨어졌다"면 매수 프리미엄보다 <b>폼 하락(패배)이 더 컸다</b>는 뜻 — 진짜 주식의 실적 쇼크와 같아요 📉 경기 결과가 나오면 폼이 변해 기준가도 따라 움직입니다. 본인 주식 거래는 시세에 영향 없음 + 수수료는 그대로라 셀프 펌핑은 무조건 손해예요 😉 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`}
 function pgBank(){
   if(voteApiBase()){bankToken()?bankRefresh(false):bankLoadRoster()}
   if(!window.__noFanPoll){clearTimeout(window._bankPoll);window._bankPoll=setTimeout(async()=>{if(tab==='bank'){await Promise.all([bankRefresh(true),loadHolders(true),loadTrades()]);if(window._stockSel)loadPxHist(window._stockSel);render()}},15000)} // ⚡ 15초 실시간 동기화 — 남의 거래·입금·시세가 자동으로 보입니다
