@@ -114,6 +114,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'GET' && action === 'me') {
       var s = await auth(q.token);
       if (!s) return res.status(401).json({ error: '세션 만료 — 다시 로그인해주세요' });
+      await redis(['EXPIRE', 'sess:' + q.token, SEC30]); // 활동 중엔 로그아웃 없음 (30일 연장)
       if (s.role === 'dev') return res.status(200).json({ name: '시스템', role: 'dev', bal: null });
       var a3 = s.acct, today = kstDate();
       if (a3.lastDaily !== today) {
@@ -468,7 +469,10 @@ module.exports = async function handler(req, res) {
           }
         }
         aT = await busted(aT);
-        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty });
+        var up = Math.min(999, price + Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매수 즉시 ▲
+        px2[tgt] = up;
+        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up });
       } else {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
         if (cur4.q < qty) return res.status(400).json({ error: '보유 ' + cur4.q + '주뿐이에요' });
@@ -479,8 +483,30 @@ module.exports = async function handler(req, res) {
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
         await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + price, gain, aT.bal);
-        return res.status(200).json({ ok: true, bal: aT.bal, price: price });
+        var dn = Math.max(10, price - Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매도 즉시 ▼
+        px2[tgt] = dn;
+        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
       }
+    }
+
+    // ═══ 계정 정리: 삭제 / 파산 기록 초기화 (운영진·개발자) ═══
+    if (req.method === 'POST' && (action === 'purge' || action === 'clearBust')) {
+      var sC = await auth(body.token);
+      if (!sC || (sC.role !== 'admin' && sC.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var nmC = nameOk(body.name);
+      var aC = nmC ? await getAcct(nmC) : null;
+      if (!aC) return res.status(404).json({ error: '계정을 못 찾았어요' });
+      if (action === 'purge') {
+        await redis(['DEL', 'acct:' + aC.name]);
+        await redis(['DEL', 'hold:' + aC.name]);
+        await redis(['DEL', 'ledger:' + aC.name]);
+        await redis(['SREM', 'acct:_all', aC.name]);
+        return res.status(200).json({ ok: true, purged: aC.name });
+      }
+      aC.bust = 0; aC.lastBustAt = ''; aC.lastBustDay = '';
+      await putAcct(aC);
+      return res.status(200).json({ ok: true, name: aC.name });
     }
 
     // ═══ 공개 장부: 베팅 현황 (누가 어디에 얼마) ═══
