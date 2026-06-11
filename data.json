@@ -10015,8 +10015,8 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:07:15.920Z",
-  "autoPublish": false,
+  "lastBackupAt": "2026-06-11T12:01:20.090Z",
+  "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
  "lineup": null,
@@ -10076,6 +10076,6 @@
    ]
   }
  ],
- "rev": 7,
- "updatedAt": "2026-06-11T10:20:47.460Z"
+ "rev": 3,
+ "updatedAt": "2026-06-11T12:02:54.736Z"
 }
