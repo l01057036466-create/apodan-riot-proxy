@@ -3355,6 +3355,24 @@ function lineupCard(L){
         <p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🗳 유저 배당 · 🎰 APO 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 포인트를 거는 게 곧 투표! 패자 판돈은 승자 몫</span></p>
         ${tot?`<p class="mini" style="text-align:center;margin:4px 0 0;font-weight:800">민심: <span style="color:var(--gold)">🅰 ${Math.round(a/tot*100)}%</span> vs <span style="color:var(--win)">${Math.round(b/tot*100)}% 🅱</span></p>`:''}
         ${pools}${actions}${adminRow}
+        ${(()=>{ // 🏅 이 경기 MVP 투표 (회차별)
+          if(!window._mvp||window._mvp[key]===undefined){window._mvp=window._mvp||{};window._mvp[key]=null;fetchMvp(key).then(()=>render())}
+          const MV=window._mvp[key]||{tally:{},status:'open',my:null};
+          const cand=[...(L.blue||[]),...(L.red||[])].map(id=>nameOf(id)).filter(Boolean);
+          if(!cand.length)return'';
+          const totV=Object.values(MV.tally||{}).reduce((a,b)=>a+b,0);
+          const topV=Math.max(0,...Object.values(MV.tally||{}));
+          const lockedV=MV.status==='locked';
+          const BV=bankSession();
+          return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
+            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.12em;color:var(--gold)">🏅 ${esc(L.round||'')} MVP 투표 <span class="dim" style="font-weight:600;letter-spacing:0">— ${lockedV?'마감·확정':'진행 중'} · ${totV}표 · 1인 1표</span></p>
+            <div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">
+              ${cand.map(n=>{const v=(MV.tally||{})[n]||0;const isTop=lockedV&&v===topV&&topV>0;const mine=MV.my===n;
+                return`<button class="btn sm ${isTop?'gold':''}" ${lockedV||MV.my?'disabled':''} onclick="castMvp('${esc(key)}','${esc(n)}')" style="${mine?'border-color:var(--gold);color:var(--gold);font-weight:900':''}">${isTop?'👑 ':''}${esc(n)}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
+            </div>
+            <p class="mini dim" style="text-align:center;margin:6px 0 0">${BV&&BV.name?(MV.my?`내 픽: <b>${esc(MV.my)}</b>`:'이 경기 최고의 플레이어에게 한 표!'):'💰 로그인하면 투표 가능'}
+            ${(BV&&(BV.role==='admin'||BV.role==='dev'))?` · <button class="btn sm ${lockedV?'':'lose'}" onclick="mvpLock('${esc(key)}',${lockedV?'true':'false'})">${lockedV?'재개':'MVP 마감'}</button>`:''}</p>
+          </div>`})()}
         ${(()=>{const bets=(window._mktBets||{})[key];
           if(bets===undefined)return tot?`<p class="mini" style="text-align:center;margin:8px 0 0"><button class="btn sm ghost" onclick="loadBets('${L.id}')">👀 누가 어디에 걸었나 보기</button></p>`:'';
           if(!bets.length)return'<p class="mini dim" style="text-align:center;margin:8px 0 0">공개할 베팅이 없어요.</p>';
@@ -3392,30 +3410,6 @@ function pgDashboard(){
       ${rb.slice(0,3).map(r=>`<p class="mini" style="margin:4px 0 0"><b>${esc(r.name)}</b>${josa(r.name,'이','가')} 전 재산을 잃었습니다 — 통산 ${r.bust}호 파산 ${r.bust>=3?'(상습범 🚨)':''}</p>`).join('')}
     </div>`})()}
   ${(()=>{window._lpUsed=new Set();const cards=allLineups().map(L=>lineupCard(L)).join('');window._lpUsed=null;return cards})()}
-  ${(()=>{ // 🏅 온라인 MVP 투표
-    const Ls=allLineups();
-    if(!Ls.length||!voteApiBase())return'';
-    const date=Ls[0].date;
-    if(!window._mvp||!window._mvp[date]){window._mvp=window._mvp||{};if(window._mvp[date]!==null){window._mvp[date]=null;fetchMvp(date).then(()=>render())}}
-    const M=window._mvp[date]||{tally:{},status:'open',my:null};
-    const cand=[...new Set(Ls.flatMap(L=>[...(L.blue||[]),...(L.red||[])]))].map(id=>nameOf(id)).filter(Boolean);
-    if(!cand.length)return'';
-    const total=Object.values(M.tally||{}).reduce((a,b)=>a+b,0);
-    const top=Math.max(0,...Object.values(M.tally||{}));
-    const locked=M.status==='locked';
-    const B=bankSession();
-    return`<div class="card" style="margin-top:14px;border:1px solid rgba(242,184,75,.4)">
-      <h3>🏅 오늘의 MVP 투표 <span class="tag">${locked?'마감 — 결과 확정':'진행 중'} · ${total}표 · 1인 1표(계정)</span></h3>
-      <div class="row" style="flex-wrap:wrap;gap:7px;margin:8px 0">
-        ${cand.map(n=>{const v=(M.tally||{})[n]||0;const isTop=locked&&v===top&&top>0;const mine=M.my===n;
-          return`<button class="btn sm ${isTop?'gold':''}" ${locked||M.my?'disabled':''} onclick="castMvp('${esc(date)}','${esc(n)}')" style="${mine?'border-color:var(--gold);color:var(--gold);font-weight:900':''}">
-            ${isTop?'👑 ':''}${esc(n)} ${v?`<b>${v}표</b>`:''} ${mine?'✓내 픽':''}
-          </button>`}).join('')}
-      </div>
-      ${total?`<div style="display:flex;height:8px;border-radius:6px;overflow:hidden;border:1px solid var(--line)">${Object.entries(M.tally).sort((a,b)=>b[1]-a[1]).map(([n,v],i)=>`<i title="${esc(n)} ${v}표" style="width:${Math.round(v/total*100)}%;background:${['var(--gold)','var(--win)','#5b8cff','var(--lose)'][i%4]};opacity:.75"></i>`).join('')}</div>`:''}
-      <p class="mini dim" style="margin:8px 0 0">${B&&B.name?(M.my?`내 픽: <b>${esc(M.my)}</b> — 결과는 마감 때 확정!`:'오늘 라인업 중 최고의 플레이어에게 한 표!'):'💰 거래소 로그인하면 투표 가능'}
-      ${(B&&(B.role==='admin'||B.role==='dev'))?` · <button class="btn sm ${locked?'':'lose'}" onclick="mvpLock('${esc(date)}',${locked?'true':'false'})">${locked?'재개':'🏅 투표 마감'}</button>`:''}</p>
-    </div>`})()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
     <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
