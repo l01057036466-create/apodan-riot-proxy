@@ -2432,8 +2432,9 @@ async function fetchFanTally(force){
       window._fanTallies[key]={alpha:num(t.alpha),beta:num(t.beta)};
     }catch(e){}
   }
-  render();
+  try{render()}catch(e){}
   // 실시간: 30초마다 자동 갱신
+  if(window.__noFanPoll)return;
   clearTimeout(window._fanPoll);
   window._fanPoll=setTimeout(()=>fetchFanTally(true),30000);
 }
@@ -2472,6 +2473,25 @@ function toggleAutoPublish(){
   state.settings.autoPublish=!state.settings.autoPublish;
   save();render();
   toast(state.settings.autoPublish?'🔄 자동 게시 ON — 이제 수정하면 몇 초 뒤 알아서 사이트에 반영돼요.':'자동 게시 OFF — 📤 게시 버튼으로 직접 반영하세요.');
+}
+
+
+/* ───── 내 표 재전송 (서버 고장 중에 투표했던 표 살리기) ───── */
+async function resendMyVote(luId){
+  const L=lineupOf(luId);if(!L)return;
+  const key=voteKey(L);
+  const mine=myFanVote(key);
+  if(!mine)return toast('이 기기에 기록된 표가 없어요.',true);
+  const api=state.settings.voteApiUrl;
+  if(!api)return toast('먼저 설정에서 투표 서버를 연결해주세요.',true);
+  try{
+    const r=await fetch(api.replace(/\/$/,'')+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({date:key,team:mine,key:fanId()})});
+    if(r.status===409)toast('이미 집계에 들어가 있어요 ✓');
+    else if(r.ok)toast('🗳 내 표를 집계에 반영했어요!');
+    else toast('서버 응답 오류('+r.status+') — vote.js가 최신(v4)인지 확인해주세요.',true);
+    await fetchFanTally(true);
+  }catch(e){toast('집계 서버 연결 실패 — 주소와 배포 상태를 확인해주세요.',true)}
 }
 /* ───── 내비게이션 ───── */
 const PAGES=[
@@ -2580,7 +2600,7 @@ function lineupCard(L){
         <span class="mini dim">폼 60% + 통산 승률 40% 기반 예측</span>
         <span class="pill" style="font-weight:800">${O.oddsRed}</span>
       </div>
-      ${FO&&FO.total?`
+      ${state.settings.voteApiUrl?(FO&&FO.total?`
       <div class="row" style="justify-content:space-between;font-weight:900;font-size:14px;margin-top:10px">
         <span style="color:var(--gold)">🅰 ${FO.probAlpha}%</span>
         <span class="mini dim" style="font-weight:700">🗳 유저 배당 · ${FO.total}표</span>
@@ -2594,7 +2614,11 @@ function lineupCard(L){
         <span class="pill sm" style="font-weight:800">${FO.oddsAlpha}</span>
         <span class="mini dim">관전자 ${FO.alpha} vs ${FO.beta}표 — 민심은 어느 쪽?</span>
         <span class="pill sm" style="font-weight:800">${FO.oddsBeta}</span>
-      </div>`:''}
+      </div>`:`
+      <div class="row" style="justify-content:center;gap:8px;margin-top:10px;align-items:center">
+        <span class="mini dim">🗳 유저 배당 · 아직 0표 — 표가 모이면 민심 게이지가 떠요</span>
+        ${myV?`<button class="btn sm ghost" onclick="resendMyVote('${L.id}')" title="서버 점검 중에 투표했다면 표가 누락됐을 수 있어요">내 표 집계에 반영</button>`:''}
+      </div>`):''}
       <div class="row" style="justify-content:center;gap:8px;margin-top:10px">
         ${myV?`<span class="pill ${myV==='alpha'?'gold':'win'}" style="font-weight:900">🗳 내 픽: ${myV==='alpha'?'🅰 알파':'🅱 베타'} 승리</span>${!state.settings.voteApiUrl?'<span class="mini dim">집계 서버 연결 시 전체 투표 합산</span>':''}`
         :`<span class="mini dim" style="align-self:center">당신의 승부 예측은?</span>
