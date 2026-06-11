@@ -9989,26 +9989,10 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T02:31:14.429Z"
+  "lastBackupAt": "2026-06-11T03:27:29.123Z",
+  "autoPublish": true
  },
- "lineup": {
-  "date": "2026-06-11",
-  "note": "금일 내전 20:30분",
-  "blue": [
-   "p_3v5tiwk3_mq7nhxuq",
-   "p_r6ogprumq7ub77n",
-   "p_0g6qhb6e_mq7nhxuq",
-   "p_jlc2q699_mq7nhxup",
-   "p_j93ommzd_mq7nhxuq"
-  ],
-  "red": [
-   "p_2dlhnzwn_mq7nhxuq",
-   "p_4siqelqmq7ub77p",
-   "p_snn2xfw3_mq7nhxuq",
-   "p_wqf3x0omq7ub77q",
-   "p_bqvhy1r3_mq7nhxuq"
-  ]
- },
+ "lineup": null,
  "liveBoards": {
   "2026-06-10": [
    {
@@ -10022,5 +10006,27 @@
     "type": "ban"
    }
   ]
- }
+ },
+ "lineups": [
+  {
+   "id": "lu_rphhvmamq95di3d",
+   "date": "2026-06-11",
+   "round": "1차",
+   "note": "금일 내전 20:30분",
+   "blue": [
+    "p_3v5tiwk3_mq7nhxuq",
+    "p_r6ogprumq7ub77n",
+    "p_0g6qhb6e_mq7nhxuq",
+    "p_jlc2q699_mq7nhxup",
+    "p_j93ommzd_mq7nhxuq"
+   ],
+   "red": [
+    "p_2dlhnzwn_mq7nhxuq",
+    "p_4siqelqmq7ub77p",
+    "p_snn2xfw3_mq7nhxuq",
+    "p_wqf3x0omq7ub77q",
+    "p_bqvhy1r3_mq7nhxuq"
+   ]
+  }
+ ]
 }
