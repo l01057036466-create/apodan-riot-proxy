@@ -2180,6 +2180,18 @@ function liveBoardOf(date){
   if(!Array.isArray(state.liveBoards[date]))state.liveBoards[date]=[];
   return state.liveBoards[date];
 }
+function fearlessState(date,round){ // 하드 피어리스 + 중복 밴 금지 계산
+  const ri=ROUNDS.indexOf(round);
+  const pickBanned=[]; // 이전 세트 픽 전부 — 이후 영구 금지
+  let banBlocked=[];   // 직전 세트 밴 — 이번 세트만 밴 금지
+  for(let i=0;i<ri;i++){
+    const slug=ROUND_SLUG[ROUNDS[i]]||'';
+    const b=(state.liveBoards&&state.liveBoards[date+(slug?'#'+slug:'')])||[];
+    b.filter(x=>x.type==='pick').forEach(x=>pickBanned.push({champ:x.champ,round:ROUNDS[i]}));
+    if(i===ri-1)banBlocked=b.filter(x=>x.type==='ban').map(x=>x.champ);
+  }
+  return{pickBanned,banBlocked};
+}
 function liveAdd(type){
   if(needAdmin())return;
   const c=canonChamp($('lvChamp')?.value||'');
@@ -2189,6 +2201,11 @@ function liveAdd(type){
   const date=(window._todayDate||todayStr())+(slug?'#'+slug:'');
   const b=liveBoardOf(date);
   if(b.some(x=>x.champ===c))return toast(`${c}는 이미 보드에 있어요.`,true);
+  // 🛡 규칙 검증: 하드 피어리스 + 중복 밴 금지
+  const FS=fearlessState(window._todayDate||todayStr(),round);
+  const fz=FS.pickBanned.find(x=>x.champ===c);
+  if(fz)return toast(`🚫 피어리스 위반! ${c}${josa(c,'은','는')} ${fz.round}에서 픽돼서 오늘 다시 못 써요.`,true);
+  if(type==='ban'&&FS.banBlocked.includes(c))return toast(`⛔ 중복 밴 금지! ${c}${josa(c,'은','는')} 직전 세트에 밴됐어요 — 이번 세트엔 밴 불가 (픽은 가능).`,true);
   b.push({id:uid('lv'),champ:c,type:type==='ban'?'ban':'pick'});
   if($('lvChamp')){$('lvChamp').value=''}
   save();render();
@@ -3061,16 +3078,45 @@ async function bankPurgeName(name,act){ // 랭킹 행에서 바로 삭제/파산
     await bankRefresh(true);
   }catch(e){toast('실패: '+e.message,true)}
 }
+
+
+/* ───── 🏅 온라인 MVP 투표 (계정 1인 1표) ───── */
+async function fetchMvp(date){
+  if(!voteApiBase()||!date)return;
+  try{
+    const r=await fetch(voteApiBase()+'/api/bank?action=mvpTally&date='+encodeURIComponent(date)+(bankToken()?'&token='+encodeURIComponent(bankToken()):''));
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){window._mvp=window._mvp||{};window._mvp[date]=j}
+  }catch(e){}
+}
+async function castMvp(date,pick){
+  const B=bankSession();
+  if(B&&B.role==='dev'&&!B.name)return toast('🛠 유령 세션은 투표권이 없어요 — 멤버 계정으로!',true);
+  if(!B||!B.name)return toast('💰 거래소에서 로그인하면 MVP 투표에 참여할 수 있어요!',true);
+  try{
+    await bankCall('mvpVote',{date,pick});
+    toast(`🏅 ${pick}에게 MVP 한 표!`);
+    await fetchMvp(date);render();
+  }catch(e){toast(e.status===409?'이미 투표했어요 — 한 사람당 한 표!':'투표 실패: '+e.message,true)}
+}
+async function mvpLock(date,open){
+  try{
+    await bankCall('mvpLock',{date,open:!!open});
+    toast(open?'MVP 투표 재개':'🏅 MVP 투표 마감 — 결과 확정!');
+    await fetchMvp(date);render();
+  }catch(e){toast('실패: '+e.message,true)}
+}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['champions','챔피언'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['mvp','MVP 투표'],['settings','설정']
 ];
-const NAV_GROUPS=[ // 대분류 → 소분류 (메뉴 가독성)
+const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
  ['live','⚔️ 내전',['today','record','matches']],
+ ['champ','🎯 챔피언 티어',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
- ['hall','🏆 기록실',['stats','champions','awards','mvp']],
+ ['hall','🥇 명예의 전당',['stats','awards','mvp']],
  ['bank','💰 거래소',['bank','form']],
  ['etc','⚙️ 설정',['settings']],
 ];
@@ -3346,6 +3392,30 @@ function pgDashboard(){
       ${rb.slice(0,3).map(r=>`<p class="mini" style="margin:4px 0 0"><b>${esc(r.name)}</b>${josa(r.name,'이','가')} 전 재산을 잃었습니다 — 통산 ${r.bust}호 파산 ${r.bust>=3?'(상습범 🚨)':''}</p>`).join('')}
     </div>`})()}
   ${(()=>{window._lpUsed=new Set();const cards=allLineups().map(L=>lineupCard(L)).join('');window._lpUsed=null;return cards})()}
+  ${(()=>{ // 🏅 온라인 MVP 투표
+    const Ls=allLineups();
+    if(!Ls.length||!voteApiBase())return'';
+    const date=Ls[0].date;
+    if(!window._mvp||!window._mvp[date]){window._mvp=window._mvp||{};if(window._mvp[date]!==null){window._mvp[date]=null;fetchMvp(date).then(()=>render())}}
+    const M=window._mvp[date]||{tally:{},status:'open',my:null};
+    const cand=[...new Set(Ls.flatMap(L=>[...(L.blue||[]),...(L.red||[])]))].map(id=>nameOf(id)).filter(Boolean);
+    if(!cand.length)return'';
+    const total=Object.values(M.tally||{}).reduce((a,b)=>a+b,0);
+    const top=Math.max(0,...Object.values(M.tally||{}));
+    const locked=M.status==='locked';
+    const B=bankSession();
+    return`<div class="card" style="margin-top:14px;border:1px solid rgba(242,184,75,.4)">
+      <h3>🏅 오늘의 MVP 투표 <span class="tag">${locked?'마감 — 결과 확정':'진행 중'} · ${total}표 · 1인 1표(계정)</span></h3>
+      <div class="row" style="flex-wrap:wrap;gap:7px;margin:8px 0">
+        ${cand.map(n=>{const v=(M.tally||{})[n]||0;const isTop=locked&&v===top&&top>0;const mine=M.my===n;
+          return`<button class="btn sm ${isTop?'gold':''}" ${locked||M.my?'disabled':''} onclick="castMvp('${esc(date)}','${esc(n)}')" style="${mine?'border-color:var(--gold);color:var(--gold);font-weight:900':''}">
+            ${isTop?'👑 ':''}${esc(n)} ${v?`<b>${v}표</b>`:''} ${mine?'✓내 픽':''}
+          </button>`}).join('')}
+      </div>
+      ${total?`<div style="display:flex;height:8px;border-radius:6px;overflow:hidden;border:1px solid var(--line)">${Object.entries(M.tally).sort((a,b)=>b[1]-a[1]).map(([n,v],i)=>`<i title="${esc(n)} ${v}표" style="width:${Math.round(v/total*100)}%;background:${['var(--gold)','var(--win)','#5b8cff','var(--lose)'][i%4]};opacity:.75"></i>`).join('')}</div>`:''}
+      <p class="mini dim" style="margin:8px 0 0">${B&&B.name?(M.my?`내 픽: <b>${esc(M.my)}</b> — 결과는 마감 때 확정!`:'오늘 라인업 중 최고의 플레이어에게 한 표!'):'💰 거래소 로그인하면 투표 가능'}
+      ${(B&&(B.role==='admin'||B.role==='dev'))?` · <button class="btn sm ${locked?'':'lose'}" onclick="mvpLock('${esc(date)}',${locked?'true':'false'})">${locked?'재개':'🏅 투표 마감'}</button>`:''}</p>
+    </div>`})()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
     <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
@@ -3852,7 +3922,16 @@ function pgToday(){
   const x=it=>isAdmin()?`<span onclick="liveDel('${boardKey}','${it.id}')" style="cursor:pointer;margin-left:5px;color:var(--lose);font-weight:900" title="빼기">✕</span>`:'';
   const pickChip=it=>`<span class="pill" style="background:rgba(255,92,122,.14);border:1px solid rgba(255,92,122,.45);font-weight:800;font-size:14px;padding:7px 12px">${esc(it.champ)}${x(it)}</span>`;
   const banChip=it=>`<span class="pill" style="border:1px dashed var(--line);color:var(--mut);font-weight:700;font-size:13px;padding:6px 11px">${esc(it.champ)}${x(it)}</span>`;
-  return head('당일 밴픽','하드 피어리스 보드 — 오늘 뭐가 잠겼는지만 깔끔하게.')+`
+  const FS=fearlessState(sel,round);
+  const fzPanel=(FS.pickBanned.length||FS.banBlocked.length)?`
+  <div class="card" style="margin-bottom:14px;border:1px solid rgba(255,92,122,.45)">
+    <h3 style="margin:0 0 4px">🛡 ${esc(round)} 금지 현황 <span class="tag">하드 피어리스 + 중복 밴 금지 — 이것만 보면 끝</span></h3>
+    <p class="mini" style="margin:0 0 8px;font-weight:800;color:var(--lose)">🚫 픽 금지 — 이전 세트에서 픽됨 (오늘 영구 금지) · ${FS.pickBanned.length}개</p>
+    <div class="row" style="flex-wrap:wrap;gap:7px">${FS.pickBanned.length?FS.pickBanned.map(x=>`<span class="pill" style="background:rgba(255,92,122,.18);border:1px solid var(--lose);font-weight:900;font-size:14px;padding:7px 12px">${esc(x.champ)} <span style="font-size:10px;opacity:.75">${esc(x.round)}픽</span></span>`).join(''):'<span class="mini dim">없음 — 전부 사용 가능</span>'}</div>
+    <p class="mini" style="margin:12px 0 8px;font-weight:800;color:var(--mut)">⛔ 밴 금지 — 직전 세트에 밴됨 (이번 세트만 밴 불가, <b>픽은 가능</b>) · ${FS.banBlocked.length}개</p>
+    <div class="row" style="flex-wrap:wrap;gap:7px">${FS.banBlocked.length?FS.banBlocked.map(c=>`<span class="pill" style="border:1px dashed var(--gold);color:var(--gold);font-weight:800;font-size:13px;padding:6px 11px">${esc(c)}</span>`).join(''):'<span class="mini dim">없음</span>'}</div>
+  </div>`:'';
+  return head('당일 밴픽','하드 피어리스(이전 세트 픽 = 영구 금지) + 중복 밴 금지(직전 세트 밴 = 이번 세트 밴 불가). 위반 입력은 자동 차단돼요.')+fzPanel+`
   <div class="card" style="margin-bottom:14px">
     <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center">
       <h3 style="margin:0">📅 ${esc(sel)} <span class="tag">픽 ${picks.length} · 밴 ${bans.length}</span></h3>
