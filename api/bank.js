@@ -455,7 +455,13 @@ module.exports = async function handler(req, res) {
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
       var pxRaw3 = await redis(['GET', 'stock:px']);
       var px2 = pxRaw3 ? JSON.parse(pxRaw3) : {};
-      var price = Math.round(Number(px2[tgt]) || 0) || 100; // 시세 미등록 종목은 기본가 100 — 즉시 거래 가능
+      var price = Math.round(Number(px2[tgt]) || 0);
+      if (!price) { // 미상장 → 폼 주가(클라이언트 힌트)로 상장. 힌트 없으면 100
+        price = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0))) || 100;
+        px2[tgt] = price;
+        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        await pushHist(tgt, price);
+      }
       var aT = sT.acct;
       var hRaw = await redis(['GET', 'hold:' + aT.name]);
       var hold = hRaw ? JSON.parse(hRaw) : {};
@@ -505,6 +511,67 @@ module.exports = async function handler(req, res) {
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
       }
+    }
+
+    // ═══ 🧨 거래소 초기화: 전 종목 강제 환매 후 시장 청소 (운영진·개발자) ═══
+    if (req.method === 'POST' && action === 'resetMarket') {
+      var sRM = await auth(body.token);
+      if (!sRM || (sRM.role !== 'admin' && sRM.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var allRM = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+      var pxRM = JSON.parse((await redis(['GET', 'stock:px'])) || '{}');
+      var refunded = 0, holdersN = 0, targets = {};
+      for (var rm = 0; rm < allRM.length; rm++) {
+        var hRM = await redis(['GET', 'hold:' + allRM[rm]]);
+        if (!hRM) continue;
+        var hm = JSON.parse(hRM);
+        var aRM = await getAcct(allRM[rm]);
+        if (!aRM) continue;
+        var sum = 0;
+        for (var tRM in hm) {
+          targets[tRM] = 1;
+          sum += Math.floor((Number(pxRM[tRM]) || 100) * hm[tRM].q);
+        }
+        if (sum > 0) {
+          aRM.bal += sum; refunded += sum; holdersN++;
+          await putAcct(aRM);
+          await ledger(aRM.name, '🧨 거래소 초기화 — 보유 주식 전량 강제 환매', sum, aRM.bal);
+        }
+        await redis(['DEL', 'hold:' + allRM[rm]]);
+      }
+      for (var tg2 in targets) await redis(['DEL', 'pxh:' + tg2]);
+      for (var kpx in pxRM) await redis(['DEL', 'pxh:' + kpx]);
+      await redis(['DEL', 'stock:px']);
+      await redis(['DEL', 'trades:recent']);
+      return res.status(200).json({ ok: true, holders: holdersN, refunded: refunded });
+    }
+
+    // ═══ ↩ 베팅 초기화: 해당 판 전원 환불 (정산 전만 가능) ═══
+    if (req.method === 'POST' && action === 'resetBets') {
+      var sRB = await auth(body.token);
+      if (!sRB || (sRB.role !== 'admin' && sRB.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var mkR = String(body.market || '');
+      if (!mktOk(mkR)) return res.status(400).json({ error: 'market 형식 오류' });
+      var stR = (await redis(['GET', 'mkt:' + mkR + ':status'])) || 'open';
+      if (stR.indexOf('settled') === 0) return res.status(400).json({ error: '이미 정산된 판은 초기화 불가 (이중 지급 방지)' });
+      var bnR = (await redis(['SMEMBERS', 'mkt:' + mkR + ':bettors'])) || [];
+      var back = 0, ppl = 0;
+      for (var rb = 0; rb < bnR.length; rb++) {
+        var bR = await redis(['GET', 'bet:' + mkR + ':' + bnR[rb]]);
+        if (!bR) continue;
+        var bj = JSON.parse(bR);
+        var aRB = await getAcct(bnR[rb]);
+        if (aRB) {
+          aRB.bal += bj.amt; back += bj.amt; ppl++;
+          await putAcct(aRB);
+          await ledger(aRB.name, '↩ 베팅 초기화 — 전액 환불 (' + mkR + ')', bj.amt, aRB.bal);
+        }
+        await redis(['DEL', 'bet:' + mkR + ':' + bnR[rb]]);
+      }
+      await redis(['DEL', 'mkt:' + mkR + ':bettors']);
+      await redis(['DEL', 'mkt:' + mkR + ':pool:alpha']);
+      await redis(['DEL', 'mkt:' + mkR + ':pool:beta']);
+      await redis(['DEL', 'mkt:' + mkR + ':status']);
+      return res.status(200).json({ ok: true, people: ppl, refunded: back });
     }
 
     // ═══ 공개: 실시간 체결 테이프 ═══
