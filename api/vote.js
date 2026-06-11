@@ -25,11 +25,11 @@ module.exports = async function handler(req, res) {
       return j ? j.result : null;
     }
 
-    function safeDate(d) { return /^\d{4}-\d{2}-\d{2}$/.test(String(d || '')); }
+    function safeDate(d) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(d || '')); } // 회차 키(#2, #A 등) 허용
 
     if (req.method === 'GET') {
       var qd = (req.query && req.query.date) || '';
-      if (!safeDate(qd)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD' });
+      if (!safeDate(qd)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD (#회차 허용)' });
       var alpha = await redis(['GET', 'vote:' + qd + ':alpha']);
       var beta = await redis(['GET', 'vote:' + qd + ':beta']);
       return res.status(200).json({ date: qd, alpha: Number(alpha) || 0, beta: Number(beta) || 0 });
@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
       if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
       body = body || {};
       var date = body.date, team = body.team, key = body.key;
-      if (!safeDate(date)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD' });
+      if (!safeDate(date)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD (#회차 허용)' });
       if (team !== 'alpha' && team !== 'beta') return res.status(400).json({ error: 'team은 alpha 또는 beta' });
       key = String(key || '');
       if (key.length < 8 || key.length > 64) return res.status(400).json({ error: 'key 필요' });
