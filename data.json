@@ -647,26 +647,14 @@
    "memo": "탈주자"
   },
   {
-   "id": "p_146qyvimq95eim4",
-   "displayName": "만나가가",
-   "kakaoName": "만나가가",
-   "riotName": "",
-   "riotTag": "",
-   "aliases": [
-    "만나가가"
-   ],
-   "active": false,
-   "memo": "기록 보존용 (탈퇴·외부 인원)"
-  },
-  {
-   "id": "p_vzht71kmq95rwys",
+   "id": "p_eyt39o0mq96k9xf",
    "displayName": "00 규동",
    "kakaoName": "00 규동",
-   "riotName": "",
-   "riotTag": "",
+   "riotName": "Rudebeckla",
+   "riotTag": "kr1",
    "aliases": [
     "규동",
-    "00 규동"
+    "00규동"
    ],
    "active": true,
    "memo": ""
@@ -6981,7 +6969,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_146qyvimq95eim4",
+     "playerId": "",
      "rawName": "만나가가",
      "championId": "벨코즈",
      "kills": 2,
@@ -7426,7 +7414,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_146qyvimq95eim4",
+     "playerId": "",
      "rawName": "만나가가",
      "championId": "룰루",
      "kills": 1,
@@ -7611,7 +7599,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_146qyvimq95eim4",
+     "playerId": "",
      "rawName": "만나가가",
      "championId": "쓰레쉬",
      "kills": 0,
@@ -10015,9 +10003,8 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T07:11:19.721Z",
-  "autoPublish": true,
-  "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
+  "lastBackupAt": "2026-06-11T02:31:14.429Z",
+  "autoPublish": true
  },
  "lineup": null,
  "liveBoards": {
@@ -10036,7 +10023,7 @@
  },
  "lineups": [
   {
-   "id": "lu_rphhvmamq95di3d",
+   "id": "lu_jc5i4y0mq95ambl",
    "date": "2026-06-11",
    "round": "1차",
    "note": "금일 내전 20:30분",
@@ -10056,10 +10043,10 @@
    ]
   },
   {
-   "id": "lu_8z3ea2ymq95shm3",
+   "id": "lu_m9vg8ijmq96kjbg",
    "date": "2026-06-11",
    "round": "2차",
-   "note": "",
+   "note": "22시 15분",
    "blue": [
     "p_29ndxd5j_mq7nhxuq",
     "p_4siqelqmq7ub77p",
@@ -10072,7 +10059,7 @@
     "p_r6ogprumq7ub77n",
     "p_gcjvk0v7_mq7nhxuq",
     "p_jlc2q699_mq7nhxup",
-    "p_vzht71kmq95rwys"
+    "p_eyt39o0mq96k9xf"
    ]
   }
  ]
