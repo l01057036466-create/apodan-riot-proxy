@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
       var out = [];
       for (var i = 0; i < names.length; i++) {
         var a = await getAcct(names[i]);
-        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '' });
+        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0 });
       }
       out.sort(function (x, y) { return y.bal - x.bal; });
       return res.status(200).json({ roster: out });
@@ -455,6 +455,7 @@ module.exports = async function handler(req, res) {
         cur3.avg = Math.round((cur3.avg * cur3.q + execB * qty) / (cur3.q + qty));
         cur3.q += qty;
         hold[tgt] = cur3;
+        aT.trades = (Number(aT.trades) || 0) + 1;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
         await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + execB + ' (수수료·초상권료 포함)', -cost, aT.bal);
@@ -480,6 +481,8 @@ module.exports = async function handler(req, res) {
         SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS);
         var execS = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
         var gain = Math.floor(execS * qty * 0.99);
+        aT.pnl = (Number(aT.pnl) || 0) + (gain - cur4.avg * qty); // 실현손익 누적
+        aT.trades = (Number(aT.trades) || 0) + 1;
         cur4.q -= qty;
         if (cur4.q === 0) delete hold[tgt]; else hold[tgt] = cur4;
         aT.bal += gain;
@@ -591,6 +594,127 @@ module.exports = async function handler(req, res) {
       await redis(['DEL', 'mkt:' + mkR + ':pool:beta']);
       await redis(['DEL', 'mkt:' + mkR + ':status']);
       return res.status(200).json({ ok: true, people: ppl, refunded: back });
+    }
+
+    // ═══ 🎯 스코어 예측 (토토식, 회차별 1인 1픽, 정답자 균등 분배) ═══
+    if (req.method === 'GET' && action === 'scoreTally') {
+      var dS = String(q.date || '');
+      if (!mktOk(dS)) return res.status(400).json({ error: 'date 형식 오류' });
+      var stS = (await redis(['GET', 'score:' + dS + ':status'])) || 'open';
+      var winS = (await redis(['GET', 'score:' + dS + ':win'])) || '';
+      var flatS = (await redis(['HGETALL', 'score:' + dS + ':t'])) || [];
+      var talS = {};
+      for (var fs = 0; fs + 1 < flatS.length; fs += 2) talS[flatS[fs]] = Number(flatS[fs + 1]) || 0;
+      var myS = null;
+      var sSc = await auth(q.token);
+      if (sSc && sSc.name) myS = await redis(['GET', 'score:' + dS + ':v:' + sSc.name]);
+      return res.status(200).json({ date: dS, status: stS, win: winS, tally: talS, my: myS });
+    }
+    if (req.method === 'POST' && action === 'scorePredict') {
+      var sSP = await auth(body.token);
+      if (!sSP || !sSP.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var dSP = String(body.date || ''), pickS = String(body.pick || '');
+      if (!mktOk(dSP)) return res.status(400).json({ error: 'date 형식 오류' });
+      if (!/^[0-9]:[0-9]$/.test(pickS)) return res.status(400).json({ error: '스코어 형식: 2:0, 2:1 등' });
+      var stSP = (await redis(['GET', 'score:' + dSP + ':status'])) || 'open';
+      if (stSP !== 'open') return res.status(403).json({ error: '예측이 마감됐어요' });
+      var amtS = Math.round(Number(body.amount) || 0);
+      if (amtS < 100) return res.status(400).json({ error: '최소 100 APO' });
+      var aSP = await getAcct(sSP.name);
+      if (!aSP || aSP.bal < amtS) return res.status(400).json({ error: '잔액 부족' });
+      var firstSP = await redis(['SET', 'score:' + dSP + ':v:' + sSP.name, pickS + '|' + amtS, 'NX', 'EX', SEC90]);
+      if (firstSP !== 'OK') return res.status(409).json({ error: '이미 예측했어요 (1인 1픽)' });
+      aSP.bal -= amtS;
+      await putAcct(aSP);
+      await ledger(aSP.name, '🎯 스코어 예측 ' + pickS + ' (' + dSP + ')', -amtS, aSP.bal);
+      await redis(['HINCRBY', 'score:' + dSP + ':t', pickS, '1']);
+      await redis(['HINCRBY', 'score:' + dSP + ':pool', pickS, String(amtS)]);
+      await redis(['SADD', 'score:' + dSP + ':bettors', sSP.name]);
+      await redis(['EXPIRE', 'score:' + dSP + ':t', SEC90]);
+      await redis(['EXPIRE', 'score:' + dSP + ':pool', SEC90]);
+      await redis(['EXPIRE', 'score:' + dSP + ':bettors', SEC90]);
+      return res.status(200).json({ ok: true, bal: aSP.bal, pick: pickS, amount: amtS });
+    }
+    if (req.method === 'POST' && action === 'scoreSettle') {
+      var sSS = await auth(body.token);
+      if (!sSS || (sSS.role !== 'admin' && sSS.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var dSS = String(body.date || ''), winSc = String(body.win || '');
+      if (!mktOk(dSS)) return res.status(400).json({ error: 'date 형식 오류' });
+      if (!/^[0-9]:[0-9]$/.test(winSc)) return res.status(400).json({ error: '결과 스코어 형식 오류' });
+      var stSS = (await redis(['GET', 'score:' + dSS + ':status'])) || 'open';
+      if (stSS === 'settled') return res.status(400).json({ error: '이미 정산됨' });
+      var bettorsSS = (await redis(['SMEMBERS', 'score:' + dSS + ':bettors'])) || [];
+      var poolFlat = (await redis(['HGETALL', 'score:' + dSS + ':pool'])) || [];
+      var totalPool = 0, winPool = 0;
+      for (var pf = 0; pf + 1 < poolFlat.length; pf += 2) {
+        totalPool += Number(poolFlat[pf + 1]) || 0;
+        if (poolFlat[pf] === winSc) winPool = Number(poolFlat[pf + 1]) || 0;
+      }
+      var net = Math.floor(totalPool * 0.97); // 3% 수수료
+      var winners = 0, paid = 0;
+      for (var bs = 0; bs < bettorsSS.length; bs++) {
+        var betRaw = await redis(['GET', 'score:' + dSS + ':v:' + bettorsSS[bs]]);
+        if (!betRaw) continue;
+        var parts = betRaw.split('|'), pk = parts[0], am = Number(parts[1]) || 0;
+        if (pk === winSc && winPool > 0) {
+          var share = Math.floor(net * (am / winPool));
+          var accW = await getAcct(bettorsSS[bs]);
+          if (accW) {
+            accW.bal += share; paid += share; winners++;
+            await putAcct(accW);
+            await ledger(accW.name, '🎯 스코어 적중 ' + winSc + ' — 배당', share, accW.bal);
+          }
+        }
+      }
+      await redis(['SET', 'score:' + dSS + ':status', 'settled', 'EX', SEC90]);
+      await redis(['SET', 'score:' + dSS + ':win', winSc, 'EX', SEC90]);
+      return res.status(200).json({ ok: true, win: winSc, winners: winners, paid: paid, pool: totalPool });
+    }
+    if (req.method === 'POST' && action === 'scoreLock') {
+      var sSL = await auth(body.token);
+      if (!sSL || (sSL.role !== 'admin' && sSL.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var dSL = String(body.date || '');
+      if (!mktOk(dSL)) return res.status(400).json({ error: 'date 형식 오류' });
+      await redis(['SET', 'score:' + dSL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
+      return res.status(200).json({ ok: true });
+    }
+
+    // ═══ 🤖 AI 기관/외국인 — 주간 수급 이벤트 (멱등: 주 1회) ═══
+    if (req.method === 'POST' && action === 'aiTrade') {
+      var sAI = await auth(body.token);
+      if (!sAI || (sAI.role !== 'admin' && sAI.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var wk = new Date(); var weekId = wk.getUTCFullYear() + '-W' + Math.ceil(((wk - new Date(Date.UTC(wk.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
+      var doneWk = await redis(['GET', 'ai:lastweek']);
+      if (doneWk === weekId && !body.force) return res.status(200).json({ ok: true, skipped: true, week: weekId });
+      var SAI = await loadPx();
+      var names = Object.keys(SAI.base);
+      if (!names.length) return res.status(200).json({ ok: true, events: [], note: '상장 종목 없음' });
+      // 누적 데이터 기반: 폼 좋은(기준가 높은) 종목엔 기관 매수, 낮은 종목엔 외국인 매도 — 극적으로
+      var ranked = names.map(function (n) { return { n: n, b: SAI.base[n] || 100 }; }).sort(function (a, b) { return b.b - a.b; });
+      var events = [];
+      function move(n, label, dir) {
+        var cur = clampPx((SAI.base[n] || 100) + premCap(SAI.base[n] || 100, Number(SAI.prem[n]) || 0));
+        var kick = dir * (Math.floor((SAI.base[n] || 100) * (0.08 + Math.random() * 0.08))); // 8~16% — 재미는 있되 포인트 직접 지급/회수 없음 (가격만)
+        SAI.prem[n] = premCap(SAI.base[n] || 100, (Number(SAI.prem[n]) || 0) + kick);
+        var nx = clampPx((SAI.base[n] || 100) + SAI.prem[n]);
+        events.push({ t: n, label: label, from: cur, to: nx, dir: dir });
+      }
+      if (ranked[0]) move(ranked[0].n, '🏦 기관 매집', 1);
+      if (ranked[1]) move(ranked[1].n, '🌍 외국인 순매수', 1);
+      if (ranked.length >= 2) move(ranked[ranked.length - 1].n, '🌍 외국인 매도 폭탄', -1);
+      if (ranked.length >= 4) { var rnd = ranked[2 + Math.floor(Math.random() * (ranked.length - 3))]; if (rnd) move(rnd.n, Math.random() < 0.5 ? '🏦 기관 손절' : '🚀 세력 작전', Math.random() < 0.5 ? -1 : 1); }
+      await savePx(SAI);
+      for (var ev = 0; ev < events.length; ev++) {
+        await pushHist(events[ev].t, events[ev].to);
+        await pushTape({ n: events[ev].label, s: events[ev].dir > 0 ? 'b' : 's', t: events[ev].t, q: 0, p: events[ev].from, np: events[ev].to, ts: new Date().toISOString(), ai: true });
+      }
+      await redis(['SET', 'ai:lastweek', weekId, 'EX', SEC90]);
+      await redis(['SET', 'ai:lastevents', JSON.stringify(events), 'EX', SEC90]);
+      return res.status(200).json({ ok: true, week: weekId, events: events });
+    }
+    if (req.method === 'GET' && action === 'aiEvents') {
+      var aev = await redis(['GET', 'ai:lastevents']);
+      return res.status(200).json({ events: aev ? JSON.parse(aev) : [] });
     }
 
     // ═══ 🏅 MVP 온라인 투표 (계정 1인 1표) ═══
