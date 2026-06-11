@@ -12239,13 +12239,11 @@
       "visionScore": 21,
       "wardsPlaced": 5,
       "wardsKilled": 5,
-      "controlWardsBought": 0,
       "crowdControlScore": 30,
       "damageToObjectives": 9550,
       "damageToTurrets": 7676,
       "healing": 16963,
-      "selfMitigatedDamage": 43908,
-      "soloKills": 0
+      "selfMitigatedDamage": 43908
      }
     },
     {
@@ -12265,13 +12263,11 @@
       "visionScore": 19,
       "wardsPlaced": 2,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 32,
       "damageToObjectives": 21103,
       "damageToTurrets": 2393,
       "healing": 14880,
-      "selfMitigatedDamage": 22421,
-      "soloKills": 0
+      "selfMitigatedDamage": 22421
      }
     },
     {
@@ -12296,8 +12292,7 @@
       "damageToObjectives": 3640,
       "damageToTurrets": 880,
       "healing": 1825,
-      "selfMitigatedDamage": 12445,
-      "soloKills": 0
+      "selfMitigatedDamage": 12445
      }
     },
     {
@@ -12317,13 +12312,11 @@
       "visionScore": 23,
       "wardsPlaced": 8,
       "wardsKilled": 7,
-      "controlWardsBought": 0,
       "crowdControlScore": 25,
       "damageToObjectives": 20504,
       "damageToTurrets": 16032,
       "healing": 4335,
-      "selfMitigatedDamage": 10341,
-      "soloKills": 0
+      "selfMitigatedDamage": 10341
      }
     },
     {
@@ -12348,8 +12341,7 @@
       "damageToObjectives": 2309,
       "damageToTurrets": 1481,
       "healing": 5924,
-      "selfMitigatedDamage": 5807,
-      "soloKills": 0
+      "selfMitigatedDamage": 5807
      }
     },
     {
@@ -12374,8 +12366,7 @@
       "damageToObjectives": 4540,
       "damageToTurrets": 3144,
       "healing": 3811,
-      "selfMitigatedDamage": 44342,
-      "soloKills": 0
+      "selfMitigatedDamage": 44342
      }
     },
     {
@@ -12400,8 +12391,7 @@
       "damageToObjectives": 28083,
       "damageToTurrets": 6289,
       "healing": 15336,
-      "selfMitigatedDamage": 21413,
-      "soloKills": 0
+      "selfMitigatedDamage": 21413
      }
     },
     {
@@ -12426,8 +12416,7 @@
       "damageToObjectives": 6390,
       "damageToTurrets": 1149,
       "healing": 5542,
-      "selfMitigatedDamage": 12159,
-      "soloKills": 0
+      "selfMitigatedDamage": 12159
      }
     },
     {
@@ -12452,14 +12441,13 @@
       "damageToObjectives": 17754,
       "damageToTurrets": 10796,
       "healing": 1918,
-      "selfMitigatedDamage": 9272,
-      "soloKills": 0
+      "selfMitigatedDamage": 9272
      }
     },
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_vzht71kmq95rwys",
      "rawName": "Rudbeckla",
      "championId": "리 신",
      "kills": 5,
@@ -12476,10 +12464,8 @@
       "controlWardsBought": 12,
       "crowdControlScore": 14,
       "damageToObjectives": 755,
-      "damageToTurrets": 0,
       "healing": 3552,
-      "selfMitigatedDamage": 11238,
-      "soloKills": 0
+      "selfMitigatedDamage": 11238
      }
     }
    ],
@@ -13116,7 +13102,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T15:59:25.902Z",
+  "lastBackupAt": "2026-06-11T15:59:35.406Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false
@@ -13137,6 +13123,6 @@
   ]
  },
  "lineups": [],
- "rev": 33,
- "updatedAt": "2026-06-11T15:59:29.148Z"
+ "rev": 35,
+ "updatedAt": "2026-06-11T15:59:38.190Z"
 }
