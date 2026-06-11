@@ -1462,6 +1462,7 @@ function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제
   fresh.forEach(d=>{
     d.setNumber=state.matches.filter(m=>m.playedAt===d.playedAt).length+1; // 날짜별 세트 자동
     state.matches.push({id:uid('m'),createdAt:new Date().toISOString(),...d});
+    pricesAfterMatch(); // 차트 실시간
   });
   save();
   toast(`내전 ${fresh.length}판을 저장했어요.`+(dup?` (중복 ${dup}건 제외)`:'')+(typeof ghosts!=='undefined'&&ghosts?` (무효 게임 ${ghosts}건 제외)`:''));
@@ -1611,6 +1612,7 @@ function saveDraft(){
     toast('경기를 수정했어요.');
   }else{
     state.matches.push({id:uid('m'),createdAt:new Date().toISOString(),...data});
+    pricesAfterMatch(); // 차트 실시간
     toast('경기를 저장했어요.');
   }
   save(); draft=null; draftEditId=null;
@@ -2846,10 +2848,20 @@ async function bankSettle(luId,winner){
 
 
 /* ═══════════ APEX Phase 3 — 멤버 주식·참여 수당·파산 속보 (클라) ═══════════ */
-async function pushPrices(){ // 운영진 접속 시 폼 주가를 거래소 시세로 자동 송출 (10분 쿨다운)
+
+async function pricesAfterMatch(){ // 🆕 경기 등록 → 거래소·차트 즉각 반영
+  if(!voteApiBase())return;
+  try{
+    await pushPrices(true); // 폼 변동을 기준가에 즉시
+    try{window._srvPx=(await bankCall('prices',null,'GET')).prices||{}}catch(e){}
+    if(window._stockSel)loadPxHist(window._stockSel);
+    render();
+  }catch(e){}
+}
+async function pushPrices(force){ // 폼 주가 → 거래소 시세 송출. force=경기 등록 직후 즉시!
   const B=bankSession();
   if(!B||(B.role!=='admin'&&B.role!=='dev')||!voteApiBase())return;
-  if(window._pxLast&&Date.now()-window._pxLast<120000)return;
+  if(!force&&window._pxLast&&Date.now()-window._pxLast<120000)return;
   window._pxLast=Date.now();
   const prices={};
   state.players.filter(p=>p.active).forEach(p=>{prices[p.displayName]=marketPrice(p)});
@@ -2906,7 +2918,7 @@ async function stockTrade(side){
     const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty,hint:marketPrice(R.p)});
     window._bank&&(window._bank.bal=j.bal);
     if(j.newPrice){window._srvPx=window._srvPx||{};window._srvPx[tgt]=j.newPrice} // 거래 즉시 시세 반영 ▲▼
-    window._lastTrade={side,tgt,qty,price:j.price,newPrice:j.newPrice,royalty:j.royalty||0,ts:Date.now()}; // 체결 영수증
+    window._lastTrade={side,tgt,qty,price:j.price,newPrice:j.newPrice,royalty:j.royalty||0,base:j.base,prem:j.prem,ts:Date.now()}; // 체결 영수증
     loadTrades(); // LIVE 속보 즉시 갱신
     toast(side==='buy'?`✅ 체결 완료! ${tgt} ${qty}주 매수 @${j.price}${j.newPrice&&j.newPrice!==j.price?` → 시세 ${j.newPrice}▲`:''}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} 즉시 입금 💸`:''}`:`✅ 체결 완료! ${tgt} ${qty}주 매도 @${j.price} → 지갑 입금${j.newPrice&&j.newPrice!==j.price?` · 시세 ${j.newPrice}▼`:''}`);
     await bankRefresh(true);
@@ -4394,7 +4406,7 @@ function pgBank(){
     ${(()=>{const LT=window._lastTrade;if(!LT||Date.now()-LT.ts>60000)return'';
       return`<div style="background:rgba(63,217,197,.12);border:1px solid var(--win);border-radius:10px;padding:8px 12px;margin-bottom:10px">
         <p class="mini" style="margin:0;font-weight:900;color:var(--win)">✅ 체결 완료 — ${LT.side==='buy'?'📈 매수':'📉 매도'} ${esc(LT.tgt)} ${LT.qty}주 @${LT.price}${LT.newPrice&&LT.newPrice!==LT.price?` → 현재 시세 ${LT.newPrice}${LT.side==='buy'?'▲':'▼'}`:''}${LT.royalty?` · 초상권료 ${fmtAPO(LT.royalty)} 지급됨`:''}</p>
-        <p class="mini dim" style="margin:3px 0 0">아래 포트폴리오와 체결 피드에 방금 거래가 반영됐어요.</p>
+        <p class="mini dim" style="margin:3px 0 0">${LT.base!==undefined?`현재 시세 구성: 기준가(폼) ${LT.base} ${LT.prem>=0?'+':''}${LT.prem} 수급 프리미엄 = ${LT.newPrice} · `:''}아래 포트폴리오와 체결 피드에 방금 반영!</p>
       </div>`})()}
     ${(()=>{const T=window._trades||[];if(!T||!T.length)return'';
       return`<div style="border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:10px;max-height:130px;overflow:auto">
