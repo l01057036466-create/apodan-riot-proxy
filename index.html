@@ -2628,7 +2628,7 @@ async function bankCall(action,body,method){
   const opt=method==='GET'?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({token:bankToken()},body||{}))};
   const r=await fetch(url,opt);
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  if(!r.ok){const e=new Error(j.error||('HTTP '+r.status));e.status=r.status;throw e}
   return j;
 }
 async function bankRegister(){
@@ -2677,12 +2677,14 @@ async function bankRefresh(force){
       pushPrices(); // 시세 자동 갱신 (10분 쿨다운)
     }
   }catch(e){
-    if(bankToken()===tk){ // 내 세션이 그대로일 때만 만료 처리
+    if(bankToken()===tk&&(e.status===401||e.status===403)){ // 진짜 인증 실패만 로그아웃 — 네트워크 끊김은 세션 유지
       window._bank=null;lsSet(BANK_TOKEN_KEY,'');
       if(lsGet('apodan_admin_via_bank')==='1'){lsSet('apodan_admin_via_bank','');lsSet(ADMIN_FLAG,'');}
+      toast('세션이 만료됐어요 — 다시 로그인해주세요.',true);
     }
   }
   try{window._bankRoster=(await bankCall('roster',null,'GET')).roster}catch(e){}
+  try{window._srvPx=(await bankCall('prices',null,'GET')).prices||{}}catch(e){} // 모두가 같은 서버 시세를 본다
   window._bankBusy=false;
   const snap=JSON.stringify([window._bank,window._bankRoster,window._bankPending]);
   if(snap!==window._bankSnap){window._bankSnap=snap;try{render()}catch(e){}}
@@ -2692,8 +2694,9 @@ async function bankLoadRoster(){ // 비로그인도 랭킹 열람
   if(window._bankRoster&&window._bankLast&&Date.now()-window._bankLast<20000)return;
   window._bankBusy=true;window._bankLast=Date.now();
   try{window._bankRoster=(await bankCall('roster',null,'GET')).roster}catch(e){}
+  try{window._srvPx=(await bankCall('prices',null,'GET')).prices||{}}catch(e){}
   window._bankBusy=false;
-  const snap=JSON.stringify([window._bank,window._bankRoster]);
+  const snap=JSON.stringify([window._bank,window._bankRoster,window._srvPx]);
   if(snap!==window._bankSnap){window._bankSnap=snap;try{render()}catch(e){}}
 }
 async function bankApprove(name,act){
@@ -2797,12 +2800,12 @@ async function pushPrices(){ // 운영진 접속 시 폼 주가를 거래소 시
   state.players.filter(p=>p.active).forEach(p=>{prices[p.displayName]=marketPrice(p)});
   try{await bankCall('setPrices',{prices})}catch(e){}
 }
-function stockPx(name){
+function stockPx(name){ // 화면 시세 = 체결 시세 (서버 단일 기준)
+  const sv=window._srvPx||{};
+  if(sv[name])return sv[name];
   const me=bankSession();
-  const px=(me&&me.prices)||{};
-  if(px[name])return px[name];
-  const p=state.players.find(x=>x.displayName===name);
-  return p?marketPrice(p):null;
+  if(me&&me.prices&&me.prices[name])return me.prices[name];
+  return null; // 미등록 = 상장 기준가 100으로 표기·체결
 }
 async function stockTrade(side){
   const B=bankSession();
@@ -2814,7 +2817,8 @@ async function stockTrade(side){
   try{
     const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty});
     window._bank&&(window._bank.bal=j.bal);
-    toast(side==='buy'?`📈 ${tgt} ${qty}주 매수 @${j.price}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} APO가 ${tgt} 지갑으로 💸`:''}`:`📉 ${tgt} ${qty}주 매도 @${j.price}`);
+    if(j.newPrice){window._srvPx=window._srvPx||{};window._srvPx[tgt]=j.newPrice} // 거래 즉시 시세 반영 ▲▼
+    toast(side==='buy'?`📈 ${tgt} ${qty}주 매수 @${j.price}${j.newPrice?` → 시세 ${j.newPrice} ▲`:''}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} 즉시 입금 💸`:''}`:`📉 ${tgt} ${qty}주 매도 @${j.price}${j.newPrice?` → 시세 ${j.newPrice} ▼`:''}`);
     await bankRefresh(true);
   }catch(e){toast('거래 실패: '+e.message,true)}
 }
@@ -2892,6 +2896,26 @@ function marketPrice(p){ // 도박성 시세: 폼 반영 2.2배 증폭 + 일일 
   const amped=100+(base-100)*2.2;
   const px=amped*(1+dailyJitter(p.displayName)*0.07);
   return Math.max(10,Math.min(999,Math.round(px)));
+}
+
+async function bankPurge(act){ // purge | clearBust (운영진·개발자)
+  const name=($('devName')?.value||$('adName')?.value||'').trim();
+  if(!name)return toast('대상 이름을 입력해주세요.',true);
+  if(act==='purge'&&!confirm(`"${name}" 계정을 완전 삭제할까요?\n잔액·주식·장부가 전부 사라지고 되돌릴 수 없어요.`))return;
+  try{
+    await bankCall(act,{name});
+    toast(act==='purge'?'🗑 계정을 삭제했어요.':'💀 파산 기록을 초기화했어요.');
+    await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
+}
+function bankBadges(r,roster){ // 랭킹 칭호
+  const out=[];
+  if(roster&&roster.length&&roster[0].name===r.name&&r.bal>=15000)out.push('👑 아포단 재벌');
+  if(r.bust>=3)out.push('💀 상습 파산러');
+  else if(r.bust>0)out.push('💀 파산 '+r.bust+'회');
+  if(r.bal>=30000)out.push('🐳 큰손');
+  if(r.bal<1000&&!r.bust)out.push('🍜 무일푼 직전');
+  return out;
 }
 /* ───── 내비게이션 ───── */
 const PAGES=[
@@ -3840,7 +3864,7 @@ function pgAwards(){
     ${list.length?list.map(a=>`<div class="arow" style="padding:9px 0;border-top:1px dashed var(--line)"><b style="color:var(--gold)">${esc(a.title)}</b> — <b>${esc(a.target)}</b><span class="mini" style="display:block;margin-top:1px">${esc(a.desc)}</span></div>`).join(''):'<p class="mini dim">아직 없어요. 판이 더 쌓이면 생깁니다.</p>'}
     </div>`;
   return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+`
-  <div class="f" style="max-width:280px;margin-bottom:12px"><label>🔎 이름 검색 <span class="tag">초성 OK</span></label><input id="fmQfocus" value="${esc(window._formQ||'')}" placeholder="이름·별명·초성 (ㅁ→미르)" oninput="window._formQ=this.value;render();requestAnimationFrame(()=>{const i=$('fmQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
+  <div class="f" style="max-width:280px;margin-bottom:12px"><label>🔎 이름 검색 <span class="tag">초성 OK</span></label><input id="fmQfocus" value="${esc(window._formQ||'')}" placeholder="이름·별명·초성 (ㅁ→미르)" oncompositionstart="window._ime=1" oncompositionend="window._ime=0;window._formQ=this.value;render();requestAnimationFrame(()=>{const i=$('fmQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})" oninput="if(window._ime)return;window._formQ=this.value;render();requestAnimationFrame(()=>{const i=$('fmQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
   <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
     ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
   </div>
@@ -3922,14 +3946,15 @@ function delVote(vid){
 
 function pgBank(){
   if(voteApiBase()){bankToken()?bankRefresh(false):bankLoadRoster()}
+  if(!window.__noFanPoll){clearTimeout(window._bankPoll);window._bankPoll=setTimeout(()=>{if(tab==='bank')bankRefresh(true)},30000)} // 지갑 자동 갱신 — 초상권료 등 30초 내 표시
   const B=bankSession();
   const pendName=lsGet('apodan_bank_pendname')||'';
   const roster=window._bankRoster||[];
   const medal=i=>['🥇','🥈','🥉'][i]||`${i+1}위`;
   const rosterCard=`<div class="card" style="margin-top:14px">
     <h3>🏆 아포단 부자 랭킹 <span class="tag">전 멤버 공개 — 포인트는 명예다</span></h3>
-    ${roster.length?`<div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>#</th><th>이름</th><th class="num">잔액 (APO)</th><th>비고</th></tr></thead><tbody>
-      ${roster.map((r,i)=>`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${esc(r.name)}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td class="mini dim">${r.bust?'💀 파산 '+r.bust+'회':''}</td></tr>`).join('')}</tbody></table></div>`
+    ${roster.length?`<div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>#</th><th>이름</th><th class="num">잔액 (APO)</th><th>칭호</th></tr></thead><tbody>
+      ${roster.map((r,i)=>`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${esc(r.name)}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td class="mini">${bankBadges(r,roster).map(b=>`<span class="pill" style="font-size:10px;padding:1px 6px;margin-right:3px">${b}</span>`).join('')||'<span class="dim">—</span>'}</td></tr>`).join('')}</tbody></table></div>`
     :`<p class="mini dim">${voteApiBase()?'아직 활성 계좌가 없어요 — 1호 가입자가 되어보세요!':'설정에서 서버를 먼저 연결해주세요.'}</p>`}
   </div>`;
   if(!B){
@@ -3968,6 +3993,8 @@ function pgBank(){
         <button class="btn sm gold" onclick="bankDev('mint')">💵 발권/회수</button>
         <button class="btn sm ghost" onclick="bankApprove($('devName')?.value,'freeze')">동결</button>
         <button class="btn sm ghost" onclick="bankApprove($('devName')?.value,'unfreeze')">해동</button>
+        <button class="btn sm ghost" onclick="bankPurge('clearBust')">💀 파산 기록 초기화</button>
+        <button class="btn sm lose" onclick="bankPurge('purge')">🗑 계정 완전 삭제</button>
       </div>
     </div>${rosterCard}`;
   }
@@ -3996,27 +4023,30 @@ function pgBank(){
       const board=state.players.filter(p=>p.active)
         .filter(p=>searchHit(p,q))
         .map(p=>{
-          const{arr}=formSeries(p.id);
-          const px=stockPx(p.displayName)||100;
-          const base=arr.at(-1)||100;
-          const prevBase=arr.length>=2?arr[arr.length-2]:base;
-          const d=px-Math.max(10,Math.min(999,Math.round(100+(prevBase-100)*2.2)));
-          return{name:p.displayName,px,d};
+          const srv=stockPx(p.displayName);
+          const px=srv||100;
+          const ref=marketPrice(p);
+          const d=srv?px-ref:0; // 등락 = 폼 기준가 대비 (거래 수급 반영분)
+          return{name:p.displayName,px,d,listed:!!srv};
         }).sort((a,b)=>b.px-a.px);
       const H=window._stockHolders||{};
       const sel=window._stockSel;
-      return`<div class="f" style="max-width:240px;margin-bottom:8px"><label>🔎 종목 검색 <span class="tag">초성도 OK: ㅁ→미르</span></label><input value="${esc(q)}" placeholder="이름·별명·초성" id="stQfocus" oninput="window._stQ=this.value;render();requestAnimationFrame(()=>{const i=$('stQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
+      return`<div class="f" style="max-width:240px;margin-bottom:8px"><label>🔎 종목 검색 <span class="tag">초성도 OK: ㅁ→미르</span></label><input value="${esc(q)}" placeholder="이름·별명·초성" id="stQfocus" oncompositionstart="window._ime=1" oncompositionend="window._ime=0;window._stQ=this.value;render();requestAnimationFrame(()=>{const i=$('stQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})" oninput="if(window._ime)return;window._stQ=this.value;render();requestAnimationFrame(()=>{const i=$('stQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
       <div class="scrollx" style="max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px">
         <table class="tbl" style="min-width:430px"><thead><tr><th>종목</th><th class="num">1주 가격</th><th class="num">등락</th><th>주주</th><th></th></tr></thead><tbody>
         ${board.map(r=>{const hs=H[r.name]||[];
           return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
           <td><b>${esc(r.name)}</b></td>
-          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span></td>
+          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px">상장가</span>'}</td>
           <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
           <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
           <td><button class="btn sm ghost" onclick="event.stopPropagation();pickStock('${esc(r.name)}')">선택</button></td></tr>`}).join('')}
         </tbody></table></div>
-      <p class="mini dim" style="margin:6px 0 10px">상승 ▲빨강 · 하락 ▼파랑 (한국식). 행을 누르면 종목이 선택돼요. 주주 명부는 1분마다 갱신 — 누가 누구에게 베팅 중인지 다 보입니다 👀</p>`})()}
+      ${sel&&H[sel]&&H[sel].length?`<div style="border:1px solid rgba(242,184,75,.4);border-radius:10px;padding:8px 12px;margin:8px 0">
+        <p class="mini" style="margin:0;font-weight:800">📜 ${esc(sel)} 주주 명부</p>
+        ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}
+      </div>`:''}
+      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "상장가"는 아직 첫 거래·시세 갱신 전인 종목으로 100에 시작해요. 가격은 ① 경기 결과(폼) ② 매일의 시장 변동 ③ <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b> 세 가지로 움직입니다. 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`})()}
     <div class="grid c3" style="margin-bottom:8px">
       <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" oninput="render&&0"></div>
       <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5"></div>
@@ -4040,6 +4070,13 @@ function pgBank(){
     <p class="mini dim" style="margin:8px 0 0">그날 경기 기록에 등장한 멤버 전원에게 지급돼요. 계좌 없는 멤버는 자동 제외, 같은 날짜 중복 지급은 서버가 막아줍니다.</p>
   </div>`:''}
   ${B.role==='admin'?`<div class="card" style="margin-top:14px"><h3>⏳ 가입 승인 대기 ${pend.length}건 <span class="tag">운영진 전용</span></h3>
+    <details class="fold" style="margin-bottom:8px"><summary class="mini dim">🧹 계정 정리 (탈퇴자 삭제 · 파산 기록 초기화)</summary>
+      <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
+        <input id="adName" list="dlBank" placeholder="대상 이름" style="width:160px;background:var(--inset);border:1px solid var(--line);border-radius:9px;padding:7px 9px">
+        <button class="btn sm ghost" onclick="bankPurge('clearBust')">💀 파산 초기화</button>
+        <button class="btn sm lose" onclick="bankPurge('purge')">🗑 계정 삭제</button>
+      </div>
+    </details>
     ${pend.length?pend.map(p=>`<div class="row" style="justify-content:space-between;padding:5px 0;border-top:1px dashed var(--line)"><span class="mini"><b>${esc(p.name)}</b> <span class="dim">${esc((p.created||'').slice(0,10))}</span></span><span class="row" style="gap:6px"><button class="btn sm gold" onclick="bankApprove('${esc(p.name)}','approve')">승인 (+10,000)</button><button class="btn sm lose" onclick="bankApprove('${esc(p.name)}','reject')">거절</button></span></div>`).join(''):'<p class="mini dim">대기 중인 신청이 없어요.</p>'}
   </div>`:''}
   ${rosterCard}`;
