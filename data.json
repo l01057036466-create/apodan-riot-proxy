@@ -322,7 +322,8 @@
    "riotTag": "3am",
    "aliases": [
     "도연",
-    "05도연"
+    "05도연",
+    "BAM"
    ],
    "active": true,
    "memo": ""
@@ -644,6 +645,18 @@
    ],
    "active": false,
    "memo": "탈주자"
+  },
+  {
+   "id": "p_0vtnjoxmq97n64m",
+   "displayName": "나간사람",
+   "kakaoName": "나간사람",
+   "riotName": "",
+   "riotTag": "",
+   "aliases": [
+    "나간사람"
+   ],
+   "active": true,
+   "memo": ""
   }
  ],
  "matches": [
@@ -8630,7 +8643,7 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "playerId": "",
+     "playerId": "p_si39mrju_mq7nhxuq",
      "rawName": "BAM",
      "championId": "바루스",
      "kills": 4,
@@ -9989,7 +10002,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:02:34.162Z",
+  "lastBackupAt": "2026-06-11T08:02:45.924Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
