@@ -2486,10 +2486,10 @@ async function castFanVote(team,luId){ // team: 'alpha'|'beta'
   const key=voteKey(L);
   if(myFanVote(key))return toast('이미 투표하셨어요! 한 기기당 한 표입니다 🗳');
   lsSet('apodan_myvote_'+key,team);
-  const api=state.settings.voteApiUrl;
+  const api=voteApiBase();
   if(api){
     try{
-      const r=await fetch(api.replace(/\/$/,'')+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
+      const r=await fetch(api+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({date:key,team,key:fanId()})});
       const j=await r.json().catch(()=>({}));
       if(r.status===409){toast('이미 집계에 들어가 있는 표예요 ✓');}
@@ -2505,22 +2505,28 @@ async function castFanVote(team,luId){ // team: 'alpha'|'beta'
   render();
 }
 async function fetchFanTally(force){
-  const api=state.settings.voteApiUrl;if(!api)return;
+  const api=voteApiBase();if(!api)return;
   const Ls=allLineups();if(!Ls.length)return;
+  const now=Date.now();
+  if(window._fanBusy)return; // 동시 호출 차단
+  if(!force&&window._fanLast&&now-window._fanLast<15000)return; // 렌더→fetch→렌더 폭주(깜빡임) 방지: 15초 쿨다운
+  window._fanBusy=true;window._fanLast=now;
   window._fanTallies=window._fanTallies||{};
   for(const L of Ls){
     const key=voteKey(L);
     if(!force&&window._fanTallies[key])continue;
     try{
-      const r=await fetch(api.replace(/\/$/,'')+'/api/vote?date='+encodeURIComponent(key));
+      const r=await fetch(api+'/api/vote?date='+encodeURIComponent(key));
       const t=await r.json().catch(()=>({}));
       if(!r.ok){window._fanErr=t.error||('HTTP '+r.status);continue}
       window._fanErr=null;
       window._fanTallies[key]={alpha:num(t.alpha),beta:num(t.beta)};
     }catch(e){window._fanErr='연결 실패'}
   }
-  try{render()}catch(e){}
-  // 실시간: 30초마다 자동 갱신
+  window._fanBusy=false;
+  // 화면은 "내용이 실제로 바뀌었을 때만" 다시 그림 — 입력 중 끊김 방지
+  const snap=JSON.stringify([window._fanTallies,window._fanErr||'']);
+  if(snap!==window._fanSnap){window._fanSnap=snap;try{render()}catch(e){}}
   if(window.__noFanPoll)return;
   clearTimeout(window._fanPoll);
   window._fanPoll=setTimeout(()=>fetchFanTally(true),30000);
@@ -2537,11 +2543,21 @@ function fanOdds(luId){
     oddsAlpha:Math.max(1.05,Math.round(1/Math.max(.05,t.alpha/total)/margin*100)/100),
     oddsBeta:Math.max(1.05,Math.round(1/Math.max(.05,t.beta/total)/margin*100)/100)};
 }
+function cleanVoteApi(v){ // 테스트 URL 전체를 붙여넣어도 베이스 주소만 추출
+  v=String(v||'').trim().replace(/^["']+|["']+$/g,'');
+  if(!v)return'';
+  if(!/^https?:\/\//.test(v))v='https://'+v;
+  const m=v.match(/^https?:\/\/[^\/\s?#]+/);
+  return m?m[0]:'';
+}
+function voteApiBase(){return cleanVoteApi(state.settings.voteApiUrl)}
 function saveVoteApi(){
   if(needAdmin())return;
-  const v=($('voteApiUrl')?.value||'').trim();
+  const raw=($('voteApiUrl')?.value||'').trim();
+  const v=cleanVoteApi(raw);
   state.settings.voteApiUrl=v;save();render();
-  toast(v?'투표 서버를 연결했어요. 매치데이 카드에 유저 배당이 떠요!':'투표 서버 연결을 해제했어요.');
+  if(raw&&v&&raw!==v)toast('주소를 정리해서 저장했어요: '+v);
+  else toast(v?'투표 서버를 연결했어요. 매치데이 카드에 유저 배당이 떠요!':'투표 서버 연결을 해제했어요.');
 }
 
 
@@ -2569,10 +2585,10 @@ async function resendMyVote(luId){
   const key=voteKey(L);
   const mine=myFanVote(key);
   if(!mine)return toast('이 기기에 기록된 표가 없어요.',true);
-  const api=state.settings.voteApiUrl;
+  const api=voteApiBase();
   if(!api)return toast('먼저 설정에서 투표 서버를 연결해주세요.',true);
   try{
-    const r=await fetch(api.replace(/\/$/,'')+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch(api+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({date:key,team:mine,key:fanId()})});
     if(r.status===409)toast('이미 집계에 들어가 있어요 ✓');
     else if(r.ok)toast('🗳 내 표를 집계에 반영했어요!');
@@ -2583,7 +2599,7 @@ async function resendMyVote(luId){
 
 
 async function voteDiag(){ // 투표 서버 자가 점검 — 정확한 상태를 운영자에게
-  const api=(state.settings.voteApiUrl||'').replace(/\/$/,'');
+  const api=voteApiBase();
   if(!api)return toast('먼저 투표 서버 주소를 저장해주세요.',true);
   const url=api+'/api/vote?date='+todayStr();
   let report='';
