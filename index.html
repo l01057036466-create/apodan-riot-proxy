@@ -2901,7 +2901,7 @@ async function stockTrade(side){
     ?`🧾 매수 주문 확인\n\n종목: ${tgt}${D.listed?'':' (첫 거래 — 폼 주가로 상장)'}\n수량: ${qty}주 × @${D.px}\n──────────\n주식 대금 ${fmtAPO(base)}\n+ 수수료 1% ${fmtAPO(fee)}\n+ 초상권료 2% ${fmtAPO(roy)}${isSelf?' (본인 — 면제)':''}\n= 총 ${fmtAPO(total)} APO 지불\n\n이대로 체결할까요?`
     :`🧾 매도 주문 확인\n\n종목: ${tgt} (보유 ${held}주)\n수량: ${qty}주 × @${D.px}\n──────────\n수수료 1% 차감 후 약 ${fmtAPO(total)} APO 입금\n\n이대로 체결할까요?`;
   if(!confirm(msg))return;
-  if($('stTarget'))$('stTarget').value=tgt; // 확정 이름으로 교정
+  window._stTgt=tgt;if($('stTarget'))$('stTarget').value=tgt; // 확정 이름으로 교정 (상태 보존)
   try{
     const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty,hint:marketPrice(R.p)});
     window._bank&&(window._bank.bal=j.bal);
@@ -2958,11 +2958,13 @@ async function loadHolders(force){
 function updStockBoard(){const el=$('stBoard');if(el&&typeof stockBoardHtml==='function')el.innerHTML=stockBoardHtml(window._stQ||'')}
 function pickStock(name){
   window._stockSel=name;
+  window._stTgt=name; // 상태 보존 — 재렌더돼도 안 사라짐
   const el=$('stTarget');if(el)el.value=name;
-  const qy=$('stQty');if(qy){if(!qy.value)qy.value=1;try{qy.focus();qy.select()}catch(e){}}
+  const qy=$('stQty');if(qy){if(!qy.value){qy.value=1;window._stQty=1}try{qy.focus();qy.select()}catch(e){}}
   loadPxHist(name);updStockBoard();
 }
 function quickTrade(name,side,qty){ // 보유 주식 행에서 바로 매수/매도
+  window._stTgt=name;if(qty)window._stQty=qty;
   const el=$('stTarget');if(el)el.value=name;
   const qy=$('stQty');if(qy&&qty)qy.value=qty;
   window._stockSel=name;loadPxHist(name);
@@ -4271,7 +4273,7 @@ function stockBoardHtml(q){
           <p class="mini" style="margin:0;font-weight:900;font-size:13px">📊 ${esc(sel)} — 현재가 <span style="font-size:16px">${stockPx(sel)||100}</span> APO</p>
         </div>
         ${(()=>{const hst=((window._pxHist||{})[sel]||[]).map(x=>x.p);
-          if(hst.length>=2)return`<div style="margin:6px 0">${sparkSvg(hst,null,560,64)}</div><p class="mini dim" style="margin:0">실시간 가격 차트 — 거래·경기·시장 변동이 모두 점으로 찍혀요 (최근 ${hst.length}건)</p>`;
+          if(hst.length>=2)return`<div style="margin:6px 0">${sparkSvg(hst,560,64)}</div><p class="mini dim" style="margin:0">실시간 가격 차트 — 거래·경기·시장 변동이 모두 점으로 찍혀요 (최근 ${hst.length}건)</p>`;
           return'<p class="mini dim" style="margin:4px 0">차트는 거래가 생기면 그려져요 — 첫 체결의 주인공이 되어보세요 🕯</p>'})()}
         ${H[sel]&&H[sel].length?`<p class="mini" style="margin:8px 0 0;font-weight:800">📜 주주 명부</p>
         ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}`:'<p class="mini dim" style="margin:8px 0 0">아직 주주가 없는 무주공산 — 1대 주주 자리가 비었습니다</p>'}
@@ -4407,8 +4409,8 @@ function pgBank(){
         oninput="if(window._ime)return;window._stQ=this.value;updStockBoard()"></div>
     <div id="stBoard">${stockBoardHtml(window._stQ||'')}</div>
     <div class="grid c3" style="margin-bottom:8px">
-      <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" oninput="render&&0"></div>
-      <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5"></div>
+      <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" value="${esc(window._stTgt||'')}" oninput="window._stTgt=this.value"></div>
+      <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5" value="${window._stQty||''}" oninput="window._stQty=this.value"></div>
       <div class="f" style="align-self:end"><div class="row" style="gap:6px"><button class="btn sm gold" onclick="stockTrade('buy')">📈 매수</button><button class="btn sm" onclick="stockTrade('sell')">📉 매도</button></div></div>
     </div>
     ${(B.role==='admin'||B.role==='dev')?`<div class="row" style="gap:6px;margin:0 0 10px"><button class="btn sm lose" onclick="bankResetMarket()">🧨 거래소 초기화 (전량 환매)</button></div>`:''}
