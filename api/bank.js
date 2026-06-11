@@ -190,8 +190,8 @@ module.exports = async function handler(req, res) {
 
     // ═══════════ Phase 2: 승부 예측 베팅 (패리뮤추얼) ═══════════
     function mktOk(m) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(m || '')); }
-    async function pushHist(nm, px) { // 가격 히스토리 (차트용, 최근 60개)
-      await redis(['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px })]);
+    async function pushHist(nm, px, why) { // 가격 히스토리 + 변동 사유 태그 (trade/form/ai/list)
+      await redis(['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px, w: why || 'trade' })]);
       await redis(['LTRIM', 'pxh:' + nm, '0', '59']);
       await redis(['EXPIRE', 'pxh:' + nm, SEC90]);
     }
@@ -394,7 +394,9 @@ module.exports = async function handler(req, res) {
     }
     if (req.method === 'GET' && action === 'prices') {
       var S0 = await loadPx();
-      return res.status(200).json({ prices: combinePx(S0) });
+      var premOut = {};
+      for (var pk0 in S0.base) premOut[pk0] = premCap(S0.base[pk0], S0.prem[pk0]); // 표시용: 상한 적용된 실제 수급
+      return res.status(200).json({ prices: combinePx(S0), base: S0.base, prem: premOut });
     }
     if (req.method === 'POST' && action === 'setPrices') { // 폼 변동 = 기준가만 갱신, 수급 프리미엄은 보존!
       var sP = await auth(body.token);
@@ -408,7 +410,7 @@ module.exports = async function handler(req, res) {
           var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
           SP.base[kP] = vP; nP++;
           var newC = clampPx(vP + (Number(SP.prem[kP]) || 0));
-          if (SP.base[kP] && Math.abs(newC - oldC) >= 2) await pushHist(kP, newC);
+          if (SP.base[kP] && Math.abs(newC - oldC) >= 2) await pushHist(kP, newC, 'form');
         }
       }
       await savePx(SP);
@@ -435,7 +437,17 @@ module.exports = async function handler(req, res) {
         SX.prem[tgt] = 0;
         price = SX.base[tgt];
         await savePx(SX);
-        await pushHist(tgt, price);
+        await pushHist(tgt, price, 'list');
+      } else { // 🩺 자가 치유: 거래자의 폼 힌트 쪽으로 기준가 자동 수렴 (운영진 접속 불필요)
+        // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
+        var hintB = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0)));
+        if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
+          var stepB = Math.max(-8, Math.min(8, Math.round((hintB - SX.base[tgt]) / 2)));
+          var beforeC = price;
+          SX.base[tgt] = Math.max(10, Math.min(999, SX.base[tgt] + stepB));
+          price = clampPx(SX.base[tgt] + premCap(SX.base[tgt], SX.prem[tgt]));
+          if (Math.abs(price - beforeC) >= 2) await pushHist(tgt, price, 'form');
+        }
       }
       var aT = sT.acct;
       var hRaw = await redis(['GET', 'hold:' + aT.name]);
@@ -470,7 +482,7 @@ module.exports = async function handler(req, res) {
         }
         aT = await busted(aT);
         await savePx(SX);
-        await pushHist(tgt, execB);
+        await pushHist(tgt, execB, 'trade');
         await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: execB, np: execB, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: execB, royalty: paidRoyalty, newPrice: execB, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       } else {
@@ -490,7 +502,7 @@ module.exports = async function handler(req, res) {
         await putAcct(aT);
         await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + execS, gain, aT.bal);
         await savePx(SX);
-        await pushHist(tgt, execS);
+        await pushHist(tgt, execS, 'trade');
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: execS, np: execS, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, price: execS, newPrice: execS, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       }
@@ -705,7 +717,7 @@ module.exports = async function handler(req, res) {
       if (ranked.length >= 4) { var rnd = ranked[2 + Math.floor(Math.random() * (ranked.length - 3))]; if (rnd) move(rnd.n, Math.random() < 0.5 ? '🏦 기관 손절' : '🚀 세력 작전', Math.random() < 0.5 ? -1 : 1); }
       await savePx(SAI);
       for (var ev = 0; ev < events.length; ev++) {
-        await pushHist(events[ev].t, events[ev].to);
+        await pushHist(events[ev].t, events[ev].to, 'ai');
         await pushTape({ n: events[ev].label, s: events[ev].dir > 0 ? 'b' : 's', t: events[ev].t, q: 0, p: events[ev].from, np: events[ev].to, ts: new Date().toISOString(), ai: true });
       }
       await redis(['SET', 'ai:lastweek', weekId, 'EX', SEC90]);
