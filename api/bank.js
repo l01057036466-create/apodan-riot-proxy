@@ -186,6 +186,16 @@ module.exports = async function handler(req, res) {
 
     // ═══════════ Phase 2: 승부 예측 베팅 (패리뮤추얼) ═══════════
     function mktOk(m) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(m || '')); }
+    async function pushHist(nm, px) { // 가격 히스토리 (차트용, 최근 60개)
+      await redis(['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px })]);
+      await redis(['LTRIM', 'pxh:' + nm, '0', '59']);
+      await redis(['EXPIRE', 'pxh:' + nm, SEC90]);
+    }
+    async function pushTape(e) { // 체결 테이프 (전원 공개 실시간 피드, 최근 30건)
+      await redis(['LPUSH', 'trades:recent', JSON.stringify(e)]);
+      await redis(['LTRIM', 'trades:recent', '0', '29']);
+      await redis(['EXPIRE', 'trades:recent', SEC90]);
+    }
     async function busted(a) { // 파산: 박제 + 구제는 하루 1회만 (무한 셔틀 금지)
       if (a.bal > 0) return a;
       a.bust = (a.bust || 0) + 1;
@@ -427,7 +437,10 @@ module.exports = async function handler(req, res) {
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
-        if (nameOk(kP) && vP >= 10 && vP <= 999) { px[kP] = vP; nP++; }
+        if (nameOk(kP) && vP >= 10 && vP <= 999) {
+          if (Math.abs((px[kP] || 0) - vP) >= 2) await pushHist(kP, vP); // 변동분만 차트 기록
+          px[kP] = vP; nP++;
+        }
       }
       await redis(['SET', 'stock:px', JSON.stringify(px)]);
       return res.status(200).json({ ok: true, updated: nP });
@@ -472,6 +485,8 @@ module.exports = async function handler(req, res) {
         var up = Math.min(999, price + Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매수 즉시 ▲
         px2[tgt] = up;
         await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        await pushHist(tgt, up);
+        await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: price, np: up, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up });
       } else {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
@@ -486,8 +501,24 @@ module.exports = async function handler(req, res) {
         var dn = Math.max(10, price - Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매도 즉시 ▼
         px2[tgt] = dn;
         await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        await pushHist(tgt, dn);
+        await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
       }
+    }
+
+    // ═══ 공개: 실시간 체결 테이프 ═══
+    if (req.method === 'GET' && action === 'trades') {
+      var tp = (await redis(['LRANGE', 'trades:recent', '0', '29'])) || [];
+      return res.status(200).json({ trades: tp.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean) });
+    }
+    // ═══ 공개: 종목 가격 히스토리 (차트) ═══
+    if (req.method === 'GET' && action === 'pxhist') {
+      var tg = nameOk(q.target);
+      if (!tg) return res.status(400).json({ error: 'target 필요' });
+      var hh2 = (await redis(['LRANGE', 'pxh:' + tg, '0', '59'])) || [];
+      var arr = hh2.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean).reverse();
+      return res.status(200).json({ target: tg, hist: arr });
     }
 
     // ═══ 계정 정리: 삭제 / 파산 기록 초기화 (운영진·개발자) ═══
