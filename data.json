@@ -47,8 +47,8 @@
    "riotName": "우나깅",
    "riotTag": "KR1",
    "aliases": [
-    "난깅",
-    "00난깅"
+    "나깅",
+    "00나깅"
    ],
    "active": true,
    "memo": ""
@@ -227,13 +227,11 @@
    "id": "p_snn2xfw3_mq7nhxuq",
    "displayName": "02 미드",
    "kakaoName": "02 미드",
-   "riotName": "하남시김수현",
-   "riotTag": "kr1",
+   "riotName": "견호살빼면 롤접음",
+   "riotTag": "105kg",
    "aliases": [
     "미드",
-    "02미드",
-    "견호살빼면 롤접음",
-    "견호살빼면롤접음"
+    "02미드"
    ],
    "active": true,
    "memo": ""
@@ -634,6 +632,18 @@
    ],
    "active": true,
    "memo": ""
+  },
+  {
+   "id": "p_04s7kxlmq8v3l9m",
+   "displayName": "97맹이",
+   "kakaoName": "97맹이",
+   "riotName": "맹 이",
+   "riotTag": "고양이",
+   "aliases": [
+    "97맹이"
+   ],
+   "active": true,
+   "memo": "탈주자"
   }
  ],
  "matches": [
@@ -1924,14 +1934,12 @@
       "damageTaken": 14422,
       "visionScore": 5,
       "wardsPlaced": 5,
-      "wardsKilled": 0,
       "controlWardsBought": 1,
       "crowdControlScore": 28,
       "damageToObjectives": 5298,
       "damageToTurrets": 5298,
       "healing": 4642,
-      "selfMitigatedDamage": 23738,
-      "soloKills": 0
+      "selfMitigatedDamage": 23738
      }
     },
     {
@@ -1956,8 +1964,7 @@
       "damageToObjectives": 1340,
       "damageToTurrets": 1340,
       "healing": 3060,
-      "selfMitigatedDamage": 17880,
-      "soloKills": 0
+      "selfMitigatedDamage": 17880
      }
     },
     {
@@ -1982,8 +1989,7 @@
       "damageToObjectives": 3255,
       "damageToTurrets": 3255,
       "healing": 3061,
-      "selfMitigatedDamage": 28597,
-      "soloKills": 0
+      "selfMitigatedDamage": 28597
      }
     },
     {
@@ -2003,13 +2009,11 @@
       "visionScore": 18,
       "wardsPlaced": 5,
       "wardsKilled": 6,
-      "controlWardsBought": 0,
       "crowdControlScore": 22,
       "damageToObjectives": 4414,
       "damageToTurrets": 4187,
       "healing": 1048,
-      "selfMitigatedDamage": 3090,
-      "soloKills": 0
+      "selfMitigatedDamage": 3090
      }
     },
     {
@@ -2034,8 +2038,7 @@
       "damageToObjectives": 3534,
       "damageToTurrets": 2805,
       "healing": 8078,
-      "selfMitigatedDamage": 3915,
-      "soloKills": 0
+      "selfMitigatedDamage": 3915
      }
     },
     {
@@ -2054,14 +2057,11 @@
       "damageTaken": 14989,
       "visionScore": 7,
       "wardsPlaced": 3,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 19,
       "damageToObjectives": 791,
       "damageToTurrets": 791,
       "healing": 1824,
-      "selfMitigatedDamage": 13286,
-      "soloKills": 0
+      "selfMitigatedDamage": 13286
      }
     },
     {
@@ -2081,13 +2081,11 @@
       "visionScore": 5,
       "wardsPlaced": 2,
       "wardsKilled": 1,
-      "controlWardsBought": 0,
       "crowdControlScore": 20,
       "damageToObjectives": 25374,
       "damageToTurrets": 4686,
       "healing": 8840,
-      "selfMitigatedDamage": 9712,
-      "soloKills": 0
+      "selfMitigatedDamage": 9712
      }
     },
     {
@@ -2107,13 +2105,11 @@
       "visionScore": 14,
       "wardsPlaced": 7,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 34,
       "damageToObjectives": 7436,
       "damageToTurrets": 6709,
       "healing": 2016,
-      "selfMitigatedDamage": 14814,
-      "soloKills": 0
+      "selfMitigatedDamage": 14814
      }
     },
     {
@@ -2133,19 +2129,17 @@
       "visionScore": 13,
       "wardsPlaced": 6,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 27,
       "damageToObjectives": 2316,
       "damageToTurrets": 2316,
       "healing": 2110,
-      "selfMitigatedDamage": 4912,
-      "soloKills": 0
+      "selfMitigatedDamage": 4912
      }
     },
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_bqvhy1r3_mq7nhxuq",
+     "playerId": "p_04s7kxlmq8v3l9m",
      "rawName": "맹 이",
      "championId": "쓰레쉬",
      "kills": 1,
@@ -2161,11 +2155,8 @@
       "wardsKilled": 1,
       "controlWardsBought": 9,
       "crowdControlScore": 17,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
       "healing": 2831,
-      "selfMitigatedDamage": 13104,
-      "soloKills": 0
+      "selfMitigatedDamage": 13104
      }
     }
    ],
@@ -2240,13 +2231,11 @@
       "visionScore": 16,
       "wardsPlaced": 4,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 25,
       "damageToObjectives": 16249,
       "damageToTurrets": 13306,
       "healing": 8787,
-      "selfMitigatedDamage": 12794,
-      "soloKills": 0
+      "selfMitigatedDamage": 12794
      }
     },
     {
@@ -2271,8 +2260,7 @@
       "damageToObjectives": 41949,
       "damageToTurrets": 4311,
       "healing": 12834,
-      "selfMitigatedDamage": 13876,
-      "soloKills": 0
+      "selfMitigatedDamage": 13876
      }
     },
     {
@@ -2292,13 +2280,11 @@
       "visionScore": 14,
       "wardsPlaced": 9,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 5,
       "damageToObjectives": 10648,
       "damageToTurrets": 7040,
       "healing": 23807,
-      "selfMitigatedDamage": 12409,
-      "soloKills": 0
+      "selfMitigatedDamage": 12409
      }
     },
     {
@@ -2323,14 +2309,13 @@
       "damageToObjectives": 22954,
       "damageToTurrets": 12064,
       "healing": 6761,
-      "selfMitigatedDamage": 6579,
-      "soloKills": 0
+      "selfMitigatedDamage": 6579
      }
     },
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_bqvhy1r3_mq7nhxuq",
+     "playerId": "p_04s7kxlmq8v3l9m",
      "rawName": "맹 이",
      "championId": "사일러스",
      "kills": 6,
@@ -2349,8 +2334,7 @@
       "damageToObjectives": 5481,
       "damageToTurrets": 2766,
       "healing": 5547,
-      "selfMitigatedDamage": 9938,
-      "soloKills": 0
+      "selfMitigatedDamage": 9938
      }
     },
     {
@@ -2375,8 +2359,7 @@
       "damageToObjectives": 4648,
       "damageToTurrets": 4648,
       "healing": 2509,
-      "selfMitigatedDamage": 41119,
-      "soloKills": 0
+      "selfMitigatedDamage": 41119
      }
     },
     {
@@ -2399,10 +2382,8 @@
       "controlWardsBought": 2,
       "crowdControlScore": 31,
       "damageToObjectives": 796,
-      "damageToTurrets": 0,
       "healing": 21735,
-      "selfMitigatedDamage": 12744,
-      "soloKills": 0
+      "selfMitigatedDamage": 12744
      }
     },
     {
@@ -2427,8 +2408,7 @@
       "damageToObjectives": 2048,
       "damageToTurrets": 1416,
       "healing": 2370,
-      "selfMitigatedDamage": 11054,
-      "soloKills": 0
+      "selfMitigatedDamage": 11054
      }
     },
     {
@@ -2447,14 +2427,10 @@
       "damageTaken": 16001,
       "visionScore": 10,
       "wardsPlaced": 7,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
-      "crowdControlScore": 0,
       "damageToObjectives": 1838,
       "damageToTurrets": 1838,
       "healing": 1408,
-      "selfMitigatedDamage": 7452,
-      "soloKills": 0
+      "selfMitigatedDamage": 7452
      }
     },
     {
@@ -2475,12 +2451,10 @@
       "wardsPlaced": 28,
       "wardsKilled": 5,
       "controlWardsBought": 8,
-      "crowdControlScore": 0,
       "damageToObjectives": 814,
       "damageToTurrets": 215,
       "healing": 1930,
-      "selfMitigatedDamage": 6324,
-      "soloKills": 0
+      "selfMitigatedDamage": 6324
      }
     }
    ],
@@ -2560,8 +2534,7 @@
       "damageToObjectives": 9349,
       "damageToTurrets": 7028,
       "healing": 17904,
-      "selfMitigatedDamage": 28531,
-      "soloKills": 0
+      "selfMitigatedDamage": 28531
      }
     },
     {
@@ -2586,8 +2559,7 @@
       "damageToObjectives": 49539,
       "damageToTurrets": 2410,
       "healing": 11214,
-      "selfMitigatedDamage": 10279,
-      "soloKills": 0
+      "selfMitigatedDamage": 10279
      }
     },
     {
@@ -2612,8 +2584,7 @@
       "damageToObjectives": 21699,
       "damageToTurrets": 19233,
       "healing": 3412,
-      "selfMitigatedDamage": 62658,
-      "soloKills": 0
+      "selfMitigatedDamage": 62658
      }
     },
     {
@@ -2632,14 +2603,11 @@
       "damageTaken": 15896,
       "visionScore": 10,
       "wardsPlaced": 8,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 19,
       "damageToObjectives": 11615,
       "damageToTurrets": 2264,
       "healing": 2085,
-      "selfMitigatedDamage": 6626,
-      "soloKills": 0
+      "selfMitigatedDamage": 6626
      }
     },
     {
@@ -2664,8 +2632,7 @@
       "damageToObjectives": 7340,
       "damageToTurrets": 2040,
       "healing": 3602,
-      "selfMitigatedDamage": 5758,
-      "soloKills": 0
+      "selfMitigatedDamage": 5758
      }
     },
     {
@@ -2685,13 +2652,11 @@
       "visionScore": 10,
       "wardsPlaced": 4,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 47,
       "damageToObjectives": 5431,
       "damageToTurrets": 5431,
       "healing": 2653,
-      "selfMitigatedDamage": 41409,
-      "soloKills": 0
+      "selfMitigatedDamage": 41409
      }
     },
     {
@@ -2716,8 +2681,7 @@
       "damageToObjectives": 9011,
       "damageToTurrets": 27,
       "healing": 9951,
-      "selfMitigatedDamage": 18305,
-      "soloKills": 0
+      "selfMitigatedDamage": 18305
      }
     },
     {
@@ -2737,13 +2701,11 @@
       "visionScore": 19,
       "wardsPlaced": 10,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 42,
       "damageToObjectives": 5069,
       "damageToTurrets": 5069,
       "healing": 3970,
-      "selfMitigatedDamage": 13122,
-      "soloKills": 0
+      "selfMitigatedDamage": 13122
      }
     },
     {
@@ -2768,14 +2730,13 @@
       "damageToObjectives": 6596,
       "damageToTurrets": 6596,
       "healing": 6861,
-      "selfMitigatedDamage": 12900,
-      "soloKills": 0
+      "selfMitigatedDamage": 12900
      }
     },
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_bqvhy1r3_mq7nhxuq",
+     "playerId": "p_04s7kxlmq8v3l9m",
      "rawName": "맹 이",
      "championId": "조이",
      "kills": 0,
@@ -2794,8 +2755,7 @@
       "damageToObjectives": 687,
       "damageToTurrets": 614,
       "healing": 2835,
-      "selfMitigatedDamage": 7146,
-      "soloKills": 0
+      "selfMitigatedDamage": 7146
      }
     }
    ],
@@ -5074,14 +5034,11 @@
       "damageTaken": 23753,
       "visionScore": 8,
       "wardsPlaced": 3,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 9,
       "damageToObjectives": 6402,
       "damageToTurrets": 5746,
       "healing": 6317,
-      "selfMitigatedDamage": 18006,
-      "soloKills": 0
+      "selfMitigatedDamage": 18006
      }
     },
     {
@@ -5101,13 +5058,10 @@
       "visionScore": 16,
       "wardsPlaced": 1,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 9,
       "damageToObjectives": 23224,
-      "damageToTurrets": 0,
       "healing": 14588,
-      "selfMitigatedDamage": 18396,
-      "soloKills": 0
+      "selfMitigatedDamage": 18396
      }
     },
     {
@@ -5132,8 +5086,7 @@
       "damageToObjectives": 6851,
       "damageToTurrets": 6851,
       "healing": 4481,
-      "selfMitigatedDamage": 12710,
-      "soloKills": 0
+      "selfMitigatedDamage": 12710
      }
     },
     {
@@ -5153,13 +5106,11 @@
       "visionScore": 14,
       "wardsPlaced": 4,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 3,
       "damageToObjectives": 7589,
       "damageToTurrets": 6131,
       "healing": 5260,
-      "selfMitigatedDamage": 9804,
-      "soloKills": 0
+      "selfMitigatedDamage": 9804
      }
     },
     {
@@ -5182,10 +5133,8 @@
       "controlWardsBought": 10,
       "crowdControlScore": 11,
       "damageToObjectives": 854,
-      "damageToTurrets": 0,
       "healing": 3030,
-      "selfMitigatedDamage": 6211,
-      "soloKills": 0
+      "selfMitigatedDamage": 6211
      }
     },
     {
@@ -5210,8 +5159,7 @@
       "damageToObjectives": 8706,
       "damageToTurrets": 8414,
       "healing": 6917,
-      "selfMitigatedDamage": 34407,
-      "soloKills": 0
+      "selfMitigatedDamage": 34407
      }
     },
     {
@@ -5230,14 +5178,11 @@
       "damageTaken": 31059,
       "visionScore": 20,
       "wardsPlaced": 9,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 26,
       "damageToObjectives": 23048,
       "damageToTurrets": 6405,
       "healing": 16441,
-      "selfMitigatedDamage": 20966,
-      "soloKills": 0
+      "selfMitigatedDamage": 20966
      }
     },
     {
@@ -5262,8 +5207,7 @@
       "damageToObjectives": 4576,
       "damageToTurrets": 4477,
       "healing": 4954,
-      "selfMitigatedDamage": 7925,
-      "soloKills": 0
+      "selfMitigatedDamage": 7925
      }
     },
     {
@@ -5288,8 +5232,7 @@
       "damageToObjectives": 20194,
       "damageToTurrets": 17530,
       "healing": 6968,
-      "selfMitigatedDamage": 14543,
-      "soloKills": 0
+      "selfMitigatedDamage": 14543
      }
     },
     {
@@ -5308,14 +5251,12 @@
       "damageTaken": 4245,
       "visionScore": 53,
       "wardsPlaced": 22,
-      "wardsKilled": 0,
       "controlWardsBought": 6,
       "crowdControlScore": 18,
       "damageToObjectives": 2148,
       "damageToTurrets": 1981,
       "healing": 8761,
-      "selfMitigatedDamage": 1938,
-      "soloKills": 0
+      "selfMitigatedDamage": 1938
      }
     }
    ],
@@ -6902,10 +6843,21 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-10T18:16:20.792Z"
+  "lastBackupAt": "2026-06-11T02:21:23.079Z"
  },
  "lineup": null,
  "liveBoards": {
-  "2026-06-10": []
+  "2026-06-10": [
+   {
+    "id": "lv_sn81ns9mq8d8563",
+    "champ": "가렌",
+    "type": "pick"
+   },
+   {
+    "id": "lv_92ilontmq8d896o",
+    "champ": "갈리오",
+    "type": "ban"
+   }
+  ]
  }
 }
