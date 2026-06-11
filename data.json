@@ -657,6 +657,19 @@
    ],
    "active": false,
    "memo": "기록 보존용 (탈퇴·외부 인원)"
+  },
+  {
+   "id": "p_vzht71kmq95rwys",
+   "displayName": "00 규동",
+   "kakaoName": "00 규동",
+   "riotName": "",
+   "riotTag": "",
+   "aliases": [
+    "규동",
+    "00 규동"
+   ],
+   "active": true,
+   "memo": ""
   }
  ],
  "matches": [
@@ -10002,7 +10015,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T07:00:28.368Z",
+  "lastBackupAt": "2026-06-11T07:00:44.622Z",
   "autoPublish": true
  },
  "lineup": null,
