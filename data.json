@@ -12553,14 +12553,12 @@
       "damageTaken": 26704,
       "visionScore": 14,
       "wardsPlaced": 8,
-      "wardsKilled": 0,
       "controlWardsBought": 1,
       "crowdControlScore": 17,
       "damageToObjectives": 15679,
       "damageToTurrets": 14405,
       "healing": 10287,
-      "selfMitigatedDamage": 17884,
-      "soloKills": 0
+      "selfMitigatedDamage": 17884
      }
     },
     {
@@ -12585,8 +12583,7 @@
       "damageToObjectives": 52050,
       "damageToTurrets": 5983,
       "healing": 16628,
-      "selfMitigatedDamage": 20557,
-      "soloKills": 0
+      "selfMitigatedDamage": 20557
      }
     },
     {
@@ -12611,8 +12608,7 @@
       "damageToObjectives": 6505,
       "damageToTurrets": 5397,
       "healing": 3561,
-      "selfMitigatedDamage": 41981,
-      "soloKills": 0
+      "selfMitigatedDamage": 41981
      }
     },
     {
@@ -12632,19 +12628,17 @@
       "visionScore": 17,
       "wardsPlaced": 2,
       "wardsKilled": 9,
-      "controlWardsBought": 0,
       "crowdControlScore": 1,
       "damageToObjectives": 31258,
       "damageToTurrets": 11705,
       "healing": 5079,
-      "selfMitigatedDamage": 10945,
-      "soloKills": 0
+      "selfMitigatedDamage": 10945
      }
     },
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_vzht71kmq95rwys",
      "rawName": "Rudbeckla",
      "championId": "파이크",
      "kills": 6,
@@ -12663,8 +12657,7 @@
       "damageToObjectives": 4451,
       "damageToTurrets": 2908,
       "healing": 4948,
-      "selfMitigatedDamage": 9338,
-      "soloKills": 0
+      "selfMitigatedDamage": 9338
      }
     },
     {
@@ -12689,8 +12682,7 @@
       "damageToObjectives": 1857,
       "damageToTurrets": 1115,
       "healing": 6071,
-      "selfMitigatedDamage": 49394,
-      "soloKills": 0
+      "selfMitigatedDamage": 49394
      }
     },
     {
@@ -12710,13 +12702,11 @@
       "visionScore": 29,
       "wardsPlaced": 8,
       "wardsKilled": 8,
-      "controlWardsBought": 0,
       "crowdControlScore": 8,
       "damageToObjectives": 5367,
       "damageToTurrets": 5367,
       "healing": 10712,
-      "selfMitigatedDamage": 18042,
-      "soloKills": 0
+      "selfMitigatedDamage": 18042
      }
     },
     {
@@ -12741,8 +12731,7 @@
       "damageToObjectives": 1988,
       "damageToTurrets": 1988,
       "healing": 1200,
-      "selfMitigatedDamage": 6910,
-      "soloKills": 0
+      "selfMitigatedDamage": 6910
      }
     },
     {
@@ -12762,13 +12751,11 @@
       "visionScore": 16,
       "wardsPlaced": 6,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 5,
       "damageToObjectives": 4354,
       "damageToTurrets": 4354,
       "healing": 2448,
-      "selfMitigatedDamage": 7335,
-      "soloKills": 0
+      "selfMitigatedDamage": 7335
      }
     },
     {
@@ -12793,8 +12780,7 @@
       "damageToObjectives": 269,
       "damageToTurrets": 269,
       "healing": 2039,
-      "selfMitigatedDamage": 6000,
-      "soloKills": 0
+      "selfMitigatedDamage": 6000
      }
     }
    ],
@@ -13130,7 +13116,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T15:48:59.596Z",
+  "lastBackupAt": "2026-06-11T15:59:25.902Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false
@@ -13151,6 +13137,6 @@
   ]
  },
  "lineups": [],
- "rev": 31,
- "updatedAt": "2026-06-11T15:59:19.637Z"
+ "rev": 33,
+ "updatedAt": "2026-06-11T15:59:29.148Z"
 }
