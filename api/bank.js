@@ -621,7 +621,7 @@ module.exports = async function handler(req, res) {
     // ═══ 🏅 MVP 온라인 투표 (계정 1인 1표) ═══
     if (req.method === 'GET' && action === 'mvpTally') {
       var dM = String(q.date || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dM)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD' });
+      if (!mktOk(dM)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD (#회차 허용)' });
       var stM = (await redis(['GET', 'mvp:' + dM + ':status'])) || 'open';
       var flat = (await redis(['HGETALL', 'mvp:' + dM + ':t'])) || [];
       var tal = {};
@@ -635,7 +635,7 @@ module.exports = async function handler(req, res) {
       var sV = await auth(body.token);
       if (!sV || !sV.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var dV = String(body.date || ''), pk = nameOk(body.pick);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dV)) return res.status(400).json({ error: 'date 형식 오류' });
+      if (!mktOk(dV)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!pk) return res.status(400).json({ error: '후보 이름 확인' });
       var stV = (await redis(['GET', 'mvp:' + dV + ':status'])) || 'open';
       if (stV !== 'open') return res.status(403).json({ error: 'MVP 투표가 마감됐어요' });
@@ -649,7 +649,7 @@ module.exports = async function handler(req, res) {
       var sVL = await auth(body.token);
       if (!sVL || (sVL.role !== 'admin' && sVL.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var dVL = String(body.date || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dVL)) return res.status(400).json({ error: 'date 형식 오류' });
+      if (!mktOk(dVL)) return res.status(400).json({ error: 'date 형식 오류' });
       await redis(['SET', 'mvp:' + dVL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
       return res.status(200).json({ ok: true });
     }
