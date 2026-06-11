@@ -601,7 +601,8 @@
    "aliases": [
     "소혁",
     "03소혁",
-    "뭔데말걸지"
+    "뭔데말걸지",
+    "twitch소혁"
    ],
    "active": true,
    "memo": ""
@@ -11043,7 +11044,7 @@
      "team": "BLUE",
      "lane": "ADC",
      "rawName": "twitch소혁",
-     "playerId": "",
+     "playerId": "p_wqf3x0omq7ub77q",
      "championId": "바루스",
      "kills": 9,
      "deaths": 2,
@@ -11488,7 +11489,7 @@
      "team": "RED",
      "lane": "ADC",
      "rawName": "twitch소혁",
-     "playerId": "",
+     "playerId": "p_wqf3x0omq7ub77q",
      "championId": "시비르",
      "kills": 4,
      "deaths": 0,
@@ -11586,7 +11587,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T12:46:34.947Z",
+  "lastBackupAt": "2026-06-11T12:46:52.922Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false
@@ -11648,6 +11649,6 @@
    ]
   }
  ],
- "rev": 17,
- "updatedAt": "2026-06-11T12:46:46.324Z"
+ "rev": 19,
+ "updatedAt": "2026-06-11T12:51:34.168Z"
 }
