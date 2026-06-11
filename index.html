@@ -839,11 +839,15 @@ function playerHex(id,laneSel){
   return hexFrom(rates,id,axes,poolIds,myLane,laneScoped,mine);
 }
 function hexFrom(rates,id,axes,poolIds,lane,laneScoped,mine){
+  // 백분위(등수) 기반 평가: 아웃라이어 한 명이 바닥/천장을 깔아 전원이 한쪽으로 몰리는 착시 방지
   const vals=[];
   for(const[k]of axes){
+    const myV=RATE_GET[k](mine);
     const arr=poolIds.map(pid=>RATE_GET[k](rates.get(pid)));
-    const mn=Math.min(...arr),mx=Math.max(...arr);
-    const v=mx===mn?0.5:(RATE_GET[k](mine)-mn)/(mx-mn);
+    if(arr.length<=1){vals.push(0.5);continue}
+    let below=0,equal=0;
+    arr.forEach(x=>{if(x<myV)below++;else if(x===myV)equal++});
+    const v=(below+Math.max(0,equal-1)*0.5)/(arr.length-1); // 동률은 중간 등수
     vals.push(Math.max(0,Math.min(1,v)));
   }
   return{vals,labels:axes.map(x=>x[1]),me:{games:mine.games},rates:mine,lane,laneScoped};
