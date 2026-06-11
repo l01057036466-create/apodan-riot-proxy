@@ -441,14 +441,15 @@ module.exports = async function handler(req, res) {
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
       var pxRaw3 = await redis(['GET', 'stock:px']);
       var px2 = pxRaw3 ? JSON.parse(pxRaw3) : {};
-      var price = Math.round(Number(px2[tgt]) || 0);
-      if (!price) return res.status(404).json({ error: '시세 없음 — 운영진이 접속하면 시세가 갱신돼요' });
+      var price = Math.round(Number(px2[tgt]) || 0) || 100; // 시세 미등록 종목은 기본가 100 — 즉시 거래 가능
       var aT = sT.acct;
       var hRaw = await redis(['GET', 'hold:' + aT.name]);
       var hold = hRaw ? JSON.parse(hRaw) : {};
       if (action === 'stockBuy') {
-        var cost = Math.ceil(price * qty * 1.01); // 수수료 1%
-        if (aT.bal < cost) return res.status(400).json({ error: '잔액 부족 (' + cost + ' APO 필요)' });
+        var base = price * qty;
+        var royalty = Math.floor(base * 0.02); // 💸 초상권료 2% → 종목 본인에게
+        var cost = Math.ceil(base * 1.01) + royalty; // + 거래소 수수료 1%
+        if (aT.bal < cost) return res.status(400).json({ error: '잔액 부족 (' + cost + ' APO 필요 = 대금+수수료1%+초상권료2%)' });
         aT.bal -= cost;
         var cur3 = hold[tgt] || { q: 0, avg: 0 };
         cur3.avg = Math.round((cur3.avg * cur3.q + price * qty) / (cur3.q + qty));
@@ -456,9 +457,18 @@ module.exports = async function handler(req, res) {
         hold[tgt] = cur3;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
-        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + price, -cost, aT.bal);
+        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + price + ' (초상권료 ' + royalty + ' 포함)', -cost, aT.bal);
+        var paidRoyalty = 0;
+        if (royalty > 0 && tgt !== aT.name) { // 셀프 매수엔 초상권료 없음 (자기가 자기에게 ❌)
+          var star = await getAcct(tgt);
+          if (star && star.status === 'active') {
+            star.bal += royalty; paidRoyalty = royalty;
+            await putAcct(star);
+            await ledger(star.name, '💸 초상권료 — ' + aT.name + '\uAC00(\uC774) \uB0B4 \uC8FC\uC2DD ' + qty + '\uC8FC \uB9E4\uC218', royalty, star.bal);
+          }
+        }
         aT = await busted(aT);
-        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price });
+        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty });
       } else {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
         if (cur4.q < qty) return res.status(400).json({ error: '보유 ' + cur4.q + '주뿐이에요' });
