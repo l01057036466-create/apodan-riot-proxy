@@ -653,7 +653,8 @@
    "riotName": "",
    "riotTag": "",
    "aliases": [
-    "나간사람"
+    "나간사람",
+    "만나가가"
    ],
    "active": true,
    "memo": ""
@@ -6968,7 +6969,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_0vtnjoxmq97n64m",
      "rawName": "만나가가",
      "championId": "벨코즈",
      "kills": 2,
@@ -7413,7 +7414,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_0vtnjoxmq97n64m",
      "rawName": "만나가가",
      "championId": "룰루",
      "kills": 1,
@@ -7598,7 +7599,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_0vtnjoxmq97n64m",
      "rawName": "만나가가",
      "championId": "쓰레쉬",
      "kills": 0,
@@ -10002,7 +10003,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:02:45.924Z",
+  "lastBackupAt": "2026-06-11T08:03:11.329Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
