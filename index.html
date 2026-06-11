@@ -2809,12 +2809,18 @@ async function pushPrices(){ // 운영진 접속 시 폼 주가를 거래소 시
   state.players.filter(p=>p.active).forEach(p=>{prices[p.displayName]=marketPrice(p)});
   try{await bankCall('setPrices',{prices})}catch(e){}
 }
-function stockPx(name){ // 화면 시세 = 체결 시세 (서버 단일 기준)
+function stockPx(name){ // 화면 시세 = 체결 시세. 미상장은 폼 주가(=상장될 가격)
   const sv=window._srvPx||{};
   if(sv[name])return sv[name];
   const me=bankSession();
   if(me&&me.prices&&me.prices[name])return me.prices[name];
-  return null; // 미등록 = 상장 기준가 100으로 표기·체결
+  return null;
+}
+function displayPx(name){ // 전광판용: 상장가까지 포함
+  const srv=stockPx(name);
+  if(srv)return{px:srv,listed:true};
+  const p=state.players.find(x=>x.displayName===name);
+  return{px:p?marketPrice(p):100,listed:false};
 }
 async function stockTrade(side){
   const B=bankSession();
@@ -2824,7 +2830,8 @@ async function stockTrade(side){
   if(!tgt)return toast('종목(멤버)을 골라주세요.',true);
   if(qty<1)return toast('수량을 입력해주세요.',true);
   try{
-    const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty});
+    const tp=state.players.find(x=>x.displayName===tgt);
+    const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty,hint:tp?marketPrice(tp):100});
     window._bank&&(window._bank.bal=j.bal);
     if(j.newPrice){window._srvPx=window._srvPx||{};window._srvPx[tgt]=j.newPrice} // 거래 즉시 시세 반영 ▲▼
     toast(side==='buy'?`📈 ${tgt} ${qty}주 매수 @${j.price}${j.newPrice?` → 시세 ${j.newPrice} ▲`:''}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} 즉시 입금 💸`:''}`:`📉 ${tgt} ${qty}주 매도 @${j.price}${j.newPrice?` → 시세 ${j.newPrice} ▼`:''}`);
@@ -2951,6 +2958,26 @@ function agoKo(ts){
   if(s<3600)return Math.round(s/60)+'분 전';
   if(s<86400)return Math.round(s/3600)+'시간 전';
   return Math.round(s/86400)+'일 전';
+}
+
+async function bankResetMarket(){
+  if(!confirm('🧨 거래소 초기화\n모든 멤버의 보유 주식을 현재가로 강제 환매(환불)하고, 시세·차트·체결 기록을 전부 지웁니다.\n계속할까요?'))return;
+  if(!confirm('정말요? 되돌릴 수 없어요!'))return;
+  try{
+    const j=await bankCall('resetMarket',{});
+    toast(`🧨 거래소 초기화 완료 — ${j.holders}명에게 총 ${fmtAPO(j.refunded)} APO 환매 지급`);
+    window._srvPx={};window._pxHist={};window._trades=[];window._stockHolders={};window._stockSel=null;
+    await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
+}
+async function bankResetBets(luId){
+  const L=lineupOf(luId);if(!L)return;
+  if(!confirm('↩ 이 판의 베팅을 초기화할까요?\n모든 참가자에게 베팅액이 전액 환불됩니다.'))return;
+  try{
+    const j=await bankCall('resetBets',{market:voteKey(L)});
+    toast(`↩ 베팅 초기화 — ${j.people}명에게 ${fmtAPO(j.refunded)} APO 환불`);
+    await fetchMarkets(true);await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
 }
 /* ───── 내비게이션 ───── */
 const PAGES=[
@@ -3155,6 +3182,7 @@ function lineupCard(L){
           ${status==='open'?`<button class="btn sm" onclick="bankLock('${L.id}',false)">⛔ 베팅 마감</button>`:`<button class="btn sm" onclick="bankLock('${L.id}',true)">베팅 재개</button>`}
           <button class="btn sm gold" onclick="bankSettle('${L.id}','alpha')">정산: 🅰 승</button>
           <button class="btn sm gold" onclick="bankSettle('${L.id}','beta')">정산: 🅱 승</button>
+          <button class="btn sm ghost" onclick="bankResetBets('${L.id}')">↩ 베팅 초기화</button>
         </div>`:'';
       return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
         <p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🗳 유저 배당 · 🎰 APO 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 포인트를 거는 게 곧 투표! 패자 판돈은 승자 몫</span></p>
@@ -4042,11 +4070,9 @@ function pgBank(){
       const board=state.players.filter(p=>p.active)
         .filter(p=>searchHit(p,q))
         .map(p=>{
-          const srv=stockPx(p.displayName);
-          const px=srv||100;
-          const ref=marketPrice(p);
-          const d=srv?px-ref:0; // 등락 = 폼 기준가 대비 (거래 수급 반영분)
-          return{name:p.displayName,px,d,listed:!!srv};
+          const D=displayPx(p.displayName);
+          const d=D.listed?D.px-marketPrice(p):0; // 등락 = 폼 기준가 대비 수급 프리미엄
+          return{name:p.displayName,px:D.px,d,listed:D.listed};
         }).sort((a,b)=>b.px-a.px);
       const H=window._stockHolders||{};
       const sel=window._stockSel;
@@ -4056,7 +4082,7 @@ function pgBank(){
         ${board.map(r=>{const hs=H[r.name]||[];
           return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
           <td><b>${esc(r.name)}</b></td>
-          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px">상장가</span>'}</td>
+          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px" title="첫 거래 시 이 폼 주가로 상장돼요">폼가 상장</span>'}</td>
           <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
           <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
           <td><button class="btn sm ghost" onclick="event.stopPropagation();pickStock('${esc(r.name)}')">선택</button></td></tr>`}).join('')}
@@ -4071,12 +4097,13 @@ function pgBank(){
         ${H[sel]&&H[sel].length?`<p class="mini" style="margin:8px 0 0;font-weight:800">📜 주주 명부</p>
         ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}`:'<p class="mini dim" style="margin:8px 0 0">아직 주주가 없는 무주공산 — 1대 주주 자리가 비었습니다</p>'}
       </div>`:''}
-      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "상장가"는 아직 첫 거래·시세 갱신 전인 종목으로 100에 시작해요. 가격은 ① 경기 결과(폼) ② 매일의 시장 변동 ③ <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b> 세 가지로 움직입니다. 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`})()}
+      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "폼가 상장"은 아직 거래가 없는 종목 — <b>첫 매수 순간 그 폼 주가 그대로 상장</b>돼요 (100 고정 아님!). 가격은 ① 경기 결과(폼) ② 매일의 시장 변동 ③ <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b> 세 가지로 움직입니다. 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`})()}
     <div class="grid c3" style="margin-bottom:8px">
       <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" oninput="render&&0"></div>
       <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5"></div>
       <div class="f" style="align-self:end"><div class="row" style="gap:6px"><button class="btn sm gold" onclick="stockTrade('buy')">📈 매수</button><button class="btn sm" onclick="stockTrade('sell')">📉 매도</button></div></div>
     </div>
+    ${(B.role==='admin'||B.role==='dev')?`<div class="row" style="gap:6px;margin:0 0 10px"><button class="btn sm lose" onclick="bankResetMarket()">🧨 거래소 초기화 (전량 환매)</button></div>`:''}
     <p class="mini dim" style="margin:0 0 10px">친구의 폼에 투자하세요! 승리·MVP·연승이면 주가 상승, 패배면 하락. <b>💸 매수액의 2%는 초상권료로 그 멤버 지갑에 입금</b> — 인기 종목일수록 본인이 돈을 법니다 (셀프 매수엔 초상권료 없음). 시세는 운영진 접속 시 자동 갱신.</p>
     ${(()=>{const H=B.holdings||{};const ks=Object.keys(H);if(!ks.length)return'<p class="mini dim">보유 종목이 없어요 — 첫 매수로 포트폴리오를 시작하세요.</p>';
       let tot=0,cost=0;
