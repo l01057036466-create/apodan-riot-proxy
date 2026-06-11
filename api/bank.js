@@ -311,67 +311,10 @@ module.exports = async function handler(req, res) {
     }
 
     // ═══════════ Phase 3: 멤버 주식 + 참여 수당 ═══════════
-    // 공시 시세 (운영진 클라이언트가 게시 때마다 자동 푸시)
-    if (req.method === 'POST' && action === 'setPrices') {
-      var sP = await auth(body.token);
-      if (!sP || (sP.role !== 'admin' && sP.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
-      var pr = body.prices;
-      if (!pr || typeof pr !== 'object') return res.status(400).json({ error: 'prices 필요' });
-      var clean = {};
-      Object.keys(pr).slice(0, 200).forEach(function (k) {
-        var v = Math.round(Number(pr[k]) || 0);
-        if (v >= 10 && v <= 100000 && String(k).length <= 24) clean[k] = v;
-      });
-      await redis(['SET', 'stk:prices', JSON.stringify(clean)]);
-      return res.status(200).json({ ok: true, count: Object.keys(clean).length });
-    }
-    if (req.method === 'GET' && action === 'prices') {
-      var raw0 = await redis(['GET', 'stk:prices']);
-      return res.status(200).json({ prices: raw0 ? JSON.parse(raw0) : {} });
-    }
+    // (구버전 setPrices/prices 핸들러 제거 — 2층 시세 핸들러가 단일 진실)
 
     // 매수/매도 (거래세 1% — 인플레 싱크)
-    if (req.method === 'POST' && action === 'trade') {
-      var sT = await auth(body.token);
-      if (!sT || !sT.name) return res.status(401).json({ error: '로그인이 필요해요' });
-      var side = body.side, target = nameOk(body.target);
-      var qty = Math.round(Number(body.qty) || 0);
-      if (side !== 'buy' && side !== 'sell') return res.status(400).json({ error: 'side는 buy/sell' });
-      if (!target) return res.status(400).json({ error: '종목(멤버) 이름 필요' });
-      if (qty < 1 || qty > 10000) return res.status(400).json({ error: '수량 1~10000' });
-      var rawP = await redis(['GET', 'stk:prices']);
-      var prices = rawP ? JSON.parse(rawP) : {};
-      var px = Number(prices[target]) || 0;
-      if (!px) return res.status(404).json({ error: '아직 시세가 없는 종목이에요 (운영진 게시 후 갱신)' });
-      var aT = sT.acct;
-      var rawH = await redis(['GET', 'hold:' + aT.name]);
-      var hold = rawH ? JSON.parse(rawH) : {};
-      var h = hold[target] || { sh: 0, cost: 0 };
-      if (side === 'buy') {
-        var costGross = Math.ceil(px * qty * 1.01);
-        if (aT.bal < costGross) return res.status(400).json({ error: '잔액 부족 (필요 ' + costGross + ' APO, 세금 1% 포함)' });
-        aT.bal -= costGross;
-        h.sh += qty; h.cost += costGross;
-        hold[target] = h;
-        await putAcct(aT);
-        await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
-        await ledger(aT.name, '📈 매수: ' + target + ' ' + qty + '주 @' + px, -costGross, aT.bal);
-        return res.status(200).json({ ok: true, bal: aT.bal, hold: h, price: px });
-      } else {
-        if (h.sh < qty) return res.status(400).json({ error: '보유 ' + h.sh + '주뿐이에요' });
-        var proceeds = Math.floor(px * qty * 0.99);
-        var avg = h.sh ? h.cost / h.sh : 0;
-        h.cost = Math.max(0, Math.round(h.cost - avg * qty));
-        h.sh -= qty;
-        if (h.sh === 0) { h.cost = 0; delete hold[target]; } else hold[target] = h;
-        aT.bal += proceeds;
-        await putAcct(aT);
-        await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
-        await ledger(aT.name, '📉 매도: ' + target + ' ' + qty + '주 @' + px, proceeds, aT.bal);
-        aT = await busted(aT);
-        return res.status(200).json({ ok: true, bal: aT.bal, hold: hold[target] || { sh: 0, cost: 0 }, price: px });
-      }
-    }
+    // (구버전 trade 핸들러 제거 — stockBuy/stockSell 단일화)
 
     // 내 포트폴리오 (공개 조회 허용: name 파라미터 — 포인트는 명예다!)
     if (req.method === 'GET' && action === 'portfolio') {
@@ -479,6 +422,10 @@ module.exports = async function handler(req, res) {
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
+      var hourKey = 'trl:' + sT.name + ':' + new Date().toISOString().slice(0, 13);
+      var tn = await redis(['INCRBY', hourKey, '1']);
+      await redis(['EXPIRE', hourKey, '3700']);
+      if (Number(tn) > 30) return res.status(429).json({ error: '과도한 단타 감지 — 시간당 30회까지만 거래할 수 있어요 (잠시 후 다시)' });
       var SX = await loadPx();
       var price = SX.base[tgt] ? clampPx(SX.base[tgt] + (Number(SX.prem[tgt]) || 0)) : 0;
       var tgtAcct = await getAcct(tgt);
@@ -494,53 +441,55 @@ module.exports = async function handler(req, res) {
       var hRaw = await redis(['GET', 'hold:' + aT.name]);
       var hold = hRaw ? JSON.parse(hRaw) : {};
       if (action === 'stockBuy') {
-        var base = price * qty;
+        // ① 내 매수 임팩트를 먼저 가격에 반영 → 그 가격으로 체결 (슬리피지)
+        var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) + impB);
+        var execB = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
+        // ② 체결가 기준 비용
+        var base = execB * qty;
         var royalty = Math.floor(base * 0.02); // 💸 초상권료 2% → 종목 본인에게
-        var cost = Math.ceil(base * 1.01) + royalty; // + 거래소 수수료 1%
+        var cost = Math.ceil(base * 1.01) + (tgt === aT.name ? 0 : royalty);
         if (aT.bal < cost) return res.status(400).json({ error: '잔액 부족 (' + cost + ' APO 필요 = 대금+수수료1%+초상권료2%)' });
         aT.bal -= cost;
         var cur3 = hold[tgt] || { q: 0, avg: 0 };
-        cur3.avg = Math.round((cur3.avg * cur3.q + price * qty) / (cur3.q + qty));
+        cur3.avg = Math.round((cur3.avg * cur3.q + execB * qty) / (cur3.q + qty));
         cur3.q += qty;
         hold[tgt] = cur3;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
-        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + price + ' (초상권료 ' + royalty + ' 포함)', -cost, aT.bal);
+        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + execB + ' (수수료·초상권료 포함)', -cost, aT.bal);
         var paidRoyalty = 0;
-        if (royalty > 0 && tgt !== aT.name) { // 셀프 매수엔 초상권료 없음 (자기가 자기에게 ❌)
+        if (royalty > 0 && tgt !== aT.name) { // 셀프 매수엔 초상권료 없음
           var star = await getAcct(tgt);
           if (star && star.status === 'active') {
             star.bal += royalty; paidRoyalty = royalty;
             await putAcct(star);
-            await ledger(star.name, '💸 초상권료 — ' + aT.name + '\uAC00(\uC774) \uB0B4 \uC8FC\uC2DD ' + qty + '\uC8FC \uB9E4\uC218', royalty, star.bal);
+            await ledger(star.name, '💸 초상권료 — ' + aT.name + '의 내 주식 ' + qty + '주 매수', royalty, star.bal);
           }
         }
         aT = await busted(aT);
-        // 수급 임팩트: 가격의 2% 한도(왕복 수수료 4%보다 항상 작게 → 펌핑해도 무조건 손해), 본인 거래는 영향 0
-        var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
-        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) + impB); // 수요 적립 + 상한 30%
-        var up = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
         await savePx(SX);
-        await pushHist(tgt, up);
-        await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: price, np: up, ts: new Date().toISOString() });
-        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
+        await pushHist(tgt, execB);
+        await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: execB, np: execB, ts: new Date().toISOString() });
+        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: execB, royalty: paidRoyalty, newPrice: execB, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       } else {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
         if (cur4.q < qty) return res.status(400).json({ error: '보유 ' + cur4.q + '주뿐이에요' });
-        var gain = Math.floor(price * qty * 0.99);
+        // ① 내 매도 임팩트를 먼저 반영 → 내린 가격으로 체결
+        var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS);
+        var execS = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
+        var gain = Math.floor(execS * qty * 0.99);
         cur4.q -= qty;
         if (cur4.q === 0) delete hold[tgt]; else hold[tgt] = cur4;
         aT.bal += gain;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
-        await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + price, gain, aT.bal);
-        var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
-        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS); // 매도 차감 + 하한 −30%
-        var dn = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
+        await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + execS, gain, aT.bal);
         await savePx(SX);
-        await pushHist(tgt, dn);
-        await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
-        return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
+        await pushHist(tgt, execS);
+        await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: execS, np: execS, ts: new Date().toISOString() });
+        return res.status(200).json({ ok: true, bal: aT.bal, price: execS, newPrice: execS, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       }
     }
 
