@@ -647,26 +647,26 @@
    "memo": "탈주자"
   },
   {
-   "id": "p_0vtnjoxmq97n64m",
-   "displayName": "나간사람",
-   "kakaoName": "나간사람",
+   "id": "p_146qyvimq95eim4",
+   "displayName": "만나가가",
+   "kakaoName": "만나가가",
    "riotName": "",
    "riotTag": "",
    "aliases": [
-    "나간사람",
     "만나가가"
    ],
-   "active": true,
-   "memo": ""
+   "active": false,
+   "memo": "기록 보존용 (탈퇴·외부 인원)"
   },
   {
-   "id": "p_hbw717zmq97p8sl",
+   "id": "p_vzht71kmq95rwys",
    "displayName": "00 규동",
    "kakaoName": "00 규동",
-   "riotName": "Rudbeclak",
-   "riotTag": "Kr1",
+   "riotName": "",
+   "riotTag": "",
    "aliases": [
-    "규동"
+    "규동",
+    "00 규동"
    ],
    "active": true,
    "memo": ""
@@ -6981,7 +6981,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_0vtnjoxmq97n64m",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "벨코즈",
      "kills": 2,
@@ -7426,7 +7426,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_0vtnjoxmq97n64m",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "룰루",
      "kills": 1,
@@ -7611,7 +7611,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_0vtnjoxmq97n64m",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "쓰레쉬",
      "kills": 0,
@@ -10015,8 +10015,8 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:05:49.738Z",
-  "autoPublish": true,
+  "lastBackupAt": "2026-06-11T08:07:15.920Z",
+  "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
  "lineup": null,
@@ -10036,7 +10036,7 @@
  },
  "lineups": [
   {
-   "id": "lu_n48f9kxmq9791t7",
+   "id": "lu_rphhvmamq95di3d",
    "date": "2026-06-11",
    "round": "1차",
    "note": "금일 내전 20:30분",
@@ -10056,7 +10056,7 @@
    ]
   },
   {
-   "id": "lu_kiaus2wmq97qkof",
+   "id": "lu_8z3ea2ymq95shm3",
    "date": "2026-06-11",
    "round": "2차",
    "note": "",
@@ -10072,8 +10072,10 @@
     "p_r6ogprumq7ub77n",
     "p_gcjvk0v7_mq7nhxuq",
     "p_jlc2q699_mq7nhxup",
-    "p_hbw717zmq97p8sl"
+    "p_vzht71kmq95rwys"
    ]
   }
- ]
+ ],
+ "rev": 2,
+ "updatedAt": "2026-06-11T08:07:15.921Z"
 }
