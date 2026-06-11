@@ -402,6 +402,7 @@ function fixState(s){
   s.voteRooms=Array.isArray(s.voteRooms)?s.voteRooms:[];
   s.settings=Object.assign({mvpMinutes:10},s.settings||{});
   s.rev=Number(s.rev)||0; s.updatedAt=s.updatedAt||'';
+  s.settings.maintenance=!!s.settings.maintenance;
   s.liveBoards=(s.liveBoards&&typeof s.liveBoards==='object')?s.liveBoards:{};
   if(s.liveDraft&&s.liveDraft.date&&Array.isArray(s.liveDraft.items)){ // 구버전 이행
     s.liveBoards[s.liveDraft.date]=s.liveDraft.items;
@@ -2637,6 +2638,7 @@ function bankSession(){ // 새로고침 직후에도 캐시로 즉시 로그인 
   return null;
 }
 async function bankCall(action,body,method){
+  if(state.settings&&state.settings.maintenance&&lsGet(ADMIN_FLAG)!=='1')throw new Error('🛠 서버 업데이트 중 — 잠시 후 다시 시도해주세요!');
   const api=voteApiBase();
   if(!api)throw new Error('서버 미연결 — 설정에서 투표 서버(같은 주소)를 먼저 연결해주세요');
   const url=api+'/api/bank?action='+encodeURIComponent(action)+(method==='GET'&&bankToken()?'&token='+encodeURIComponent(bankToken()):'');
@@ -2870,6 +2872,7 @@ async function stockTrade(side){
     window._bank&&(window._bank.bal=j.bal);
     if(j.newPrice){window._srvPx=window._srvPx||{};window._srvPx[tgt]=j.newPrice} // 거래 즉시 시세 반영 ▲▼
     window._lastTrade={side,tgt,qty,price:j.price,newPrice:j.newPrice,royalty:j.royalty||0,ts:Date.now()}; // 체결 영수증
+    loadTrades(); // LIVE 속보 즉시 갱신
     toast(side==='buy'?`✅ 체결 완료! ${tgt} ${qty}주 매수 @${j.price}${j.newPrice&&j.newPrice!==j.price?` → 시세 ${j.newPrice}▲`:''}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} 즉시 입금 💸`:''}`:`✅ 체결 완료! ${tgt} ${qty}주 매도 @${j.price} → 지갑 입금${j.newPrice&&j.newPrice!==j.price?` · 시세 ${j.newPrice}▼`:''}`);
     await bankRefresh(true);
   }catch(e){toast('거래 실패: '+e.message,true)}
@@ -2917,7 +2920,19 @@ async function loadHolders(force){
     if(r.ok){window._stockHolders=j.holders||{};render()}
   }catch(e){}
 }
-function pickStock(name){window._stockSel=name;const el=$('stTarget');if(el)el.value=name;loadPxHist(name);render()}
+function updStockBoard(){const el=$('stBoard');if(el&&typeof stockBoardHtml==='function')el.innerHTML=stockBoardHtml(window._stQ||'')}
+function pickStock(name){
+  window._stockSel=name;
+  const el=$('stTarget');if(el)el.value=name;
+  const qy=$('stQty');if(qy){if(!qy.value)qy.value=1;try{qy.focus();qy.select()}catch(e){}}
+  loadPxHist(name);updStockBoard();
+}
+function quickTrade(name,side,qty){ // 보유 주식 행에서 바로 매수/매도
+  const el=$('stTarget');if(el)el.value=name;
+  const qy=$('stQty');if(qy&&qty)qy.value=qty;
+  window._stockSel=name;loadPxHist(name);
+  stockTrade(side);
+}
 
 
 /* ───── 초성 검색 + 시장 시세 엔진 ───── */
@@ -2928,15 +2943,25 @@ function choseong(s){ // "미르" → "ㅁㄹ"
     return(c>=0xAC00&&c<=0xD7A3)?CHO[Math.floor((c-0xAC00)/588)]:ch;
   }).join('');
 }
-function searchHit(p,q){ // 이름·별명·초성 광범위 매칭
+function matchKo(label,q){ // 한글 만능 매칭: 글자는 글자대로, 자음은 초성으로 ("미ㄹ"→미르, "ㅇㅁ"→유메)
+  const L=String(label||'').replace(/\s+/g,'').toLowerCase();
+  const Q=String(q||'').replace(/\s+/g,'').toLowerCase();
+  if(!Q)return true;
+  if(!L)return false;
+  const cho=ch=>{const c=ch.charCodeAt(0);return(c>=0xAC00&&c<=0xD7A3)?CHO[Math.floor((c-0xAC00)/588)]:ch};
+  for(let s=0;s<=L.length-Q.length;s++){
+    let ok=true;
+    for(let i=0;i<Q.length;i++){
+      const lc=L[s+i],qc=Q[i];
+      if(qc!==lc&&qc!==cho(lc)){ok=false;break}
+    }
+    if(ok)return true;
+  }
+  return false;
+}
+function searchHit(p,q){ // 이름·별명 광범위 매칭
   q=String(q||'').trim();if(!q)return true;
-  const nq=norm(q);
-  const isJamo=/^[ㄱ-ㅎ\s]+$/.test(q);
-  return labelsOf(p).some(l=>{
-    if(norm(l).includes(nq))return true;
-    if(isJamo&&choseong(norm(l)).includes(norm(choseong(q))))return true; // 초성: "ㅁ"→미르
-    return false;
-  });
+  return labelsOf(p).some(l=>matchKo(l,q));
 }
 function dailyJitter(name){ // 날짜+이름 시드 → -1~1 (모두에게 동일한 "오늘의 시장 분위기")
   const seed=(new Date(Date.now()+9*3600*1000).toISOString().slice(0,10))+'|'+name;
@@ -3032,9 +3057,9 @@ const PAGES=[
 const NAV_GROUPS=[ // 대분류 → 소분류 (메뉴 가독성)
  ['home','🏠 홈',['dashboard']],
  ['live','⚔️ 내전',['today','record','matches']],
- ['member','📊 선수',['players','laneTier','compare','form']],
+ ['member','📊 선수',['players','laneTier','compare']],
  ['hall','🏆 기록실',['stats','champions','awards','mvp']],
- ['bank','💰 거래소',['bank']],
+ ['bank','💰 거래소',['bank','form']],
  ['etc','⚙️ 설정',['settings']],
 ];
 PAGES.push(['bank','💰 지갑·랭킹']);
@@ -3094,8 +3119,9 @@ function renderTicker(){
       return p?{n,d:px[n]-marketPrice(p),px:px[n]}:null;
     }).filter(x=>x&&Math.abs(x.d)>=2).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
     movers.slice(0,2).forEach(m=>items.push(`${m.d>0?'📈':'📉'} <b>${esc(m.n)}</b> 주가 ${m.px} APO (${m.d>0?'▲':'▼'}${Math.abs(m.d)} 수급 ${m.d>0?'프리미엄':'할인'})`));
-    const T=(window._trades||[]);
-    if(T[0])items.push(`⚡ <b>${esc(T[0].n)}</b>${josa(T[0].n,'이','가')} ${esc(T[0].t)} ${T[0].q}주 ${T[0].s==='b'?'매수':'매도'} — ${agoKo(T[0].ts)}`);
+    (window._trades||[]).slice(0,2).forEach(tr=>{
+      items.push(`⚡ <b>속보:</b> <b>${esc(tr.n)}</b>${josa(tr.n,'이','가')} <b>${esc(tr.t)}</b> ${tr.q}주 ${tr.s==='b'?'📈 매수':'📉 매도'} @${tr.p} — ${agoKo(tr.ts)}`);
+    });
     Object.entries(window._mkts||{}).forEach(([k,M])=>{
       const tot=(M.alpha||0)+(M.beta||0);
       if(tot>=500&&M.status==='open')items.push(`🎰 <b>${esc(k)}</b> 베팅 풀 ${fmtAPO(tot)} APO — 민심 ${Math.round(M.alpha/tot*100)}:${Math.round(M.beta/tot*100)}`);
@@ -3119,6 +3145,9 @@ function syncBanner(){ // 게시 실패/미게시 경고 — 운영자에게만
   if(lsGet(ADMIN_FLAG)!=='1')return'';
   const fail=lsGet('apodan_pubfail')||'';
   const dirty=lsGet('apodan_dirty')==='1';
+  if(state.settings&&state.settings.maintenance)return`<div style="background:rgba(242,184,75,.12);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:12px">
+    <p class="mini" style="margin:0;font-weight:800;color:var(--gold)">🛠 점검 모드 ON — 멤버들에겐 "서버 업데이트 중" 화면만 보여요. 파일 교체가 끝나면 설정에서 꺼주세요!</p>
+  </div>`+(fail?'':'');
   if(fail){
     const hint=fail.includes('401')?'토큰이 만료·폐기됐어요. 설정 → 깃허브 연결에서 새 Fine-grained 토큰(Contents 읽기/쓰기)을 다시 저장하세요.'
       :fail.includes('404')?'저장소 이름을 확인하세요 (아이디/저장소 형식).'
@@ -3140,8 +3169,18 @@ function head(title,sub){
   <div class="meta"><span class="chip">플레이어 ${state.players.filter(p=>p.active).length}명</span><span class="chip">경기 ${state.matches.length}판</span><span class="chip">챔피언 ${CHAMPIONS.length}종</span></div></div>`;
 }
 function render(){
+  if(window._ime){window._renderQueued=1;return} // 한글 조합 중엔 화면 교체 보류 (글자 깨짐 방지)
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
   renderNav();renderTicker();fillDatalists();
+  if(state.settings&&state.settings.maintenance&&!isAdmin()){
+    $('view').innerHTML=`<div class="card" style="max-width:560px;margin:60px auto;text-align:center;padding:40px 24px">
+      <div style="font-size:44px">🛠</div>
+      <h2 style="margin:10px 0 6px">서버 업데이트 중이에요</h2>
+      <p class="mini dim" style="margin:0">운영진이 새 기능을 올리는 중! 잠시 후 새로고침하면 더 좋아진 모습으로 만나요.</p>
+      <button class="btn gold" style="margin-top:16px" onclick="location.reload()">🔄 새로고침</button>
+    </div>`;
+    return;
+  }
   const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
     champions:pgChampions,form:pgForm,awards:pgAwards,mvp:pgMvp,settings:pgSettings,bank:pgBank};
   $('view').innerHTML=(R[tab]||pgDashboard)();
@@ -3149,6 +3188,16 @@ function render(){
 }
 
 /* ───── 대시보드 ───── */
+function pgForm(){
+  const fq=(window._formQ||'').trim();
+  return head('최근 폼 주식','승패를 주가처럼 보는 재미 지표예요. 실제 매매는 같은 메뉴의 💰 지갑·랭킹(멤버 주식 거래소)에서!')+`
+  <div class="f" style="max-width:280px;margin-bottom:12px"><label>🔎 이름 검색 <span class="tag">"미"·"ㅁㄹ"·"미ㄹ" 다 OK</span></label>
+    <input id="fmQfocus" value="${esc(fq)}" placeholder="이름·별명·초성 아무거나"
+      oncompositionstart="window._ime=1"
+      oncompositionend="window._ime=0;window._formQ=this.value;const b=$('fmBoard');if(b)b.innerHTML=formBoardHtml(this.value);window._renderQueued=0"
+      oninput="if(window._ime)return;window._formQ=this.value;const b=$('fmBoard');if(b)b.innerHTML=formBoardHtml(this.value)"></div>
+  <div id="fmBoard">${formBoardHtml(fq)}</div>`;
+}
 function lineupCard(L){
   if(!L)return'';
   const O=lineupOdds(L),pts=lineupPoints(L),MU=lineupMatchups(L);
@@ -3850,8 +3899,8 @@ function pgChampions(){
 
 
 /* ───── 폼 주식 ───── */
-function pgForm(){
-  const fq=(window._formQ||'').trim();
+function formBoardHtml(fq){
+  fq=String(fq||'').trim();
   const rows=state.players.filter(p=>playerHistory(p.id).length>0)
     .filter(p=>searchHit(p,fq)).map(p=>{
     const{arr,wl}=formSeries(p.id);
@@ -3873,7 +3922,7 @@ function pgForm(){
       ${card('💎 저평가 우량주',value,value?`지수 ${value.price}인데 최근 5판 ${value.w}승 · 곧 오를 종목`:'')}
     </div>`;
   }
-  return head('최근 폼 주식','승패를 주가처럼 보는 재미 지표예요. 어렵지 않아요 — 아래 "주가가 뭐예요?"부터 보세요.')+market+`
+  return market+`
   <div class="card">${rows.length?`<div class="scrollx"><table class="tbl" style="min-width:860px"><thead><tr><th>종목 (멤버)</th><th>차트 (회색 점선 100 = 평균, 초록 점선 = 예측)</th><th class="num">현재가</th><th class="num">등락</th><th class="num">최근 5판</th><th>애널리스트 코멘트</th></tr></thead><tbody>
   ${rows.map(r=>{
     const fc=formForecast(r.arr);
@@ -3962,7 +4011,6 @@ function pgAwards(){
     ${list.length?list.map(a=>`<div class="arow" style="padding:9px 0;border-top:1px dashed var(--line)"><b style="color:var(--gold)">${esc(a.title)}</b> — <b>${esc(a.target)}</b><span class="mini" style="display:block;margin-top:1px">${esc(a.desc)}</span></div>`).join(''):'<p class="mini dim">아직 없어요. 판이 더 쌓이면 생깁니다.</p>'}
     </div>`;
   return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+`
-  <div class="f" style="max-width:280px;margin-bottom:12px"><label>🔎 이름 검색 <span class="tag">초성 OK</span></label><input id="fmQfocus" value="${esc(window._formQ||'')}" placeholder="이름·별명·초성 (ㅁ→미르)" oncompositionstart="window._ime=1" oncompositionend="window._ime=0;window._formQ=this.value;render();requestAnimationFrame(()=>{const i=$('fmQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})" oninput="if(window._ime)return;window._formQ=this.value;render();requestAnimationFrame(()=>{const i=$('fmQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
   <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
     ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
   </div>
@@ -4042,6 +4090,38 @@ function delVote(vid){
 
 /* ───── 설정 ───── */
 
+function stockBoardHtml(q){
+      q=String(q||'').trim();
+      const board=state.players.filter(p=>p.active)
+        .filter(p=>searchHit(p,q))
+        .map(p=>{
+          const D=displayPx(p.displayName);
+          const d=D.listed?D.px-marketPrice(p):0; // 등락 = 폼 기준가 대비 수급 프리미엄
+          return{name:p.displayName,px:D.px,d,listed:D.listed};
+        }).sort((a,b)=>b.px-a.px);
+      const H=window._stockHolders||{};
+      const sel=window._stockSel;
+      return`      <div class="scrollx" style="max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px">
+        <table class="tbl" style="min-width:430px"><thead><tr><th>종목</th><th class="num">1주 가격</th><th class="num">등락</th><th>주주</th><th></th></tr></thead><tbody>
+        ${board.map(r=>{const hs=H[r.name]||[];
+          return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
+          <td><b>${esc(r.name)}</b></td>
+          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px" title="첫 거래 시 이 폼 주가로 상장돼요">폼가 상장</span>'}</td>
+          <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
+          <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
+          <td><button class="btn sm ghost" onclick="event.stopPropagation();pickStock('${esc(r.name)}')">선택</button></td></tr>`}).join('')}
+        </tbody></table></div>
+      ${sel?`<div style="border:1px solid rgba(242,184,75,.4);border-radius:10px;padding:8px 12px;margin:8px 0">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <p class="mini" style="margin:0;font-weight:900;font-size:13px">📊 ${esc(sel)} — 현재가 <span style="font-size:16px">${stockPx(sel)||100}</span> APO</p>
+        </div>
+        ${(()=>{const hst=((window._pxHist||{})[sel]||[]).map(x=>x.p);
+          if(hst.length>=2)return`<div style="margin:6px 0">${sparkSvg(hst,null,560,64)}</div><p class="mini dim" style="margin:0">실시간 가격 차트 — 거래·경기·시장 변동이 모두 점으로 찍혀요 (최근 ${hst.length}건)</p>`;
+          return'<p class="mini dim" style="margin:4px 0">차트는 거래가 생기면 그려져요 — 첫 체결의 주인공이 되어보세요 🕯</p>'})()}
+        ${H[sel]&&H[sel].length?`<p class="mini" style="margin:8px 0 0;font-weight:800">📜 주주 명부</p>
+        ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}`:'<p class="mini dim" style="margin:8px 0 0">아직 주주가 없는 무주공산 — 1대 주주 자리가 비었습니다</p>'}
+      </div>`:''}
+      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "폼가 상장"은 아직 거래가 없는 종목 — <b>첫 매수 순간 그 폼 주가 그대로 상장</b>돼요 (100 고정 아님!). <b>기준가는 폼 주식 페이지 가격과 완전히 동일</b>(1:1 연동)하고, 여기에 <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b>(±2% 한도)이 붙어요. 경기 결과가 나오면 폼이 변해 기준가도 따라 움직입니다. 본인 주식 거래는 시세에 영향 없음 + 수수료는 그대로라 셀프 펌핑은 무조건 손해예요 😉 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`}
 function pgBank(){
   if(voteApiBase()){bankToken()?bankRefresh(false):bankLoadRoster()}
   if(!window.__noFanPoll){clearTimeout(window._bankPoll);window._bankPoll=setTimeout(async()=>{if(tab==='bank'){await Promise.all([bankRefresh(true),loadHolders(true),loadTrades()]);if(window._stockSel)loadPxHist(window._stockSel);render()}},15000)} // ⚡ 15초 실시간 동기화 — 남의 거래·입금·시세가 자동으로 보입니다
@@ -4131,40 +4211,13 @@ function pgBank(){
         <p class="mini" style="margin:0 0 4px;font-weight:800">⚡ 실시간 체결 — 모두의 거래가 여기에</p>
         ${T.slice(0,12).map(e=>`<p class="mini" style="margin:2px 0">${e.s==='b'?'📈':'📉'} <b>${esc(e.n)}</b>${josa(e.n,'이','가')} <b>${esc(e.t)}</b> ${e.q}주 ${e.s==='b'?'매수':'매도'} @${e.p} <span style="font-weight:800;color:${e.s==='b'?'var(--lose)':'#5b8cff'}">→ ${e.np}${e.s==='b'?'▲':'▼'}</span> <span class="dim">${agoKo(e.ts)}</span></p>`).join('')}
       </div>`})()}
-    ${(()=>{ // 🧾 시세 전광판
-      loadHolders(false);
-      const q=(window._stQ||'').trim();
-      const board=state.players.filter(p=>p.active)
-        .filter(p=>searchHit(p,q))
-        .map(p=>{
-          const D=displayPx(p.displayName);
-          const d=D.listed?D.px-marketPrice(p):0; // 등락 = 폼 기준가 대비 수급 프리미엄
-          return{name:p.displayName,px:D.px,d,listed:D.listed};
-        }).sort((a,b)=>b.px-a.px);
-      const H=window._stockHolders||{};
-      const sel=window._stockSel;
-      return`<div class="f" style="max-width:240px;margin-bottom:8px"><label>🔎 종목 검색 <span class="tag">초성도 OK: ㅁ→미르</span></label><input value="${esc(q)}" placeholder="이름·별명·초성" id="stQfocus" oncompositionstart="window._ime=1" oncompositionend="window._ime=0;window._stQ=this.value;render();requestAnimationFrame(()=>{const i=$('stQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})" oninput="if(window._ime)return;window._stQ=this.value;render();requestAnimationFrame(()=>{const i=$('stQfocus');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}})"></div>
-      <div class="scrollx" style="max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px">
-        <table class="tbl" style="min-width:430px"><thead><tr><th>종목</th><th class="num">1주 가격</th><th class="num">등락</th><th>주주</th><th></th></tr></thead><tbody>
-        ${board.map(r=>{const hs=H[r.name]||[];
-          return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
-          <td><b>${esc(r.name)}</b></td>
-          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px" title="첫 거래 시 이 폼 주가로 상장돼요">폼가 상장</span>'}</td>
-          <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
-          <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
-          <td><button class="btn sm ghost" onclick="event.stopPropagation();pickStock('${esc(r.name)}')">선택</button></td></tr>`}).join('')}
-        </tbody></table></div>
-      ${sel?`<div style="border:1px solid rgba(242,184,75,.4);border-radius:10px;padding:8px 12px;margin:8px 0">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <p class="mini" style="margin:0;font-weight:900;font-size:13px">📊 ${esc(sel)} — 현재가 <span style="font-size:16px">${stockPx(sel)||100}</span> APO</p>
-        </div>
-        ${(()=>{const hst=((window._pxHist||{})[sel]||[]).map(x=>x.p);
-          if(hst.length>=2)return`<div style="margin:6px 0">${sparkSvg(hst,null,560,64)}</div><p class="mini dim" style="margin:0">실시간 가격 차트 — 거래·경기·시장 변동이 모두 점으로 찍혀요 (최근 ${hst.length}건)</p>`;
-          return'<p class="mini dim" style="margin:4px 0">차트는 거래가 생기면 그려져요 — 첫 체결의 주인공이 되어보세요 🕯</p>'})()}
-        ${H[sel]&&H[sel].length?`<p class="mini" style="margin:8px 0 0;font-weight:800">📜 주주 명부</p>
-        ${H[sel].map((h,i)=>`<p class="mini" style="margin:3px 0 0">${i===0?'👑 <b>대주주</b>':''} <b>${esc(h.owner)}</b> — ${h.q}주${h.owner===sel?' <span class="dim">(본인 ㅋㅋ)</span>':''}</p>`).join('')}`:'<p class="mini dim" style="margin:8px 0 0">아직 주주가 없는 무주공산 — 1대 주주 자리가 비었습니다</p>'}
-      </div>`:''}
-      <p class="mini dim" style="margin:6px 0 10px">📌 <b>여기 표시 가격 = 실제 체결 가격</b> (서버 단일 시세). "폼가 상장"은 아직 거래가 없는 종목 — <b>첫 매수 순간 그 폼 주가 그대로 상장</b>돼요 (100 고정 아님!). <b>기준가는 폼 주식 페이지 가격과 완전히 동일</b>(1:1 연동)하고, 여기에 <b>실시간 수급 — 누가 사면 즉시 ▲, 팔면 즉시 ▼</b>(±2% 한도)이 붙어요. 경기 결과가 나오면 폼이 변해 기준가도 따라 움직입니다. 본인 주식 거래는 시세에 영향 없음 + 수수료는 그대로라 셀프 펌핑은 무조건 손해예요 😉 등락(▲▼)은 폼 기준가 대비 수급 프리미엄. 행을 누르면 👑 대주주 명부가 펼쳐져요!</p>`})()}
+    ${(()=>{loadHolders(false);return''})()}
+    <div class="f" style="max-width:260px;margin-bottom:8px"><label>🔎 종목 검색 <span class="tag">"미"·"ㅁㄹ"·"미ㄹ" 다 OK</span></label>
+      <input id="stQfocus" value="${esc((window._stQ||''))}" placeholder="이름·별명·초성 아무거나"
+        oncompositionstart="window._ime=1"
+        oncompositionend="window._ime=0;window._stQ=this.value;updStockBoard();window._renderQueued=0"
+        oninput="if(window._ime)return;window._stQ=this.value;updStockBoard()"></div>
+    <div id="stBoard">${stockBoardHtml(window._stQ||'')}</div>
     <div class="grid c3" style="margin-bottom:8px">
       <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" oninput="render&&0"></div>
       <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5"></div>
@@ -4176,8 +4229,9 @@ function pgBank(){
       let tot=0,cost=0;
       const rows=ks.map(k=>{const h=H[k];const px=stockPx(k)||h.avg;const val=px*h.q;tot+=val;cost+=h.avg*h.q;
         const pl=val-h.avg*h.q;const plPct=h.avg?Math.round(pl/(h.avg*h.q)*1000)/10:0;
-        return`<tr><td><b>${esc(k)}</b></td><td class="num">${h.q}주</td><td class="num">@${h.avg}</td><td class="num">@${px}</td><td class="num" style="font-weight:800;color:${pl>=0?'var(--win)':'var(--lose)'}">${pl>=0?'+':''}${fmtAPO(pl)} (${plPct>=0?'+':''}${plPct}%)</td></tr>`}).join('');
-      return`<div class="scrollx"><table class="tbl" style="min-width:460px"><thead><tr><th>종목</th><th class="num">보유</th><th class="num">평단</th><th class="num">현재가</th><th class="num">평가손익</th></tr></thead><tbody>${rows}</tbody></table></div>
+        return`<tr style="cursor:pointer" onclick="pickStock('${esc(k)}')" title="클릭하면 종목이 선택돼요"><td><b>${esc(k)}</b></td><td class="num">${h.q}주</td><td class="num">@${h.avg}</td><td class="num">@${px}</td><td class="num" style="font-weight:800;color:${pl>=0?'var(--win)':'var(--lose)'}">${pl>=0?'+':''}${fmtAPO(pl)} (${plPct>=0?'+':''}${plPct}%)</td>
+        <td><span class="row" style="gap:4px"><button class="btn sm ghost" onclick="event.stopPropagation();quickTrade('${esc(k)}','buy',1)">➕ 추가</button><button class="btn sm" onclick="event.stopPropagation();quickTrade('${esc(k)}','sell',${h.q})">➖ 매도</button></span></td></tr>`}).join('');
+      return`<div class="scrollx"><table class="tbl" style="min-width:460px"><thead><tr><th>종목</th><th class="num">보유</th><th class="num">평단</th><th class="num">현재가</th><th class="num">평가손익</th><th>바로 거래</th></tr></thead><tbody>${rows}</tbody></table></div>
       <p class="mini" style="margin:8px 0 0;font-weight:800">💼 평가액 합계 ${fmtAPO(tot)} APO <span class="dim" style="font-weight:600">(투자원금 ${fmtAPO(cost)} · 총자산 ${fmtAPO((B.bal||0)+tot)})</span></p>`})()}
   </div>
   ${B.role==='admin'||B.role==='dev'?`<div class="card" style="margin-top:14px"><h3>🎮 내전 참여 수당 지급 <span class="tag">운영진 전용 · 1인 1회 서버 차단</span></h3>
@@ -4252,6 +4306,10 @@ function pgSettings(){
     <label class="row" style="gap:8px;margin-bottom:10px;cursor:pointer;align-items:center">
       <input type="checkbox" ${state.settings.autoPublish?'checked':''} onchange="toggleAutoPublish()" style="width:18px;height:18px">
       <span class="mini"><b>🔄 자동 게시</b> — 켜두면 PIN 변경·경기 수정·라인업 등 <b>뭐든 저장하면 몇 초 뒤 알아서 사이트에 반영</b>돼요 (게시 버튼 누를 필요 없음)</span>
+    <label class="row" style="gap:8px;margin-top:8px;align-items:center;cursor:pointer">
+      <input type="checkbox" ${state.settings.maintenance?'checked':''} onchange="state.settings.maintenance=this.checked;save();render();toast(this.checked?'🛠 점검 모드 ON — 멤버들에게 업데이트 안내 화면이 떠요 (게시되면 적용)':'점검 모드 해제 — 사이트 정상 오픈!')">
+      <span class="mini"><b>🛠 점검 모드</b> — 켜면 멤버 전원에게 "서버 업데이트 중" 화면만 보여요 (파일 교체할 때 켜두세요. 운영진은 정상 이용 가능)</span>
+    </label>
     </label>
     <details class="fold"><summary>🔗 깃허브 연결 설정 — 최초 1회만 (현재: ${ghCfg().repo?`<b>${esc(ghCfg().repo)}</b> 연결됨`:'미연결'})</summary>
       <div class="grid c3" style="margin-top:10px">
