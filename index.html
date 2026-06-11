@@ -1832,37 +1832,80 @@ function teamPower(ids){ // 폼 주가 60% + 통산 승률 40%
 function lineupOdds(){
   const L=state.lineup; if(!L||!L.blue.length||!L.red.length)return null;
   const pb=teamPower(L.blue),pr=teamPower(L.red);
-  const prob=1/(1+Math.pow(10,(pr-pb)/40)); // 엘로식 승률 예측
+  let prob=1/(1+Math.pow(10,(pr-pb)/70)); // 엘로식 (감도 완화)
+  prob=Math.max(.15,Math.min(.85,prob)); // 내전은 변수가 많다 — 극단 예측 금지
   const margin=.97;
   return{probBlue:Math.round(prob*100),
     oddsBlue:Math.max(1.05,Math.round(1/(prob*margin)*100)/100),
     oddsRed:Math.max(1.05,Math.round(1/((1-prob)*margin)*100)/100),
     powBlue:Math.round(pb),powRed:Math.round(pr)};
 }
-function lineupPoints(){
+function playerPace(pid){ // 경기 템포별 성적 (시간 기록 있는 판만)
+  const fast={g:0,w:0},slow={g:0,w:0};
+  state.matches.forEach(m=>{
+    if(!m.durationMin)return;
+    const p=m.participants.find(x=>x.playerId===pid); if(!p)return;
+    const win=p.team===m.winnerTeam;
+    if(m.durationMin<=26){fast.g++;if(win)fast.w++}
+    else if(m.durationMin>=32){slow.g++;if(win)slow.w++}
+  });
+  return{fast,slow};
+}
+function lineupPoints(){ // 중계진 관전 포인트 — 숫자 나열 말고 서사로
   const L=state.lineup;if(!L)return[];
+  const all=[...L.blue,...L.red];
   const pts=[];
+  const N=id=>nameOf(id);
+  // ① 더비 서사 (양 팀으로 갈라진 상대전적)
   const Rv=statRivals(2);
+  const derbies=[];
   L.blue.forEach(a=>L.red.forEach(b=>{
     const r=Rv.find(r=>r.ids.includes(a)&&r.ids.includes(b));
-    if(r&&r.games>=3){
-      const lead=r.w[0]===r.w[1]?'백중세':`${r.leader} 우세`;
-      pts.push(`🔥 더비: ${r.names.join(' vs ')} — 상대전적 ${r.w[0]}:${r.w[1]}, ${lead}`);
-    }
+    if(r&&r.games>=3)derbies.push({a,b,r});
   }));
+  derbies.sort((x,y)=>y.r.games-x.r.games).slice(0,2).forEach(({a,b,r})=>{
+    const ia=r.ids.indexOf(a),wa=r.w[ia],wb=r.games-wa;
+    if(wa===wb)pts.push(`🔥 ${N(a)} vs ${N(b)} 통산 ${wa}:${wb} 완전 백중세 — 오늘 이기는 쪽이 천적 타이틀을 가져갑니다`);
+    else{const dog=wa<wb?a:b,cat=wa<wb?b:a,cw=Math.max(wa,wb),cl=Math.min(wa,wb);
+      pts.push(`🔥 ${N(dog)}는 ${N(cat)}만 만나면 작아진다? 통산 ${cl}:${cw} 열세 — 오늘이 설욕의 날인가`)}
+  });
+  // ② 시그니처 챔피언 = 밴픽 전쟁 포인트
+  const sigs=[];
+  all.forEach(pid=>{
+    const c=playerChamps(pid).find(c=>c.games>=3&&c.winRate>=70);
+    if(c)sigs.push({pid,c});
+  });
+  sigs.sort((x,y)=>y.c.winRate-x.c.winRate||y.c.games-x.c.games).slice(0,2).forEach(({pid,c})=>
+    pts.push(`🎯 ${N(pid)}의 ${c.champ}가 풀리면 승률 ${c.winRate}% (${c.games}판) — 상대팀 밴 1순위 후보입니다`));
+  // ③ 경기 템포 스토리
+  for(const pid of all){
+    const{fast,slow}=playerPace(pid);
+    if(fast.g>=3&&pct(fast.w,fast.g)>=65){pts.push(`⚡ 초반 난타전이 열리면 ${N(pid)}의 시간 — 26분 이내 승부에서 승률 ${pct(fast.w,fast.g)}%`);break}
+    if(slow.g>=3&&pct(slow.w,slow.g)>=65){pts.push(`🐢 32분을 넘기면 ${N(pid)}이(가) 웃는다 — 장기전 승률 ${pct(slow.w,slow.g)}%`);break}
+  }
+  // ④ 모멘텀 (연승/연패 서사)
+  for(const pid of all){
+    const{wl}=formSeries(pid);const r3=wl.slice(-3);
+    if(r3.length===3&&r3.every(Boolean)){pts.push(`📈 ${N(pid)}, 3연승 기세로 출전 — 이 흐름을 끊을 자 누구인가`);break}
+  }
+  for(const pid of all){
+    const{wl}=formSeries(pid);const r3=wl.slice(-3);
+    if(r3.length===3&&r3.every(x=>!x)){pts.push(`🔄 ${N(pid)}의 연패 탈출 미션 — 바닥을 친 자만이 반등합니다`);break}
+  }
+  // ⑤ 진영 특화 (가위바위보가 곧 승부)
+  for(const x of statPlayerSides(3)){
+    if(!all.includes(x.id))continue;
+    if(x.bG>=3&&x.rG>=3&&Math.abs(x.bRate-x.rRate)>=25){
+      const side=x.bRate>x.rRate?'블루':'레드';
+      pts.push(`🎲 ${x.name}은(는) ${side} 진영에서 ${Math.max(x.bRate,x.rRate)}% — 오늘은 가위바위보부터가 진검승부`);break}
+  }
+  // ⑥ 이별 더비 (국밥 듀오가 적으로)
   statDuos(3).filter(d=>d.winRate>=70).forEach(d=>{
     const[x,y]=d.ids;
     if((L.blue.includes(x)&&L.red.includes(y))||(L.blue.includes(y)&&L.red.includes(x)))
-      pts.push(`💔 이별 더비: 승률 ${d.winRate}%의 ${d.names}, 오늘은 적이다`);
+      pts.push(`💔 승률 ${d.winRate}%의 국밥 듀오 ${d.names}, 오늘은 서로의 목에 칼을 겨눕니다`);
   });
-  const act=state.players.filter(p=>playerHistory(p.id).length>0&&[...L.blue,...L.red].includes(p.id));
-  if(act.length){
-    const ranked=act.map(p=>({p,price:formSeries(p.id).arr.at(-1)})).sort((a,b)=>b.price-a.price);
-    const hot=ranked[0],cold=ranked.at(-1);
-    if(hot&&hot.price>=115)pts.push(`📈 폼 주가 ${hot.price}의 ${hot.p.displayName} 출전 — 오늘도 상한가 도전`);
-    if(cold&&cold.price<=85&&cold!==hot)pts.push(`💎 반등 노리는 ${cold.p.displayName}(주가 ${cold.price}) — 저점 매수 타이밍?`);
-  }
-  return[...new Set(pts)].slice(0,4);
+  return[...new Set(pts)].slice(0,5);
 }
 
 /* ───── 중복 의심 검사 (같은 날짜·같은 멤버 구성) ───── */
@@ -2120,6 +2163,38 @@ function playerChamps(pid){
     .map(e=>({...e,winRate:pct(e.wins,e.games),kda:Math.round((e.k+e.a)/Math.max(1,e.d)*10)/10}))
     .sort((a,b)=>b.games-a.games||b.winRate-a.winRate);
 }
+
+
+/* ───── 라인업 라인별 맞대결 프리뷰 ───── */
+function headToHead(a,b){ // a 기준 상대전적
+  let meet=0,aw=0;
+  state.matches.forEach(m=>{
+    const pa=m.participants.find(p=>p.playerId===a),pb=m.participants.find(p=>p.playerId===b);
+    if(!pa||!pb||pa.team===pb.team)return;
+    meet++;if(pa.team===m.winnerTeam)aw++;
+  });
+  return{meet,aw,bw:meet-aw};
+}
+function lineupMatchups(){
+  const L=state.lineup;
+  if(!L||L.blue.length!==5||L.red.length!==5)return null;
+  const lanes=['탑','정글','미드','원딜','서폿'];
+  const tiers=laneTierBoard(null);
+  const tierShort=['챌린저','그마','마스터','다이아','플래티넘'];
+  const info=(pid,lane)=>{
+    const r=(tiers[lane]?.list||[]).find(x=>x.pid===pid);
+    return{tier:r&&r.tier!=null?tierShort[r.tier]:null,king:tiers[lane]?.king?.pid===pid,
+      price:formSeries(pid).arr.at(-1)||100};
+  };
+  const rows=lanes.map((lane,i)=>{
+    const a=L.blue[i],b=L.red[i];
+    const h=headToHead(a,b);
+    return{lane,a,b,ai:info(a,lane),bi:info(b,lane),...h,
+      heat:h.meet*2+(h.meet>=2&&Math.abs(h.aw-h.bw)<=1?3:0)};
+  });
+  const big=[...rows].sort((x,y)=>y.heat-x.heat)[0];
+  return{rows,big:big&&big.heat>=4?big:null};
+}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
@@ -2204,20 +2279,60 @@ function render(){
 /* ───── 대시보드 ───── */
 function lineupCard(){
   const L=state.lineup; if(!L)return'';
-  const O=lineupOdds(),pts=lineupPoints();
-  const names=ids=>ids.map(id=>`<b>${esc(nameOf(id))}</b>`).join(', ');
+  const O=lineupOdds(),pts=lineupPoints(),MU=lineupMatchups();
+  const names=ids=>ids.map(id=>esc(nameOf(id))).join(', ');
+  const pBar=O?`
+    <div style="margin:12px 0 4px">
+      <div class="row" style="justify-content:space-between;font-weight:900;font-size:15px">
+        <span style="color:var(--gold)">🅰 알파 ${O.probBlue}%</span>
+        <span style="color:var(--win)">${100-O.probBlue}% 베타 🅱</span>
+      </div>
+      <div style="height:12px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--line)">
+        <i style="width:${O.probBlue}%;background:linear-gradient(90deg,var(--gold),rgba(242,184,75,.6))"></i>
+        <i style="flex:1;background:linear-gradient(90deg,rgba(63,217,197,.6),var(--win))"></i>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-top:4px">
+        <span class="pill" style="font-weight:800">배당 ${O.oddsBlue}</span>
+        <span class="mini dim">승률 예측 · 폼 60% + 통산 40%</span>
+        <span class="pill" style="font-weight:800">배당 ${O.oddsRed}</span>
+      </div>
+    </div>`:'';
+  const tierTag=(inf)=>inf.king?'<span class="pill gold" style="font-size:10px;padding:1px 6px;font-weight:900">👑 최강자</span>'
+    :inf.tier?`<span class="pill" style="font-size:10px;padding:1px 6px">${esc(inf.tier)}</span>`:'';
+  const side=(pid,inf,right)=>`<div style="text-align:${right?'right':'left'}">
+      <b style="font-size:14px">${esc(nameOf(pid))}</b>
+      <div class="mini dim" style="margin-top:1px">${tierTag(inf)} 주가 <b class="${inf.price>=100?'priceUp':'priceDn'}">${inf.price}</b></div>
+    </div>`;
+  const muRows=MU?MU.rows.map(r=>{
+    const lead=r.meet?(r.aw>r.bw?'a':r.bw>r.aw?'b':'tie'):null;
+    const score=r.meet
+      ?`<div style="font-weight:900;font-size:16px"><span style="color:${lead==='a'?'var(--gold)':'inherit'}">${r.aw}</span> : <span style="color:${lead==='b'?'var(--win)':'inherit'}">${r.bw}</span></div><div class="mini dim">통산 ${r.meet}전</div>`
+      :`<div style="font-weight:800;font-size:13px">🍿</div><div class="mini dim">첫 맞대결</div>`;
+    return`<div style="display:grid;grid-template-columns:1fr 86px 1fr;align-items:center;gap:8px;padding:9px 0;border-top:1px dashed var(--line)">
+      ${side(r.a,r.ai,false)}
+      <div style="text-align:center"><div class="mini" style="color:var(--gold);font-weight:800;letter-spacing:.12em">${esc(r.lane)}</div>${score}</div>
+      ${side(r.b,r.bi,true)}
+    </div>`}).join(''):'';
+  const bigBanner=MU&&MU.big?`
+    <div style="background:linear-gradient(90deg,rgba(255,92,122,.18),rgba(242,184,75,.18));border:1px solid rgba(255,92,122,.4);border-radius:12px;padding:10px 14px;margin:12px 0;text-align:center">
+      <div class="mini" style="letter-spacing:.2em;color:var(--lose);font-weight:900">🔥 오늘의 빅매치</div>
+      <div style="font-weight:900;font-size:17px;margin-top:2px">${esc(MU.big.lane)} — ${esc(nameOf(MU.big.a))} <span class="dim" style="font-size:13px">vs</span> ${esc(nameOf(MU.big.b))}</div>
+      <div class="mini" style="margin-top:2px">${MU.big.meet?`통산 ${MU.big.aw}:${MU.big.bw}${Math.abs(MU.big.aw-MU.big.bw)<=1?' — 백중세, 오늘이 결판':` — ${MU.big.aw>MU.big.bw?esc(nameOf(MU.big.a)):esc(nameOf(MU.big.b))} 우세, 뒤집을 수 있나`}`:'운명의 첫 만남'}</div>
+    </div>`:'';
   return`<div class="card derby" style="margin-bottom:14px;text-align:left">
-    <div class="row" style="justify-content:space-between">
-      <h3 style="margin:0">🏟 다음 내전 ${esc(L.date)}</h3>
-      ${O?`<span class="pill gold">알파팀 승률 예측 ${O.probBlue}%</span>`:''}
+    <div style="text-align:center;margin-bottom:4px">
+      <div class="mini" style="letter-spacing:.3em;color:var(--gold);font-weight:900">MATCH DAY</div>
+      <h3 style="margin:2px 0;font-size:19px">🏟 ${esc(L.date)} 내전${L.note?` <span class="dim" style="font-size:13px;font-weight:600">· ${esc(L.note)}</span>`:''}</h3>
     </div>
-    <div class="grid c2" style="margin-top:10px">
-      <div><p class="mini" style="margin:0"><span style="font-weight:800;color:var(--gold)">🅰 알파팀</span> ${O?`<span class="pill" style="font-weight:800">배당 ${O.oddsBlue}</span>`:''}</p><p class="mini" style="margin:4px 0 0">${names(L.blue)}</p></div>
-      <div><p class="mini" style="margin:0"><span style="font-weight:800;color:var(--win)">🅱 베타팀</span> ${O?`<span class="pill" style="font-weight:800">배당 ${O.oddsRed}</span>`:''}</p><p class="mini" style="margin:4px 0 0">${names(L.red)}</p></div>
-    </div>
+    ${pBar}
+    ${bigBanner}
+    ${MU?`<p class="mini" style="margin:8px 0 0;color:var(--gold);font-weight:800">라인별 맞대결</p>${muRows}`
+      :`<div class="grid c2" style="margin-top:10px">
+        <div><p class="mini" style="margin:0;font-weight:800;color:var(--gold)">🅰 알파팀</p><p class="mini" style="margin:4px 0 0">${names(L.blue)}</p></div>
+        <div><p class="mini" style="margin:0;font-weight:800;color:var(--win)">🅱 베타팀</p><p class="mini" style="margin:4px 0 0">${names(L.red)}</p></div>
+      </div>`}
     ${pts.length?`<div class="hr"></div><p class="mini" style="margin:0 0 4px;color:var(--gold);font-weight:800">관전 포인트</p>${pts.map(t=>`<p class="mini" style="margin:0 0 4px">${esc(t)}</p>`).join('')}`:''}
-    ${O?`<p class="mini dim" style="margin:8px 0 0">배당은 양 팀의 폼 주가(60%)+통산 승률(40%)로 계산한 재미용 예측이에요. 낮은 배당 = 이길 확률이 높다고 본다는 뜻. 블루/레드 진영은 당일 가위바위보로! 진짜 돈은 안 됩니다 😄</p>`:''}
-    ${L.note?`<p class="mini" style="margin:6px 0 0">📌 ${esc(L.note)}</p>`:''}
+    ${O?`<p class="mini dim" style="margin:10px 0 0">배당은 폼 주가(60%)+통산 승률(40%) 기반 재미용 예측 — 낮은 배당 = 우세 전망. 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`:''}
   </div>`;
 }
 function pgDashboard(){
