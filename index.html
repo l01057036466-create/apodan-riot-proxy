@@ -2648,11 +2648,20 @@ async function bankLogin(){
     const j=await bankCall('login',{name,pin});
     lsSet(BANK_TOKEN_KEY,j.token);
     window._bank={name:j.name,role:j.role,bal:null,ledger:[]};
-    toast(j.role==='dev'?'🛠 시스템 콘솔 접속':'💰 '+j.name+'님, 어서오세요!');
+    if(j.role==='admin'||j.role==='dev'){ // 로그인으로 퉁: 운영진·개발자는 기록 수정 권한 자동 ON
+      if(lsGet(ADMIN_FLAG)!=='1'){lsSet(ADMIN_FLAG,'1');lsSet('apodan_admin_via_bank','1')}
+      toast(j.role==='dev'?'🛠 시스템 콘솔 접속 — 사이트 편집 권한 ON':'👑 '+j.name+'님 (운영진) — 기록 수정 권한이 자동으로 켜졌어요');
+    }else{
+      toast('💰 '+j.name+'님, 어서오세요!');
+    }
     await bankRefresh(true);
   }catch(e){toast('로그인 실패: '+e.message,true)}
 }
-function bankLogout(){lsSet(BANK_TOKEN_KEY,'');window._bank=null;window._bankRoster=null;render();toast('로그아웃했어요.')}
+function bankLogout(){
+  lsSet(BANK_TOKEN_KEY,'');window._bank=null;window._bankRoster=null;
+  if(lsGet('apodan_admin_via_bank')==='1'){lsSet('apodan_admin_via_bank','');lsSet(ADMIN_FLAG,'');} // 계정으로 받은 편집 권한 회수
+  render();toast('로그아웃했어요.');
+}
 async function bankRefresh(force){
   if(!bankToken()||!voteApiBase())return;
   if(window._bankBusy)return;
@@ -2664,7 +2673,10 @@ async function bankRefresh(force){
     if(me.role==='admin'||me.role==='dev'){
       try{window._bankPending=(await bankCall('pending',null,'GET')).pending}catch(e){}
     }
-  }catch(e){window._bank=null;lsSet(BANK_TOKEN_KEY,'')}
+  }catch(e){
+    window._bank=null;lsSet(BANK_TOKEN_KEY,'');
+    if(lsGet('apodan_admin_via_bank')==='1'){lsSet('apodan_admin_via_bank','');lsSet(ADMIN_FLAG,'');}
+  }
   try{window._bankRoster=(await bankCall('roster',null,'GET')).roster}catch(e){}
   window._bankBusy=false;
   const snap=JSON.stringify([window._bank,window._bankRoster,window._bankPending]);
@@ -3797,7 +3809,7 @@ function pgBank(){
           <datalist id="dlBank">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist></div>
         <div class="f" style="margin-bottom:10px"><label>비밀번호 (숫자 4~8자리)</label><input id="bkPin" type="password" inputmode="numeric" placeholder="••••"></div>
         <div class="row" style="gap:8px"><button class="btn gold" onclick="bankLogin()">로그인</button><button class="btn" onclick="bankRegister()">가입 신청</button></div>
-        <p class="mini dim" style="margin-top:8px">가입 신청 → 운영자 승인 → <b>10,000 APO</b> 자동 입금. 비밀번호는 서버에 암호화 저장돼요.</p>
+        <p class="mini dim" style="margin-top:8px">가입 신청 → 운영자 승인 → <b>10,000 APO</b> 자동 입금. 비밀번호는 암호화(해시)로만 저장돼요. <b>운영진·개발자 계정은 로그인만 하면 기록 수정 권한까지 자동 ON</b> — PIN은 비상용입니다. ⚠ 다른 데서 쓰는 비밀번호는 쓰지 마세요!</p>
       </div>
       <div class="card"><h3>💡 APO가 뭔가요?</h3>
         <p class="mini">아포단 공식 게임 머니예요. 곧 열릴 기능: <b>승부 예측 베팅</b>(이긴 쪽이 진 쪽 포인트를 나눠 갖는 진짜 도박장 — 올인 가능 🚨), <b>멤버 주식 거래소</b>(폼 주가에 실제 투자, MVP 배당금). 매일 접속만 해도 200 APO. 파산해도 새출발 지원금 1,000 APO — 대신 파산 횟수가 박제됩니다 💀</p>
