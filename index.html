@@ -2489,10 +2489,16 @@ async function castFanVote(team,luId){ // team: 'alpha'|'beta'
   const api=state.settings.voteApiUrl;
   if(api){
     try{
-      await fetch(api.replace(/\/$/,'')+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
+      const r=await fetch(api.replace(/\/$/,'')+'/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({date:key,team,key:fanId()})});
+      const j=await r.json().catch(()=>({}));
+      if(r.status===409){toast('이미 집계에 들어가 있는 표예요 ✓');}
+      else if(!r.ok){
+        window._fanErr=j.error||('HTTP '+r.status);
+        toast('⚠ 표가 집계에 못 들어갔어요: '+window._fanErr+' — 운영자에게 알려주세요!',true);
+      }else{window._fanErr=null;toast('🗳 투표 완료! 집계에 반영됐어요.');}
       await fetchFanTally(true);
-    }catch(e){toast('집계 서버 연결 실패 — 내 표는 이 기기에 기록됐어요.',true)}
+    }catch(e){window._fanErr='연결 실패';toast('⚠ 집계 서버에 연결할 수 없어요 — 내 픽은 이 기기에 기록됐습니다.',true)}
   }else{
     toast(`🗳 ${team==='alpha'?'알파':'베타'}팀에 투표 완료! (집계 서버 미연결 — 내 픽만 기록돼요)`);
   }
@@ -2507,10 +2513,11 @@ async function fetchFanTally(force){
     if(!force&&window._fanTallies[key])continue;
     try{
       const r=await fetch(api.replace(/\/$/,'')+'/api/vote?date='+encodeURIComponent(key));
-      if(!r.ok)continue;
-      const t=await r.json();
+      const t=await r.json().catch(()=>({}));
+      if(!r.ok){window._fanErr=t.error||('HTTP '+r.status);continue}
+      window._fanErr=null;
       window._fanTallies[key]={alpha:num(t.alpha),beta:num(t.beta)};
-    }catch(e){}
+    }catch(e){window._fanErr='연결 실패'}
   }
   try{render()}catch(e){}
   // 실시간: 30초마다 자동 갱신
@@ -2572,6 +2579,25 @@ async function resendMyVote(luId){
     else toast('서버 응답 오류('+r.status+') — vote.js가 최신(v4)인지 확인해주세요.',true);
     await fetchFanTally(true);
   }catch(e){toast('집계 서버 연결 실패 — 주소와 배포 상태를 확인해주세요.',true)}
+}
+
+
+async function voteDiag(){ // 투표 서버 자가 점검 — 정확한 상태를 운영자에게
+  const api=(state.settings.voteApiUrl||'').replace(/\/$/,'');
+  if(!api)return toast('먼저 투표 서버 주소를 저장해주세요.',true);
+  const url=api+'/api/vote?date='+todayStr();
+  let report='';
+  try{
+    const r=await fetch(url);
+    const txt=await r.text();
+    report=`상태 코드: ${r.status}\n응답: ${txt.slice(0,300)}`;
+    if(r.ok&&txt.includes('alpha'))report+='\n\n✅ 서버 정상! 투표가 집계됩니다.';
+    else if(txt.includes('환경변수'))report+='\n\n🔧 처방: Vercel 환경변수(UPSTASH_REDIS_REST_URL/TOKEN)가 비어 있어요. 등록 후 Redeploy.';
+    else if(txt.includes('Failed to parse')||txt.includes('Upstash'))report+='\n\n🔧 처방: 환경변수 값에 KEY=나 따옴표가 섞였어요. vote.js를 최신(v4)으로 교체하면 자동 보정되고, 아니면 Vercel에서 값(주소/토큰만)으로 수정 후 Redeploy.';
+    else if(r.status===404)report+='\n\n🔧 처방: api/vote.js 파일이 저장소에 없어요. api 폴더에 업로드해주세요.';
+    else if(!r.ok)report+='\n\n🔧 처방: vote.js를 최신(v4)으로 교체 + Redeploy 후 다시 점검.';
+  }catch(e){report='연결 자체가 실패했어요.\n주소를 확인해주세요: '+url}
+  alert('🔬 투표 서버 점검 결과\n주소: '+url+'\n\n'+report);
 }
 /* ───── 내비게이션 ───── */
 const PAGES=[
@@ -2716,7 +2742,8 @@ function lineupCard(L){
         <span class="pill sm" style="font-weight:800">${FO.oddsBeta}</span>
       </div>`:`
       <div class="row" style="justify-content:center;gap:8px;margin-top:10px;align-items:center">
-        <span class="mini dim">🗳 유저 배당 · 아직 0표 — 표가 모이면 민심 게이지가 떠요</span>
+        ${window._fanErr?`<span class="mini" style="color:var(--lose);font-weight:700">⚠ 집계 서버 오류: ${esc(String(window._fanErr).slice(0,60))} — 운영자는 설정의 🔬 서버 점검을 눌러주세요</span>`
+        :`<span class="mini dim">🗳 유저 배당 · 아직 0표 — 표가 모이면 민심 게이지가 떠요</span>`}
         ${myV?`<button class="btn sm ghost" onclick="resendMyVote('${L.id}')" title="서버 점검 중에 투표했다면 표가 누락됐을 수 있어요">내 표 집계에 반영</button>`:''}
       </div>`):''}
       <div class="row" style="justify-content:center;gap:8px;margin-top:10px">
@@ -3586,7 +3613,7 @@ function pgSettings(){
     <p class="mini" style="margin-top:8px">연결하면 멤버들의 승부 예측 표가 <b>실시간 합산</b>되어 매치데이 카드에 "유저 배당"으로 떠요. 기존 Vercel 프로젝트에 <code>api/vote.js</code> 파일 하나 + 무료 Upstash Redis 연결이면 끝 (가이드는 채팅 참고). 미연결이어도 투표 버튼은 작동하고 각자 기기에 내 픽이 기록됩니다.</p>
     <div class="grid c2" style="margin-top:8px">
       <div class="f"><label>투표 서버 주소 (Vercel)</label><input id="voteApiUrl" value="${esc(state.settings.voteApiUrl||'')}" placeholder="https://apodan-riot-proxy.vercel.app"></div>
-      <div class="f" style="align-self:end"><button class="btn" onclick="saveVoteApi()">연결 저장</button></div>
+      <div class="f" style="align-self:end"><div class="row" style="gap:6px"><button class="btn" onclick="saveVoteApi()">연결 저장</button><button class="btn ghost" onclick="voteDiag()">🔬 서버 점검</button></div></div>
     </div>
   </details></div>
   ${(()=>{const un=unmatchedNames();if(!un.length)return'';
