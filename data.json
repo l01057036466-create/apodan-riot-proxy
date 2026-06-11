@@ -44,8 +44,8 @@
    "id": "p_9813bijx_mq7nhxup",
    "displayName": "00 나깅",
    "kakaoName": "00 나깅",
-   "riotName": "나 깅",
-   "riotTag": "ADC",
+   "riotName": "우나깅",
+   "riotTag": "KR1",
    "aliases": [
     "나깅",
     "00나깅"
@@ -322,8 +322,7 @@
    "riotTag": "3am",
    "aliases": [
     "도연",
-    "05도연",
-    "BAM"
+    "05도연"
    ],
    "active": true,
    "memo": ""
@@ -645,19 +644,6 @@
    ],
    "active": false,
    "memo": "탈주자"
-  },
-  {
-   "id": "p_eyt39o0mq96k9xf",
-   "displayName": "00 규동",
-   "kakaoName": "00 규동",
-   "riotName": "Rudebeckla",
-   "riotTag": "kr1",
-   "aliases": [
-    "규동",
-    "00규동"
-   ],
-   "active": true,
-   "memo": ""
   }
  ],
  "matches": [
@@ -8644,7 +8630,7 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "playerId": "p_si39mrju_mq7nhxuq",
+     "playerId": "",
      "rawName": "BAM",
      "championId": "바루스",
      "kills": 4,
@@ -10023,7 +10009,7 @@
  },
  "lineups": [
   {
-   "id": "lu_jc5i4y0mq95ambl",
+   "id": "lu_n48f9kxmq9791t7",
    "date": "2026-06-11",
    "round": "1차",
    "note": "금일 내전 20:30분",
@@ -10040,26 +10026,6 @@
     "p_snn2xfw3_mq7nhxuq",
     "p_wqf3x0omq7ub77q",
     "p_bqvhy1r3_mq7nhxuq"
-   ]
-  },
-  {
-   "id": "lu_m9vg8ijmq96kjbg",
-   "date": "2026-06-11",
-   "round": "2차",
-   "note": "22시 15분",
-   "blue": [
-    "p_29ndxd5j_mq7nhxuq",
-    "p_4siqelqmq7ub77p",
-    "p_j93ommzd_mq7nhxuq",
-    "p_jot48yoa_mq7nhxuq",
-    "p_so05ompmq7ub77q"
-   ],
-   "red": [
-    "p_5fj5souo_mq7nhxuq",
-    "p_r6ogprumq7ub77n",
-    "p_gcjvk0v7_mq7nhxuq",
-    "p_jlc2q699_mq7nhxup",
-    "p_eyt39o0mq96k9xf"
    ]
   }
  ]
