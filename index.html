@@ -2664,19 +2664,23 @@ function bankLogout(){
 }
 async function bankRefresh(force){
   if(!bankToken()||!voteApiBase())return;
-  if(window._bankBusy)return;
+  if(window._bankBusy&&!force)return;
   if(!force&&window._bankLast&&Date.now()-window._bankLast<20000)return;
+  const tk=bankToken(); // stale 가드: 도중에 로그인/아웃되면 이 결과는 폐기
   window._bankBusy=true;window._bankLast=Date.now();
   try{
     const me=await bankCall('me',null,'GET');
+    if(bankToken()!==tk){window._bankBusy=false;return}
     window._bank=me;
     if(me.role==='admin'||me.role==='dev'){
       try{window._bankPending=(await bankCall('pending',null,'GET')).pending}catch(e){}
       pushPrices(); // 시세 자동 갱신 (10분 쿨다운)
     }
   }catch(e){
-    window._bank=null;lsSet(BANK_TOKEN_KEY,'');
-    if(lsGet('apodan_admin_via_bank')==='1'){lsSet('apodan_admin_via_bank','');lsSet(ADMIN_FLAG,'');}
+    if(bankToken()===tk){ // 내 세션이 그대로일 때만 만료 처리
+      window._bank=null;lsSet(BANK_TOKEN_KEY,'');
+      if(lsGet('apodan_admin_via_bank')==='1'){lsSet('apodan_admin_via_bank','');lsSet(ADMIN_FLAG,'');}
+    }
   }
   try{window._bankRoster=(await bankCall('roster',null,'GET')).roster}catch(e){}
   window._bankBusy=false;
@@ -2837,6 +2841,30 @@ function recentBusts(hours){ // 파산 속보 (최근 N시간)
   return(window._bankRoster||[]).filter(r=>r.lastBustAt&&new Date(r.lastBustAt).getTime()>=cut)
     .sort((a,b)=>new Date(b.lastBustAt)-new Date(a.lastBustAt));
 }
+
+
+/* ───── 공개 장부 로더 ───── */
+async function loadBets(luId){
+  const L=lineupOf(luId);if(!L||!voteApiBase())return;
+  const key=voteKey(L);
+  window._mktBets=window._mktBets||{};
+  try{
+    const r=await fetch(voteApiBase()+'/api/bank?action=bets&market='+encodeURIComponent(key));
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){window._mktBets[key]=j.bets||[];render()}
+  }catch(e){}
+}
+async function loadHolders(force){
+  if(!voteApiBase())return;
+  if(!force&&window._holdersLast&&Date.now()-window._holdersLast<60000)return;
+  window._holdersLast=Date.now();
+  try{
+    const r=await fetch(voteApiBase()+'/api/bank?action=holders');
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){window._stockHolders=j.holders||{};render()}
+  }catch(e){}
+}
+function pickStock(name){window._stockSel=name;const el=$('stTarget');if(el)el.value=name;render()}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
@@ -3070,6 +3098,13 @@ function lineupCard(L){
       return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
         <p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🎰 APO 베팅 — 변동 배당 (패자 판돈을 승자가 나눠 갖습니다)</p>
         ${pools}${actions}${adminRow}
+        ${(()=>{const bets=(window._mktBets||{})[key];
+          if(bets===undefined)return tot?`<p class="mini" style="text-align:center;margin:8px 0 0"><button class="btn sm ghost" onclick="loadBets('${L.id}')">👀 누가 어디에 걸었나 보기</button></p>`:'';
+          if(!bets.length)return'<p class="mini dim" style="text-align:center;margin:8px 0 0">공개할 베팅이 없어요.</p>';
+          return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
+            <p class="mini" style="margin:0 0 5px;font-weight:800;text-align:center">👀 베팅 현황 — 전원 공개</p>
+            ${bets.map(b=>`<div class="row" style="justify-content:space-between;padding:3px 6px"><span class="mini"><b>${esc(b.name)}</b> ${b.allin?'<span class="pill lose" style="font-size:10px;padding:1px 6px;font-weight:900">🚨 올인</span>':''}</span><span class="mini" style="font-weight:800;color:${b.team==='alpha'?'var(--gold)':'var(--win)'}">${b.team==='alpha'?'🅰 알파':'🅱 베타'} · ${fmtAPO(b.amt)} APO</span></div>`).join('')}
+          </div>`})()}
       </div>`})()}
     ${bigBanner}
     ${MU?`<p class="mini" style="margin:8px 0 0;color:var(--gold);font-weight:800">라인별 맞대결</p>${muRows}`
@@ -3666,7 +3701,9 @@ function pgChampions(){
 
 /* ───── 폼 주식 ───── */
 function pgForm(){
-  const rows=state.players.filter(p=>playerHistory(p.id).length>0).map(p=>{
+  const fq=(window._formQ||'').trim();
+  const rows=state.players.filter(p=>playerHistory(p.id).length>0)
+    .filter(p=>!fq||norm(p.displayName).includes(norm(fq))||labelsOf(p).some(l=>norm(l).includes(norm(fq)))).map(p=>{
     const{arr,wl}=formSeries(p.id);
     const r5=wl.slice(-5),w=r5.filter(Boolean).length;
     const delta=arr[arr.length-1]-arr[Math.max(0,arr.length-6)];
@@ -3775,6 +3812,7 @@ function pgAwards(){
     ${list.length?list.map(a=>`<div class="arow" style="padding:9px 0;border-top:1px dashed var(--line)"><b style="color:var(--gold)">${esc(a.title)}</b> — <b>${esc(a.target)}</b><span class="mini" style="display:block;margin-top:1px">${esc(a.desc)}</span></div>`).join(''):'<p class="mini dim">아직 없어요. 판이 더 쌓이면 생깁니다.</p>'}
     </div>`;
   return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+`
+  <div class="f" style="max-width:280px;margin-bottom:12px"><label>🔎 이름 검색</label><input value="${esc(window._formQ||'')}" placeholder="멤버 이름·별명" oninput="window._formQ=this.value;render();setTimeout(()=>{const i=document.querySelector('#page input');i&&i.focus();i&&i.setSelectionRange(i.value.length,i.value.length)},0)"></div>
   <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
     ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
   </div>
@@ -3923,7 +3961,33 @@ function pgBank(){
       ${led.length?`<div style="max-height:280px;overflow:auto">${led.map(e=>`<div class="row" style="justify-content:space-between;padding:5px 0;border-top:1px dashed var(--line)"><span class="mini">${esc(e.d)} <span class="dim">${esc((e.t||'').slice(5,10))}</span></span><span class="mini" style="font-weight:800;color:${e.v>=0?'var(--win)':'var(--lose)'}">${e.v>=0?'+':''}${fmtAPO(e.v)} <span class="dim" style="font-weight:600">→ ${fmtAPO(e.bal)}</span></span></div>`).join('')}</div>`:'<p class="mini dim">아직 내역이 없어요.</p>'}
     </div>
   </div>
-  <div class="card" style="margin-top:14px"><h3>📈 멤버 주식 거래소 <span class="tag">시세 = 폼 주가 · 수수료 1%</span></h3>
+  <div class="card" style="margin-top:14px"><h3>📈 멤버 주식 거래소 <span class="tag">시세 = 폼 주가 · 수수료 1% · 주주 명부 전체 공개</span></h3>
+    ${(()=>{ // 🧾 시세 전광판
+      loadHolders(false);
+      const q=(window._stQ||'').trim();
+      const board=state.players.filter(p=>p.active)
+        .filter(p=>!q||norm(p.displayName).includes(norm(q)))
+        .map(p=>{
+          const{arr}=formSeries(p.id);
+          const px=stockPx(p.displayName)||100;
+          const prev=arr.length>=2?arr[arr.length-2]:px;
+          const d=px-prev;
+          return{name:p.displayName,px,d};
+        }).sort((a,b)=>b.px-a.px);
+      const H=window._stockHolders||{};
+      const sel=window._stockSel;
+      return`<div class="f" style="max-width:240px;margin-bottom:8px"><label>🔎 종목 검색</label><input value="${esc(q)}" placeholder="멤버 이름" oninput="window._stQ=this.value;render();setTimeout(()=>{const i=$('stQfocus');},0)" id="stQfocus"></div>
+      <div class="scrollx" style="max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:10px">
+        <table class="tbl" style="min-width:430px"><thead><tr><th>종목</th><th class="num">1주 가격</th><th class="num">등락</th><th>주주</th><th></th></tr></thead><tbody>
+        ${board.map(r=>{const hs=H[r.name]||[];
+          return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
+          <td><b>${esc(r.name)}</b></td>
+          <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span></td>
+          <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
+          <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
+          <td><button class="btn sm ghost" onclick="event.stopPropagation();pickStock('${esc(r.name)}')">선택</button></td></tr>`}).join('')}
+        </tbody></table></div>
+      <p class="mini dim" style="margin:6px 0 10px">상승 ▲빨강 · 하락 ▼파랑 (한국식). 행을 누르면 종목이 선택돼요. 주주 명부는 1분마다 갱신 — 누가 누구에게 베팅 중인지 다 보입니다 👀</p>`})()}
     <div class="grid c3" style="margin-bottom:8px">
       <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" oninput="render&&0"></div>
       <div class="f"><label>수량 (주)</label><input id="stQty" type="number" min="1" placeholder="예: 5"></div>
