@@ -1,5 +1,10 @@
-// 아포단 유저 배당 투표 API (v2 — CommonJS, 어떤 Vercel 설정에서도 작동)
-// 위치: 저장소의 api/vote.js  ·  필요 환경변수: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
+// ═══════════════════════════════════════════════════════════════
+// 아포단 유저 배당 투표 API — v4 (최종)
+// 위치: 저장소 api/vote.js
+// 특징: 어떤 Vercel 설정에서도 작동(CommonJS) + 환경변수 자가 치유
+//       (KEY="값" 줄 전체를 붙여넣어도 알맹이만 추출) + 회차 키(#2, #A) 지원
+// 필요 환경변수: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
+// ═══════════════════════════════════════════════════════════════
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,11 +13,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    // 환경변수 자가 치유: .env 줄 전체(KEY="값")를 붙여넣어도 알맹이만 추출
+    // 환경변수 자가 치유: 'KEY=' 접두, 따옴표, 공백을 알아서 벗겨냄
     function cleanEnv(v) {
       v = String(v || '').trim();
-      v = v.replace(/^[A-Za-z_][A-Za-z0-9_]*\s*=\s*/, ''); // 'KEY=' 접두 제거
-      v = v.replace(/^["']+|["']+$/g, ''); // 둘러싼 따옴표 제거
+      v = v.replace(/^[A-Za-z_][A-Za-z0-9_]*\s*=\s*/, '');
+      v = v.replace(/^["']+|["']+$/g, '');
       return v.trim();
     }
     var URL_ = cleanEnv(process.env.UPSTASH_REDIS_REST_URL).replace(/\/+$/, '');
@@ -22,7 +27,7 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'Upstash 환경변수가 없어요 (UPSTASH_REDIS_REST_URL / TOKEN)' });
     }
 
-    async function redis(cmd) { // cmd: 배열, 예: ['GET','key']
+    async function redis(cmd) {
       var r = await fetch(URL_ + '/' + cmd.map(encodeURIComponent).join('/'), {
         headers: { Authorization: 'Bearer ' + TOKEN },
       });
@@ -31,7 +36,8 @@ module.exports = async function handler(req, res) {
       return j ? j.result : null;
     }
 
-    function safeDate(d) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(d || '')); } // 회차 키(#2, #A 등) 허용
+    // 회차 키 허용: 2026-06-12 또는 2026-06-12#2, 2026-06-12#A
+    function safeDate(d) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(d || '')); }
 
     if (req.method === 'GET') {
       var qd = (req.query && req.query.date) || '';
