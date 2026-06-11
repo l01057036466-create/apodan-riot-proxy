@@ -401,6 +401,7 @@ function fixState(s){
   }));
   s.voteRooms=Array.isArray(s.voteRooms)?s.voteRooms:[];
   s.settings=Object.assign({mvpMinutes:10},s.settings||{});
+  s.rev=Number(s.rev)||0; s.updatedAt=s.updatedAt||'';
   s.liveBoards=(s.liveBoards&&typeof s.liveBoards==='object')?s.liveBoards:{};
   if(s.liveDraft&&s.liveDraft.date&&Array.isArray(s.liveDraft.items)){ // 구버전 이행
     s.liveBoards[s.liveDraft.date]=s.liveDraft.items;
@@ -428,6 +429,8 @@ function loadState(){
 function save(){
   if(!lsSet(DB_KEY,JSON.stringify(state)))
     toast('이 환경에서는 저장이 안 돼요. 다운로드한 파일을 직접 열면 저장됩니다.',true);
+  state.rev=(state.rev||0)+1; // 수정마다 +1 — 동기화 기준 (경기 판수 대신)
+  state.updatedAt=new Date().toISOString();
   lsSet('apodan_dirty','1'); // 마지막 게시 이후 변경 있음 표시
   // 자동 게시 모드: 마지막 수정 4초 뒤 알아서 사이트 반영
   if(state&&state.settings&&state.settings.autoPublish&&!window._publishing&&typeof publishData==='function'&&typeof ghCfg==='function'&&ghCfg().repo&&ghCfg().token){
@@ -1700,20 +1703,32 @@ async function riotImport(id){
 
 
 /* ───── 공유 데이터 (호스팅된 사이트의 data.json) ───── */
+function decideShared(shared){ // 동기화 판단 (rev 기반)
+  const sR=Number(shared.rev)||0, lR=Number(state.rev)||0;
+  const dirty=lsGet('apodan_dirty')==='1'&&lsGet(ADMIN_FLAG)==='1';
+  if(state.matches.length===0&&state.players.length===0)return'adopt'; // 빈 브라우저 = 무조건 수용
+  if(dirty&&lR>sR)return'keep'; // 게시 안 된 내 수정이 더 최신 — 절대 덮어쓰지 않음
+  if(sR>lR)return'adopt'; // 서버가 더 최신 (라인업·설정만 바뀌어도 rev로 감지)
+  if(sR===0&&lR===0&&shared.matches.length>state.matches.length)return'adopt'; // 구버전 데이터 호환
+  return'keep';
+}
 async function loadShared(manual){
   try{
     const r=await fetch('data.json?t='+Date.now(),{cache:'no-store'});
     if(!r.ok)throw 0;
     const shared=fixState(await r.json());
     if(!shared.matches.length&&!shared.players.length)throw 0;
-    const localN=state.matches.length;
     if(manual){
-      if(!confirm(`공유 데이터(경기 ${shared.matches.length}판)로 교체할까요?\n이 브라우저의 현재 데이터(${localN}판)는 덮어써져요.`))return;
-      state=shared;save();render();toast('공유 데이터로 교체했어요.');return;
+      if(!confirm(`공유 데이터(경기 ${shared.matches.length}판 · 버전 ${shared.rev||0})로 교체할까요?\n이 브라우저의 현재 데이터(${state.matches.length}판 · 버전 ${state.rev||0})는 덮어써져요.`))return;
+      state=shared;lsSet(DB_KEY,JSON.stringify(state));lsSet('apodan_dirty','0');render();toast('공유 데이터로 교체했어요.');return;
     }
-    if(shared.matches.length>localN){
-      if(localN===0){state=shared;save();render();toast(`공유 데이터를 불러왔어요 — 경기 ${shared.matches.length}판`);}
-      else if(confirm(`더 최신인 공유 데이터(${shared.matches.length}판)가 있어요. 불러올까요? (현재 ${localN}판)`)){state=shared;save();render();toast('공유 데이터로 갱신했어요.');}
+    const act=decideShared(shared);
+    if(act==='adopt'){
+      state=shared;
+      lsSet(DB_KEY,JSON.stringify(state));lsSet('apodan_dirty','0'); // rev 보존 — save() 미사용
+      render();
+    }else if(lsGet('apodan_dirty')==='1'&&lsGet(ADMIN_FLAG)==='1'){
+      window._unsynced=true;render(); // 게시 안 된 수정 보유 — 배너로 알림
     }
   }catch(e){if(manual)toast('공유 데이터(data.json)를 찾지 못했어요. 호스팅된 링크에서 열었을 때만 작동해요.',true)}
 }
@@ -1837,14 +1852,23 @@ function memberMatch(id){
 function saveLineup(){
   if(needAdmin())return;
   const laneNames=['탑','정글','미드','원딜','서폿'];
-  const resolve=i=>{ // 이름 검색 입력 → 멤버 해석
+  const resolve=i=>{ // 이름 검색 입력 → 멤버 해석 (관대 모드: 2글자 부분검색 허용)
     const raw=($('lu'+i)?.value||'').trim();
     if(!raw)return{ok:true,id:''};
-    const exact=state.players.find(x=>x.active&&x.displayName===raw);
-    const p=exact||findPlayer(raw);
-    if(!p)return{ok:false,msg:`"${raw}"를 명단에서 못 찾았어요. 철자를 확인하거나, 플레이어 탭에서 먼저 등록해주세요.`};
-    if(!p.active)return{ok:false,msg:`${p.displayName}은(는) 휴면 상태예요. 플레이어 탭에서 "활동 복귀" 후 다시 시도해주세요.`};
-    return{ok:true,id:p.id};
+    const k=norm(raw);
+    const exact=state.players.find(x=>x.active&&x.displayName===raw)
+      ||state.players.find(x=>x.active&&labelsOf(x).some(l=>norm(l)===k));
+    if(exact)return{ok:true,id:exact.id};
+    const p0=findPlayer(raw);
+    if(p0&&p0.active)return{ok:true,id:p0.id};
+    if(k.length>=2){ // 라인업 입력은 후보가 명확하면 2글자도 OK ("잭슨" → "99 잭슨")
+      const cands=state.players.filter(x=>x.active&&labelsOf(x).some(l=>norm(l).includes(k)));
+      if(cands.length===1)return{ok:true,id:cands[0].id};
+      if(cands.length>1)return{ok:false,msg:`"${raw}"에 해당하는 멤버가 ${cands.length}명이에요: ${cands.slice(0,4).map(c=>c.displayName).join(', ')}${cands.length>4?'…':''} — 더 정확히 입력해주세요.`};
+    }
+    const dorm=p0||state.players.find(x=>!x.active&&k.length>=2&&labelsOf(x).some(l=>norm(l).includes(k)));
+    if(dorm&&!dorm.active)return{ok:false,msg:`${dorm.displayName}${josa(dorm.displayName,'은','는')} 휴면 상태예요. 플레이어 탭에서 "활동 복귀" 후 다시 시도해주세요.`};
+    return{ok:false,msg:`"${raw}"를 명단에서 못 찾았어요. 철자를 확인하거나, 플레이어 탭에서 먼저 등록해주세요.`};
   };
   const blue=[],red=[];
   for(const i of[1,2,3,4,5,6,7,8,9,10]){
@@ -2205,8 +2229,13 @@ async function publishData(silent){
     const r=await fetch(api,{method:'PUT',headers:H,body:JSON.stringify(body)});
     if(!r.ok)throw new Error('업로드 실패('+r.status+')');
     state.settings.lastBackupAt=new Date().toISOString();save();lsSet('apodan_dirty','0');
+    lsSet('apodan_pubfail','');window._unsynced=false;
     toast(silent?'🔄 자동 게시 완료 — 사이트에 반영됐어요.':'🚀 게시 완료! 1분 안에 멤버들 화면에 반영돼요.');
-  }catch(e){toast('게시 실패: '+(e&&e.message||e),true)}
+  }catch(e){
+    const msg=String(e&&e.message||e);
+    lsSet('apodan_pubfail',msg);
+    toast('게시 실패: '+msg,true);
+  }
   finally{window._publishing=false;if(btn){btn.disabled=false;btn.textContent='🚀 사이트에 게시 (딸깍)'}render()}
 }
 function downloadDataJson(){ // 이름 그대로 data.json — 수동 업로드 시 개명 불필요
@@ -2614,8 +2643,28 @@ function renderTicker(){
   const html=items.map(t=>`<span>${t}</span>`).join('');
   $('ticker').innerHTML=html+html; // 무한 루프용 2배
 }
+function syncBanner(){ // 게시 실패/미게시 경고 — 운영자에게만
+  if(lsGet(ADMIN_FLAG)!=='1')return'';
+  const fail=lsGet('apodan_pubfail')||'';
+  const dirty=lsGet('apodan_dirty')==='1';
+  if(fail){
+    const hint=fail.includes('401')?'토큰이 만료·폐기됐어요. 설정 → 깃허브 연결에서 새 Fine-grained 토큰(Contents 읽기/쓰기)을 다시 저장하세요.'
+      :fail.includes('404')?'저장소 이름을 확인하세요 (아이디/저장소 형식).'
+      :'네트워크 또는 권한 문제일 수 있어요.';
+    return`<div style="background:rgba(255,92,122,.14);border:1px solid var(--lose);border-radius:12px;padding:10px 14px;margin-bottom:12px">
+      <p class="mini" style="margin:0;font-weight:800;color:var(--lose)">⚠ 게시 실패 — 지금 화면의 변경사항이 멤버들에게 안 보이고 있어요!</p>
+      <p class="mini" style="margin:4px 0 6px">${esc(fail.slice(0,120))}<br>💡 ${hint}</p>
+      <div class="row" style="gap:6px"><button class="btn sm gold" onclick="publishData()">🚀 다시 게시</button><button class="btn sm ghost" onclick="go('settings')">설정 열기</button></div>
+    </div>`;
+  }
+  if(dirty&&window._unsynced)return`<div style="background:rgba(242,184,75,.12);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:12px">
+    <p class="mini" style="margin:0;font-weight:800;color:var(--gold)">📤 게시 안 된 변경사항이 있어요 — 멤버들은 아직 이전 화면을 보고 있습니다.</p>
+    <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm gold" onclick="publishData()">🚀 지금 게시</button></div>
+  </div>`;
+  return'';
+}
 function head(title,sub){
-  return`<div class="pageHead"><div><h2>${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>
+  return syncBanner()+`<div class="pageHead"><div><h2>${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>
   <div class="meta"><span class="chip">플레이어 ${state.players.filter(p=>p.active).length}명</span><span class="chip">경기 ${state.matches.length}판</span><span class="chip">챔피언 ${CHAMPIONS.length}종</span></div></div>`;
 }
 function render(){
