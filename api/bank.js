@@ -523,7 +523,7 @@ module.exports = async function handler(req, res) {
         await savePx(SX);
         await pushHist(tgt, up);
         await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: price, np: up, ts: new Date().toISOString() });
-        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up });
+        return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       } else {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
         if (cur4.q < qty) return res.status(400).json({ error: '보유 ' + cur4.q + '주뿐이에요' });
@@ -540,7 +540,7 @@ module.exports = async function handler(req, res) {
         await savePx(SX);
         await pushHist(tgt, dn);
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
-        return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
+        return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       }
     }
 
