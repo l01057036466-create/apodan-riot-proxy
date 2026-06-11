@@ -322,7 +322,8 @@
    "riotTag": "3am",
    "aliases": [
     "도연",
-    "05도연"
+    "05도연",
+    "BAM"
    ],
    "active": true,
    "memo": ""
@@ -644,6 +645,18 @@
    ],
    "active": false,
    "memo": "탈주자"
+  },
+  {
+   "id": "p_146qyvimq95eim4",
+   "displayName": "만나가가",
+   "kakaoName": "만나가가",
+   "riotName": "",
+   "riotTag": "",
+   "aliases": [
+    "만나가가"
+   ],
+   "active": false,
+   "memo": "기록 보존용 (탈퇴·외부 인원)"
   }
  ],
  "matches": [
@@ -6955,7 +6968,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "벨코즈",
      "kills": 2,
@@ -7400,7 +7413,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "룰루",
      "kills": 1,
@@ -7585,7 +7598,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_146qyvimq95eim4",
      "rawName": "만나가가",
      "championId": "쓰레쉬",
      "kills": 0,
@@ -8630,7 +8643,7 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "playerId": "",
+     "playerId": "p_si39mrju_mq7nhxuq",
      "rawName": "BAM",
      "championId": "바루스",
      "kills": 4,
@@ -9989,7 +10002,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T03:27:29.123Z",
+  "lastBackupAt": "2026-06-11T07:00:14.268Z",
   "autoPublish": true
  },
  "lineup": null,
