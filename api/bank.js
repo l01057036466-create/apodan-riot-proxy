@@ -618,6 +618,42 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, people: ppl, refunded: back });
     }
 
+    // ═══ 🏅 MVP 온라인 투표 (계정 1인 1표) ═══
+    if (req.method === 'GET' && action === 'mvpTally') {
+      var dM = String(q.date || '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dM)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD' });
+      var stM = (await redis(['GET', 'mvp:' + dM + ':status'])) || 'open';
+      var flat = (await redis(['HGETALL', 'mvp:' + dM + ':t'])) || [];
+      var tal = {};
+      for (var fm = 0; fm + 1 < flat.length; fm += 2) tal[flat[fm]] = Number(flat[fm + 1]) || 0;
+      var myPick = null;
+      var sMv = await auth(q.token);
+      if (sMv && sMv.name) myPick = await redis(['GET', 'mvp:' + dM + ':v:' + sMv.name]);
+      return res.status(200).json({ date: dM, status: stM, tally: tal, my: myPick });
+    }
+    if (req.method === 'POST' && action === 'mvpVote') {
+      var sV = await auth(body.token);
+      if (!sV || !sV.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var dV = String(body.date || ''), pk = nameOk(body.pick);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dV)) return res.status(400).json({ error: 'date 형식 오류' });
+      if (!pk) return res.status(400).json({ error: '후보 이름 확인' });
+      var stV = (await redis(['GET', 'mvp:' + dV + ':status'])) || 'open';
+      if (stV !== 'open') return res.status(403).json({ error: 'MVP 투표가 마감됐어요' });
+      var firstV = await redis(['SET', 'mvp:' + dV + ':v:' + sV.name, pk, 'NX', 'EX', SEC90]);
+      if (firstV !== 'OK') return res.status(409).json({ error: '이미 투표했어요' });
+      await redis(['HINCRBY', 'mvp:' + dV + ':t', pk, '1']);
+      await redis(['EXPIRE', 'mvp:' + dV + ':t', SEC90]);
+      return res.status(200).json({ ok: true, pick: pk });
+    }
+    if (req.method === 'POST' && action === 'mvpLock') {
+      var sVL = await auth(body.token);
+      if (!sVL || (sVL.role !== 'admin' && sVL.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var dVL = String(body.date || '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dVL)) return res.status(400).json({ error: 'date 형식 오류' });
+      await redis(['SET', 'mvp:' + dVL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
+      return res.status(200).json({ ok: true });
+    }
+
     // ═══ 공개: 실시간 체결 테이프 ═══
     if (req.method === 'GET' && action === 'trades') {
       var tp = (await redis(['LRANGE', 'trades:recent', '0', '29'])) || [];
