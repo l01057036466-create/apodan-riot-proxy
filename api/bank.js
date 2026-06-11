@@ -428,25 +428,47 @@ module.exports = async function handler(req, res) {
     }
 
     // ═══ 멤버 주식: 시세 (운영진 클라이언트가 자동 갱신 — 조작 불가) ═══
-    if (req.method === 'GET' && action === 'prices') {
-      var pxRaw = await redis(['GET', 'stock:px']);
-      return res.status(200).json({ prices: pxRaw ? JSON.parse(pxRaw) : {} });
+    function clampPx(v) { return Math.max(10, Math.min(999, Math.round(v))); }
+    async function loadPx() { // base(폼 기준가) + prem(수급 프리미엄) → 합산 시세
+      var b = JSON.parse((await redis(['GET', 'stock:base'])) || (await redis(['GET', 'stock:px'])) || '{}'); // 구버전 px는 base로 승계
+      var p = JSON.parse((await redis(['GET', 'stock:prem'])) || '{}');
+      return { base: b, prem: p };
     }
-    if (req.method === 'POST' && action === 'setPrices') {
+    function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±30%
+      var cap = Math.max(3, Math.round((base || 100) * 0.3));
+      return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
+    }
+    function combinePx(S) {
+      var out = {};
+      for (var k in S.base) out[k] = clampPx(S.base[k] + premCap(S.base[k], S.prem[k]));
+      for (var k2 in S.prem) if (!(k2 in out)) out[k2] = clampPx(100 + premCap(100, S.prem[k2]));
+      return out;
+    }
+    async function savePx(S) {
+      await redis(['SET', 'stock:base', JSON.stringify(S.base)]);
+      await redis(['SET', 'stock:prem', JSON.stringify(S.prem)]);
+      await redis(['SET', 'stock:px', JSON.stringify(combinePx(S))]); // 호환 캐시
+    }
+    if (req.method === 'GET' && action === 'prices') {
+      var S0 = await loadPx();
+      return res.status(200).json({ prices: combinePx(S0) });
+    }
+    if (req.method === 'POST' && action === 'setPrices') { // 폼 변동 = 기준가만 갱신, 수급 프리미엄은 보존!
       var sP = await auth(body.token);
       if (!sP || (sP.role !== 'admin' && sP.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var inP = body.prices && typeof body.prices === 'object' ? body.prices : {};
-      var pxRaw2 = await redis(['GET', 'stock:px']);
-      var px = pxRaw2 ? JSON.parse(pxRaw2) : {};
+      var SP = await loadPx();
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
         if (nameOk(kP) && vP >= 10 && vP <= 999) {
-          if (Math.abs((px[kP] || 0) - vP) >= 2) await pushHist(kP, vP); // 변동분만 차트 기록
-          px[kP] = vP; nP++;
+          var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
+          SP.base[kP] = vP; nP++;
+          var newC = clampPx(vP + (Number(SP.prem[kP]) || 0));
+          if (SP.base[kP] && Math.abs(newC - oldC) >= 2) await pushHist(kP, newC);
         }
       }
-      await redis(['SET', 'stock:px', JSON.stringify(px)]);
+      await savePx(SP);
       return res.status(200).json({ ok: true, updated: nP });
     }
 
@@ -457,15 +479,15 @@ module.exports = async function handler(req, res) {
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
-      var pxRaw3 = await redis(['GET', 'stock:px']);
-      var px2 = pxRaw3 ? JSON.parse(pxRaw3) : {};
-      var price = Math.round(Number(px2[tgt]) || 0);
+      var SX = await loadPx();
+      var price = SX.base[tgt] ? clampPx(SX.base[tgt] + (Number(SX.prem[tgt]) || 0)) : 0;
       var tgtAcct = await getAcct(tgt);
       if (!price && !tgtAcct) return res.status(404).json({ error: '"' + tgt + '"는 등록된 종목(멤버)이 아니에요 — 시세판에서 골라주세요' });
-      if (!price) { // 미상장 → 폼 주가(클라이언트 힌트)로 상장. 힌트 없으면 100
-        price = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0))) || 100;
-        px2[tgt] = price;
-        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+      if (!price) { // 미상장 → 폼 주가(힌트)로 상장
+        SX.base[tgt] = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0))) || 100;
+        SX.prem[tgt] = 0;
+        price = SX.base[tgt];
+        await savePx(SX);
         await pushHist(tgt, price);
       }
       var aT = sT.acct;
@@ -496,9 +518,9 @@ module.exports = async function handler(req, res) {
         aT = await busted(aT);
         // 수급 임팩트: 가격의 2% 한도(왕복 수수료 4%보다 항상 작게 → 펌핑해도 무조건 손해), 본인 거래는 영향 0
         var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
-        var up = Math.min(999, price + impB);
-        px2[tgt] = up;
-        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) + impB); // 수요 적립 + 상한 30%
+        var up = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
+        await savePx(SX);
         await pushHist(tgt, up);
         await pushTape({ n: aT.name, s: 'b', t: tgt, q: qty, p: price, np: up, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, holding: hold[tgt], price: price, royalty: paidRoyalty, newPrice: up });
@@ -513,9 +535,9 @@ module.exports = async function handler(req, res) {
         await putAcct(aT);
         await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + price, gain, aT.bal);
         var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
-        var dn = Math.max(10, price - impS);
-        px2[tgt] = dn;
-        await redis(['SET', 'stock:px', JSON.stringify(px2)]);
+        SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS); // 매도 차감 + 하한 −30%
+        var dn = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
+        await savePx(SX);
         await pushHist(tgt, dn);
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
@@ -542,6 +564,8 @@ module.exports = async function handler(req, res) {
       await scanDel('pxh:*');
       await scanDel('hold:*');
       await redis(['DEL', 'stock:px']);
+      await redis(['DEL', 'stock:base']);
+      await redis(['DEL', 'stock:prem']);
       await redis(['DEL', 'trades:recent']);
       var allRA = (await redis(['SMEMBERS', 'acct:_all'])) || [];
       var nRA = 0;
@@ -585,6 +609,8 @@ module.exports = async function handler(req, res) {
       for (var tg2 in targets) await redis(['DEL', 'pxh:' + tg2]);
       for (var kpx in pxRM) await redis(['DEL', 'pxh:' + kpx]);
       await redis(['DEL', 'stock:px']);
+      await redis(['DEL', 'stock:base']);
+      await redis(['DEL', 'stock:prem']);
       await redis(['DEL', 'trades:recent']);
       return res.status(200).json({ ok: true, holders: holdersN, refunded: refunded });
     }
