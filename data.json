@@ -44,8 +44,8 @@
    "id": "p_9813bijx_mq7nhxup",
    "displayName": "00 나깅",
    "kakaoName": "00 나깅",
-   "riotName": "우나깅",
-   "riotTag": "KR1",
+   "riotName": "나 깅",
+   "riotTag": "ADC",
    "aliases": [
     "나깅",
     "00나깅"
@@ -10003,7 +10003,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:03:11.329Z",
+  "lastBackupAt": "2026-06-11T08:03:15.978Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
