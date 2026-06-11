@@ -658,6 +658,18 @@
    ],
    "active": true,
    "memo": ""
+  },
+  {
+   "id": "p_hbw717zmq97p8sl",
+   "displayName": "00 규동",
+   "kakaoName": "00 규동",
+   "riotName": "Rudbeclak",
+   "riotTag": "Kr1",
+   "aliases": [
+    "규동"
+   ],
+   "active": true,
+   "memo": ""
   }
  ],
  "matches": [
@@ -10003,7 +10015,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-11T08:03:15.978Z",
+  "lastBackupAt": "2026-06-11T08:03:40.423Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12"
  },
