@@ -1793,15 +1793,44 @@ function genericHexAll(){
 }
 function memberMatch(id){
   const all=genericHexAll(); const me=all.get(id); if(!me)return null;
+  const labels=GENERIC_AXES.map(x=>x[1]);
   let best=null,worst=null;
   all.forEach((v,pid)=>{
     if(pid===id)return;
     let d=0;for(let i=0;i<v.length;i++)d+=(v[i]-me[i])**2;
     const sim=Math.max(1,Math.min(99,Math.round(100-(Math.sqrt(d)/Math.sqrt(v.length))*100)));
-    if(!best||sim>best.sim)best={id:pid,sim};
-    if(!worst||sim<worst.sim)worst={id:pid,sim};
+    if(!best||sim>best.sim)best={id:pid,sim,v};
+    if(!worst||sim<worst.sim)worst={id:pid,sim,v};
   });
-  return best?{similar:{name:nameOf(best.id),sim:best.sim},opposite:{name:nameOf(worst.id),sim:worst.sim}}:null;
+  if(!best)return null;
+  const tone=x=>x>=0.62?'강':x<=0.38?'약':null; // 백분위 기준 상/하위권
+  // 닮은 이유: 차이가 작으면서 둘 다 뚜렷한(높거나 낮은) 축 2개
+  const simWhy=(()=>{
+    const ranked=labels.map((l,i)=>({l,diff:Math.abs(best.v[i]-me[i]),avg:(best.v[i]+me[i])/2}))
+      .sort((a,b)=>a.diff-b.diff);
+    const hi=ranked.filter(x=>x.avg>=0.6).slice(0,2).map(x=>x.l);
+    const lo=ranked.filter(x=>x.avg<=0.4).slice(0,2).map(x=>x.l);
+    if(hi.length>=2)return`둘 다 ${hi.join('·')}이(가) 강한 같은 과예요`;
+    if(hi.length===1&&lo.length>=1)return`${hi[0]}은(는) 강하고 ${lo[0]}은(는) 아끼는, 힘 배분이 닮은 스타일`;
+    if(lo.length>=2)return`${lo.join('·')}보다 다른 데 힘을 쓰는, 비슷한 운영 결`;
+    return'여섯 축 전반의 분포가 비슷한 플레이 결이에요';
+  })();
+  // 정반대 이유: 차이 최대 축 + 방향 명시
+  const oppWhy=(()=>{
+    const ranked=labels.map((l,i)=>({l,diff:me[i]-worst.v[i],abs:Math.abs(me[i]-worst.v[i])}))
+      .sort((a,b)=>b.abs-a.abs);
+    const t=ranked[0];
+    const meHigh=t.diff>0;
+    const myTone=tone(meHigh?1:0)||'';
+    const oppName=nameOf(worst.id);
+    const dir=meHigh
+      ?`이 선수는 ${t.l} 상위권의 공격적 운용, ${oppName}${josa(oppName,'은','는')} ${t.l}${josa(t.l,'을','를')} 아끼는 안정형`
+      :`${oppName}${josa(oppName,'이','가')} ${t.l} 상위권으로 밀어붙일 때, 이 선수는 다른 축으로 승부하는 타입`;
+    const second=ranked[1]&&ranked[1].abs>=0.3?` ${ranked[1].l}도 정반대 방향이에요.`:'';
+    return`${t.l}에서 극과 극 — ${dir}.${second}`;
+  })();
+  return{similar:{name:nameOf(best.id),sim:best.sim,why:simWhy},
+         opposite:{name:nameOf(worst.id),sim:worst.sim,why:oppWhy}};
 }
 
 /* ───── 라인업 공지 + 자동 배당 + 관전 포인트 ───── */
@@ -1946,7 +1975,11 @@ function lineupPoints(L){ // 분석 데스크
   const all=[...L.blue,...L.red];
   const pts=[];
   const N=id=>nameOf(id);
-  const push=(e,h,b,ids)=>{if(!pts.some(p=>p.h===h))pts.push({e,h,b,ids:ids||[]})};
+  const push=(e,h,b,ids)=>{
+    if(pts.some(p=>p.h===h))return;
+    if(window._lpUsed){if(window._lpUsed.has(h))return;window._lpUsed.add(h)} // 다회차 카드 간 멘트 중복 금지
+    pts.push({e,h,b,ids:ids||[]});
+  };
   // ① 더비 — 누구 vs 누구인지 명확히
   const Rv=statRivals(2);
   const derbies=[];
@@ -2050,6 +2083,11 @@ function lineupPoints(L){ // 분석 데스크
     const ward=[...all].map(id=>({id,v:rates.get(id)?.vspm||0,g:rates.get(id)?.games||0})).filter(x=>x.g>=3).sort((a,b)=>b.v-a.v)[0];
     if(ward&&ward.v>=1.2)push('🕯',`와드 머신 ${N(ward.id)} — 맵이 밝다`,
       `분당 시야 점수 ${Math.round(ward.v*10)/10}. 이 선수가 있는 쪽 정글은 CCTV 설치 완료입니다`,[ward.id]);
+  }
+  if(!pts.length&&window._lpUsed&&allLineups().length>1){ // 리매치: 멘트 소진 시 회차 전용 멘트
+    const prev=allLineups().find(x=>x.date===L.date&&x.id!==L.id);
+    pts.push({e:'🔁',h:`${L.round} — 같은 얼굴, 다른 결말`,
+      b:prev?`직전 회차의 승부가 그대로 이어질지, 통째로 뒤집힐지. 한 번 진 팀의 수정 밴픽이 최대 변수입니다`:`연속 매치업 — 서로의 패를 다 본 상태에서의 진검승부입니다`,ids:[]});
   }
   return pts.slice(0,7);
 }
@@ -2356,27 +2394,34 @@ function lineupMatchups(L){
 
 
 /* ───── 서브 포인트: 출전자 전원 최소 1회 언급 보장 ───── */
-function subMent(pid,lane){
+function subMentList(pid,lane){ // 우선순위 후보 목록 — 다회차 카드에서 차순위 멘트 폴백용
   const nm=nameOf(pid);
+  const out=[];
   const S=statPlayers().find(s=>s.id===pid);
   const g=S?S.games:0;
-  if(!g)return`데뷔전 — 아포단 전적 첫 페이지를 오늘 씁니다`;
-  if(g<3)return`표본 ${g}판의 미지수 카드 — 오늘 베일을 벗습니다`;
+  if(!g)return[`데뷔전 — 아포단 전적 첫 페이지를 오늘 씁니다`,`기록 0판의 완전한 변수 — 스카우터들도 노트만 들고 있습니다`];
+  if(g<3)out.push(`표본 ${g}판의 미지수 카드 — 오늘 베일을 벗습니다`);
   const tiers=laneTierBoard(null);
   if(lane){
     const row=(tiers[lane]?.list||[]).find(x=>x.pid===pid);
-    if(tiers[lane]?.king?.pid===pid)return`${lane} 왕좌 보유자의 방어전 — 도전자를 받습니다`;
-    if(row&&row.tier!=null&&row.tier<=1)return`${lane} 상위 티어(${['챌린저','그랜드마스터'][row.tier]}) — 라인전부터 체급을 증명할 차례`;
+    if(tiers[lane]?.king?.pid===pid)out.push(`${lane} 왕좌 보유자의 방어전 — 도전자를 받습니다`);
+    else if(row&&row.tier!=null&&row.tier<=1)out.push(`${lane} 상위 티어(${['챌린저','그랜드마스터'][row.tier]}) — 라인전부터 체급을 증명할 차례`);
   }
-  const mc=playerChamps(pid)[0];
-  if(mc&&mc.games>=2&&mc.winRate>=60)return`${mc.champ} ${mc.games}판 ${mc.winRate}% — 시그니처 카드 장전 완료`;
+  const mcs=playerChamps(pid).filter(c=>c.games>=2&&c.winRate>=60);
+  mcs.slice(0,2).forEach(mc=>out.push(`${mc.champ} ${mc.games}판 ${mc.winRate}% — 시그니처 카드 장전 완료`));
   const{wl}=formSeries(pid);const r3=wl.slice(-3);
-  if(r3.length>=2&&r3.every(Boolean))return`최근 ${r3.length}연승 — 조용히 뜨거운 손`;
-  if(S.winRate>=55)return`통산 승률 ${S.winRate}% (${g}판) — 팀의 안정 자산`;
-  if(S.winRate<=45)return`통산 ${S.wins}승 ${S.losses}패 — 오늘부터 반등 시작이라는 각오`;
-  if(S.mvp>=1)return`MVP ${S.mvp}회 보유 — 하이라이트 제조 가능성 보유자`;
-  return`통산 ${S.wins}승 ${S.losses}패의 균형추 — 오늘이 커리어 분기점`;
+  if(r3.length>=2&&r3.every(Boolean))out.push(`최근 ${r3.length}연승 — 조용히 뜨거운 손`);
+  if(S){
+    if(S.winRate>=55)out.push(`통산 승률 ${S.winRate}% (${g}판) — 팀의 안정 자산`);
+    if(S.winRate<=45)out.push(`통산 ${S.wins}승 ${S.losses}패 — 오늘부터 반등 시작이라는 각오`);
+    if(S.mvp>=1)out.push(`MVP ${S.mvp}회 보유 — 하이라이트 제조 가능성 보유자`);
+    if(S.kda>=3)out.push(`통산 KDA ${S.kda} — 쉽게 죽어주지 않는 타입`);
+    out.push(`통산 ${S.wins}승 ${S.losses}패의 균형추 — 오늘이 커리어 분기점`);
+  }
+  out.push(`${nm}, 오늘의 변수 후보 — 조용한 날이 없는 멤버`);
+  return out;
 }
+function subMent(pid,lane){return subMentList(pid,lane)[0]}
 function lineupSubPoints(L){
   L=L||allLineups()[0];if(!L)return[];
   const mentioned=new Set();
@@ -2387,7 +2432,13 @@ function lineupSubPoints(L){
     (L[k]||[]).forEach((pid,i)=>{
       if(mentioned.has(pid))return;
       const lane=L[k].length===5?lanes[i]:null;
-      subs.push({pid,tag,lane,name:nameOf(pid),txt:subMent(pid,lane)});
+      const cands=subMentList(pid,lane);
+      let txt=cands[0];
+      if(window._lpUsed){
+        txt=cands.find(c=>!window._lpUsed.has('sub|'+pid+'|'+c))||cands[cands.length-1];
+        window._lpUsed.add('sub|'+pid+'|'+txt);
+      }
+      subs.push({pid,tag,lane,name:nameOf(pid),txt});
     });
   });
   return subs;
@@ -2677,7 +2728,7 @@ function pgDashboard(){
   const recent=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))[0];
   const meta=statChamps().filter(c=>c.picks>=2)[0];
   return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
-  ${allLineups().map(L=>lineupCard(L)).join('')}
+  ${(()=>{window._lpUsed=new Set();const cards=allLineups().map(L=>lineupCard(L)).join('');window._lpUsed=null;return cards})()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
     <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
@@ -2965,8 +3016,9 @@ function playerDetail(p){
           ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
           ${hex.rates&&hex.rates.solo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 누적 ${hex.rates.solo}회</b> · 1:1에서 증명된 손맛</p>`:''}
           ${(()=>{const mm=memberMatch(p.id);if(!mm)return'';
-            if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)</p>`;
-            return`<p class="mini" style="margin:6px 0 0">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) &nbsp;·&nbsp; 🌗 정반대 스타일: <b>${esc(mm.opposite.name)}</b> (${mm.opposite.sim}%)</p>`})()}
+            if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) — ${esc(mm.similar.why)}</p>`;
+            return`<p class="mini" style="margin:6px 0 0;line-height:1.6">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)<br><span class="dim">${esc(mm.similar.why)}</span></p>
+            <p class="mini" style="margin:5px 0 0;line-height:1.6">🌗 정반대 스타일: <b>${esc(mm.opposite.name)}</b> (${mm.opposite.sim}%)<br><span class="dim">${esc(mm.opposite.why)}</span></p>`})()}
           <div style="height:10px"></div>
           <h3 style="font-size:14px;margin:0 0 6px">보유 칭호 ${mine.length?`(${mine.length})`:''}</h3>
           ${mine.length?`<div class="row" style="gap:6px">${mine.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div><p class="mini dim" style="margin:6px 0 0">칭호에 마우스를 올리면 사유가 보여요.</p>`:'<p class="mini dim" style="margin:0">아직 획득한 칭호가 없어요. 곧 생깁니다.</p>'}
