@@ -170,14 +170,18 @@ module.exports = async function handler(req, res) {
     // ── 개발자 전용: 운영자 임명/해임 + 포인트 발권 (전부 "시스템" 명의) ──
     if (req.method === 'POST' && ['promote', 'demote', 'mint'].indexOf(action) >= 0) {
       var s4 = await auth(body.token);
-      if (!s4 || s4.role !== 'dev') return res.status(403).json({ error: '권한 없음' }); // 운영자에게도 숨김
+      var isDev = s4 && s4.role === 'dev';
+      var isAdm = s4 && s4.role === 'admin';
+      if (action !== 'mint' && !isDev) return res.status(403).json({ error: '권한 없음' }); // 임명/해임은 개발자만 (운영자에게도 숨김)
+      if (action === 'mint' && !isDev && !isAdm) return res.status(403).json({ error: '권한 없음' });
       var tn2 = nameOk(body.name);
       var ta2 = tn2 ? await getAcct(tn2) : null;
       if (!ta2) return res.status(404).json({ error: '계정을 못 찾았어요' });
       if (action === 'promote') { ta2.role = 'admin'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
       if (action === 'demote') { ta2.role = 'member'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
       var amt = Math.round(Number(body.amount) || 0);
-      if (!amt || Math.abs(amt) > 1000000) return res.status(400).json({ error: '금액 확인 (±100만 이내)' });
+      var cap = isDev ? 1000000 : 50000; // 운영자 발권 한도 ±5만
+      if (!amt || Math.abs(amt) > cap) return res.status(400).json({ error: '금액 확인 (±' + cap.toLocaleString() + ' 이내)' });
       ta2.bal = Math.max(0, ta2.bal + amt);
       await putAcct(ta2);
       await ledger(ta2.name, amt > 0 ? '시스템 지급' : '시스템 회수', amt, ta2.bal);
@@ -456,6 +460,8 @@ module.exports = async function handler(req, res) {
       var pxRaw3 = await redis(['GET', 'stock:px']);
       var px2 = pxRaw3 ? JSON.parse(pxRaw3) : {};
       var price = Math.round(Number(px2[tgt]) || 0);
+      var tgtAcct = await getAcct(tgt);
+      if (!price && !tgtAcct) return res.status(404).json({ error: '"' + tgt + '"는 등록된 종목(멤버)이 아니에요 — 시세판에서 골라주세요' });
       if (!price) { // 미상장 → 폼 주가(클라이언트 힌트)로 상장. 힌트 없으면 100
         price = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0))) || 100;
         px2[tgt] = price;
@@ -488,7 +494,9 @@ module.exports = async function handler(req, res) {
           }
         }
         aT = await busted(aT);
-        var up = Math.min(999, price + Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매수 즉시 ▲
+        // 수급 임팩트: 가격의 2% 한도(왕복 수수료 4%보다 항상 작게 → 펌핑해도 무조건 손해), 본인 거래는 영향 0
+        var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        var up = Math.min(999, price + impB);
         px2[tgt] = up;
         await redis(['SET', 'stock:px', JSON.stringify(px2)]);
         await pushHist(tgt, up);
@@ -504,13 +512,49 @@ module.exports = async function handler(req, res) {
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
         await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + price, gain, aT.bal);
-        var dn = Math.max(10, price - Math.max(1, Math.min(15, Math.round(qty * 0.8)))); // 수급: 매도 즉시 ▼
+        var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        var dn = Math.max(10, price - impS);
         px2[tgt] = dn;
         await redis(['SET', 'stock:px', JSON.stringify(px2)]);
         await pushHist(tgt, dn);
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: price, np: dn, ts: new Date().toISOString() });
         return res.status(200).json({ ok: true, bal: aT.bal, price: price, newPrice: dn });
       }
+    }
+
+    // ═══ 🌅 시즌 전체 초기화 (개발자 전용): 모두 기본 자본 10,000부터 ═══
+    if (req.method === 'POST' && action === 'resetAll') {
+      var sRA = await auth(body.token);
+      if (!sRA || sRA.role !== 'dev') return res.status(403).json({ error: '권한 없음' });
+      async function scanDel(pattern) {
+        var cursor = '0', guard = 0;
+        do {
+          var sc = await redis(['SCAN', cursor, 'MATCH', pattern, 'COUNT', '500']);
+          cursor = sc && sc[0] ? String(sc[0]) : '0';
+          var keys = (sc && sc[1]) || [];
+          for (var d = 0; d < keys.length; d++) await redis(['DEL', keys[d]]);
+          guard++;
+        } while (cursor !== '0' && guard < 50);
+      }
+      await scanDel('mkt:*');
+      await scanDel('bet:*');
+      await scanDel('reward:*');
+      await scanDel('pxh:*');
+      await scanDel('hold:*');
+      await redis(['DEL', 'stock:px']);
+      await redis(['DEL', 'trades:recent']);
+      var allRA = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+      var nRA = 0;
+      for (var ra = 0; ra < allRA.length; ra++) {
+        var aRA = await getAcct(allRA[ra]);
+        if (!aRA) continue;
+        aRA.bal = 10000; aRA.bust = 0; aRA.lastBustAt = ''; aRA.lastBustDay = ''; aRA.lastDaily = '';
+        await putAcct(aRA);
+        await redis(['DEL', 'ledger:' + aRA.name]);
+        await ledger(aRA.name, '🌅 시즌 리셋 — 기본 자본으로 새 출발', 10000, 10000);
+        nRA++;
+      }
+      return res.status(200).json({ ok: true, accounts: nRA });
     }
 
     // ═══ 🧨 거래소 초기화: 전 종목 강제 환매 후 시장 청소 (운영진·개발자) ═══
