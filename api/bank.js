@@ -473,6 +473,39 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // ═══ 공개 장부: 베팅 현황 (누가 어디에 얼마) ═══
+    if (req.method === 'GET' && action === 'bets') {
+      var mkB = String(q.market || '');
+      if (!mktOk(mkB)) return res.status(400).json({ error: 'market 형식 오류' });
+      var bn = (await redis(['SMEMBERS', 'mkt:' + mkB + ':bettors'])) || [];
+      var listB = [];
+      for (var b2 = 0; b2 < bn.length; b2++) {
+        var bRaw2 = await redis(['GET', 'bet:' + mkB + ':' + bn[b2]]);
+        if (!bRaw2) continue;
+        var bo = JSON.parse(bRaw2);
+        listB.push({ name: bn[b2], team: bo.team, amt: bo.amt, allin: !!bo.allin });
+      }
+      listB.sort(function (x, y) { return y.amt - x.amt; });
+      return res.status(200).json({ market: mkB, bets: listB });
+    }
+
+    // ═══ 공개 장부: 주주 명부 (누가 누구 주식을 몇 주) ═══
+    if (req.method === 'GET' && action === 'holders') {
+      var allN = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+      var map = {};
+      for (var h2 = 0; h2 < allN.length; h2++) {
+        var hR = await redis(['GET', 'hold:' + allN[h2]]);
+        if (!hR) continue;
+        var hh = JSON.parse(hR);
+        for (var tgt2 in hh) {
+          if (!map[tgt2]) map[tgt2] = [];
+          map[tgt2].push({ owner: allN[h2], q: hh[tgt2].q });
+        }
+      }
+      for (var t3 in map) map[t3].sort(function (x, y) { return y.q - x.q; });
+      return res.status(200).json({ holders: map });
+    }
+
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
   } catch (e) {
     return res.status(500).json({ error: '서버 오류: ' + (e && e.message ? e.message : String(e)) });
