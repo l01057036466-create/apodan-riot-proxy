@@ -3721,7 +3721,9 @@ function lineupEditor(){
       <div class="f"><label>메모 (선택)</label><input id="luNote" value="${esc(D.note!==undefined?D.note:(L.note||''))}" oninput="window._luDraft=window._luDraft||{};window._luDraft.note=this.value" placeholder="예: 금요 내전 8시"></div>
     </div>
     <div class="f" style="margin-bottom:10px;max-width:240px"><label>회차 ${window._luEdit?'<span class="tag">수정 중</span>':''}</label>
-      <select id="luRound" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${ROUNDS.map(r=>`<option${(L.round||'1차')===r?' selected':''}>${r}</option>`).join('')}</select>
+      <select id="luRound" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${ROUNDS.map(r=>`<option${(L.round||'1차')===r?' selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="f"><label>승부 방식 <span class="tag">다전제면 🎯 스코어 토토 자동 개장</span></label>
+      <select id="luSeries" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${['단판','3판 2선승','5판 3선승'].map(s=>`<option${(L.series||'단판')===s?' selected':''}>${s}</option>`).join('')}</select>
     </div>
     <div class="grid c2">
       <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--gold)">🅰 알파팀</p><div class="grid c2">${[1,2,3,4,5].map(row).join('')}</div></div>
