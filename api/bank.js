@@ -127,11 +127,11 @@ module.exports = async function handler(req, res) {
       var a3 = s.acct, today = kstDate();
       await redis(['SET', 'online:' + a3.name, '1', 'EX', '180']); // 🟢 접속 표시 (3분 TTL)
       if (a3.lastDaily !== today && (await redis(['SET', 'daily:' + a3.name + ':' + today, '1', 'NX', 'EX', SEC90])) === 'OK') { // 🐛fix: 동시 접속 이중지급 방지
-        a3.lastDaily = today; a3.bal += 200;
+        a3.lastDaily = today; a3.bal += 500;
         a3.streak = (a3.lastDay && (new Date(today) - new Date(a3.lastDay) === 86400000)) ? (Number(a3.streak) || 0) + 1 : 1;
         a3.lastDay = today;
         await putAcct(a3);
-        await ledger(a3.name, '출석 수당 ☀', 200, a3.bal);
+        await ledger(a3.name, '출석 수당 ☀', 500, a3.bal);
       }
       var led = (await redis(['LRANGE', 'ledger:' + a3.name, '0', '29'])) || [];
       var hRawMe = await redis(['GET', 'hold:' + a3.name]);
@@ -193,7 +193,7 @@ module.exports = async function handler(req, res) {
         var catgCo = String(body.catg || '');
         if (['lol', 'ghibli', 'disney', 'anime', 'daily'].indexOf(catgCo) < 0) return res.status(400).json({ error: '카테고리 오류' });
         var pickCo = body.pick == null ? null : Math.round(Number(body.pick));
-        var priceCo = pickCo == null ? 30000 : 50000;
+        var priceCo = pickCo == null ? 10000 : 50000;
         aCo.items = aCo.items || {};
         var idCo;
         if (pickCo != null) {
@@ -525,8 +525,8 @@ module.exports = async function handler(req, res) {
       var p = JSON.parse((await redis(['GET', 'stock:prem'])) || '{}');
       return { base: b, prem: p };
     }
-    function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±30%
-      var cap = Math.max(3, Math.round((base || 100) * 0.3));
+    function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±45%
+      var cap = Math.max(3, Math.round((base || 100) * 0.45));
       return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
     }
     function combinePx(S) {
@@ -597,7 +597,7 @@ module.exports = async function handler(req, res) {
         // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
         var hintB = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0)));
         if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
-          var stepB = Math.max(-8, Math.min(8, Math.round((hintB - SX.base[tgt]) / 2)));
+          var stepB = Math.max(-16, Math.min(16, Math.round((hintB - SX.base[tgt]) / 2)));
           var beforeC = price;
           SX.base[tgt] = Math.max(10, Math.min(999, SX.base[tgt] + stepB));
           price = clampPx(SX.base[tgt] + premCap(SX.base[tgt], SX.prem[tgt]));
@@ -609,7 +609,7 @@ module.exports = async function handler(req, res) {
       var hold = hRaw ? JSON.parse(hRaw) : {};
       if (action === 'stockBuy') {
         // ① 내 매수 임팩트를 먼저 가격에 반영 → 그 가격으로 체결 (슬리피지)
-        var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.04)), Math.round(qty * 1.2) || 1));
         SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) + impB);
         var execB = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
         // ② 체결가 기준 비용
@@ -645,7 +645,7 @@ module.exports = async function handler(req, res) {
         var cur4 = hold[tgt] || { q: 0, avg: 0 };
         if (cur4.q < qty) return res.status(400).json({ error: '보유 ' + cur4.q + '주뿐이에요' });
         // ① 내 매도 임팩트를 먼저 반영 → 내린 가격으로 체결
-        var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.02)), Math.round(qty * 0.6) || 1));
+        var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.04)), Math.round(qty * 1.2) || 1));
         SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS);
         var execS = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
         var gain = Math.floor(execS * qty * 0.99);
