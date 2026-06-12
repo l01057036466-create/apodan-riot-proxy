@@ -3956,9 +3956,16 @@ function bankDeco(name,equip,mode){ // 장착 효과 이름 HTML — mode 'full'
 }
 async function shopBuy(cat,item){
   const it=SHOP_C[cat][item];
-  if(!confirm(`🛍 ${it.e||it.n} 구매 — ${fmtAPO(it.p)} APO\n영구 소장 · 환불 불가. 진행할까요?`))return;
+  if(!confirm(`🛍 ${it.e||it.n} 구매 — ${it.p?fmtAPO(it.p)+' APO':'무료'}\n영구 소장 · 환불 불가. 진행할까요?`))return;
   try{const j=await bankCall('buyItem',{cat,item});if(window._bank){window._bank.items=j.items;window._bank.bal=j.bal}toast('🛍 구매 완료! 장착해보세요');render()}
-  catch(e){toast(e.message,true)}
+  catch(e){
+    if(String(e.message).includes('이미 보유')){ // 🐛fix: 이미 받은 아이템 — 화면만 몰랐던 것. 보유 표시로 복구해 장착 버튼을 띄움
+      if(window._bank){window._bank.items=window._bank.items||{};window._bank.items[cat+':'+item]=1}
+      bankRefresh(true);render();
+      return toast('이미 보유 중이에요! 이제 [장착] 버튼이 보일 거예요 ✨');
+    }
+    toast(e.message,true)
+  }
 }
 async function shopEquip(cat,item){
   let text;
@@ -4165,6 +4172,7 @@ function pgGames(){
 /* ───── 🛍 포인트 상점 페이지 ───── */
 function pgShop(){
   const B=bankSession();
+  if(B&&B.name&&B.role!=='dev'&&B.items===undefined&&!window._meSync){window._meSync=1;bankRefresh(true).finally(()=>{window._meSync=0})} // 🐛fix: 캐시 세션엔 보유 정보가 없어 장착 버튼이 안 뜨던 버그
   if(!B)return head('포인트 상점','뱃지·이름 색·테두리·칭호·그림 뱃지 — 포인트로 나를 꾸며요.')+`
     <div class="card" style="max-width:520px;margin:30px auto;text-align:center;padding:30px 20px">
       <div style="font-size:40px">🛍</div>
@@ -4188,6 +4196,7 @@ function pgShop(){
 const SHOP_CATS=[['crown','👑 전용 칭호'],['nick','💬 칭호'],['badge','🐢 뱃지'],['color','🎨 이름 색'],['frame','🖼 테두리'],['legend','🌌 레전드'],['title','✍️ 커스텀 칭호']];
 function pgMe(){
   const B=bankSession();
+  if(B&&B.name&&B.role!=='dev'&&B.items===undefined&&!window._meSync){window._meSync=1;bankRefresh(true).finally(()=>{window._meSync=0})}
   if(!B||!B.name||(B.role==='dev'&&B.bal==null))return head('내 정보','내 등급·칭호·꾸미기를 한 곳에서 관리해요.')+`
     <div class="card" style="max-width:520px;margin:30px auto;text-align:center;padding:30px 20px">
       <div style="font-size:40px">🙋</div>
