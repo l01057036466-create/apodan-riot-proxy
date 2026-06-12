@@ -357,6 +357,39 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid, fee: LP - prize });
     }
 
+    // ── ↩️ 정산 되돌리기 (운영진·개발자 비상 도구 — 잘못 누른 정산 복구) ──
+    if (req.method === 'POST' && action === 'unsettle') {
+      var sU = await auth(body.token);
+      if (!sU || (sU.role !== 'admin' && sU.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var mkU = String(body.market || '');
+      if (!mktOk(mkU)) return res.status(400).json({ error: 'market 형식 오류' });
+      var stU = (await redis(['GET', 'mkt:' + mkU + ':status'])) || 'open';
+      if (stU.indexOf('settled:') !== 0) return res.status(400).json({ error: '정산된 판이 아니에요 (현재: ' + stU + ')' });
+      var winU = stU.split(':')[1];
+      var loseU = winU === 'alpha' ? 'beta' : 'alpha';
+      var WPu = Number(await redis(['GET', 'mkt:' + mkU + ':pool:' + winU])) || 0;
+      var LPu = Number(await redis(['GET', 'mkt:' + mkU + ':pool:' + loseU])) || 0;
+      var prizeU = Math.floor(LPu * 0.97);
+      var namesU = (await redis(['SMEMBERS', 'mkt:' + mkU + ':bettors'])) || [];
+      var taken = 0, short = 0, revs = 0;
+      for (var u = 0; u < namesU.length; u++) {
+        var bRawU = await redis(['GET', 'bet:' + mkU + ':' + namesU[u]]);
+        if (!bRawU) continue;
+        var bU = JSON.parse(bRawU);
+        if (bU.team !== winU) continue;
+        var accU = await getAcct(namesU[u]);
+        if (!accU) continue;
+        var shareU = WPu > 0 ? Math.floor(bU.amt + (bU.amt / WPu) * prizeU) : bU.amt; // 정산과 동일 공식 = 정확히 그만큼 회수
+        var cut = Math.min(accU.bal, shareU);
+        if (cut < shareU) short++;
+        accU.bal -= cut; taken += cut; revs++;
+        await putAcct(accU);
+        await ledger(accU.name, '↩️ 정산 되돌림 (운영진 정정)', -cut, accU.bal);
+      }
+      await redis(['SET', 'mkt:' + mkU + ':status', 'locked', 'EX', SEC90]); // 베팅은 잠긴 채 — 올바른 승자로 재정산하면 됨
+      return res.status(200).json({ ok: true, reversed: revs, taken: taken, short: short });
+    }
+
     // ═══════════ Phase 3: 멤버 주식 + 참여 수당 ═══════════
     // (구버전 setPrices/prices 핸들러 제거 — 2층 시세 핸들러가 단일 진실)
 
