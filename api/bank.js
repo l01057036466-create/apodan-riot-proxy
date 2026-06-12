@@ -997,7 +997,9 @@ module.exports = async function handler(req, res) {
       var myPick = null;
       var sMv = await auth(q.token);
       if (sMv && sMv.name) myPick = await redis(['GET', 'mvp:' + dM + ':v:' + sMv.name]);
-      return res.status(200).json({ date: dM, status: stM, tally: tal, my: myPick });
+      var untilM = Number(await redis(['GET', 'mvp:' + dM + ':until'])) || 0;
+      if (untilM && Date.now() > untilM && stM === 'open') { stM = 'locked'; await redis(['SET', 'mvp:' + dM + ':status', 'locked', 'EX', SEC90]); } // ⏱ 타이머 만료 = 자동 마감
+      return res.status(200).json({ date: dM, status: stM, tally: tal, my: myPick, until: untilM });
     }
     if (req.method === 'POST' && action === 'mvpVote') {
       var sV = await auth(body.token);
@@ -1006,6 +1008,8 @@ module.exports = async function handler(req, res) {
       if (!mktOk(dV)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!pk) return res.status(400).json({ error: '후보 이름 확인' });
       var stV = (await redis(['GET', 'mvp:' + dV + ':status'])) || 'open';
+      var untilV0 = Number(await redis(['GET', 'mvp:' + dV + ':until'])) || 0;
+      if (untilV0 && Date.now() > untilV0) return res.status(400).json({ error: '⏱ 투표 시간이 끝났어요 — 결과 확정!' });
       if (stV !== 'open') return res.status(403).json({ error: 'MVP 투표가 마감됐어요' });
       var firstV = await redis(['SET', 'mvp:' + dV + ':v:' + sV.name, pk, 'NX', 'EX', SEC90]);
       if (firstV !== 'OK') return res.status(409).json({ error: '이미 투표했어요' });
@@ -1014,12 +1018,39 @@ module.exports = async function handler(req, res) {
       await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sV.name, 'vote', '1']);
       return res.status(200).json({ ok: true, pick: pk });
     }
+    // ── ⏱ MVP 투표 타이머 (운영진: N분 뒤 자동 마감) ──
+    if (req.method === 'POST' && action === 'mvpTimer') {
+      var sT9 = await auth(body.token);
+      if (!sT9 || (sT9.role !== 'admin' && sT9.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var dT9 = String(body.date || '');
+      if (!mktOk(dT9)) return res.status(400).json({ error: 'date 형식 오류' });
+      var minT = Math.round(Number(body.minutes) || 0);
+      if (minT < 1 || minT > 240) return res.status(400).json({ error: '타이머는 1~240분' });
+      var untilT = Date.now() + minT * 60000;
+      await redis(['SET', 'mvp:' + dT9 + ':until', String(untilT), 'EX', SEC90]);
+      await redis(['SET', 'mvp:' + dT9 + ':status', 'open', 'EX', SEC90]);
+      return res.status(200).json({ ok: true, until: untilT });
+    }
+    // ── 🗑 MVP 투표 초기화 (운영진: 해당 회차만 전체 리셋) ──
+    if (req.method === 'POST' && action === 'mvpReset') {
+      var sR9 = await auth(body.token);
+      if (!sR9 || (sR9.role !== 'admin' && sR9.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var dR9 = String(body.date || '');
+      if (!mktOk(dR9)) return res.status(400).json({ error: 'date 형식 오류' });
+      await redis(['DEL', 'mvp:' + dR9 + ':t']);
+      await redis(['DEL', 'mvp:' + dR9 + ':until']);
+      await redis(['SET', 'mvp:' + dR9 + ':status', 'open', 'EX', SEC90]);
+      var allR9 = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+      for (var r9 = 0; r9 < allR9.length; r9++) await redis(['DEL', 'mvp:' + dR9 + ':v:' + allR9[r9]]); // 1인 1표 기록도 리셋 → 재투표 가능
+      return res.status(200).json({ ok: true, cleared: allR9.length });
+    }
     if (req.method === 'POST' && action === 'mvpLock') {
       var sVL = await auth(body.token);
       if (!sVL || (sVL.role !== 'admin' && sVL.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var dVL = String(body.date || '');
       if (!mktOk(dVL)) return res.status(400).json({ error: 'date 형식 오류' });
       await redis(['SET', 'mvp:' + dVL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
+      if (body.open) await redis(['DEL', 'mvp:' + dVL + ':until']); // 재개하면 지난 타이머는 해제
       return res.status(200).json({ ok: true });
     }
 
