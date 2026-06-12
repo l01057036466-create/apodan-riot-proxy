@@ -180,6 +180,72 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, status: ta.status });
     }
 
+    // ── 🎲 코스튬 뽑기: 선택 50,000 / 랜덤 깡 30,000 (보유하지 않은 것 중에서) ──
+    if (req.method === 'POST' && action === 'cosBuy') {
+      var sCo = await auth(body.token);
+      if (!sCo || !sCo.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock('cos:' + sCo.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
+      try {
+        var aCo = await getAcct(sCo.name);
+        if (!aCo || aCo.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+        var gCo = aCo.equip && aCo.equip.avG;
+        if (gCo !== 'm' && gCo !== 'f') return res.status(400).json({ error: '먼저 캐릭터를 생성해주세요 (내 정보 탭)' });
+        var catgCo = String(body.catg || '');
+        if (['lol', 'ghibli', 'disney', 'anime', 'daily'].indexOf(catgCo) < 0) return res.status(400).json({ error: '카테고리 오류' });
+        var pickCo = body.pick == null ? null : Math.round(Number(body.pick));
+        var priceCo = pickCo == null ? 30000 : 50000;
+        aCo.items = aCo.items || {};
+        var idCo;
+        if (pickCo != null) {
+          if (!(pickCo >= 1 && pickCo <= 64)) return res.status(400).json({ error: '번호는 1~64' });
+          idCo = gCo + '-' + catgCo + '-' + pickCo;
+          if (aCo.items['cos:' + idCo]) return res.status(409).json({ error: '이미 보유한 코스튬이에요 — 내 정보에서 입혀보세요!' });
+        } else {
+          var pool = [];
+          for (var ci = 1; ci <= 64; ci++) if (!aCo.items['cos:' + gCo + '-' + catgCo + '-' + ci]) pool.push(ci);
+          if (!pool.length) return res.status(400).json({ error: '🎉 이 카테고리 64종을 전부 모았어요! 컬렉션 완성!' });
+          idCo = gCo + '-' + catgCo + '-' + pool[Math.floor(Math.random() * pool.length)];
+        }
+        if (aCo.bal < priceCo) return res.status(400).json({ error: '잔액 부족 (' + priceCo + ' APO 필요)' });
+        aCo.bal -= priceCo;
+        aCo.items['cos:' + idCo] = 1;
+        aCo.equip = aCo.equip || {};
+        aCo.equip.cos = idCo; // 뽑자마자 자동 착용
+        await putAcct(aCo);
+        await ledger(aCo.name, '🎲 코스튬 뽑기 (' + catgCo + ' ' + idCo.split('-')[2] + '번' + (pickCo == null ? ' · 랜덤' : ' · 선택') + ')', -priceCo, aCo.bal);
+        return res.status(200).json({ ok: true, item: idCo, bal: aCo.bal });
+      } finally { await acctUnlock('cos:' + sCo.name); }
+    }
+
+    // ── 🚫 베팅 전액 환불 (내전 빵꾸·대타 — 운영진) ──
+    if (req.method === 'POST' && action === 'refund') {
+      var sRf = await auth(body.token);
+      if (!sRf || (sRf.role !== 'admin' && sRf.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var mkRf = String(body.market || '');
+      if (!mktOk(mkRf)) return res.status(400).json({ error: 'market 형식 오류' });
+      var stRf = (await redis(['GET', 'mkt:' + mkRf + ':status'])) || 'open';
+      if (stRf.indexOf('settled:') === 0) return res.status(400).json({ error: '이미 정산된 판 — 먼저 ↩️ 정산 되돌리기를 해주세요' });
+      if (stRf === 'refunded') return res.status(400).json({ error: '이미 환불된 판이에요' });
+      var namesRf = (await redis(['SMEMBERS', 'mkt:' + mkRf + ':bettors'])) || [];
+      var totalRf = 0, cntRf = 0;
+      for (var rf = 0; rf < namesRf.length; rf++) {
+        var bRawRf = await redis(['GET', 'bet:' + mkRf + ':' + namesRf[rf]]);
+        if (!bRawRf) continue;
+        var bRf = JSON.parse(bRawRf);
+        var aRf = await getAcct(namesRf[rf]);
+        if (!aRf) continue;
+        aRf.bal += bRf.amt;
+        totalRf += bRf.amt; cntRf++;
+        await putAcct(aRf);
+        await ledger(aRf.name, '↩️ 베팅 환불 (내전 취소/대타)', bRf.amt, aRf.bal);
+        await redis(['DEL', 'bet:' + mkRf + ':' + namesRf[rf]]);
+      }
+      await redis(['DEL', 'mkt:' + mkRf + ':pool:alpha']);
+      await redis(['DEL', 'mkt:' + mkRf + ':pool:beta']);
+      await redis(['SET', 'mkt:' + mkRf + ':status', 'refunded', 'EX', SEC90]);
+      return res.status(200).json({ ok: true, refunded: cntRf, total: totalRf });
+    }
+
     // ── 🎨 그림 뱃지 등록/삭제 (운영자·개발자 — 사이트에서 바로 입점) ──
     if (req.method === 'POST' && (action === 'artAdd' || action === 'artDel')) {
       var sArt = await auth(body.token);
@@ -828,25 +894,22 @@ module.exports = async function handler(req, res) {
       frame: { f1:{e:'🥈',n:'은테',p:25000}, f2:{e:'🥇',n:'금테',p:50000}, f3:{e:'🔮',n:'옵시디언',p:100000}, f4:{e:'💠',n:'네온테',p:40000}, f5:{e:'🌹',n:'로즈골드테',p:60000}, f6:{e:'🏅',n:'챔피언 금장',p:150000}, ft1:{e:'⭐',n:'T1 테두리',p:30000}, ft2:{e:'🐯',n:'GEN 테두리',p:30000}, ft3:{e:'🧡',n:'HLE 테두리',p:20000}, ft4:{e:'🐺',n:'DK 테두리',p:18000}, ft5:{e:'🤖',n:'KT 테두리',p:15000}, ft6:{e:'🟣',n:'KRX 테두리',p:12000}, ft7:{e:'🍜',n:'NS 테두리',p:10000}, ft8:{e:'🥊',n:'BFX 테두리',p:10000}, ft9:{e:'🛩',n:'BRO 테두리',p:8000}, ft10:{e:'🦊',n:'DNF 테두리',p:8000}, ft11:{e:'🌊',n:'BLG 테두리',p:20000}, ft12:{e:'🔱',n:'JDG 테두리',p:18000}, ft13:{e:'🌅',n:'WBG 테두리',p:15000}, ft14:{e:'🗡',n:'AL 테두리',p:12000}, ft15:{e:'🪽',n:'IG 테두리',p:15000}, ft16:{e:'🥷',n:'G2 테두리',p:18000} },
       title: { t1:{e:'✍️',n:'커스텀 칭호',p:80000} },
       art: { a2:{n:'초록 숲 모자',p:8000}, a3:{n:'구미호 소녀',p:12000}, a4:{n:'수묵 도령',p:12000} }, // 🎨 그림 뱃지 — 클라 SHOP_C.art와 ID·가격 반드시 일치!
-      avHair: { h1:{n:'더벅머리',p:1000}, h2:{n:'단발',p:1500}, h3:{n:'포니테일',p:2000}, h4:{n:'트윈테일',p:2500}, h5:{n:'스파이크',p:2000}, h6:{n:'모히칸',p:3000}, h7:{n:'곱슬',p:2000}, h8:{n:'찰랑 장발',p:3000}, h9:{n:'칼정장 가르마',p:2500}, h10:{n:'바가지',p:1000}, h11:{n:'아프로',p:4000}, h12:{n:'사무라이 상투',p:4000} },
-      avHairC: { hc1:{v:'#1c1c1c',n:'흑발',p:500}, hc2:{v:'#5a3a1e',n:'갈색',p:500}, hc3:{v:'#caa56b',n:'금발',p:1000}, hc4:{v:'#e8e8ec',n:'은발',p:1500}, hc5:{v:'#d94f4f',n:'빨강',p:1000}, hc6:{v:'#ff8ec0',n:'핑크',p:1500}, hc7:{v:'#7fb6ff',n:'하늘',p:1500}, hc8:{v:'#3b6fd4',n:'파랑',p:1000}, hc9:{v:'#7a4fd0',n:'보라',p:1500}, hc10:{v:'#3fae6a',n:'초록',p:1000}, hc11:{v:'#ff8a2a',n:'주황',p:1000}, hc12:{v:'#f2d23f',n:'노랑',p:1000}, hc13:{v:'#1fc7b6',n:'민트',p:1500}, hc14:{v:'#ffffff',n:'백발',p:2000} },
-      avEyes: { e1:{n:'점눈',p:800}, e2:{n:'동글눈',p:1000}, e3:{n:'졸린눈',p:1200}, e4:{n:'또렷눈',p:1500}, e5:{n:'별눈',p:3000}, e6:{n:'하트눈',p:3000}, e7:{n:'화난눈',p:1500}, e8:{n:'윙크',p:2000}, e9:{n:'안경',p:2500}, e10:{n:'선글라스',p:3000} },
-      avEyeC: { ec1:{v:'#1c1c1c',n:'까망',p:500}, ec2:{v:'#5a3a1e',n:'갈색',p:500}, ec3:{v:'#3b6fd4',n:'파랑',p:1000}, ec4:{v:'#3fae6a',n:'초록',p:1000}, ec5:{v:'#d94f4f',n:'빨강',p:1200}, ec6:{v:'#7a4fd0',n:'보라',p:1200}, ec7:{v:'#caa56b',n:'호박',p:1000}, ec8:{v:'#1fc7b6',n:'민트',p:1200}, ec9:{v:'#ff8ec0',n:'핑크',p:1200}, ec10:{v:'#f2d23f',n:'금안',p:1500}, ec11:{v:'#e8e8ec',n:'은안',p:1500}, ec12:{v:'#ff8a2a',n:'주황',p:1000} },
-      avHat: { cap1:{n:'야구캡 무지',p:1500}, cap2:{n:'비니',p:1500}, cap3:{n:'밀짚모자',p:2000}, cap4:{n:'버킷햇',p:2000}, cap5:{n:'헤드폰',p:3000}, cap6:{n:'고양이 귀',p:4000}, cap7:{n:'토끼 귀',p:4000}, cap8:{n:'마법사 고깔',p:5000}, cap9:{n:'산타 모자',p:5000}, cap10:{n:'해적 두건',p:3000}, cap11:{n:'왕관',p:20000}, cap12:{tm:'T1',n:'T1 캡',p:8000}, cap13:{tm:'GEN',n:'GEN 캡',p:8000}, cap14:{tm:'DK',n:'DK 캡',p:8000}, cap15:{tm:'KRX',n:'KRX 캡',p:8000}, cap16:{tm:'HLE',n:'HLE 캡',p:8000} },
-      avTop: { t1:{n:'흰 티셔츠',p:1000}, t2:{n:'검정 티셔츠',p:1000}, t3:{n:'회색 후드',p:2500}, t4:{n:'줄무늬 티',p:1500}, t5:{n:'핑크 니트',p:2500}, t6:{n:'하늘 셔츠',p:2000}, t7:{n:'블랙 정장',p:5000}, t8:{n:'골드 정장',p:10000}, t9:{n:'잠옷 상의',p:1500}, t10:{n:'패딩',p:3000}, t11:{n:'농구 져지',p:2500}, t12:{n:'턱시도',p:6000}, t13:{tm:'T1',n:'T1 유니폼',p:8000}, t14:{tm:'GEN',n:'GEN 유니폼',p:8000}, t15:{tm:'HLE',n:'HLE 유니폼',p:8000}, t16:{tm:'DK',n:'DK 유니폼',p:8000}, t17:{tm:'KT',n:'KT 유니폼',p:8000}, t18:{tm:'KRX',n:'KRX 유니폼',p:8000}, t19:{tm:'NS',n:'NS 유니폼',p:8000}, t20:{tm:'BFX',n:'BFX 유니폼',p:8000}, t21:{tm:'BRO',n:'한진 BRO 유니폼',p:8000}, t22:{tm:'DNF',n:'DNF 유니폼',p:8000} },
-      avBot: { b1:{n:'청바지',p:1500}, b2:{n:'검정 슬랙스',p:1500}, b3:{n:'트레이닝 바지',p:1200}, b4:{n:'카키 반바지',p:1000}, b5:{n:'빨강 반바지',p:1000}, b6:{n:'검정 치마',p:1500}, b7:{n:'핑크 치마',p:1800}, b8:{n:'카고 바지',p:2000}, b9:{n:'정장 바지',p:2500}, b10:{n:'잠옷 바지',p:1200}, b11:{n:'골드 바지',p:6000}, b12:{n:'무지개 바지',p:8000}, b13:{n:'청 반바지',p:1200}, b14:{n:'하얀 슬랙스',p:2000} },
       legend: { l1:{e:'🏛',n:'명예의 전당석',p:500000}, l2:{e:'🌌',n:'우주최강',p:1000000} },
       nick: { n1:{e:'😎',n:'존잘남',p:5000}, n2:{e:'💖',n:'존예녀',p:5000}, n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000}, n4:{e:'😇',n:'인성 1티어',p:8000}, n5:{e:'🎉',n:'분위기 메이커',p:5000}, n6:{e:'🌞',n:'아포단의 햇살',p:7000}, n7:{e:'🐱',n:'츤데레',p:3000}, n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000}, n9:{e:'🕺',n:'동네 인싸',p:4000}, n10:{e:'🤿',n:'프로 잠수러',p:2000}, n11:{e:'🧚',n:'칼퇴 요정',p:3000}, n12:{e:'🌭',n:'야식 전도사',p:2500}, n13:{e:'🍗',n:'치킨 성애자',p:2500}, n14:{e:'🍃',n:'민트초코 신봉자',p:1500}, n15:{e:'🥣',n:'부먹파',p:1000}, n16:{e:'🥢',n:'찍먹파',p:1000}, n17:{e:'🕊',n:'평화주의자',p:2000}, n18:{e:'📜',n:'협곡의 시인',p:6000}, n19:{e:'🧊',n:'멘탈 갑',p:8000}, n20:{e:'👏',n:'리액션 부자',p:4000}, n21:{e:'🍜',n:'라면 소믈리에',p:2500}, n22:{e:'🌙',n:'새벽반 반장',p:3000}, n23:{e:'🛏',n:'침대 수호자',p:2000}, n24:{e:'🏞',n:'게임보다 현생',p:1500}, n25:{e:'🖥',n:'현생보다 게임',p:1500}, n26:{e:'📢',n:'잔소리 장인',p:3000}, n27:{e:'🌈',n:'긍정왕',p:4000}, n28:{e:'⚔️',n:'솔랭 전사',p:5000}, n29:{e:'🙃',n:'닉값 못 함',p:2000}, n30:{e:'💯',n:'닉값 제대로 함',p:6000}, n31:{e:'⚡',n:'T1 팬',p:10000}, n32:{e:'🐯',n:'GEN 팬',p:10000}, n33:{e:'🦅',n:'LCK 본방사수',p:8000}, n34:{e:'🐉',n:'LPL 시청자',p:8000}, n35:{e:'🐰',n:'토끼파 두목',p:2000}, n36:{e:'🌻',n:'해바라기 화가',p:2000}, n37:{e:'🐺',n:'DK 팬',p:10000}, n38:{e:'🧡',n:'HLE 팬',p:10000}, n39:{e:'🟣',n:'KRX 팬',p:10000}, n40:{e:'🧠',n:'밴픽 장인',p:6000}, n41:{e:'⚡',n:'인간 점멸',p:5000}, n42:{e:'👁',n:'시야 장인',p:5000}, n43:{e:'🚌',n:'버스 기사',p:7000}, n44:{e:'💺',n:'버스 승객',p:3000}, n45:{e:'🔥',n:'한타의 신',p:8000}, n46:{e:'🎰',n:'도파민 중독',p:4000}, n47:{e:'🤖',n:'KT 팬',p:8000}, n48:{e:'🍜',n:'NS 팬',p:8000}, n49:{e:'🥊',n:'BFX 팬',p:8000}, n50:{e:'🛩',n:'한진 BRO 팬',p:8000}, n51:{e:'🦊',n:'DNF 팬',p:8000}, n52:{e:'🌊',n:'BLG 팬',p:9000}, n53:{e:'🔱',n:'JDG 팬',p:9000}, n54:{e:'🌅',n:'WBG 팬',p:9000}, n55:{e:'🗡',n:'AL 팬',p:8000}, n56:{e:'🪽',n:'IG 팬',p:9000}, n57:{e:'🥷',n:'G2 팬',p:9000}, n58:{e:'👑',n:'황부리그 시민',p:12000} },
       crown: { x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
     };
     if (req.method === 'GET' && action === 'shop') return res.status(200).json({ shop: SHOP });
     if (req.method === 'POST' && (action === 'buyItem' || action === 'equipItem')) {
+      if (action === 'buyItem' && (String(body.cat) === 'cos' || String(body.cat) === 'avG')) return res.status(400).json({ error: '코스튬은 🎲 뽑기로만 얻을 수 있어요' });
       var sSh = await auth(body.token);
       if (!sSh || !sSh.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var aSh = await getAcct(sSh.name);
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var cat = String(body.cat || ''), itemId = String(body.item || '');
       var item = SHOP[cat] && SHOP[cat][itemId];
+      var COS_RE_S = /^([mf])-(lol|ghibli|disney|anime|daily)-([1-9]|[1-5][0-9]|6[0-4])$/;
+      if (!item && cat === 'cos' && (itemId === 'off' || COS_RE_S.test(itemId))) item = { n: '코스튬', p: 0 }; // 👤 코스튬 (cosBuy로만 획득)
+      if (!item && cat === 'avG' && (itemId === 'm' || itemId === 'f')) item = { n: '캐릭터 성별', p: 0 }; // 👤 캐릭터 생성(무료)
       if (!item && cat === 'art' && itemId !== 'off') { // 🎨 운영자가 사이트에서 등록한 그림 뱃지
         try { var dynRaw = await redis(['GET', 'shop:dynart']); var dynM0 = dynRaw ? JSON.parse(dynRaw) : {}; item = dynM0[itemId] || null; } catch (eD) {}
       }
@@ -866,6 +929,7 @@ module.exports = async function handler(req, res) {
         await ledger(aSh.name, '🛍 상점 구매 — ' + (item.e || item.n), -item.p, aSh.bal);
         return res.status(200).json({ ok: true, bal: aSh.bal, items: aSh.items });
       } else {
+        if (cat === 'avG') { aSh.equip.avG = itemId; await putAcct(aSh); return res.status(200).json({ ok: true, equip: aSh.equip }); } // 캐릭터 생성/성별 변경(무료)
         if (itemId !== 'off' && !aSh.items[cat + ':' + itemId]) return res.status(403).json({ error: '보유하지 않은 아이템' });
         if (cat === 'nick' && itemId !== 'off') { // 💬 기본 수식어: 최대 2개, 같은 걸 다시 보내면 해제(토글)
           var arrN = Array.isArray(aSh.equip.nick) ? aSh.equip.nick.slice() : (aSh.equip.nick ? [aSh.equip.nick] : []);
