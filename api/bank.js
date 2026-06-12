@@ -766,7 +766,9 @@ module.exports = async function handler(req, res) {
       color: { c1:{v:'#7fd1ff',n:'아이스',p:10000}, c2:{v:'#ff7fb0',n:'핑크',p:10000}, c3:{v:'#9dff8a',n:'네온',p:15000}, c4:{v:'#c89bff',n:'퍼플',p:20000}, c5:{v:'#ff5b5b',n:'블러드',p:25000}, c6:{v:'#f2b84b',n:'골드',p:30000} },
       frame: { f1:{n:'은테',p:25000}, f2:{n:'금테',p:50000}, f3:{n:'옵시디언',p:100000} },
       title: { t1:{n:'커스텀 칭호',p:80000} },
-      legend: { l1:{e:'🏛',n:'명예의 전당석',p:500000}, l2:{e:'🌌',n:'우주최강',p:1000000} }
+      legend: { l1:{e:'🏛',n:'명예의 전당석',p:500000}, l2:{e:'🌌',n:'우주최강',p:1000000} },
+      nick: { n1:{n:'존잘남',p:5000}, n2:{n:'존예녀',p:5000}, n3:{n:'마음이 따뜻한 사람',p:3000}, n4:{n:'인성 1티어',p:8000}, n5:{n:'분위기 메이커',p:5000}, n6:{n:'아포단의 햇살',p:7000}, n7:{n:'츤데레',p:3000}, n8:{n:'소문난 효자',p:3000}, n9:{n:'동네 인싸',p:4000}, n10:{n:'프로 잠수러',p:2000}, n11:{n:'칼퇴 요정',p:3000}, n12:{n:'야식 전도사',p:2500}, n13:{n:'치킨 성애자',p:2500}, n14:{n:'민트초코 신봉자',p:1500}, n15:{n:'부먹파',p:1000}, n16:{n:'찍먹파',p:1000}, n17:{n:'평화주의자',p:2000}, n18:{n:'협곡의 시인',p:6000}, n19:{n:'멘탈 갑',p:8000}, n20:{n:'리액션 부자',p:4000}, n21:{n:'라면 소믈리에',p:2500}, n22:{n:'새벽반 반장',p:3000}, n23:{n:'침대 수호자',p:2000}, n24:{n:'게임보다 현생',p:1500}, n25:{n:'현생보다 게임',p:1500}, n26:{n:'잔소리 장인',p:3000}, n27:{n:'긍정왕',p:4000}, n28:{n:'솔랭 전사',p:5000}, n29:{n:'닉값 못 함',p:2000}, n30:{n:'닉값 제대로 함',p:6000}, n31:{n:'⚡ T1 팬',p:10000}, n32:{n:'🐯 GEN 팬',p:10000}, n33:{n:'🦅 LCK 본방사수',p:8000}, n34:{n:'🐉 LPL 시청자',p:8000} },
+      crown: { x1:{n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
     };
     if (req.method === 'GET' && action === 'shop') return res.status(200).json({ shop: SHOP });
     if (req.method === 'POST' && (action === 'buyItem' || action === 'equipItem')) {
@@ -781,6 +783,10 @@ module.exports = async function handler(req, res) {
       aSh.equip = aSh.equip || {};
       if (action === 'buyItem') {
         if (aSh.items[cat + ':' + itemId]) return res.status(409).json({ error: '이미 보유 중 (영구 소장)' });
+        if (cat === 'crown') { // 👑 전용 칭호: 자격자(멸망전 우승 라인)만 수령 가능
+          var bareN = String(aSh.name || '').replace(/^\d+\s*/, '').trim();
+          if (item.only !== bareN) return res.status(403).json({ error: '전용 칭호예요 — 자격이 있는 멤버만 받을 수 있어요' });
+        }
         if (aSh.bal < item.p) return res.status(400).json({ error: '잔액 부족 (' + item.p + ' APO 필요)' });
         aSh.bal -= item.p;
         aSh.items[cat + ':' + itemId] = 1;
