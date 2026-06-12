@@ -3040,13 +3040,19 @@ async function bankRefund(luId){
     await fetchMarkets(true);await bankRefresh(true);render();
   }catch(e){toast('환불 실패: '+e.message,true)}
 }
+async function bankMarkSettled(luId,winner){
+  const L=lineupOf(luId);if(!L)return;
+  if(!confirm(`✅ 지급 없이 정산 확정 (${winner==='alpha'?'🅰 알파':'🅱 베타'} 승)\n\n⚠ 백섭 전용 도구예요!\n배당을 한 푼도 지급하지 않고 결과만 "정산 완료"로 잠급니다.\n(이중 지급 사고를 ↩️ 되돌리기로 회수한 다음 마무리할 때 사용)\n\n계속할까요?`))return;
+  try{await bankCall('markSettled',{market:voteKey(L),winner});toast('✅ 지급 없이 확정 완료 — 이제 이 판은 잠겼어요.');await fetchMarkets(true);render()}
+  catch(e){toast(e.message,true)}
+}
 async function bankUnsettle(luId){
   const L=lineupOf(luId);if(!L)return;
   if(!confirm('⚠ 정산 되돌리기 (비상 도구)\n\n적중자에게 지급된 배당을 정확히 같은 금액만큼 회수하고, 베팅판을 "마감" 상태로 되돌립니다.\n그 후 올바른 승자로 다시 정산하면 돼요.\n\n계속할까요?'))return;
   if(!confirm('정말 되돌릴까요? 적중자 지갑에서 배당이 회수됩니다 (장부에 "정산 되돌림"으로 기록).'))return;
   try{
     const j=await bankCall('unsettle',{market:voteKey(L)});
-    toast(`↩️ 되돌림 완료 — ${j.reversed}명에게서 총 ${fmtAPO(j.taken)} APO 회수${j.short?` (⚠ ${j.short}명은 잔액 부족으로 일부만 회수)`:''}. 이제 올바른 승자로 재정산하세요!`);
+    toast(`↩️ 되돌림 완료 — ${j.reversed}명에게서 총 ${fmtAPO(j.taken)} APO 회수${j.short?` (⚠ ${j.short}명은 잔액 부족으로 일부만 회수)`:''}. 정산을 처음부터 다시 하려면 [정산: 승리팀], 이미 배당이 한 번 나간 상태라면 [🛠 백섭 → 지급 없이 확정]!`);
     await fetchMarkets(true);await bankRefresh(true);render();
   }catch(e){toast('되돌리기 실패: '+e.message,true)}
 }
@@ -4759,6 +4765,7 @@ function lineupCard(L){
           <button class="btn sm ghost" style="border-color:rgba(255,92,122,.4);color:var(--lose)" title="빵꾸·대타 — 베팅 전액 환불" onclick="bankRefund('${L.id}')">🚫 취소·환불</button>
           <button class="btn sm gold" onclick="bankSettle('${L.id}','alpha')">정산: 🅰 승</button>
           <button class="btn sm gold" onclick="bankSettle('${L.id}','beta')">정산: 🅱 승</button>
+          ${status==='locked'?`<details style="display:inline-block"><summary class="mini dim" style="cursor:pointer">🛠 백섭</summary><span class="row" style="gap:5px;margin-top:4px"><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','alpha')">지급 없이 🅰 확정</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','beta')">지급 없이 🅱 확정</button></span></details>`:''}
           <button class="btn sm ghost" onclick="bankResetBets('${L.id}')">↩ 베팅 초기화</button>
         </div>`:'';
       return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
