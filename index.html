@@ -3678,6 +3678,7 @@ const FORM_CASTER={
   ]
 };
 function formCasterLine(name,arr,wl,games){
+  name=String(name||'').trim()||'이 선수'; // 방어: 이름 누락 시에도 undefined 금지
   const last=arr[arr.length-1]||100;
   const prev=arr.length>1?arr[arr.length-2]:100;
   let streak=0;for(let i=wl.length-1;i>=0;i--){if(wl[i]===wl[wl.length-1])streak++;else break}
@@ -4684,7 +4685,7 @@ function formBoardHtml(fq){
     return`<tr><td><b>${esc(r.p.displayName)}</b></td><td>${sparkSvg(r.arr,300,62,fc?fc.proj:null)}${fc?'<div class="mini dim" style="margin-top:2px">초록 점선 = 예측 구간</div>':''}</td>
     <td class="num"><b class="${r.price>=100?'priceUp':'priceDn'}" style="font-size:17px">${r.price}</b></td>
     <td class="num ${r.delta>0?'up':r.delta<0?'dn':'even'}">${r.delta>0?'▲ +'+r.delta:r.delta<0?'▼ '+r.delta:'-'}</td>
-    <td class="num dim">${r.w}승 ${r.g-r.w}패</td><td class="mini" style="max-width:320px">${esc(formComment(r.arr,r.wl))}<br><span class="dim">${easy}</span><br><span style="color:var(--gold)">🎙 ${esc(formCasterLine(r.name,r.arr,r.wl,r.g))}</span>${fcTxt?`<br><span style="color:var(--win)">${fcTxt}</span>`:''}</td></tr>`}).join('')}</tbody></table></div>`
+    <td class="num dim">${r.w}승 ${r.g-r.w}패</td><td class="mini" style="max-width:320px">${esc(formComment(r.arr,r.wl))}<br><span class="dim">${easy}</span><br><span style="color:var(--gold)">🎙 ${esc(formCasterLine(r.p.displayName,r.arr,r.wl,r.wl.length))}</span>${fcTxt?`<br><span style="color:var(--win)">${fcTxt}</span>`:''}</td></tr>`}).join('')}</tbody></table></div>`
   :'<div class="empty">경기를 기록하면 종목이 상장됩니다.</div>'}
   <details class="fold" style="margin-top:14px"><summary>📖 주가가 뭐예요? — 주식 처음이어도 30초면 이해됩니다</summary>
     <p class="mini"><b>규칙은 간단해요.</b> 모든 멤버는 <b>지수 100에서 시작</b>합니다. 한 판 <b>이기면 +8, 지면 −6</b>이 붙고, <b>연승·연패 중이면 ±3 가속</b>, <b>MVP를 받으면 +6</b>, 그 판 KDA가 아주 좋으면 +3 / 많이 망하면 −2 보정이 들어가요. 그래서 <b>100보다 위 = 요즘 잘하고 있다, 아래 = 폼이 내려갔다</b>는 뜻이에요. 차트의 <b>점선이 기준가 100</b>입니다.</p>
