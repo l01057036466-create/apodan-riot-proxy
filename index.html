@@ -2419,9 +2419,14 @@ function ghCfg(){try{return JSON.parse(lsGet(GH_KEY)||'{}')}catch(e){return{}}}
 function ghSave(){
   if(needAdmin())return;
   const repo=($('ghRepo')?.value||'').trim(),token=($('ghToken')?.value||'').trim();
+  if(!repo&&!token){ // 둘 다 비우고 저장 = 이 기기 게시 연결 해제 (게시 담당이 아닌 운영자용)
+    lsSet(GH_KEY,'{}');lsSet('apodan_pubfail','');render();
+    return toast('이 기기의 게시 연결을 해제했어요 — 수정은 가능하지만 게시는 토큰이 있는 운영자 기기에서만 돼요.');
+  }
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo))return toast('저장소는 "아이디/저장소이름" 형식이에요. 예: gildong/apodan-riot-proxy',true);
   if(!token)return toast('토큰을 입력해주세요.',true);
   lsSet(GH_KEY,JSON.stringify({repo,token}));
+  lsSet('apodan_pubfail',''); // 새 토큰 저장 = 이전 실패 기록 리셋
   toast('연결 완료! 토큰은 이 브라우저에만 저장되고, 백업·공유 파일에는 절대 포함되지 않아요.');render();
 }
 async function publishData(silent){
@@ -4330,7 +4335,7 @@ function syncBanner(){ // 게시 실패/미게시 경고 — 운영자에게만
     <p class="mini" style="margin:0;font-weight:800;color:var(--gold)">🛠 점검 모드 ON — 멤버들에겐 "서버 업데이트 중" 화면만 보여요. 파일 교체가 끝나면 설정에서 꺼주세요!</p>
   </div>`+(fail?'':'');
   if(fail){
-    const hint=fail.includes('401')?'토큰이 만료·폐기됐어요. 설정 → 깃허브 연결에서 새 Fine-grained 토큰(Contents 읽기/쓰기)을 다시 저장하세요.'
+    const hint=fail.includes('401')?'이 기기에 저장된 깃허브 토큰이 만료·폐기됐어요. <b>게시 담당이라면</b>: 설정 → 깃허브 연결에서 새 Fine-grained 토큰(Contents 읽기/쓰기)을 발급해 다시 저장. <b>게시 담당이 아니라면</b>: 설정 → 깃허브 연결에서 저장소·토큰 칸을 비우고 저장하면 이 경고가 사라져요(수정 내용은 게시 권한 있는 운영자가 반영).'
       :fail.includes('404')?'저장소 이름을 확인하세요 (아이디/저장소 형식).'
       :'네트워크 또는 권한 문제일 수 있어요.';
     return`<div style="background:rgba(255,92,122,.14);border:1px solid var(--lose);border-radius:12px;padding:10px 14px;margin-bottom:12px">
@@ -4584,22 +4589,16 @@ function luCarousel(){
   const Ls=allLineups();
   if(!Ls.length)return'';
   let i=Math.min(window._luIdx||0,Ls.length-1);window._luIdx=i;
-  clearTimeout(window._luAuto);
-  if(Ls.length>1)window._luAuto=setTimeout(()=>{ // 8초마다 다음 내전으로 (입력 중이면 건너뜀)
-    if(tab!=='dashboard')return;
-    if(isTyping())return luCarouselRearm();
-    window._luIdx=((window._luIdx||0)+1)%allLineups().length;render('force');
-  },8000);
+  clearTimeout(window._luAuto); // 자동 넘김 제거 — 화살표·회차 버튼으로만 이동
   window._lpUsed=new Set();const card=lineupCard(Ls[i]);window._lpUsed=null;
   if(Ls.length===1)return card;
   return`<div class="row" style="justify-content:center;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
     <button class="btn sm ghost" onclick="luGo(-1)" aria-label="이전 내전">◀</button>
     ${Ls.map((L,j)=>`<button class="btn sm ${j===i?'gold':'ghost'}" onclick="luSet(${j})">${esc(L.round||'1차')}</button>`).join('')}
     <button class="btn sm ghost" onclick="luGo(1)" aria-label="다음 내전">▶</button>
-    <span class="mini dim">${i+1}/${Ls.length} · 8초 자동</span>
+    <span class="mini dim">${i+1}/${Ls.length}</span>
   </div>${card}`;
 }
-function luCarouselRearm(){window._luAuto=setTimeout(()=>{if(tab!=='dashboard')return;if(isTyping())return luCarouselRearm();window._luIdx=((window._luIdx||0)+1)%Math.max(1,allLineups().length);render('force')},8000)}
 function luGo(d){const n=allLineups().length;if(!n)return;window._luIdx=(((window._luIdx||0)+d)%n+n)%n;render('force')}
 function luSet(i){window._luIdx=i;render('force')}
 
