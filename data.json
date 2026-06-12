@@ -13502,7 +13502,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-12T10:16:37.615Z",
+  "lastBackupAt": "2026-06-12T10:16:44.827Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -13520,6 +13520,13 @@
     "id": "lv_92ilontmq8d896o",
     "champ": "갈리오",
     "type": "ban"
+   }
+  ],
+  "2026-06-12#0": [
+   {
+    "id": "lv_vdse7t4mqas1y4v",
+    "champ": "애니비아",
+    "type": "pick"
    }
   ]
  },
@@ -13606,6 +13613,6 @@
    ]
   }
  ],
- "rev": 47,
- "updatedAt": "2026-06-12T10:16:37.615Z"
+ "rev": 49,
+ "updatedAt": "2026-06-12T10:22:12.751Z"
 }
