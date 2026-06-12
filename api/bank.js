@@ -431,6 +431,29 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid, fee: LP - prize });
     }
 
+    // ── 👀 베팅·지급 내역 조회 (운영진 — 이중 지급 추적용) ──
+    if (req.method === 'GET' && action === 'mktDetail') {
+      var sMd = await auth(q.token);
+      if (!sMd || (sMd.role !== 'admin' && sMd.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var mkMd = String(q.market || '');
+      if (!mktOk(mkMd)) return res.status(400).json({ error: 'market 형식 오류' });
+      var stMd = (await redis(['GET', 'mkt:' + mkMd + ':status'])) || 'open';
+      var winMd = stMd.indexOf('settled:') === 0 ? stMd.slice(8) : null;
+      var WPd = Number(await redis(['GET', 'mkt:' + mkMd + ':pool:' + (winMd || 'alpha')])) || 0;
+      var LPd = Number(await redis(['GET', 'mkt:' + mkMd + ':pool:' + (winMd === 'alpha' ? 'beta' : 'alpha')])) || 0;
+      var przd = Math.floor(LPd * 0.97);
+      var nmd = (await redis(['SMEMBERS', 'mkt:' + mkMd + ':bettors'])) || [];
+      var rows = [];
+      for (var di = 0; di < nmd.length; di++) {
+        var bR = await redis(['GET', 'bet:' + mkMd + ':' + nmd[di]]);
+        if (!bR) continue;
+        var bD = JSON.parse(bR);
+        var shareD = winMd && bD.team === winMd ? (WPd > 0 ? Math.floor(bD.amt + (bD.amt / WPd) * przd) : bD.amt) : 0;
+        rows.push({ name: nmd[di], team: bD.team, amt: bD.amt, share: shareD });
+      }
+      return res.status(200).json({ ok: true, status: stMd, winner: winMd, rows: rows });
+    }
+
     // ── ✅ 지급 없이 정산 확정 (백섭용: 되돌리기로 회수한 뒤, 추가 지급 없이 결과만 잠그기) ──
     if (req.method === 'POST' && action === 'markSettled') {
       var sMk = await auth(body.token);
@@ -635,8 +658,9 @@ module.exports = async function handler(req, res) {
         // ② 체결가 기준 비용
         var base = execB * qty;
         var royalty = Math.floor(base * 0.02); // 💸 초상권료 2% → 종목 본인에게
-        var cost = Math.ceil(base * 1.01) + (tgt === aT.name ? 0 : royalty);
-        if (aT.bal < cost) return res.status(400).json({ error: '잔액 부족 (' + cost + ' APO 필요 = 대금+수수료1%+초상권료2%)' });
+        var selfSur = (tgt === aT.name) ? Math.ceil(base * 0.12) : 0; // 🚧 셀프 매수 할증 12% (자기 주식 이득 차단)
+        var cost = Math.ceil(base * 1.01) + (tgt === aT.name ? 0 : royalty) + selfSur;
+        if (aT.bal < cost) return res.status(400).json({ error: '잔액 부족 (' + cost + ' APO 필요 = 대금+수수료1%' + (tgt === aT.name ? '+셀프할증12%' : '+초상권료2%') + ')' });
         aT.bal -= cost;
         var cur3 = hold[tgt] || { q: 0, avg: 0 };
         cur3.avg = Math.round((cur3.avg * cur3.q + execB * qty) / (cur3.q + qty));
@@ -645,7 +669,7 @@ module.exports = async function handler(req, res) {
         aT.trades = (Number(aT.trades) || 0) + 1;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
-        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + execB + ' (수수료·초상권료 포함)', -cost, aT.bal);
+        await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + execB + (tgt === aT.name ? ' (본인 주식 — 셀프할증 12%)' : ' (수수료·초상권료 포함)'), -cost, aT.bal);
         await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sT.name, 'trade', '1']);
         var paidRoyalty = 0;
         if (royalty > 0 && tgt !== aT.name) { // 셀프 매수엔 초상권료 없음
@@ -668,7 +692,7 @@ module.exports = async function handler(req, res) {
         var impS = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.04)), Math.round(qty * 1.2) || 1));
         SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) - impS);
         var execS = clampPx((SX.base[tgt] || 100) + SX.prem[tgt]);
-        var gain = Math.floor(execS * qty * 0.99);
+        var gain = Math.floor(execS * qty * (tgt === aT.name ? 0.87 : 0.99)); // 🚧 셀프 매도 수수료 13% (본인 주식 차익 차단)
         aT.pnl = (Number(aT.pnl) || 0) + (gain - cur4.avg * qty); // 실현손익 누적
         aT.trades = (Number(aT.trades) || 0) + 1;
         cur4.q -= qty;
@@ -676,7 +700,7 @@ module.exports = async function handler(req, res) {
         aT.bal += gain;
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
-        await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + execS, gain, aT.bal);
+        await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + execS + (tgt === aT.name ? ' (본인 주식 — 셀프수수료 13%)' : ''), gain, aT.bal);
         await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sT.name, 'trade', '1']);
         await savePx(SX);
         await pushHist(tgt, execS, 'trade');
