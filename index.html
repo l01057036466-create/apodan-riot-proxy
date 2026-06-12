@@ -253,6 +253,7 @@ details.fold[open]{padding-bottom:14px}
 @keyframes proShine{from{background-position:0% 0}to{background-position:220% 0}}
 .lgx1{background:linear-gradient(120deg,#f2b84b,#fff3c4 35%,#f2b84b 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;animation:proShine 3s linear infinite;text-shadow:none;filter:drop-shadow(0 0 6px rgba(242,184,75,.5))}
 .lgx2{background:linear-gradient(120deg,#7fd1ff,#d24dff 30%,#ff7fb0 55%,#ffd24a 80%,#7fd1ff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;animation:proShine 3.6s linear infinite;filter:drop-shadow(0 0 7px rgba(176,107,255,.6))}
+.clrRainbow{background:linear-gradient(110deg,#ff5b5b,#ffb347 18%,#ffe14d 35%,#7dff8a 52%,#5ad1ff 70%,#b58cff 86%,#ff5b5b);background-size:280% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;animation:proShine 3s linear infinite;filter:drop-shadow(0 0 6px rgba(255,255,255,.35))}
 @keyframes moneyDrop{to{transform:translateY(115vh) rotate(300deg)}}
 
 /* ═══ 🟢 온라인 박스 + 🎰 잭팟 티커 ═══ */
@@ -3860,7 +3861,7 @@ async function bankGift(){
 /* ───── 🛍 상점 · 🎪 오락실 · 📋 미션 (클라) ───── */
 const SHOP_C={ // 서버와 동일 카탈로그 (표시용 — 검증은 서버)
   badge:{b1:{e:'🐢',p:5000},b2:{e:'🍀',p:7000},b3:{e:'🌙',p:8000},b4:{e:'🦊',p:10000},b5:{e:'🐯',p:12000},b6:{e:'💀',p:15000},b7:{e:'🔥',p:15000},b8:{e:'🚀',p:18000},b9:{e:'👑',p:20000},b10:{e:'💎',p:25000}},
-  color:{c1:{v:'#7fd1ff',n:'아이스',p:10000},c2:{v:'#ff7fb0',n:'핑크',p:10000},c3:{v:'#9dff8a',n:'네온',p:15000},c4:{v:'#c89bff',n:'퍼플',p:20000},c5:{v:'#ff5b5b',n:'블러드',p:25000},c6:{v:'#f2b84b',n:'골드',p:30000},c7:{v:'#e2012d',n:'T1 레드',p:15000},c8:{v:'#a8893a',n:'GEN 골드',p:15000},c9:{v:'#00c9b1',n:'DK 민트',p:15000},c10:{v:'#ff6a13',n:'HLE 오렌지',p:15000},c11:{v:'#4f6dff',n:'DRX 블루',p:15000},c12:{v:'#d24dff',n:'바이올렛',p:20000},c13:{v:'#7dffd9',n:'오로라',p:25000},c14:{v:'#f5f7fa',n:'화이트',p:40000}},
+  color:{c7:{v:'#e2012d',n:'T1 레드',p:50000},c8:{v:'#a8893a',n:'GEN 골드',p:50000},c10:{v:'#ff6a13',n:'HLE 오렌지',p:35000},c9:{v:'#00c9b1',n:'DK 민트',p:30000},c15:{v:'#ff3328',n:'KT 레드',p:25000},c11:{v:'#4f6dff',n:'DRX 블루',p:20000},c17:{v:'#ffd23f',n:'BFX 옐로',p:15000},c16:{v:'#ff5a47',n:'NS 코랄',p:12000},c18:{v:'#c98e4c',n:'BRO 브라운',p:12000},c19:{v:'#ff4d6b',n:'DNF 체리',p:12000},c20:{v:'#2f7bff',n:'BLG 블루',p:40000},c21:{v:'#ef1c2f',n:'JDG 레드',p:30000},c25:{v:'#f3efe0',n:'G2 아이보리',p:35000},c22:{v:'#ff6f61',n:'WBG 스칼렛',p:25000},c23:{v:'#c2185b',n:'AL 크림슨',p:20000},c24:{v:'#e8ecf2',n:'IG 실버',p:20000},rb:{v:'rainbow',n:'🌈 무지개',p:200000}},
   frame:{f1:{e:'🥈',n:'은테',p:25000},f2:{e:'🥇',n:'금테',p:50000},f3:{e:'🔮',n:'옵시디언',p:100000},f4:{e:'💠',n:'네온테',p:40000},f5:{e:'🌹',n:'로즈골드테',p:60000},f6:{e:'🏅',n:'챔피언 금장',p:150000}},
   title:{t1:{e:'✍️',n:'커스텀 칭호',p:80000}},
   // 🎨 그림 뱃지: img는 내장 dataURI 또는 저장소 상대경로('img/파일명.png') 둘 다 OK — 서버 SHOP에도 같은 ID·가격 필수!
@@ -3962,7 +3963,8 @@ function bankDeco(name,equip,mode){ // 장착 효과 이름 HTML — mode 'full'
   if(eq.title)nickTs.unshift(eq.title);
   const title=mode==='full'?`${crownT?`<span style="font-size:10px;color:var(--gold);font-weight:800"> 〔${esc(crownT)}〕</span>`:''}${nickTs.slice(0,2).map(t=>`<span style="font-size:10px;color:var(--mut)"> 〔${esc(t)}〕</span>`).join('')}`:'';
   const lgCls=eq.legend==='l2'?'lgx2':eq.legend==='l1'?'lgx1':'';
-  return`<span class="${lgCls}" style="${frame}${color&&!lgCls?`color:${color};font-weight:800;`:''}">${art}${legend}${badge}${esc(name)}</span>${title}`;
+  const rbCls=color==='rainbow'&&!lgCls?'clrRainbow':'';
+  return`<span class="${lgCls} ${rbCls}" style="${frame}${color&&color!=='rainbow'&&!lgCls?`color:${color};font-weight:800;`:''}">${art}${legend}${badge}${esc(name)}</span>${title}`;
 }
 async function shopBuy(cat,item){
   const it=SHOP_C[cat][item];
@@ -4138,7 +4140,7 @@ function shopHtml(B){
   const cell=(cat,id,it)=>{
     const own=items[cat+':'+id];const on=cat==='nick'?(Array.isArray(eq.nick)?eq.nick.includes(id):eq.nick===id):(eq[cat]===id||(cat==='title'&&eq.title&&own));
     return`<div style="border:1px solid ${on?'var(--gold)':'var(--line)'};border-radius:10px;padding:8px;text-align:center;min-width:86px">
-      <div style="font-size:${cat==='badge'||cat==='legend'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${it.img?`<img src="${it.img}" style="height:34px;border-radius:8px;${it.px?'image-rendering:pixelated;':''}" alt="${esc(it.n)}"><div style="font-size:11px;margin-top:2px">${esc(it.n)}</div>`:cat==='badge'||cat==='legend'?(it.e||it.n):(it.e?it.e+' ':'')+(it.n||it.e||'')}</div>
+      <div style="font-size:${cat==='badge'||cat==='legend'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${it.img?`<img src="${it.img}" style="height:34px;border-radius:8px;${it.px?'image-rendering:pixelated;':''}" alt="${esc(it.n)}"><div style="font-size:11px;margin-top:2px">${esc(it.n)}</div>`:cat==='color'&&it.v==='rainbow'?`<span class="clrRainbow">${it.n}</span>`:cat==='badge'||cat==='legend'?(it.e||it.n):(it.e?it.e+' ':'')+(it.n||it.e||'')}</div>
       <div class="mini dim">${cat==='crown'?'우승자 전용 · 무료':fmtAPO(it.p)}</div>
       ${own?`<button class="btn sm ${on?'gold':'ghost'}" onclick="shopEquip('${cat}','${cat==='nick'?id:(on?'off':id)}')">${on?'해제':'장착'}</button>`
           :`<button class="btn sm" onclick="shopBuy('${cat}','${id}')">구매</button>`}
@@ -4147,7 +4149,11 @@ function shopHtml(B){
     <h3 style="margin:0 0 4px">🛍 포인트 상점 <span class="tag">영구 소장 · 환불 불가 · 디자인별 차등가</span></h3>
     <p class="mini dim" style="margin:0 0 8px">미리보기: ${bankDeco(B.name,eq,'full')} — 수식어·칭호는 부자 랭킹과 내 정보에서, 뱃지·색·그림은 어디서든 표시돼요</p>
     <p class="mini" style="margin:6px 0 4px;font-weight:800">뱃지</p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.badge).map(([id,it])=>cell('badge',id,it)).join('')}</div>
-    <p class="mini" style="margin:10px 0 4px;font-weight:800">이름 색상</p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.color).map(([id,it])=>cell('color',id,it)).join('')}</div>
+    ${(()=>{const LCK=['c7','c8','c10','c9','c15','c11','c17','c16','c18','c19'],INT=['c20','c21','c25','c22','c23','c24'];
+      const grp=ids=>`<div class="row" style="gap:6px;flex-wrap:wrap">${ids.filter(id=>SHOP_C.color[id]).map(id=>cell('color',id,SHOP_C.color[id])).join('')}</div>`;
+      return`<p class="mini" style="margin:10px 0 4px;font-weight:800">🏟 이름 색상 — LCK 팀 컬러 <span class="tag">인기·성적순 가격 — 강팀일수록 비쌉니다</span></p>${grp(LCK)}
+      <p class="mini" style="margin:10px 0 4px;font-weight:800">🌍 이름 색상 — 국제 팀 컬러 <span class="tag">LPL · LEC</span></p>${grp(INT)}
+      <p class="mini" style="margin:10px 0 4px;font-weight:800">👑 이름 색상 — 끝판왕 <span class="tag">전설의 일곱 빛깔</span></p>${grp(['rb'])}`})()}
     <p class="mini" style="margin:10px 0 4px;font-weight:800">테두리 & 칭호</p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.frame).map(([id,it])=>cell('frame',id,it)).join('')}${Object.entries(SHOP_C.title).map(([id,it])=>cell('title',id,it)).join('')}</div>
     <p class="mini" style="margin:10px 0 4px;font-weight:800">🌌 레전드 <span class="tag">부의 정점 — 50만·100만</span></p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.legend).map(([id,it])=>cell('legend',id,it)).join('')}</div>
     ${SHOP_C.art&&Object.keys(SHOP_C.art).length?`<p class="mini" style="margin:10px 0 4px;font-weight:800">🎨 그림 뱃지 <span class="tag">멤버가 직접 그린 한정판 — 이름 옆에 따라다녀요</span></p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.art).map(([id,it])=>cell('art',id,it)).join('')}</div>`:''}
@@ -4302,7 +4308,7 @@ function pgMe(){
   const invBtn=(cat,id)=>{const it=SHOP_C[cat]&&SHOP_C[cat][id];if(!it)return'';
     const on=cat==='nick'?(Array.isArray(eq.nick)?eq.nick.includes(id):eq.nick===id):(eq[cat]===id||(cat==='title'&&eq.title));
     const face=it.img?`<img src="${it.img}" style="height:18px;vertical-align:-4px;border-radius:5px;${it.px?'image-rendering:pixelated;':''}"> ${esc(it.n)}`:cat==='badge'||cat==='legend'?(it.e||it.n):((it.e?it.e+' ':'')+it.n);
-    return`<button class="btn sm ${on?'gold':'ghost'}" style="${cat==='color'?`color:${it.v};`:''}margin:2px" onclick="shopEquip('${cat}','${cat==='nick'?id:(on?'off':id)}')">${face}${on?' ✓':''}</button>`};
+    return`<button class="btn sm ${on?'gold':'ghost'} ${cat==='color'&&it.v==='rainbow'?'clrRainbow':''}" style="${cat==='color'&&it.v!=='rainbow'?`color:${it.v};`:''}margin:2px" onclick="shopEquip('${cat}','${cat==='nick'?id:(on?'off':id)}')">${face}${on?' ✓':''}</button>`};
   const invCat=(cat,label)=>{
     const mine=Object.keys(items).filter(k=>k.startsWith(cat+':')).map(k=>k.split(':')[1]);
     if(!mine.length)return'';
