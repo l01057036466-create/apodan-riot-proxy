@@ -13123,7 +13123,28 @@
    }
   ]
  },
- "lineups": [],
+ "lineups": [
+  {
+   "id": "lu_p76h3z2mqa6oz4c",
+   "date": "2026-06-12",
+   "round": "1차",
+   "note": "금요 내전 20시30분",
+   "blue": [
+    "p_gi86d5qmq7ub77o",
+    "p_r6ogprumq7ub77n",
+    "p_jlc2q699_mq7nhxup",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_60ospv2c_mq7nhxuq"
+   ],
+   "red": [
+    "p_2dlhnzwn_mq7nhxuq",
+    "p_53io5pq0_mq7nhxuq",
+    "p_h7k04k4c_mq7nhxuq",
+    "p_j93ommzd_mq7nhxuq",
+    "p_t5dvobpmq7ub77o"
+   ]
+  }
+ ],
  "rev": 38,
  "updatedAt": "2026-06-11T18:34:25.640Z"
 }
