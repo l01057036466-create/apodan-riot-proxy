@@ -236,6 +236,30 @@ details.fold[open]{padding-bottom:14px}
   table.tbl{font-size:11.5px}
   .pageHead h2{font-size:19px}
 }
+
+/* ═══ 📱 상단 메뉴 모바일 다듬기 — 한 줄 가로 스크롤 + 글자 축소 ═══ */
+nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
+@media (max-width:720px){
+  .topIn{padding:10px 12px;gap:8px}
+  .mark{width:34px;height:34px;font-size:17px;border-radius:10px}
+  .brand h1{font-size:15.5px}
+  .brand p{font-size:9.5px;letter-spacing:.08em}
+  nav.tabs{margin-left:0;flex-direction:column;align-items:stretch;gap:0}
+  nav.tabs>.row{flex-wrap:nowrap!important;overflow-x:auto;width:100%;padding-bottom:2px;scrollbar-width:none}
+  nav.tabs>.row button{flex:none;font-size:12px;padding:7px 10px;white-space:nowrap}
+  .subnav{margin-top:5px;padding-top:5px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .subnav button{flex:none;font-size:11.5px;padding:5px 9px;white-space:nowrap}
+  .ticker{height:28px}
+  .ticker .lbl{padding:0 10px;font-size:10px}
+  .tickerTrack{font-size:11.5px;gap:26px}
+  .wrap{padding:16px 12px 60px}
+  .pageHead{margin-bottom:14px}
+  .pageHead .sub{font-size:12px}
+}
+@media (max-width:480px){
+  .brand p{display:none}
+  nav.tabs>.row button{font-size:11.5px;padding:6px 9px}
+}
 </style>
 </head>
 <body>
@@ -2716,9 +2740,9 @@ function saveVoteApi(){
 
 
 /* ───── 다회차 내전 (1차/2차/3차/투배럭) ───── */
-const ROUNDS=['1차','2차','3차','투배럭A','투배럭B'];
-const ROUND_SLUG={'1차':'','2차':'2','3차':'3','투배럭A':'A','투배럭B':'B'};
-const REWARD_SLUG={'1차':'1','2차':'2','3차':'3','투배럭A':'4','투배럭B':'5'}; // 수당 멱등키용 숫자 슬러그
+const ROUNDS=['0차','1차','2차','3차','4차','5차','투배럭A','투배럭B'];
+const ROUND_SLUG={'0차':'0','1차':'','2차':'2','3차':'3','4차':'4','5차':'5','투배럭A':'A','투배럭B':'B'};
+const REWARD_SLUG={'0차':'0','1차':'1','2차':'2','3차':'3','4차':'4','5차':'5','투배럭A':'11','투배럭B':'12'}; // 수당 멱등키용 숫자 슬러그 (투배럭은 11·12로 분리)
 function allLineups(){
   if(Array.isArray(state.lineups)&&state.lineups.length)return state.lineups;
   return state.lineup?[Object.assign({id:'legacy',round:'1차'},state.lineup)]:[];
@@ -3754,15 +3778,30 @@ const SHOP_C={ // 서버와 동일 카탈로그 (표시용 — 검증은 서버)
   color:{c1:{v:'#7fd1ff',n:'아이스',p:10000},c2:{v:'#ff7fb0',n:'핑크',p:10000},c3:{v:'#9dff8a',n:'네온',p:15000},c4:{v:'#c89bff',n:'퍼플',p:20000},c5:{v:'#ff5b5b',n:'블러드',p:25000},c6:{v:'#f2b84b',n:'골드',p:30000}},
   frame:{f1:{n:'은테',p:25000},f2:{n:'금테',p:50000},f3:{n:'옵시디언',p:100000}},
   title:{t1:{n:'커스텀 칭호',p:80000}},
-  legend:{l1:{e:'🏛',n:'명예의 전당석',p:500000},l2:{e:'🌌',n:'우주최강',p:1000000}}
+  legend:{l1:{e:'🏛',n:'명예의 전당석',p:500000},l2:{e:'🌌',n:'우주최강',p:1000000}},
+  nick:{n1:{n:'존잘남',p:5000},n2:{n:'존예녀',p:5000},n3:{n:'마음이 따뜻한 사람',p:3000},n4:{n:'인성 1티어',p:8000},n5:{n:'분위기 메이커',p:5000},n6:{n:'아포단의 햇살',p:7000},n7:{n:'츤데레',p:3000},n8:{n:'소문난 효자',p:3000},n9:{n:'동네 인싸',p:4000},n10:{n:'프로 잠수러',p:2000},n11:{n:'칼퇴 요정',p:3000},n12:{n:'야식 전도사',p:2500},n13:{n:'치킨 성애자',p:2500},n14:{n:'민트초코 신봉자',p:1500},n15:{n:'부먹파',p:1000},n16:{n:'찍먹파',p:1000},n17:{n:'평화주의자',p:2000},n18:{n:'협곡의 시인',p:6000},n19:{n:'멘탈 갑',p:8000},n20:{n:'리액션 부자',p:4000},n21:{n:'라면 소믈리에',p:2500},n22:{n:'새벽반 반장',p:3000},n23:{n:'침대 수호자',p:2000},n24:{n:'게임보다 현생',p:1500},n25:{n:'현생보다 게임',p:1500},n26:{n:'잔소리 장인',p:3000},n27:{n:'긍정왕',p:4000},n28:{n:'솔랭 전사',p:5000},n29:{n:'닉값 못 함',p:2000},n30:{n:'닉값 제대로 함',p:6000},n31:{n:'⚡ T1 팬',p:10000},n32:{n:'🐯 GEN 팬',p:10000},n33:{n:'🦅 LCK 본방사수',p:8000},n34:{n:'🐉 LPL 시청자',p:8000}},
+  crown:{x1:{n:'제1회 멸망전 우승 탑',p:0,only:'여썬'},x2:{n:'제1회 멸망전 우승 정글',p:0,only:'혀농'},x3:{n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'},x4:{n:'제1회 멸망전 우승 원딜',p:0,only:'미르'},x5:{n:'제1회 멸망전 우승 서폿',p:0,only:'이래'},x6:{n:'제1회 멸망전 우승 팀장',p:0,only:'미르'}}
 };
+function pointTier(bal){ // 포인트 등급 사다리 — 100만 = 프로선수
+  bal=Number(bal)||0;
+  const L=[[0,'아마추어 아이언','#8f9aa8'],[3000,'동네고수 브론즈','#c08d5e'],[8000,'성실한 실버','#b9c8d8'],[15000,'유망주 골드','#f2b84b'],[30000,'각성한 플래티넘','#3fd9c5'],[60000,'정예 에메랄드','#37c978'],[120000,'칼챔 다이아몬드','#5ea0ff'],[250000,'초인 마스터','#b58cff'],[500000,'괴물 그랜드마스터','#ff5c7a'],[750000,'신계 챌린저','#ffd24a'],[1000000,'🏆 프로선수','#ffffff']];
+  let cur=L[0];for(const e of L)if(bal>=e[0])cur=e;
+  const next=L[L.indexOf(cur)+1]||null;
+  return{name:cur[1],c:cur[2],next:next?{name:next[1],need:next[0]-bal}:null};
+}
+function apdRole(name){ // 운영자 직함
+  const b=String(name||'').replace(/^\d+\s*/,'').trim();
+  return b==='물방울'?'APD 회장':b==='미르'?'APD 부회장':null;
+}
 function bankDeco(name,equip){ // 장착 효과가 입혀진 이름 HTML
   const eq=equip||{};
   const badge=eq.badge&&SHOP_C.badge[eq.badge]?SHOP_C.badge[eq.badge].e+' ':'';
   const color=eq.color&&SHOP_C.color[eq.color]?SHOP_C.color[eq.color].v:'';
   const frame=eq.frame==='f3'?'border:1px solid #b06bff;box-shadow:0 0 6px rgba(176,107,255,.6);border-radius:6px;padding:0 5px;':eq.frame==='f2'?'border:1px solid var(--gold);border-radius:6px;padding:0 5px;':eq.frame==='f1'?'border:1px solid #9aa7bd;border-radius:6px;padding:0 5px;':'';
   const legend=eq.legend&&SHOP_C.legend[eq.legend]?SHOP_C.legend[eq.legend].e+' ':'';
-  const title=eq.title?`<span class="dim" style="font-size:10px"> 〔${esc(eq.title)}〕</span>`:'';
+  const crownT=eq.crown&&SHOP_C.crown[eq.crown]?SHOP_C.crown[eq.crown].n:'';
+  const tTxt=crownT||eq.title||(eq.nick&&SHOP_C.nick[eq.nick]?SHOP_C.nick[eq.nick].n:'');
+  const title=tTxt?`<span style="font-size:10px;${crownT?'color:var(--gold);font-weight:800':'color:var(--mut)'}"> 〔${esc(tTxt)}〕</span>`:'';
   return`<span style="${frame}${color?`color:${color};font-weight:800;`:''}">${legend}${badge}${esc(name)}</span>${title}`;
 }
 async function shopBuy(cat,item){
@@ -3777,10 +3816,32 @@ async function shopEquip(cat,item){
   try{const j=await bankCall('equipItem',{cat,item,text});if(window._bank)window._bank.equip=j.equip;toast(item==='off'?'해제!':'✨ 장착!');render()}
   catch(e){toast(e.message,true)}
 }
+function spinFx(prize){ // 🎰 룰렛 연출: 1.4초 숫자 회전 → 결과 팝
+  return new Promise(done=>{
+    try{
+      let el=document.getElementById('spinFx');
+      if(!el){el=document.createElement('div');el.id='spinFx';document.body.appendChild(el)}
+      el.style.cssText='position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(8,10,15,.74);backdrop-filter:blur(3px)';
+      el.innerHTML=`<div style="background:var(--panel);border:1px solid var(--gold);border-radius:18px;padding:24px 38px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.5)"><div style="font-size:12px;color:var(--gold);font-weight:900;letter-spacing:.22em">DAILY ROULETTE</div><div id="spinNum" style="font-size:44px;font-weight:900;margin-top:6px;min-width:180px">🎰</div></div>`;
+      const pool=[50,150,300,600,5000];
+      const iv=setInterval(()=>{const sn=document.getElementById('spinNum');if(sn)sn.textContent='+'+fmt(pool[Math.floor(Math.random()*pool.length)])},80);
+      setTimeout(()=>{
+        clearInterval(iv);
+        const sn=document.getElementById('spinNum');
+        if(sn){sn.textContent='+'+fmt(prize)+' APO';sn.style.color=prize>=5000?'var(--gold)':'var(--win)';sn.style.transition='.18s';sn.style.transform='scale(1.18)'}
+        setTimeout(()=>{el.remove();done()},prize>=5000?1700:1000);
+      },1400);
+    }catch(e){done()}
+  });
+}
 async function arcadeSpin(){
+  if(window._spinBusy)return; // 🐛fix: 연타 방지 (애니메이션 중 재요청 금지)
+  window._spinBusy=true;
   try{const j=await bankCall('spin',{});if(window._bank)window._bank.bal=j.bal;
+    await spinFx(j.prize);
     toast(j.prize>=5000?`🎰💥 잭팟!! +${fmtAPO(j.prize)} APO!!`:`🎰 +${fmtAPO(j.prize)} APO! (남은 스핀 ${j.left})`);render()}
-  catch(e){toast(e.message,true)}
+  catch(e){toast('🎰 '+e.message,true)}
+  finally{window._spinBusy=false}
 }
 async function arcadeScratch(){
   try{const j=await bankCall('scratch',{});if(window._bank)window._bank.bal=j.bal;
@@ -3813,7 +3874,7 @@ function shopHtml(B){
     const own=items[cat+':'+id];const on=eq[cat]===id||(cat==='title'&&eq.title&&own);
     return`<div style="border:1px solid ${on?'var(--gold)':'var(--line)'};border-radius:10px;padding:8px;text-align:center;min-width:86px">
       <div style="font-size:${cat==='badge'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${it.e||it.n}</div>
-      <div class="mini dim">${fmtAPO(it.p)}</div>
+      <div class="mini dim">${cat==='crown'?'우승자 전용 · 무료':fmtAPO(it.p)}</div>
       ${own?`<button class="btn sm ${on?'gold':'ghost'}" onclick="shopEquip('${cat}','${on?'off':id}')">${on?'해제':'장착'}</button>`
           :`<button class="btn sm" onclick="shopBuy('${cat}','${id}')">구매</button>`}
     </div>`};
@@ -3824,6 +3885,11 @@ function shopHtml(B){
     <p class="mini" style="margin:10px 0 4px;font-weight:800">이름 색상</p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.color).map(([id,it])=>cell('color',id,it)).join('')}</div>
     <p class="mini" style="margin:10px 0 4px;font-weight:800">테두리 & 칭호</p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.frame).map(([id,it])=>cell('frame',id,it)).join('')}${Object.entries(SHOP_C.title).map(([id,it])=>cell('title',id,it)).join('')}</div>
     <p class="mini" style="margin:10px 0 4px;font-weight:800">🌌 레전드 <span class="tag">부의 정점 — 50만·100만</span></p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.legend).map(([id,it])=>cell('legend',id,it)).join('')}</div>
+    <p class="mini" style="margin:10px 0 4px;font-weight:800">💬 기성 칭호 <span class="tag">플레이 무관 — 자기소개는 칭호로</span></p><div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(SHOP_C.nick).map(([id,it])=>cell('nick',id,it)).join('')}</div>
+    ${(()=>{const bare=String(B.name||'').replace(/^\d+\s*/,'').trim();
+      const mine=Object.entries(SHOP_C.crown).filter(([id,it])=>it.only===bare);
+      if(!mine.length)return`<p class="mini dim" style="margin:10px 0 0">👑 전용 칭호(제1회 멸망전 우승 등)는 자격이 있는 멤버 화면에만 떠요.</p>`;
+      return`<p class="mini" style="margin:10px 0 4px;font-weight:800;color:var(--gold)">👑 전용 칭호 — 당신만 받을 수 있어요</p><div class="row" style="gap:6px;flex-wrap:wrap">${mine.map(([id,it])=>cell('crown',id,it)).join('')}</div>`})()}
   </div>`;
 }
 function arcadeHtml(B){
@@ -4178,14 +4244,14 @@ function pgDashboard(){
       <span class="mini" style="font-weight:900;color:var(--lose);letter-spacing:.15em">💀 파산 속보</span>
       ${rb.slice(0,3).map(r=>`<p class="mini" style="margin:4px 0 0"><b>${esc(r.name)}</b>${josa(r.name,'이','가')} 전 재산을 잃었습니다 — 통산 ${r.bust}호 파산 ${r.bust>=3?'(상습범 🚨)':''}</p>`).join('')}
     </div>`})()}
-  ${allLineups().map(Lc=>{const C=casterLines(Lc);
+  ${(()=>{const _Ls=allLineups();if(!_Ls.length)return[];const _i=Math.min(window._luIdx||0,_Ls.length-1);return[_Ls[_i]]})().map(Lc=>{const C=casterLines(Lc);
     return`<div class="card" style="margin-bottom:14px;border:1px solid rgba(242,184,75,.35)">
       <h3 style="margin:0 0 6px">🎙 ${esc(Lc.round||'1차')} 중계석 <span class="tag">LCK 분석데스크 — 회차별 코멘트</span></h3>
       <p class="mini" style="margin:0;line-height:1.7">🧀 <b style="color:var(--gold)">클템</b> | ${esc(C.kt)}</p>
       <p class="mini" style="margin:5px 0 0;line-height:1.7">🎤 <b style="color:var(--win)">성캐</b> | ${esc(C.sk)}</p>
     </div>`}).join('')}
   ${isAdmin()?`<div class="row" style="justify-content:flex-end;margin:-4px 0 8px"><button class="btn sm ghost" title="LIVE 티커의 파산 속보 표시/숨김" onclick="state.settings.bustNews=!(state.settings.bustNews!==false);save();render();toast(state.settings.bustNews?'💀 파산 속보 ON':'파산 속보 OFF — 티커에서 숨김 (게시하면 전원 적용)')">${state.settings.bustNews!==false?'💀 파산 속보 ON':'💀 파산 속보 OFF'}</button></div>`:''}
-  ${(()=>{window._lpUsed=new Set();const cards=allLineups().map(L=>lineupCard(L)).join('');window._lpUsed=null;return cards})()}
+  ${luCarousel()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
     <div class="kpi"><div class="n">${state.players.filter(p=>p.active).length}</div><div class="l">활동 명단</div></div>
@@ -4199,6 +4265,119 @@ function pgDashboard(){
     </div>
   </div>
   <div class="card" style="margin-top:14px"><h3>종합 리더보드</h3>${tblPlayers(P)}</div>`;
+}
+
+/* ───── 🎠 대시보드 내전 캐러셀 — 화살표·회차칩·8초 자동 넘김 ───── */
+function luCarousel(){
+  const Ls=allLineups();
+  if(!Ls.length)return'';
+  let i=Math.min(window._luIdx||0,Ls.length-1);window._luIdx=i;
+  clearTimeout(window._luAuto);
+  if(Ls.length>1)window._luAuto=setTimeout(()=>{ // 8초마다 다음 내전으로 (입력 중이면 건너뜀)
+    if(tab!=='dashboard')return;
+    if(isTyping())return luCarouselRearm();
+    window._luIdx=((window._luIdx||0)+1)%allLineups().length;render('force');
+  },8000);
+  window._lpUsed=new Set();const card=lineupCard(Ls[i]);window._lpUsed=null;
+  if(Ls.length===1)return card;
+  return`<div class="row" style="justify-content:center;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+    <button class="btn sm ghost" onclick="luGo(-1)" aria-label="이전 내전">◀</button>
+    ${Ls.map((L,j)=>`<button class="btn sm ${j===i?'gold':'ghost'}" onclick="luSet(${j})">${esc(L.round||'1차')}</button>`).join('')}
+    <button class="btn sm ghost" onclick="luGo(1)" aria-label="다음 내전">▶</button>
+    <span class="mini dim">${i+1}/${Ls.length} · 8초 자동</span>
+  </div>${card}`;
+}
+function luCarouselRearm(){window._luAuto=setTimeout(()=>{if(tab!=='dashboard')return;if(isTyping())return luCarouselRearm();window._luIdx=((window._luIdx||0)+1)%Math.max(1,allLineups().length);render('force')},8000)}
+function luGo(d){const n=allLineups().length;if(!n)return;window._luIdx=(((window._luIdx||0)+d)%n+n)%n;render('force')}
+function luSet(i){window._luIdx=i;render('force')}
+
+/* ───── 🌪 아수라장 팀 랜덤 (무수라장 내전) ───── */
+function playerPowerOf(id){ // 폼 주가 60% + 통산 승률 40% (teamPower와 동일 공식)
+  const s=statPlayers().find(x=>x.id===id);
+  const price=formSeries(id).arr.at(-1)||100;
+  const wr=(s&&s.games?s.winRate:50)*2;
+  return price*.6+wr*.4;
+}
+function mrPick(pid,on){
+  window._mrSel=window._mrSel||{};
+  if(on)window._mrSel[pid]=1;else delete window._mrSel[pid];
+  const c=$('mrCount');if(c)c.textContent=Object.keys(window._mrSel).length;
+}
+function mrListHtml(q){
+  const sel=window._mrSel||{};
+  const lbl=on=>'cursor:pointer;display:inline-flex;gap:5px;align-items:center;'+(on?'border-color:var(--gold);color:var(--gold);font-weight:800':'');
+  return state.players.filter(p=>p.active).filter(p=>searchHit(p,q))
+    .sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'))
+    .map(p=>`<label class="pill" style="${lbl(sel[p.id])}"><input type="checkbox" ${sel[p.id]?'checked':''} onchange="mrPick('${p.id}',this.checked);const L=this.parentElement;L.style.borderColor=this.checked?'var(--gold)':'';L.style.color=this.checked?'var(--gold)':'';L.style.fontWeight=this.checked?'800':''" style="width:15px;height:15px">${esc(p.displayName)}</label>`).join(' ')
+    ||'<span class="mini dim">검색 결과가 없어요.</span>';
+}
+function mrFilter(){const box=$('mrList');if(box)box.innerHTML=mrListHtml($('mrQ')?.value||'')}
+function mrShuffle(mode){
+  const ids=Object.keys(window._mrSel||{});
+  if(ids.length<2)return toast('참가자를 2명 이상 체크해주세요.',true);
+  if(ids.length>10)return toast(`한 판은 최대 10명이에요 — 현재 ${ids.length}명, 체크를 줄여주세요.`,true);
+  const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  let order=shuf([...ids]),blue=[],red=[];
+  if(mode==='balance'){ // 폼 스네이크 드래프트: 강한 순 A B B A A B B A…
+    order.sort((a,b)=>playerPowerOf(b)-playerPowerOf(a));
+    order.forEach((id,i)=>{(i%4===0||i%4===3)?blue.push(id):red.push(id)});
+    shuf(blue);shuf(red); // 팀 내부 순서(=라인)는 랜덤
+  }else{
+    blue=order.slice(0,Math.ceil(order.length/2));red=order.slice(Math.ceil(order.length/2));
+  }
+  let champs=null;
+  if($('mrChamp')?.checked){ // 진짜 아수라장: 랜덤 챔피언 (오늘 피어리스 픽 금지 챔프 제외)
+    const FS=fearlessState(window._todayDate||todayStr(),window._todayRound||'1차');
+    const banned=new Set(FS.pickBanned.map(x=>x.champ));
+    const pool=shuf(CHAMPIONS.filter(c=>!banned.has(c)));
+    champs={};[...blue,...red].forEach((id,i)=>champs[id]=pool[i]||'-');
+  }
+  const avg=t=>t.length?Math.round(t.reduce((a,id)=>a+playerPowerOf(id),0)/t.length):0;
+  window._mrRes={blue,red,champs,pb:avg(blue),pr:avg(red),mode};
+  const out=$('mrOut');if(out)out.innerHTML=mrResultHtml();
+}
+function mrResultHtml(){
+  const R=window._mrRes;if(!R)return'';
+  const lanes=['탑','정글','미드','원딜','서폿'];
+  const side=(ids,tag,col,pw)=>`<div><p class="mini" style="margin:0 0 6px;font-weight:800;color:${col}">${tag} <span class="dim" style="font-weight:600">팀파워 ${pw}</span></p>
+    ${ids.map((id,i)=>`<p class="mini" style="margin:3px 0">${ids.length===5?`<span class="dim">${lanes[i]}</span> `:''}<b>${esc(nameOf(id))}</b>${R.champs?` <span class="pill" style="font-size:10px;padding:1px 6px">${esc(R.champs[id])}</span>`:''}</p>`).join('')}</div>`;
+  const gap=Math.abs(R.pb-R.pr);
+  return`<div class="hr"></div>
+  <div class="grid c2">${side(R.blue,'🅰 알파','var(--gold)',R.pb)}${side(R.red,'🅱 베타','var(--win)',R.pr)}</div>
+  <p class="mini dim" style="margin:8px 0 0">${R.mode==='balance'?`⚖ 폼 주가 스네이크 밸런스 — 팀파워 격차 ${gap} (라인 배치는 랜덤)`:'🌪 완전 랜덤 — 결과에 대한 항의는 주사위에게 부탁드립니다'}${R.champs?' · 챔피언은 오늘 피어리스 픽 금지 챔프를 빼고 뽑았어요':''}</p>
+  <div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">
+    <button class="btn sm gold" onclick="mrToLineup()">🏟 이 결과를 아래 라인업 공지 칸에 채우기</button>
+    <button class="btn sm ghost" onclick="mrShuffle(window._mrRes.mode)">🎲 다시 돌리기</button>
+  </div>`;
+}
+function mrToLineup(){
+  const R=window._mrRes;if(!R)return;
+  if(R.blue.length!==5||R.red.length!==5)return toast('라인업 공지 채우기는 5대5일 때만 가능해요.',true);
+  window._luDraft=window._luDraft||{};
+  R.blue.forEach((id,i)=>window._luDraft[i+1]=nameOf(id));
+  R.red.forEach((id,i)=>window._luDraft[i+6]=nameOf(id));
+  render();
+  toast('라인업 칸에 채웠어요 — 회차 고르고 [라인업 공지하기]만 누르면 끝!');
+  setTimeout(()=>{const el=$('lu1');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},80);
+}
+function asuraCard(){
+  const n=Object.keys(window._mrSel||{}).length;
+  return`<div class="card" style="margin-bottom:14px;border:1px solid rgba(181,140,255,.45)">
+    <h3 style="margin:0 0 4px">🌪 아수라장 팀 랜덤 <span class="tag">참가자 체크 → 버튼 한 번 → 팀 완성</span></h3>
+    <p class="mini dim" style="margin:0 0 8px">완전 랜덤은 순수 주사위, 밸런스 랜덤은 폼 주가+승률 스네이크로 양 팀 전력을 비슷하게. 5대5면 라인까지 랜덤 배정돼요.</p>
+    <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <input id="mrQ" placeholder="🔎 이름·초성 검색" style="max-width:200px" oninput="mrFilter()">
+      <span class="pill">선택 <b id="mrCount">${n}</b>명 / 최대 10</span>
+      <button class="btn sm ghost" onclick="window._mrSel={};window._mrRes=null;render()">전체 해제</button>
+    </div>
+    <div id="mrList" class="row" style="gap:6px;flex-wrap:wrap;max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px">${mrListHtml('')}</div>
+    <div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center">
+      <button class="btn gold" onclick="mrShuffle('pure')">🎲 완전 랜덤</button>
+      <button class="btn" onclick="mrShuffle('balance')">⚖ 밸런스 랜덤 (폼 기반)</button>
+      <label class="row" style="gap:5px;cursor:pointer;align-items:center"><input type="checkbox" id="mrChamp" ${window._mrChamp?'checked':''} onchange="window._mrChamp=this.checked" style="width:16px;height:16px"><span class="mini">🃏 랜덤 챔피언까지 (진짜 아수라장 모드)</span></label>
+    </div>
+    <div id="mrOut">${mrResultHtml()}</div>
+  </div>`;
 }
 
 /* ───── 기록하기 (스크린샷 분석 = 메인) ───── */
@@ -4273,6 +4452,7 @@ function pgRecord(){
   const anchors=state.players.filter(p=>p.active&&p.riotName);
   const anchorSel=state.settings.riotAnchor||anchors[0]?.id||'';
   return head('기록하기','라이엇 연동이 가장 정확해요(딜량·시야·밴·챔피언까지 자동). 어떤 방법이든 자동 저장은 없고, 항상 검수 후 저장됩니다.')+`
+  ${asuraCard()}
   ${lineupEditor()}
   <div class="card" style="border-color:rgba(242,184,75,.45)">
     <h3>① 라이엇 자동 불러오기 <span class="tag">정확도 100% · 추천</span></h3>
@@ -4999,9 +5179,9 @@ function pgBank(){
   const medal=i=>['🥇','🥈','🥉'][i]||`${i+1}위`;
   const rosterCard=`<div class="card" style="margin-top:14px">
     <h3>🏆 아포단 부자 랭킹 <span class="tag">전 멤버 공개 — 포인트는 명예다</span></h3>
-    ${roster.length?`<div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>#</th><th>이름</th><th class="num">잔액 (APO)</th><th>칭호</th>${B&&(B.role==='admin'||B.role==='dev')?'<th>정리</th>':''}</tr></thead><tbody>
-      ${roster.map((r,i)=>{const canMod=B&&(B.role==='admin'||B.role==='dev');
-        return`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${bankDeco(r.name,r.equip)}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td class="mini">${bankBadges(r,roster).map(b=>`<span class="pill" style="font-size:10px;padding:1px 6px;margin-right:3px">${b}</span>`).join('')||'<span class="dim">—</span>'}</td>${canMod?`<td><button class="btn sm ghost" title="잘못 가입한 계정 삭제" onclick="bankPurgeName('${esc(r.name)}','purge')">🗑</button></td>`:''}</tr>`}).join('')}</tbody></table></div>`
+    ${roster.length?`<div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>#</th><th>이름</th><th class="num">잔액 (APO)</th><th>등급</th><th>칭호</th>${B&&(B.role==='admin'||B.role==='dev')?'<th>정리</th>':''}</tr></thead><tbody>
+      ${roster.map((r,i)=>{const canMod=B&&(B.role==='admin'||B.role==='dev');const T=pointTier(r.bal);const role=apdRole(r.name);
+        return`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${bankDeco(r.name,r.equip)}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td><span class="pill" style="font-size:10px;padding:1px 6px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap">${T.name}</span>${role?`<br><span class="pill" style="font-size:10px;padding:1px 6px;color:var(--gold);border-color:var(--gold);font-weight:900;white-space:nowrap">👑 ${role}</span>`:''}</td><td class="mini">${bankBadges(r,roster).map(b=>`<span class="pill" style="font-size:10px;padding:1px 6px;margin-right:3px">${b}</span>`).join('')||'<span class="dim">—</span>'}</td>${canMod?`<td><button class="btn sm ghost" title="잘못 가입한 계정 삭제" onclick="bankPurgeName('${esc(r.name)}','purge')">🗑</button></td>`:''}</tr>`}).join('')}</tbody></table></div>`
     :`<p class="mini dim">${voteApiBase()?'아직 활성 계좌가 없어요 — 1호 가입자가 되어보세요!':'설정에서 서버를 먼저 연결해주세요.'}</p>`}
   </div>`;
   if(!B){
@@ -5078,6 +5258,9 @@ function pgBank(){
             oninput="if(window._ime)return;window._stQ=this.value;updStockBoard()"></div>
         <div id="stBoard">${stockBoardHtml(window._stQ||'')}</div>`})()}
     </div>
+    <div class="card" style="margin-top:14px;border-style:dashed"><p class="mini dim" style="margin:0">👇 아래 오락실·상점은 <b>열람용 미리보기</b> — 유령 세션엔 지갑이 없어서 실제 구매·게임은 본인 멤버 계정으로 로그인해서!</p></div>
+    ${arcadeHtml({name:'시스템',bal:null,items:{},equip:{}})}
+    ${shopHtml({name:'시스템',items:{},equip:{}})}
     ${rosterCard}`;
   }
   const pend=window._bankPending||[];
@@ -5087,6 +5270,7 @@ function pgBank(){
     <div class="card derby" style="text-align:center">
       <p class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:900;margin:0">MY BALANCE</p>
       <div style="font-size:34px;font-weight:900;margin:6px 0">${fmtAPO(B.bal)} <span style="font-size:16px;color:var(--gold)">APO</span></div>
+      ${(()=>{const T=pointTier(B.bal),role=apdRole(B.name);return`<div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin:2px 0 4px"><span class="pill" style="color:${T.c};border-color:${T.c}66;font-weight:800">${T.name}</span>${role?`<span class="pill" style="color:var(--gold);border-color:var(--gold);font-weight:900">👑 ${role}</span>`:''}</div>${T.next?`<p class="mini dim" style="margin:0 0 2px">다음 등급 「${T.next.name}」까지 ${fmtAPO(T.next.need)} APO</p>`:'<p class="mini" style="margin:0 0 2px;color:var(--gold);font-weight:800">정점에 도달했습니다 — 더 오를 곳이 없어요 🏆</p>'}`})()}
       <p class="mini dim" style="margin:0">${esc(B.name)}${B.role==='admin'?' · 운영진':''}${B.bust?` · 💀 파산 ${B.bust}회`:''}</p>
       <div class="row" style="justify-content:center;gap:8px;margin-top:10px">
         <button class="btn sm" onclick="bankRefresh(true)">🔄 새로고침</button>
