@@ -200,18 +200,26 @@ module.exports = async function handler(req, res) {
       await redis(['LTRIM', 'trades:recent', '0', '29']);
       await redis(['EXPIRE', 'trades:recent', SEC90]);
     }
-    async function busted(a) { // 파산: 박제 + 구제는 하루 1회만 (무한 셔틀 금지)
+    async function busted(a) { // 파산: 잔액 0 + 보유 주식도 0일 때만 (자산가는 파산 아님)
       if (a.bal > 0) return a;
+      var hRaw = await redis(['GET', 'hold:' + a.name]);
+      var hObj = hRaw ? JSON.parse(hRaw) : {};
+      var shares = 0;
+      for (var hk in hObj) shares += Number(hObj[hk] && hObj[hk].q) || 0;
+      if (shares > 0) { await putAcct(a); return a; } // 💼 주식 보유 = 자산가, 파산 면제
       a.bust = (a.bust || 0) + 1;
       a.lastBustAt = new Date().toISOString();
+      a.bustUntil = Date.now() + 6 * 3600 * 1000; // ⛓ 파산 정리 기간: 6시간 주식 거래 금지
       var today = kstDate();
-      if (a.lastBustDay !== today) { // 오늘 첫 파산 → 새출발 지원금
-        a.lastBustDay = today; a.bal = 1000;
+      if (a.lastBustDay !== today) { // 오늘 첫 파산 → 지원금 (회차마다 감소)
+        a.lastBustDay = today;
+        var aid = a.bust <= 1 ? 1000 : a.bust === 2 ? 700 : 400; // 상습 파산 패널티
+        a.bal = aid;
         await putAcct(a);
-        await ledger(a.name, '💀 파산 ' + a.bust + '호 → 새출발 지원금 (1일 1회)', 1000, a.bal);
-      } else { // 오늘 두 번째 파산 → 무일푼. 내일 출석 수당으로 재기
+        await ledger(a.name, '💀 파산 ' + a.bust + '호 → 지원금 ' + aid + ' (상습일수록 감소) · 6시간 거래 정지', aid, a.bal);
+      } else {
         await putAcct(a);
-        await ledger(a.name, '💀💀 같은 날 ' + a.bust + '호 파산 — 지원금 소진, 내일까지 무일푼', 0, 0);
+        await ledger(a.name, '💀💀 같은 날 ' + a.bust + '호 파산 — 지원금 소진, 내일까지 무일푼 · 6시간 거래 정지', 0, 0);
       }
       return a;
     }
@@ -326,31 +334,31 @@ module.exports = async function handler(req, res) {
     }
 
     // 참여 수당 일괄 지급 (운영진·개발자 — 클라이언트가 게시 직후 자동 호출)
-    if (req.method === 'POST' && action === 'reward') {
-      var sR = await auth(body.token);
-      if (!sR || (sR.role !== 'admin' && sR.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
-      var gs = Array.isArray(body.grants) ? body.grants.slice(0, 100) : [];
-      var paidN = 0, skipped = [];
-      for (var g = 0; g < gs.length; g++) {
-        var gn = nameOk(gs[g].name);
-        var ga = Math.round(Number(gs[g].amount) || 0);
-        if (!gn || ga < 1 || ga > 100000) continue;
-        var acc2 = await getAcct(gn);
-        if (!acc2 || acc2.status !== 'active') { skipped.push(gn || '?'); continue; }
-        acc2.bal += ga;
-        await putAcct(acc2);
-        await ledger(acc2.name, String(gs[g].memo || '🎮 내전 참여 수당').slice(0, 60), ga, acc2.bal);
-        paidN++;
-      }
-      return res.status(200).json({ ok: true, paid: paidN, skipped: skipped });
+    // 🎁 운영진 상품권 — 소액 자유 지급 (이벤트·고생수당 등)
+    if (req.method === 'POST' && action === 'gift') {
+      var sG = await auth(body.token);
+      if (!sG || (sG.role !== 'admin' && sG.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var gN = nameOk(body.name);
+      var gA = Math.round(Number(body.amount) || 0);
+      var gM = String(body.memo || '').slice(0, 40);
+      if (!gN) return res.status(400).json({ error: '받는 멤버 이름 확인' });
+      if (gA < 50 || gA > 5000) return res.status(400).json({ error: '상품권은 50~5,000 APO' });
+      var gAcc = await getAcct(gN);
+      if (!gAcc || gAcc.status !== 'active') return res.status(404).json({ error: '계좌가 없거나 비활성' });
+      gAcc.bal += gA;
+      await putAcct(gAcc);
+      await ledger(gAcc.name, '🎁 상품권' + (gM ? ' — ' + gM : '') + ' (from ' + (sG.name || '운영진') + ')', gA, gAcc.bal);
+      return res.status(200).json({ ok: true, name: gN, amount: gA, bal: gAcc.bal });
     }
+
+    // (구버전 reward(grants) 핸들러 제거 — 날짜 멱등 버전이 단일 진실)
 
     // ═══ 내전 참여 수당 (운영진, 날짜당 1인 1회 — 중복 지급 서버 차단) ═══
     if (req.method === 'POST' && action === 'reward') {
       var sR = await auth(body.token);
       if (!sR || (sR.role !== 'admin' && sR.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var rd = String(body.date || '');
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(rd)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD' });
+      if (!/^\d{4}-\d{2}-\d{2}(#\d{1,2})?$/.test(rd)) return res.status(400).json({ error: 'date 형식: YYYY-MM-DD 또는 YYYY-MM-DD#회차' });
       var amtR = Math.round(Number(body.amount) || 500);
       if (amtR < 100 || amtR > 2000) return res.status(400).json({ error: '수당은 100~2,000 APO' });
       var list = Array.isArray(body.names) ? body.names.slice(0, 60) : [];
@@ -424,6 +432,11 @@ module.exports = async function handler(req, res) {
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
+      var aPre = await getAcct(sT.name);
+      if (aPre && Number(aPre.bustUntil) > Date.now()) {
+        var leftH = Math.ceil((Number(aPre.bustUntil) - Date.now()) / 3600000);
+        return res.status(403).json({ error: '⛓ 파산 정리 기간 — 약 ' + leftH + '시간 후 거래 가능 (베팅·출석으로 재기하세요)' });
+      }
       var hourKey = 'trl:' + sT.name + ':' + new Date().toISOString().slice(0, 13);
       var tn = await redis(['INCRBY', hourKey, '1']);
       await redis(['EXPIRE', hourKey, '3700']);
