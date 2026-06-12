@@ -4169,6 +4169,7 @@ async function bankSync(force){ // 공개 roster 폴링 — 등급칩·온라인
   if(!force&&typeof document!=='undefined'&&document.hidden)return; // 보고 있지 않은 탭은 서버를 쉬게
   const now=Date.now();
   if(!force&&window._bankSyncAt&&now-window._bankSyncAt<200000)return;
+  if(bankToken())fetch(voteApiBase()+'/api/bank?action=ping&token='+encodeURIComponent(bankToken())).catch(()=>{}); // 🟢 온라인 하트비트 (초경량)
   window._bankSyncAt=now;
   try{
     const r=await fetch(voteApiBase()+'/api/bank?action=roster');
