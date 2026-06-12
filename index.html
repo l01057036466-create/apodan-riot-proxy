@@ -3361,6 +3361,33 @@ async function castMvp(date,pick){
     await fetchMvp(date);render();
   }catch(e){toast(e.status===409?'이미 투표했어요 — 한 사람당 한 표!':'투표 실패: '+e.message,true)}
 }
+async function mvpTimer(date){
+  const m=Math.round(Number(prompt('몇 분 뒤 자동 마감할까요? (1~240분)','10'))||0);
+  if(!m)return;
+  if(m<1||m>240)return toast('타이머는 1~240분',true);
+  try{await bankCall('mvpTimer',{date,minutes:m});toast(`⏱ ${m}분 타이머 시작 — 시간이 되면 자동 마감돼요!`);await fetchMvp(date);render()}
+  catch(e){toast(e.message,true)}
+}
+async function mvpReset(date){
+  if(!confirm('🗑 이 회차 MVP 투표를 전부 초기화할까요?\n모든 표가 지워지고, 멤버들은 다시 투표할 수 있게 돼요. (다른 회차는 그대로)'))return;
+  try{const j=await bankCall('mvpReset',{date});toast('🗑 초기화 완료 — 투표가 다시 열렸어요!');await fetchMvp(date);render()}
+  catch(e){toast(e.message,true)}
+}
+function mvpCdStart(){ // ⏱ 카운트다운 1초 갱신 (재렌더 없이 글자만)
+  clearInterval(window._mvpCdIv);
+  if(!document.querySelectorAll)return;
+  window._mvpCdIv=setInterval(()=>{
+    const els=document.querySelectorAll('.mvpCd');
+    if(!els.length)return clearInterval(window._mvpCdIv);
+    let expired=false;
+    els.forEach(e=>{
+      const left=Number(e.getAttribute('data-until'))-Date.now();
+      if(left<=0){if(e.textContent!=='마감!')expired=true;e.textContent='마감!'}
+      else e.textContent=Math.floor(left/60000)+':'+String(Math.floor(left%60000/1000)).padStart(2,'0');
+    });
+    if(expired){const k=Object.keys(window._mvp||{});k.forEach(key=>fetchMvp(key));setTimeout(()=>{if(!isTyping())render()},800)}
+  },1000);
+}
 async function mvpLock(date,open){
   try{
     await bankCall('mvpLock',{date,open:!!open});
@@ -4386,6 +4413,7 @@ function render(opt){
     champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe};
   $('view').innerHTML=(R[tab]||pgDashboard)();
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
+  mvpCdStart(); // ⏱ MVP 타이머 카운트다운
 }
 
 /* ───── 대시보드 ───── */
@@ -4508,13 +4536,13 @@ function lineupCard(L){
           const lockedV=MV.status==='locked';
           const BV=bankSession();
           return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
-            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.12em;color:var(--gold)">🏅 ${esc(L.round||'')} MVP 투표 <span class="dim" style="font-weight:600;letter-spacing:0">— ${lockedV?'마감·확정':'진행 중'} · ${totV}표 · 1인 1표</span></p>
+            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.12em;color:var(--gold)">🏅 ${esc(L.round||'')} MVP 투표 <span class="dim" style="font-weight:600;letter-spacing:0">— ${lockedV?'마감·확정':'진행 중'} · ${totV}표 · 1인 1표</span>${!lockedV&&MV.until&&MV.until>Date.now()?` <span class="pill" style="font-size:10px;padding:1px 7px;border-color:var(--gold);color:var(--gold);font-weight:900">⏱ <b class="mvpCd" data-until="${MV.until}">--:--</b></span>`:''}</p>
             <div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">
               ${cand.map(n=>{const v=(MV.tally||{})[n]||0;const isTop=lockedV&&v===topV&&topV>0;const mine=MV.my===n;
                 return`<button class="btn sm ${isTop?'gold':''}" ${lockedV||MV.my?'disabled':''} onclick="castMvp('${esc(key)}','${esc(n)}')" style="${mine?'border-color:var(--gold);color:var(--gold);font-weight:900':''}">${isTop?'👑 ':''}${esc(n)}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
             </div>
             <p class="mini dim" style="text-align:center;margin:6px 0 0">${BV&&BV.name?(MV.my?`내 픽: <b>${esc(MV.my)}</b>`:'이 경기 최고의 플레이어에게 한 표!'):'💰 로그인하면 투표 가능'}
-            ${(BV&&(BV.role==='admin'||BV.role==='dev'))?` · <button class="btn sm ${lockedV?'':'lose'}" onclick="mvpLock('${esc(key)}',${lockedV?'true':'false'})">${lockedV?'재개':'MVP 마감'}</button>`:''}</p>
+            ${(BV&&(BV.role==='admin'||BV.role==='dev'))?` · <button class="btn sm ${lockedV?'':'lose'}" onclick="mvpLock('${esc(key)}',${lockedV?'true':'false'})">${lockedV?'재개':'MVP 마감'}</button>${lockedV?'':` <button class="btn sm ghost" title="N분 뒤 자동 마감" onclick="mvpTimer('${esc(key)}')">⏱ 타이머</button>`} <button class="btn sm ghost" title="이 회차 표 전부 삭제 후 재투표" style="border-color:rgba(255,92,122,.35)" onclick="mvpReset('${esc(key)}')">🗑 초기화</button>`:''}</p>
           </div>`})()}
         ${(()=>{ // 🎯 스코어 예측 (3판/5판 등 다전제)
           if(!L.series||L.series==='단판')return'';
