@@ -3025,12 +3025,20 @@ async function stockTrade(side){
 async function payMatchReward(){
   const date=($('rwDate')?.value||'').trim();
   const amt=Math.round(Number($('rwAmt')?.value)||500);
-  if(!date)return toast('내전 날짜를 골라주세요.',true);
-  const pids=new Set();
-  state.matches.filter(m=>m.playedAt===date).forEach(m=>m.participants.forEach(p=>p.playerId&&pids.add(p.playerId)));
-  if(!pids.size)return toast('그 날짜의 경기 기록이 없어요.',true);
-  const names=[...pids].map(id=>nameOf(id));
-  if(!confirm(`${date} 출전 ${names.length}명에게 각 ${fmtAPO(amt)} APO를 지급할까요?\n(계좌 없는 멤버는 자동 제외, 이미 받은 사람은 서버가 중복 차단)`))return;
+  if(!date)return toast('지급 대상을 골라주세요.',true);
+  let names;
+  if(date.includes('#')){ // 라인업(회차)별: 명단 = 라인업 10명
+    const[d,rn]=date.split('#');
+    const L=(state.lineups||[]).find(x=>x.date===d&&((x.round||'1차').replace(/[^0-9]/g,'')||'1')===rn);
+    if(!L)return toast('해당 라인업을 못 찾았어요.',true);
+    names=[...(L.blue||[]),...(L.red||[])].map(id=>nameOf(id));
+  }else{
+    const pids=new Set();
+    state.matches.filter(m=>m.playedAt===date).forEach(m=>m.participants.forEach(p=>p.playerId&&pids.add(p.playerId)));
+    if(!pids.size)return toast('그 날짜의 경기 기록이 없어요.',true);
+    names=[...pids].map(id=>nameOf(id));
+  }
+  if(!confirm(`${date.replace('#',' ')+(date.includes('#')?'차':'')} 대상 ${names.length}명에게 각 ${fmtAPO(amt)} APO를 지급할까요?\n(계좌 없는 멤버는 자동 제외, 이미 받은 사람은 서버가 중복 차단)`))return;
   try{
     const j=await bankCall('reward',{date,names,amount:amt});
     toast(`🎮 ${j.paid}명에게 ${fmtAPO(j.amount)} APO씩 지급!${j.skipped&&j.skipped.length?` (제외 ${j.skipped.length}명: 계좌 없음/기지급)`:''}`);
@@ -3698,6 +3706,27 @@ function formCasterLine(name,arr,wl,games){
     .replace(/\{n\}/g,name)
     .replace(/\{px\}/g,String(last));
 }
+
+
+/* ⌨ 타이핑 종료 시 보류 렌더 반영 */
+if(typeof document!=='undefined'&&document.addEventListener){
+  document.addEventListener('focusout',()=>{setTimeout(()=>{if(window._renderQueued&&!window._ime&&!isTyping()){window._renderQueued=0;render()}},120)});
+}
+
+
+async function bankGift(){
+  const name=($('gfName')?.value||'').trim();
+  const amt=Math.round(Number($('gfAmt')?.value)||0);
+  const memo=($('gfMemo')?.value||'').trim();
+  if(!name)return toast('받는 멤버를 골라주세요.',true);
+  if(amt<50||amt>5000)return toast('상품권은 50~5,000 APO',true);
+  if(!confirm(`🎁 ${name}에게 ${fmtAPO(amt)} APO 상품권${memo?` (${memo})`:''} 지급할까요?`))return;
+  try{
+    const j=await bankCall('gift',{name,amount:amt,memo});
+    toast(`🎁 ${j.name}에게 ${fmtAPO(j.amount)} APO 지급 완료!`);
+    await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
+}
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
@@ -3821,8 +3850,13 @@ function head(title,sub){
   return syncBanner()+`<div class="pageHead"><div><h2>${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>
   <div class="meta"><span class="chip">플레이어 ${state.players.filter(p=>p.active).length}명</span><span class="chip">경기 ${state.matches.length}판</span><span class="chip">챔피언 ${CHAMPIONS.length}종</span></div></div>`;
 }
-function render(){
+function isTyping(){
+  const el=document.activeElement;
+  return!!(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA')&&el.type!=='checkbox'&&el.type!=='radio');
+}
+function render(opt){
   if(window._ime){window._renderQueued=1;return} // 한글 조합 중엔 화면 교체 보류 (글자 깨짐 방지)
+  if(opt!=='force'&&isTyping()){window._renderQueued=1;return} // ⌨ 입력 중엔 화면 교체 보류 (로그인 PIN 등 글자 날아감 방지)
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
   renderNav();renderTicker();fillDatalists();
   if(state.settings&&state.settings.maintenance&&!isAdmin()){
@@ -4858,7 +4892,7 @@ function pgBank(){
         <p class="mini dim" style="margin-top:8px">가입 신청 → 운영자 승인 → <b>10,000 APO</b> 자동 입금. 비밀번호는 암호화(해시)로만 저장돼요. <b>운영진·개발자 계정은 로그인만 하면 기록 수정 권한까지 자동 ON</b> — PIN은 비상용입니다. ⚠ 다른 데서 쓰는 비밀번호는 쓰지 마세요!</p>
       </div>
       <div class="card"><h3>💡 APO가 뭔가요?</h3>
-        <p class="mini">아포단 공식 게임 머니예요. 곧 열릴 기능: <b>승부 예측 베팅</b>(이긴 쪽이 진 쪽 포인트를 나눠 갖는 진짜 도박장 — 올인 가능 🚨), <b>멤버 주식 거래소</b>(폼 주가에 실제 투자, MVP 배당금). 매일 접속만 해도 200 APO. 파산해도 새출발 지원금 1,000 APO — 대신 파산 횟수가 박제됩니다 💀</p>
+        <p class="mini">아포단 공식 게임 머니예요. 곧 열릴 기능: <b>승부 예측 베팅</b>(이긴 쪽이 진 쪽 포인트를 나눠 갖는 진짜 도박장 — 올인 가능 🚨), <b>멤버 주식 거래소</b>(폼 주가에 실제 투자, MVP 배당금). 매일 접속만 해도 200 APO. 잔액 0이어도 보유 주식이 있으면 파산이 아니에요(자산 평가 💼). 진짜 파산하면 지원금이 1,000→700→400으로 줄고(상습 패널티) 6시간 거래 정지 + 횟수 박제 💀</p>
       </div>
     </div>${rosterCard}`;
   }
@@ -4984,11 +5018,26 @@ function pgBank(){
   </div>
   ${B.role==='admin'||B.role==='dev'?`<div class="card" style="margin-top:14px"><h3>🎮 내전 참여 수당 지급 <span class="tag">운영진 전용 · 1인 1회 서버 차단</span></h3>
     <div class="grid c3">
-      <div class="f"><label>내전 날짜</label><select id="rwDate" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${[...new Set(state.matches.map(m=>m.playedAt))].sort().reverse().slice(0,10).map(d=>`<option>${esc(d)}</option>`).join('')}</select></div>
+      <div class="f"><label>지급 대상</label><select id="rwDate" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">
+        ${(state.lineups||[]).slice().reverse().slice(0,8).map(L=>`<option value="${esc(L.date)}#${esc((L.round||'1차').replace(/[^0-9]/g,'')||'1')}">${esc(L.date)} ${esc(L.round||'1차')} — 라인업 ${(L.blue||[]).length+(L.red||[]).length}명</option>`).join('')}
+        ${[...new Set(state.matches.map(m=>m.playedAt))].sort().reverse().slice(0,8).map(d=>`<option value="${esc(d)}">${esc(d)} 전체 — 기록 출전자</option>`).join('')}
+      </select></div>
       <div class="f"><label>1인당 수당 (APO)</label><input id="rwAmt" type="number" value="500" min="100" max="2000"></div>
       <div class="f" style="align-self:end"><button class="btn gold" onclick="payMatchReward()">출전자 전원 지급</button></div>
     </div>
     <p class="mini dim" style="margin:8px 0 0">그날 경기 기록에 등장한 멤버 전원에게 지급돼요. 계좌 없는 멤버는 자동 제외, 같은 날짜 중복 지급은 서버가 막아줍니다.</p>
+  </div>`:''}
+  ${(B.role==='admin'||B.role==='dev')?`<div class="card" style="margin-top:14px">
+    <h3 style="margin:0 0 6px">🎁 상품권 <span class="tag">소소한 보상 — 이벤트·고생수당</span></h3>
+    <div class="grid c3" style="gap:8px">
+      <div class="f"><label>받는 멤버</label><select id="gfName" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${(window._bankRoster||[]).map(r=>`<option>${esc(r.name)}</option>`).join('')}</select></div>
+      <div class="f"><label>금액 (50~5,000)</label><input id="gfAmt" type="number" value="300" min="50" max="5000"></div>
+      <div class="f"><label>사유 (장부에 표시)</label><input id="gfMemo" placeholder="예: 밴픽 진행 고생수당" maxlength="40"></div>
+    </div>
+    <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
+      ${[100,300,500,1000].map(v=>`<button class="btn sm ghost" onclick="$('gfAmt').value=${v}">${v}</button>`).join('')}
+      <button class="btn gold sm" onclick="bankGift()">🎁 지급</button>
+    </div>
   </div>`:''}
   ${B.role==='admin'?`<div class="card" style="margin-top:14px"><h3>⏳ 가입 승인 대기 ${pend.length}건 <span class="tag">운영진 전용</span></h3>
     <details class="fold" style="margin-bottom:8px"><summary class="mini dim">🧹 계정 정리 (탈퇴자 삭제 · 파산 기록 초기화)</summary>
