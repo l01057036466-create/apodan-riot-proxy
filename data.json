@@ -13498,24 +13498,25 @@
   },
   {
    "id": "m_relu5ywmqavq1ir",
-   "createdAt": "2026-06-12T12:04:55.731Z",
    "playedAt": "2026-06-12",
    "setNumber": 1,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8255615469",
    "durationMin": 20,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-12T12:04:55.731Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "탑숭이",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "탑숭이",
      "championId": "올라프",
      "kills": 4,
      "deaths": 5,
      "assists": 2,
+     "gd15": null,
      "stats": {
       "cs": 137,
       "goldEarned": 7499,
@@ -13535,12 +13536,13 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "철도너구리",
      "playerId": "p_60ospv2c_mq7nhxuq",
+     "rawName": "철도너구리",
      "championId": "헤카림",
      "kills": 4,
      "deaths": 1,
      "assists": 8,
+     "gd15": null,
      "stats": {
       "cs": 158,
       "goldEarned": 9065,
@@ -13560,12 +13562,13 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "지갑보부",
      "playerId": "p_gcjvk0v7_mq7nhxuq",
+     "rawName": "지갑보부",
      "championId": "갈리오",
      "kills": 1,
      "deaths": 0,
      "assists": 7,
+     "gd15": null,
      "stats": {
       "cs": 151,
       "goldEarned": 6822,
@@ -13585,12 +13588,13 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "바루스",
      "kills": 12,
      "deaths": 2,
      "assists": 5,
+     "gd15": null,
      "stats": {
       "cs": 165,
       "goldEarned": 12967,
@@ -13610,12 +13614,13 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "차연서",
      "playerId": "p_ybyb79mg_mq7nhxup",
+     "rawName": "차연서",
      "championId": "밀리오",
      "kills": 2,
      "deaths": 0,
      "assists": 16,
+     "gd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 7145,
@@ -13635,12 +13640,13 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "미르수리",
      "playerId": "p_jlc2q699_mq7nhxup",
+     "rawName": "미르수리",
      "championId": "잭스",
      "kills": 2,
      "deaths": 4,
      "assists": 3,
+     "gd15": null,
      "stats": {
       "cs": 154,
       "goldEarned": 7404,
@@ -13660,12 +13666,13 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "MEVIUS 01",
      "playerId": "p_4siqelqmq7ub77p",
+     "rawName": "MEVIUS 01",
      "championId": "우디르",
      "kills": 5,
      "deaths": 5,
      "assists": 1,
+     "gd15": null,
      "stats": {
       "cs": 147,
       "goldEarned": 7998,
@@ -13685,12 +13692,13 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "물방울",
      "playerId": "p_j93ommzd_mq7nhxuq",
+     "rawName": "물방울",
      "championId": "애니비아",
      "kills": 0,
      "deaths": 2,
      "assists": 0,
+     "gd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 6050,
@@ -13710,12 +13718,13 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "씽 긋",
      "playerId": "p_hnx30qcmq7ub77q",
+     "rawName": "씽 긋",
      "championId": "사미라",
      "kills": 0,
      "deaths": 6,
      "assists": 2,
+     "gd15": null,
      "stats": {
       "cs": 129,
       "goldEarned": 6175,
@@ -13735,12 +13744,13 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "노틸러스",
      "kills": 1,
      "deaths": 6,
      "assists": 0,
+     "gd15": null,
      "stats": {
       "cs": 16,
       "goldEarned": 4504,
@@ -13803,24 +13813,25 @@
   },
   {
    "id": "m_rt3fk21mqavq1j2",
-   "createdAt": "2026-06-12T12:04:55.742Z",
    "playedAt": "2026-06-12",
    "setNumber": 2,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8255645701",
    "durationMin": 30,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-12T12:04:55.742Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "미르수리",
      "playerId": "p_jlc2q699_mq7nhxup",
+     "rawName": "미르수리",
      "championId": "크산테",
      "kills": 6,
      "deaths": 2,
      "assists": 9,
+     "gd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 12881,
@@ -13840,12 +13851,13 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "MEVIUS 01",
      "playerId": "p_4siqelqmq7ub77p",
+     "rawName": "MEVIUS 01",
      "championId": "사일러스",
      "kills": 10,
      "deaths": 1,
      "assists": 9,
+     "gd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 14295,
@@ -13865,12 +13877,13 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "물방울",
      "playerId": "p_j93ommzd_mq7nhxuq",
+     "rawName": "물방울",
      "championId": "흐웨이",
      "kills": 4,
      "deaths": 4,
      "assists": 12,
+     "gd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 11844,
@@ -13890,12 +13903,13 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "씽 긋",
      "playerId": "p_hnx30qcmq7ub77q",
+     "rawName": "씽 긋",
      "championId": "징크스",
      "kills": 4,
      "deaths": 1,
      "assists": 6,
+     "gd15": null,
      "stats": {
       "cs": 263,
       "goldEarned": 14654,
@@ -13915,12 +13929,13 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "룰루",
      "kills": 1,
      "deaths": 4,
      "assists": 9,
+     "gd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 8051,
@@ -13940,12 +13955,13 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "탑숭이",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "탑숭이",
      "championId": "베인",
      "kills": 2,
      "deaths": 6,
      "assists": 1,
+     "gd15": null,
      "stats": {
       "cs": 232,
       "goldEarned": 11181,
@@ -13965,12 +13981,13 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "철도너구리",
      "playerId": "p_60ospv2c_mq7nhxuq",
+     "rawName": "철도너구리",
      "championId": "리 신",
      "kills": 2,
      "deaths": 5,
      "assists": 2,
+     "gd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 9958,
@@ -13990,12 +14007,13 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "지갑보부",
      "playerId": "p_gcjvk0v7_mq7nhxuq",
+     "rawName": "지갑보부",
      "championId": "멜",
      "kills": 2,
      "deaths": 4,
      "assists": 1,
+     "gd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 9744,
@@ -14015,12 +14033,13 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "시비르",
      "kills": 6,
      "deaths": 6,
      "assists": 0,
+     "gd15": null,
      "stats": {
       "cs": 307,
       "goldEarned": 15221,
@@ -14040,12 +14059,13 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "차연서",
      "playerId": "p_ybyb79mg_mq7nhxup",
+     "rawName": "차연서",
      "championId": "유미",
      "kills": 0,
      "deaths": 4,
      "assists": 6,
+     "gd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 8037,
@@ -14104,24 +14124,25 @@
   },
   {
    "id": "m_lam93lsmqavq1j9",
-   "createdAt": "2026-06-12T12:04:55.749Z",
    "playedAt": "2026-06-12",
    "setNumber": 3,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8255706186",
    "durationMin": 27,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-12T12:04:55.749Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "탑숭이",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "탑숭이",
      "championId": "볼리베어",
      "kills": 5,
      "deaths": 3,
      "assists": 7,
+     "gd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 12349,
@@ -14141,12 +14162,13 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "철도너구리",
      "playerId": "p_60ospv2c_mq7nhxuq",
+     "rawName": "철도너구리",
      "championId": "오공",
      "kills": 7,
      "deaths": 2,
      "assists": 12,
+     "gd15": null,
      "stats": {
       "cs": 193,
       "goldEarned": 12201,
@@ -14166,12 +14188,13 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "지갑보부",
      "playerId": "p_gcjvk0v7_mq7nhxuq",
+     "rawName": "지갑보부",
      "championId": "세트",
      "kills": 2,
      "deaths": 5,
      "assists": 4,
+     "gd15": null,
      "stats": {
       "cs": 113,
       "goldEarned": 8139,
@@ -14191,12 +14214,13 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "진",
      "kills": 14,
      "deaths": 5,
      "assists": 11,
+     "gd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 14507,
@@ -14216,12 +14240,13 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "차연서",
      "playerId": "p_ybyb79mg_mq7nhxup",
+     "rawName": "차연서",
      "championId": "알리스타",
      "kills": 1,
      "deaths": 5,
      "assists": 20,
+     "gd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 7921,
@@ -14241,12 +14266,13 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "미르수리",
      "playerId": "p_jlc2q699_mq7nhxup",
+     "rawName": "미르수리",
      "championId": "사이온",
      "kills": 9,
      "deaths": 2,
      "assists": 7,
+     "gd15": null,
      "stats": {
       "cs": 164,
       "goldEarned": 11939,
@@ -14266,12 +14292,13 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "MEVIUS 01",
      "playerId": "p_4siqelqmq7ub77p",
+     "rawName": "MEVIUS 01",
      "championId": "케인",
      "kills": 6,
      "deaths": 5,
      "assists": 3,
+     "gd15": null,
      "stats": {
       "cs": 162,
       "goldEarned": 10274,
@@ -14291,12 +14318,13 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "물방울",
      "playerId": "p_j93ommzd_mq7nhxuq",
+     "rawName": "물방울",
      "championId": "리산드라",
      "kills": 0,
      "deaths": 7,
      "assists": 9,
+     "gd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 7851,
@@ -14316,12 +14344,13 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "씽 긋",
      "playerId": "p_hnx30qcmq7ub77q",
+     "rawName": "씽 긋",
      "championId": "미스 포츈",
      "kills": 4,
      "deaths": 8,
      "assists": 8,
+     "gd15": null,
      "stats": {
       "cs": 174,
       "goldEarned": 9866,
@@ -14341,12 +14370,13 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "브라움",
      "kills": 1,
      "deaths": 8,
      "assists": 10,
+     "gd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 6915,
@@ -14409,10 +14439,10 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-12T12:05:02.293Z",
+  "lastBackupAt": "2026-06-12T12:06:08.008Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
-  "maintenance": false,
+  "maintenance": true,
   "bustNews": true
  },
  "lineup": null,
@@ -14493,6 +14523,6 @@
    ]
   }
  ],
- "rev": 65,
- "updatedAt": "2026-06-12T12:06:03.060Z"
+ "rev": 67,
+ "updatedAt": "2026-06-12T12:54:16.468Z"
 }
