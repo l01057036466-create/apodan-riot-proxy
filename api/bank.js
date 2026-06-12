@@ -137,6 +137,7 @@ module.exports = async function handler(req, res) {
       var hRawMe = await redis(['GET', 'hold:' + a3.name]);
       var pxRawMe = await redis(['GET', 'stock:px']);
       return res.status(200).json({ name: a3.name, role: a3.role, bal: a3.bal, bust: a3.bust || 0,
+        items: a3.items || {}, equip: a3.equip || {}, // 🐛fix: 새로고침하면 보유·장착 정보를 잃어 "장착" 버튼이 사라지던 버그
         holdings: hRawMe ? JSON.parse(hRawMe) : {}, prices: pxRawMe ? JSON.parse(pxRawMe) : {},
         ledger: led.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean) });
     }
