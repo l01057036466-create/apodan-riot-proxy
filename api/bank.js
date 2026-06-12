@@ -118,6 +118,13 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, token: t1, role: a2.role || 'member', name: a2.name });
     }
 
+    // ── 🟢 초경량 핑: 온라인 표시 전용 (절약형 폴링과 세트) ──
+    if (req.method === 'GET' && action === 'ping') {
+      var sPg = await auth(q.token);
+      if (sPg && sPg.name) await redis(['SET', 'online:' + sPg.name, '1', 'EX', '420']);
+      return res.status(200).json({ ok: true });
+    }
+
     // ── 내 정보 (+출석 수당 200/일 자동 지급) ──
     if (req.method === 'GET' && action === 'me') {
       var s = await auth(q.token);
