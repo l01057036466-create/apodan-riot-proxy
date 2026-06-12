@@ -81,7 +81,10 @@ module.exports = async function handler(req, res) {
         if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {} });
       }
       out.sort(function (x, y) { return y.bal - x.bal; });
-      return res.status(200).json({ roster: out });
+      var onRaws = out.length ? (await redis(['MGET'].concat(out.map(function (r) { return 'online:' + r.name; })))) || [] : [];
+      for (var oi = 0; oi < out.length; oi++) if (onRaws[oi]) out[oi].on = true; // 🟢 온라인 멤버
+      var feedNw = ((await redis(['LRANGE', 'arcade:news', '0', '4'])) || []).map(function (x) { try { return JSON.parse(x) } catch (e) { return null } }).filter(Boolean);
+      return res.status(200).json({ roster: out, feed: feedNw });
     }
 
     // ── 가입 신청 ──
@@ -122,6 +125,7 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', 'sess:' + q.token, SEC30]); // 활동 중엔 로그아웃 없음 (30일 연장)
       if (s.role === 'dev') return res.status(200).json({ name: '시스템', role: 'dev', bal: null });
       var a3 = s.acct, today = kstDate();
+      await redis(['SET', 'online:' + a3.name, '1', 'EX', '180']); // 🟢 접속 표시 (3분 TTL)
       if (a3.lastDaily !== today && (await redis(['SET', 'daily:' + a3.name + ':' + today, '1', 'NX', 'EX', SEC90])) === 'OK') { // 🐛fix: 동시 접속 이중지급 방지
         a3.lastDaily = today; a3.bal += 200;
         a3.streak = (a3.lastDay && (new Date(today) - new Date(a3.lastDay) === 86400000)) ? (Number(a3.streak) || 0) + 1 : 1;
@@ -764,11 +768,11 @@ module.exports = async function handler(req, res) {
     var SHOP = {
       badge: { b1:{e:'🐢',p:5000}, b2:{e:'🍀',p:7000}, b3:{e:'🌙',p:8000}, b4:{e:'🦊',p:10000}, b5:{e:'🐯',p:12000}, b6:{e:'💀',p:15000}, b7:{e:'🔥',p:15000}, b8:{e:'🚀',p:18000}, b9:{e:'👑',p:20000}, b10:{e:'💎',p:25000} },
       color: { c1:{v:'#7fd1ff',n:'아이스',p:10000}, c2:{v:'#ff7fb0',n:'핑크',p:10000}, c3:{v:'#9dff8a',n:'네온',p:15000}, c4:{v:'#c89bff',n:'퍼플',p:20000}, c5:{v:'#ff5b5b',n:'블러드',p:25000}, c6:{v:'#f2b84b',n:'골드',p:30000} },
-      frame: { f1:{n:'은테',p:25000}, f2:{n:'금테',p:50000}, f3:{n:'옵시디언',p:100000} },
-      title: { t1:{n:'커스텀 칭호',p:80000} },
+      frame: { f1:{e:'🥈',n:'은테',p:25000}, f2:{e:'🥇',n:'금테',p:50000}, f3:{e:'🔮',n:'옵시디언',p:100000} },
+      title: { t1:{e:'✍️',n:'커스텀 칭호',p:80000} },
       legend: { l1:{e:'🏛',n:'명예의 전당석',p:500000}, l2:{e:'🌌',n:'우주최강',p:1000000} },
-      nick: { n1:{n:'존잘남',p:5000}, n2:{n:'존예녀',p:5000}, n3:{n:'마음이 따뜻한 사람',p:3000}, n4:{n:'인성 1티어',p:8000}, n5:{n:'분위기 메이커',p:5000}, n6:{n:'아포단의 햇살',p:7000}, n7:{n:'츤데레',p:3000}, n8:{n:'소문난 효자',p:3000}, n9:{n:'동네 인싸',p:4000}, n10:{n:'프로 잠수러',p:2000}, n11:{n:'칼퇴 요정',p:3000}, n12:{n:'야식 전도사',p:2500}, n13:{n:'치킨 성애자',p:2500}, n14:{n:'민트초코 신봉자',p:1500}, n15:{n:'부먹파',p:1000}, n16:{n:'찍먹파',p:1000}, n17:{n:'평화주의자',p:2000}, n18:{n:'협곡의 시인',p:6000}, n19:{n:'멘탈 갑',p:8000}, n20:{n:'리액션 부자',p:4000}, n21:{n:'라면 소믈리에',p:2500}, n22:{n:'새벽반 반장',p:3000}, n23:{n:'침대 수호자',p:2000}, n24:{n:'게임보다 현생',p:1500}, n25:{n:'현생보다 게임',p:1500}, n26:{n:'잔소리 장인',p:3000}, n27:{n:'긍정왕',p:4000}, n28:{n:'솔랭 전사',p:5000}, n29:{n:'닉값 못 함',p:2000}, n30:{n:'닉값 제대로 함',p:6000}, n31:{n:'⚡ T1 팬',p:10000}, n32:{n:'🐯 GEN 팬',p:10000}, n33:{n:'🦅 LCK 본방사수',p:8000}, n34:{n:'🐉 LPL 시청자',p:8000} },
-      crown: { x1:{n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
+      nick: { n1:{e:'😎',n:'존잘남',p:5000}, n2:{e:'💖',n:'존예녀',p:5000}, n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000}, n4:{e:'😇',n:'인성 1티어',p:8000}, n5:{e:'🎉',n:'분위기 메이커',p:5000}, n6:{e:'🌞',n:'아포단의 햇살',p:7000}, n7:{e:'🐱',n:'츤데레',p:3000}, n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000}, n9:{e:'🕺',n:'동네 인싸',p:4000}, n10:{e:'🤿',n:'프로 잠수러',p:2000}, n11:{e:'🧚',n:'칼퇴 요정',p:3000}, n12:{e:'🌭',n:'야식 전도사',p:2500}, n13:{e:'🍗',n:'치킨 성애자',p:2500}, n14:{e:'🍃',n:'민트초코 신봉자',p:1500}, n15:{e:'🥣',n:'부먹파',p:1000}, n16:{e:'🥢',n:'찍먹파',p:1000}, n17:{e:'🕊',n:'평화주의자',p:2000}, n18:{e:'📜',n:'협곡의 시인',p:6000}, n19:{e:'🧊',n:'멘탈 갑',p:8000}, n20:{e:'👏',n:'리액션 부자',p:4000}, n21:{e:'🍜',n:'라면 소믈리에',p:2500}, n22:{e:'🌙',n:'새벽반 반장',p:3000}, n23:{e:'🛏',n:'침대 수호자',p:2000}, n24:{e:'🏞',n:'게임보다 현생',p:1500}, n25:{e:'🖥',n:'현생보다 게임',p:1500}, n26:{e:'📢',n:'잔소리 장인',p:3000}, n27:{e:'🌈',n:'긍정왕',p:4000}, n28:{e:'⚔️',n:'솔랭 전사',p:5000}, n29:{e:'🙃',n:'닉값 못 함',p:2000}, n30:{e:'💯',n:'닉값 제대로 함',p:6000}, n31:{e:'⚡',n:'T1 팬',p:10000}, n32:{e:'🐯',n:'GEN 팬',p:10000}, n33:{e:'🦅',n:'LCK 본방사수',p:8000}, n34:{e:'🐉',n:'LPL 시청자',p:8000}, n35:{e:'🐰',n:'토끼파 두목',p:2000}, n36:{e:'🌻',n:'해바라기 화가',p:2000} },
+      crown: { x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
     };
     if (req.method === 'GET' && action === 'shop') return res.status(200).json({ shop: SHOP });
     if (req.method === 'POST' && (action === 'buyItem' || action === 'equipItem')) {
@@ -846,6 +850,7 @@ module.exports = async function handler(req, res) {
       await redis(['INCRBY', 'arcade:jackpot', '30']); // 판매액 10% 적립
       var pz = pickWeighted([[0, 55], [100, 20], [300, 15], [600, 7], [1500, 2.7], ['JP', 0.3]]);
       var wonJp = 0;
+      if (pz === 1500) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'scr', v: 1500, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🎫 복권 1등 속보
       if (pz === 'JP') {
         wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 1000;
         await redis(['SET', 'arcade:jackpot', '1000']); // 시드 리셋
