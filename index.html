@@ -2925,7 +2925,12 @@ async function bankRefresh(force){
   if(tab==='bank'||tab==='form'){try{const _p=await bankCall('prices',null,'GET');window._srvPx=_p.prices||{};window._srvBase=_p.base||{};window._srvPrem=_p.prem||{}}catch(e){}} // 시세는 거래소·폼 탭에서만
   window._bankBusy=false;
   const snap=JSON.stringify([window._bank,window._bankRoster,window._bankPending]);
-  if(snap!==window._bankSnap){window._bankSnap=snap;try{render()}catch(e){}}
+  if(snap!==window._bankSnap){
+    window._bankSnap=snap;
+    try{renderTicker();renderOnlineBox()}catch(e){} // 고정 요소는 스크롤과 무관하게 직접 갱신
+    const sy2=(document.scrollingElement&&document.scrollingElement.scrollTop)||0;
+    if(sy2<240&&!isTyping()){try{render()}catch(e){}} // 🐛fix: 화면 깊이 읽는 중엔 통째 리렌더 금지 (스크롤 튕김 원천 차단)
+  }
 }
 async function bankLoadRoster(){ // 비로그인도 랭킹 열람
   if(!voteApiBase()||window._bankBusy)return;
@@ -2935,7 +2940,12 @@ async function bankLoadRoster(){ // 비로그인도 랭킹 열람
   try{const _p2=await bankCall('prices',null,'GET');window._srvPx=_p2.prices||{};window._srvBase=_p2.base||{};window._srvPrem=_p2.prem||{}}catch(e){}
   window._bankBusy=false;
   const snap=JSON.stringify([window._bank,window._bankRoster,window._srvPx]);
-  if(snap!==window._bankSnap){window._bankSnap=snap;try{render()}catch(e){}}
+  if(snap!==window._bankSnap){
+    window._bankSnap=snap;
+    try{renderTicker();renderOnlineBox()}catch(e){}
+    const sy3=(document.scrollingElement&&document.scrollingElement.scrollTop)||0;
+    if(sy3<240&&!isTyping()){try{render()}catch(e){}} // 깊이 스크롤 중엔 리렌더 금지
+  }
 }
 async function bankApprove(name,act){
   try{
@@ -4628,10 +4638,15 @@ function render(opt){
   }
   const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
     champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance};
-  const _sy=(typeof window!=='undefined'&&window.scrollY)||0; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
+  const _se=(typeof document!=='undefined'&&document.scrollingElement)||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
+  const _sy=_se?_se.scrollTop:((typeof window!=='undefined'&&window.scrollY)||0);
   $('view').innerHTML=(R[tab]||pgDashboard)();
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
-  try{if(window._scrollTab===tab&&typeof window.scrollTo==='function')window.scrollTo(0,_sy)}catch(e){}
+  if(window._scrollTab===tab&&_sy>0){
+    const _put=()=>{try{if(_se)_se.scrollTop=_sy;else if(typeof window.scrollTo==='function')window.scrollTo(0,_sy)}catch(e){}};
+    _put();
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>{_put();requestAnimationFrame(_put)}); // 이미지 로딩 후 레이아웃 변동까지 2프레임 고정
+  }
   window._scrollTab=tab;
   mvpCdStart(); // ⏱ MVP 타이머 카운트다운
 }
