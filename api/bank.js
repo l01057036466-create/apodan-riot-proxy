@@ -431,6 +431,19 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid, fee: LP - prize });
     }
 
+    // ── ✅ 지급 없이 정산 확정 (백섭용: 되돌리기로 회수한 뒤, 추가 지급 없이 결과만 잠그기) ──
+    if (req.method === 'POST' && action === 'markSettled') {
+      var sMk = await auth(body.token);
+      if (!sMk || (sMk.role !== 'admin' && sMk.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var mkMk = String(body.market || ''), winMk = body.winner;
+      if (!mktOk(mkMk)) return res.status(400).json({ error: 'market 형식 오류' });
+      if (winMk !== 'alpha' && winMk !== 'beta') return res.status(400).json({ error: 'winner는 alpha/beta' });
+      var stMk = (await redis(['GET', 'mkt:' + mkMk + ':status'])) || 'open';
+      if (stMk.indexOf('settled') === 0) return res.status(400).json({ error: '이미 정산 확정 상태예요' });
+      await redis(['SET', 'mkt:' + mkMk + ':status', 'settled:' + winMk, 'EX', SEC90]);
+      return res.status(200).json({ ok: true, winner: winMk, paidOut: 0 });
+    }
+
     // ── ↩️ 정산 되돌리기 (운영진·개발자 비상 도구 — 잘못 누른 정산 복구) ──
     if (req.method === 'POST' && action === 'unsettle') {
       var sU = await auth(body.token);
