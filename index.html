@@ -248,6 +248,13 @@ details.fold[open]{padding-bottom:14px}
 .meAvatar img{width:100%;height:100%;object-fit:cover}
 .meShelf{display:inline-grid;place-items:center;min-width:26px;height:26px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);font-size:15px;padding:0 4px}
 
+/* ═══ ✨ 프로선수·레전드 이펙트 + 💸 돈다발 ═══ */
+.tierPro{background:linear-gradient(120deg,#ffd86b,#fff3c4 30%,#ffb84b 60%,#ffd86b)!important;background-size:220% 100%!important;color:#3a2a05!important;border:1px solid #ffd86b!important;box-shadow:0 0 12px rgba(255,216,107,.55);animation:proShine 2.4s linear infinite;font-weight:900!important}
+@keyframes proShine{from{background-position:0% 0}to{background-position:220% 0}}
+.lgx1{background:linear-gradient(120deg,#f2b84b,#fff3c4 35%,#f2b84b 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;animation:proShine 3s linear infinite;text-shadow:none;filter:drop-shadow(0 0 6px rgba(242,184,75,.5))}
+.lgx2{background:linear-gradient(120deg,#7fd1ff,#d24dff 30%,#ff7fb0 55%,#ffd24a 80%,#7fd1ff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;animation:proShine 3.6s linear infinite;filter:drop-shadow(0 0 7px rgba(176,107,255,.6))}
+@keyframes moneyDrop{to{transform:translateY(115vh) rotate(300deg)}}
+
 /* ═══ 🟢 온라인 박스 + 🎰 잭팟 티커 ═══ */
 #onlineBox{position:fixed;right:14px;top:150px;width:180px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;z-index:25;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 @media (max-width:1819px){#onlineBox{display:none!important}}
@@ -3853,22 +3860,22 @@ async function bankGift(){
 /* ───── 🛍 상점 · 🎪 오락실 · 📋 미션 (클라) ───── */
 const SHOP_C={ // 서버와 동일 카탈로그 (표시용 — 검증은 서버)
   badge:{b1:{e:'🐢',p:5000},b2:{e:'🍀',p:7000},b3:{e:'🌙',p:8000},b4:{e:'🦊',p:10000},b5:{e:'🐯',p:12000},b6:{e:'💀',p:15000},b7:{e:'🔥',p:15000},b8:{e:'🚀',p:18000},b9:{e:'👑',p:20000},b10:{e:'💎',p:25000}},
-  color:{c1:{v:'#7fd1ff',n:'아이스',p:10000},c2:{v:'#ff7fb0',n:'핑크',p:10000},c3:{v:'#9dff8a',n:'네온',p:15000},c4:{v:'#c89bff',n:'퍼플',p:20000},c5:{v:'#ff5b5b',n:'블러드',p:25000},c6:{v:'#f2b84b',n:'골드',p:30000}},
-  frame:{f1:{e:'🥈',n:'은테',p:25000},f2:{e:'🥇',n:'금테',p:50000},f3:{e:'🔮',n:'옵시디언',p:100000}},
+  color:{c1:{v:'#7fd1ff',n:'아이스',p:10000},c2:{v:'#ff7fb0',n:'핑크',p:10000},c3:{v:'#9dff8a',n:'네온',p:15000},c4:{v:'#c89bff',n:'퍼플',p:20000},c5:{v:'#ff5b5b',n:'블러드',p:25000},c6:{v:'#f2b84b',n:'골드',p:30000},c7:{v:'#e2012d',n:'T1 레드',p:15000},c8:{v:'#a8893a',n:'GEN 골드',p:15000},c9:{v:'#00c9b1',n:'DK 민트',p:15000},c10:{v:'#ff6a13',n:'HLE 오렌지',p:15000},c11:{v:'#4f6dff',n:'DRX 블루',p:15000},c12:{v:'#d24dff',n:'바이올렛',p:20000},c13:{v:'#7dffd9',n:'오로라',p:25000},c14:{v:'#f5f7fa',n:'화이트',p:40000}},
+  frame:{f1:{e:'🥈',n:'은테',p:25000},f2:{e:'🥇',n:'금테',p:50000},f3:{e:'🔮',n:'옵시디언',p:100000},f4:{e:'💠',n:'네온테',p:40000},f5:{e:'🌹',n:'로즈골드테',p:60000},f6:{e:'🏅',n:'챔피언 금장',p:150000}},
   title:{t1:{e:'✍️',n:'커스텀 칭호',p:80000}},
   // 🎨 그림 뱃지: img는 내장 dataURI 또는 저장소 상대경로('img/파일명.png') 둘 다 OK — 서버 SHOP에도 같은 ID·가격 필수!
   art:{a2:{img:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAwklEQVR42mNgGOmAkVQNGk5y/5H5N/Y9YqTEAUwDHQIspPo8fZITAwMDA8OFW3dhUv8pCYnBHwLoPkcH5jnyFIXE0EkDMIAU91QJCaZBVw68iIn5z8DAwODw7BADjlRPFDg55SFR5cTgSQMwnxMb54QAsWli8KUBWL5H8gEKmOa+GYWftdOXojQxeNIAIZ9TCnCliaFXEhIb50OmLmCkddwTyhWDJwQGCgyeXICrxUMrMDNv3yCrC+idFgZNSTgKRgEA0IZQHFpP0E4AAAAASUVORK5CYII=',n:'초록 숲 모자',p:8000,px:1},a3:{img:'data:image/webp;base64,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',n:'구미호 소녀',p:12000},a4:{img:'data:image/webp;base64,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',n:'수묵 도령',p:12000}},
   legend:{l1:{e:'🏛',n:'명예의 전당석',p:500000},l2:{e:'🌌',n:'우주최강',p:1000000}},
-  nick:{n1:{e:'😎',n:'존잘남',p:5000},n2:{e:'💖',n:'존예녀',p:5000},n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000},n4:{e:'😇',n:'인성 1티어',p:8000},n5:{e:'🎉',n:'분위기 메이커',p:5000},n6:{e:'🌞',n:'아포단의 햇살',p:7000},n7:{e:'🐱',n:'츤데레',p:3000},n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000},n9:{e:'🕺',n:'동네 인싸',p:4000},n10:{e:'🤿',n:'프로 잠수러',p:2000},n11:{e:'🧚',n:'칼퇴 요정',p:3000},n12:{e:'🌭',n:'야식 전도사',p:2500},n13:{e:'🍗',n:'치킨 성애자',p:2500},n14:{e:'🍃',n:'민트초코 신봉자',p:1500},n15:{e:'🥣',n:'부먹파',p:1000},n16:{e:'🥢',n:'찍먹파',p:1000},n17:{e:'🕊',n:'평화주의자',p:2000},n18:{e:'📜',n:'협곡의 시인',p:6000},n19:{e:'🧊',n:'멘탈 갑',p:8000},n20:{e:'👏',n:'리액션 부자',p:4000},n21:{e:'🍜',n:'라면 소믈리에',p:2500},n22:{e:'🌙',n:'새벽반 반장',p:3000},n23:{e:'🛏',n:'침대 수호자',p:2000},n24:{e:'🏞',n:'게임보다 현생',p:1500},n25:{e:'🖥',n:'현생보다 게임',p:1500},n26:{e:'📢',n:'잔소리 장인',p:3000},n27:{e:'🌈',n:'긍정왕',p:4000},n28:{e:'⚔️',n:'솔랭 전사',p:5000},n29:{e:'🙃',n:'닉값 못 함',p:2000},n30:{e:'💯',n:'닉값 제대로 함',p:6000},n31:{e:'⚡',n:'T1 팬',p:10000},n32:{e:'🐯',n:'GEN 팬',p:10000},n33:{e:'🦅',n:'LCK 본방사수',p:8000},n34:{e:'🐉',n:'LPL 시청자',p:8000},n35:{e:'🐰',n:'토끼파 두목',p:2000},n36:{e:'🌻',n:'해바라기 화가',p:2000}},
+  nick:{n1:{e:'😎',n:'존잘남',p:5000},n2:{e:'💖',n:'존예녀',p:5000},n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000},n4:{e:'😇',n:'인성 1티어',p:8000},n5:{e:'🎉',n:'분위기 메이커',p:5000},n6:{e:'🌞',n:'아포단의 햇살',p:7000},n7:{e:'🐱',n:'츤데레',p:3000},n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000},n9:{e:'🕺',n:'동네 인싸',p:4000},n10:{e:'🤿',n:'프로 잠수러',p:2000},n11:{e:'🧚',n:'칼퇴 요정',p:3000},n12:{e:'🌭',n:'야식 전도사',p:2500},n13:{e:'🍗',n:'치킨 성애자',p:2500},n14:{e:'🍃',n:'민트초코 신봉자',p:1500},n15:{e:'🥣',n:'부먹파',p:1000},n16:{e:'🥢',n:'찍먹파',p:1000},n17:{e:'🕊',n:'평화주의자',p:2000},n18:{e:'📜',n:'협곡의 시인',p:6000},n19:{e:'🧊',n:'멘탈 갑',p:8000},n20:{e:'👏',n:'리액션 부자',p:4000},n21:{e:'🍜',n:'라면 소믈리에',p:2500},n22:{e:'🌙',n:'새벽반 반장',p:3000},n23:{e:'🛏',n:'침대 수호자',p:2000},n24:{e:'🏞',n:'게임보다 현생',p:1500},n25:{e:'🖥',n:'현생보다 게임',p:1500},n26:{e:'📢',n:'잔소리 장인',p:3000},n27:{e:'🌈',n:'긍정왕',p:4000},n28:{e:'⚔️',n:'솔랭 전사',p:5000},n29:{e:'🙃',n:'닉값 못 함',p:2000},n30:{e:'💯',n:'닉값 제대로 함',p:6000},n31:{e:'⚡',n:'T1 팬',p:10000},n32:{e:'🐯',n:'GEN 팬',p:10000},n33:{e:'🦅',n:'LCK 본방사수',p:8000},n34:{e:'🐉',n:'LPL 시청자',p:8000},n35:{e:'🐰',n:'토끼파 두목',p:2000},n36:{e:'🌻',n:'해바라기 화가',p:2000},n37:{e:'🐺',n:'DK 팬',p:10000},n38:{e:'🧡',n:'HLE 팬',p:10000},n39:{e:'🌀',n:'DRX 팬',p:10000},n40:{e:'🧠',n:'밴픽 장인',p:6000},n41:{e:'⚡',n:'인간 점멸',p:5000},n42:{e:'👁',n:'시야 장인',p:5000},n43:{e:'🚌',n:'버스 기사',p:7000},n44:{e:'💺',n:'버스 승객',p:3000},n45:{e:'🔥',n:'한타의 신',p:8000},n46:{e:'🎰',n:'도파민 중독',p:4000}},
   crown:{x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'},x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'},x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'},x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'},x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'},x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'}}
 };
-const TIER_LADDER=[[0,'아마추어 아이언','#8f9aa8'],[3000,'동네고수 브론즈','#c08d5e'],[8000,'성실한 실버','#b9c8d8'],[15000,'유망주 골드','#f2b84b'],[30000,'각성한 플래티넘','#3fd9c5'],[60000,'정예 에메랄드','#37c978'],[120000,'칼챔 다이아몬드','#5ea0ff'],[250000,'초인 마스터','#b58cff'],[500000,'괴물 그랜드마스터','#ff5c7a'],[750000,'신계 챌린저','#ffd24a'],[1000000,'🏆 프로선수','#ffffff']];
+const TIER_LADDER=[[0,'아마추어 아이언','#8f9aa8','🪨'],[3000,'동네고수 브론즈','#c08d5e','🥉'],[8000,'성실한 실버','#b9c8d8','🥈'],[15000,'유망주 골드','#f2b84b','🥇'],[30000,'각성한 플래티넘','#3fd9c5','💠'],[60000,'정예 에메랄드','#37c978','💚'],[120000,'칼챔 다이아몬드','#5ea0ff','💎'],[250000,'초인 마스터','#b58cff','🔮'],[500000,'괴물 그랜드마스터','#ff5c7a','🩸'],[750000,'신계 챌린저','#ffd24a','👑'],[1000000,'프로선수','#ffd86b','🏆']];
 function pointTier(bal){ // 포인트 등급 사다리 — 100만 = 프로선수
   bal=Number(bal)||0;
   const L=TIER_LADDER;
   let cur=L[0];for(const e of L)if(bal>=e[0])cur=e;
   const next=L[L.indexOf(cur)+1]||null;
-  return{name:cur[1],c:cur[2],next:next?{name:next[1],need:next[0]-bal}:null};
+  return{name:cur[1],c:cur[2],e:cur[3],pro:cur[0]>=1000000,next:next?{name:next[1],need:next[0]-bal}:null};
 }
 function tierIcon(c,sz){ // 🛡 등급 방패 아이콘 (등급 색, 내장 SVG — 외부 이미지 불필요)
   sz=sz||11;
@@ -3878,7 +3885,7 @@ function tierChip(name){ // 어디서든 이름 옆 등급 — 계좌 있는 멤
   const r=(window._bankRoster||[]).find(x=>x.name===String(name));
   if(!r)return'';
   const T=pointTier(r.bal);
-  return` <span class="pill" style="font-size:9.5px;padding:1px 6px 1px 4px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap;vertical-align:1px;display:inline-flex;align-items:center">${tierIcon(T.c,10)}${T.name}</span>`;
+  return` <span class="pill ${T.pro?'tierPro':''}" style="font-size:9.5px;padding:1px 6px 1px 4px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap;vertical-align:1px;display:inline-flex;align-items:center;gap:3px">${T.e} ${T.pro?'🏆 ':''}${T.name}</span>`;
 }
 function apdRole(name){ // 운영자 직함
   const b=String(name||'').replace(/^\d+\s*/,'').trim();
@@ -3945,14 +3952,17 @@ function bankDeco(name,equip,mode){ // 장착 효과 이름 HTML — mode 'full'
   const eq=equip||{};
   const badge=eq.badge&&SHOP_C.badge[eq.badge]?SHOP_C.badge[eq.badge].e+' ':'';
   const color=eq.color&&SHOP_C.color[eq.color]?SHOP_C.color[eq.color].v:'';
-  const frame=eq.frame==='f3'?'border:1px solid #b06bff;box-shadow:0 0 6px rgba(176,107,255,.6);border-radius:6px;padding:0 5px;':eq.frame==='f2'?'border:1px solid var(--gold);border-radius:6px;padding:0 5px;':eq.frame==='f1'?'border:1px solid #9aa7bd;border-radius:6px;padding:0 5px;':'';
+  const FRAME_CSS={f1:'border:1px solid #9aa7bd;border-radius:6px;padding:0 5px;',f2:'border:1px solid var(--gold);border-radius:6px;padding:0 5px;',f3:'border:1px solid #b06bff;box-shadow:0 0 6px rgba(176,107,255,.6);border-radius:6px;padding:0 5px;',f4:'border:1px solid #3fd9c5;box-shadow:0 0 7px rgba(63,217,197,.65);border-radius:6px;padding:0 5px;',f5:'border:1px solid #ff9eb0;box-shadow:0 0 6px rgba(255,158,176,.55);border-radius:6px;padding:0 5px;',f6:'border:2px double var(--gold);box-shadow:0 0 10px rgba(242,184,75,.7);border-radius:7px;padding:0 6px;'};
+  const frame=FRAME_CSS[eq.frame]||'';
   const legend=eq.legend&&SHOP_C.legend[eq.legend]?SHOP_C.legend[eq.legend].e+' ':'';
   const art=eq.art&&SHOP_C.art&&SHOP_C.art[eq.art]?`<img class="artBadge" style="${SHOP_C.art[eq.art].px?'image-rendering:pixelated':''}" src="${SHOP_C.art[eq.art].img}" alt="${esc(SHOP_C.art[eq.art].n)}">`:'';
   const crownT=eq.crown&&SHOP_C.crown[eq.crown]?'🏆 '+SHOP_C.crown[eq.crown].n:'';
-  const nkI=eq.nick&&SHOP_C.nick[eq.nick]?SHOP_C.nick[eq.nick]:null;
-  const nickT=eq.title||(nkI?(nkI.e?nkI.e+' ':'')+nkI.n:'');
-  const title=mode==='full'?`${crownT?`<span style="font-size:10px;color:var(--gold);font-weight:800"> 〔${esc(crownT)}〕</span>`:''}${nickT?`<span style="font-size:10px;color:var(--mut)"> 〔${esc(nickT)}〕</span>`:''}`:'';
-  return`<span style="${frame}${color?`color:${color};font-weight:800;`:''}">${art}${legend}${badge}${esc(name)}</span>${title}`;
+  const nickIds=Array.isArray(eq.nick)?eq.nick:(eq.nick?[eq.nick]:[]); // 기본 수식어 최대 2개
+  const nickTs=nickIds.map(id=>SHOP_C.nick[id]).filter(Boolean).map(it=>(it.e?it.e+' ':'')+it.n);
+  if(eq.title)nickTs.unshift(eq.title);
+  const title=mode==='full'?`${crownT?`<span style="font-size:10px;color:var(--gold);font-weight:800"> 〔${esc(crownT)}〕</span>`:''}${nickTs.slice(0,2).map(t=>`<span style="font-size:10px;color:var(--mut)"> 〔${esc(t)}〕</span>`).join('')}`:'';
+  const lgCls=eq.legend==='l2'?'lgx2':eq.legend==='l1'?'lgx1':'';
+  return`<span class="${lgCls}" style="${frame}${color&&!lgCls?`color:${color};font-weight:800;`:''}">${art}${legend}${badge}${esc(name)}</span>${title}`;
 }
 async function shopBuy(cat,item){
   const it=SHOP_C[cat][item];
@@ -4070,15 +4080,46 @@ async function bankSync(force){ // 공개 roster 폴링 — 등급칩·온라인
     }
   }catch(e){}
 }
+function bareName(n){return String(n||'').replace(/^\d+\s*/,'').trim()||String(n||'')} // 입단번호 떼고 카톡 닉네임만
 function renderOnlineBox(){ // 🟢 우측 온라인 멤버 (넓은 화면 전용 — CSS로 제어)
   let el=document.getElementById('onlineBox');
   const on=(window._bankRoster||[]).filter(r=>r.on);
   if(!el){el=document.createElement('div');el.id='onlineBox';document.body.appendChild(el)}
+  legendEntryFx(on); // 🌌 우주최강 입장 감지
   if(!on.length){el.style.display='none';return}
   el.style.display='';
   el.innerHTML=`<div class="mini" style="font-weight:900;color:var(--win);margin-bottom:6px">🟢 온라인 ${on.length}명</div>`
-    +on.slice(0,12).map(r=>`<p class="mini" style="margin:4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${bankDeco(r.name,r.equip)}${tierChip(r.name)}</p>`).join('')
+    +on.slice(0,12).map(r=>`<div style="margin:5px 0"><div class="mini" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${bankDeco(bareName(r.name),r.equip)}</div><div style="margin-top:1px">${tierChip(r.name)}</div></div>`).join('')
     +(on.length>12?`<p class="mini dim" style="margin:4px 0 0">외 ${on.length-12}명</p>`:'');
+}
+function legendEntryFx(on){ // 🌌 우주최강(l2) 멤버 접속 → 전 유저 알림 + 💸 돈다발
+  const now=new Set(on.map(r=>r.name));
+  const prev=window._wasOn;
+  window._wasOn=now;
+  if(!prev)return; // 첫 동기화는 입장으로 치지 않음
+  on.forEach(r=>{
+    if(prev.has(r.name))return;
+    if(!r.equip||r.equip.legend!=='l2')return;
+    const k='apodan_lgfx_'+r.name, last=Number(lsGet(k))||0;
+    if(Date.now()-last<30*60000)return; // 30분 쿨다운 (들락날락 스팸 방지)
+    lsSet(k,String(Date.now()));
+    moneyRain(bareName(r.name));
+  });
+}
+function moneyRain(name){ // 💸 돈다발 이펙트 (3.5초)
+  try{
+    toast(`🌌 우주최강 ${name}님 입장!! 모두 기립!! 💸`);
+    const el=document.createElement('div');
+    el.style.cssText='position:fixed;inset:0;z-index:98;pointer-events:none;overflow:hidden';
+    let h='';
+    for(let i=0;i<26;i++){
+      const x=Math.random()*100,d=2+Math.random()*1.6,dl=Math.random()*1.2,sz=20+Math.random()*16,e=['💵','💸','🪙','💰'][i%4];
+      h+=`<span style="position:absolute;left:${x}%;top:-40px;font-size:${sz}px;animation:moneyDrop ${d}s linear ${dl}s forwards">${e}</span>`;
+    }
+    el.innerHTML=h;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4200);
+  }catch(e){}
 }
 async function fetchArcade(){
   if(!voteApiBase())return;
@@ -4095,11 +4136,11 @@ async function missionClaim(field){
 function shopHtml(B){
   const items=B.items||{};const eq=B.equip||{};
   const cell=(cat,id,it)=>{
-    const own=items[cat+':'+id];const on=eq[cat]===id||(cat==='title'&&eq.title&&own);
+    const own=items[cat+':'+id];const on=cat==='nick'?(Array.isArray(eq.nick)?eq.nick.includes(id):eq.nick===id):(eq[cat]===id||(cat==='title'&&eq.title&&own));
     return`<div style="border:1px solid ${on?'var(--gold)':'var(--line)'};border-radius:10px;padding:8px;text-align:center;min-width:86px">
       <div style="font-size:${cat==='badge'||cat==='legend'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${it.img?`<img src="${it.img}" style="height:34px;border-radius:8px;${it.px?'image-rendering:pixelated;':''}" alt="${esc(it.n)}"><div style="font-size:11px;margin-top:2px">${esc(it.n)}</div>`:cat==='badge'||cat==='legend'?(it.e||it.n):(it.e?it.e+' ':'')+(it.n||it.e||'')}</div>
       <div class="mini dim">${cat==='crown'?'우승자 전용 · 무료':fmtAPO(it.p)}</div>
-      ${own?`<button class="btn sm ${on?'gold':'ghost'}" onclick="shopEquip('${cat}','${on?'off':id}')">${on?'해제':'장착'}</button>`
+      ${own?`<button class="btn sm ${on?'gold':'ghost'}" onclick="shopEquip('${cat}','${cat==='nick'?id:(on?'off':id)}')">${on?'해제':'장착'}</button>`
           :`<button class="btn sm" onclick="shopBuy('${cat}','${id}')">구매</button>`}
     </div>`};
   return`<div class="card" style="margin-top:14px">
@@ -4149,6 +4190,55 @@ function arcadeHtml(B){
       ${(M.claimed||[]).includes('all')?'<span class="dim">✅ 수령</span>':allDone?`<button class="btn sm gold" onclick="missionClaim('all')">+1,000 받기</button>`:'<span class="dim">+1,000</span>'}</p>
   </div>`;
 }
+/* ───── 🎁 운영진 특별 이벤트 ───── */
+async function fetchEvents(){
+  if(!voteApiBase())return;
+  try{const r=await fetch(voteApiBase()+'/api/bank?action=events'+(bankToken()?'&token='+encodeURIComponent(bankToken()):''));const j=await r.json().catch(()=>({}));if(r.ok)window._events=j}catch(e){}
+}
+async function evCreate(){
+  const title=($('evTitle')?.value||'').trim();
+  const pay=Math.round(Number($('evPay')?.value)||0);
+  const slots=Math.round(Number($('evSlots')?.value)||0);
+  if(!title)return toast('이벤트 이름을 입력해주세요.',true);
+  try{const j=await bankCall('eventCreate',{title,pay,slots});toast(`🎁 이벤트 오픈! (이번 주 남은 횟수 ${j.left}회)`);await fetchEvents();render()}
+  catch(e){toast(e.message,true)}
+}
+async function evJoin(id){
+  if(window._evBusy)return;window._evBusy=true;
+  try{const j=await bankCall('eventJoin',{id});if(window._bank)window._bank.bal=j.bal;toast(`🎁 받았어요! (+잔액 ${fmtAPO(j.bal)} APO · 남은 자리 ${j.left})`);await fetchEvents();bankRefresh(true);render()}
+  catch(e){toast(e.message,true);fetchEvents().then(()=>render())}
+  finally{window._evBusy=false}
+}
+function eventsCard(B){
+  if(window._events===undefined){window._events=null;fetchEvents().then(()=>render())}
+  const E=window._events||{events:[],quota:null};
+  const live=(E.events||[]).filter(e=>e.got.length<e.slots);
+  const done=(E.events||[]).filter(e=>e.got.length>=e.slots).slice(-2);
+  const Q=E.quota;
+  const myName=B&&B.name;
+  const row=e=>{const mine=myName&&e.got.includes(myName);const full=e.got.length>=e.slots;
+    return`<div class="row" style="justify-content:space-between;align-items:center;gap:8px;border:1px solid ${full?'var(--line)':'rgba(242,184,75,.4)'};border-radius:12px;padding:9px 12px;margin-top:6px;flex-wrap:wrap">
+      <span class="mini"><span class="pill" style="font-size:10px;padding:1px 7px;color:var(--gold);border-color:var(--gold);font-weight:900">👑 ${esc(e.role)}</span> <b>${esc(e.title)}</b> <span class="dim">— ${esc(e.by)} · 1인 ${fmtAPO(e.pay)} APO</span></span>
+      <span class="row" style="gap:6px;align-items:center"><span class="pill" style="font-size:10px;padding:1px 7px">${e.got.length}/${e.slots}명</span>
+      ${full?'<span class="mini dim">마감</span>':mine?'<span class="mini" style="color:var(--win);font-weight:800">✅ 수령</span>':`<button class="btn sm gold" onclick="evJoin('${e.id}')">받기!</button>`}</span>
+    </div>`};
+  return`<div class="card" style="margin-top:14px;border:1px solid rgba(242,184,75,.35)">
+    <h3 style="margin:0 0 4px">🎁 운영진 특별 이벤트 <span class="tag">회장 주 3회(총 1,000) · 부회장 주 1회(총 500)</span></h3>
+    ${live.length||done.length?'':'<p class="mini dim" style="margin:0">지금 열린 이벤트가 없어요 — 회장님 부회장님 어디 계세요? 👀</p>'}
+    ${live.map(row).join('')}
+    ${done.length?`<p class="mini dim" style="margin:8px 0 0">최근 마감: ${done.map(e=>`「${esc(e.title)}」 ${e.slots}명 완료`).join(' · ')}</p>`:''}
+    ${Q?`<div class="hr"></div>
+    <p class="mini" style="margin:0 0 6px;font-weight:800;color:var(--gold)">👑 ${Q.role}님 — 이번 주 ${Q.used}/${Q.per}회 사용 (이벤트당 총 지급 한도 ${fmtAPO(Q.cap)} APO)</p>
+    <div class="grid c3" style="gap:8px">
+      <div class="f"><label>이벤트 이름 (24자)</label><input id="evTitle" maxlength="24" placeholder="예: 출석 선착순 보너스!"></div>
+      <div class="f"><label>1인당 지급 (APO)</label><input id="evPay" type="number" value="100" min="50" max="${Q.cap}"></div>
+      <div class="f"><label>선착순 인원 (1~30)</label><input id="evSlots" type="number" value="5" min="1" max="30"></div>
+    </div>
+    <p class="mini dim" style="margin:6px 0 8px">1인당 지급 × 인원 ≤ ${fmtAPO(Q.cap)} APO. 멤버들이 [받기!]를 누르면 즉시 자동 입금돼요 (1인 1회).</p>
+    <button class="btn gold" onclick="evCreate()" ${Q.used>=Q.per?'disabled':''}>${Q.used>=Q.per?'이번 주 횟수 소진':'🎁 이벤트 열기'}</button>`:''}
+  </div>`;
+}
+
 /* ───── 🎮 포인트 게임 페이지 ───── */
 function pgGames(){
   const B=bankSession();
@@ -4166,7 +4256,7 @@ function pgGames(){
   if(B.role==='dev'&&!B.bal)return head('포인트 게임','개발자 열람 모드')+`
     <div class="card" style="margin-bottom:14px;border-style:dashed"><p class="mini dim" style="margin:0">👇 열람용 미리보기 — 유령 세션엔 지갑이 없어서 실제 게임은 멤버 계정으로!</p></div>
     ${arcadeHtml({name:'시스템',bal:null,items:{},equip:{}})}`;
-  return head('포인트 게임','전부 서버 정산 — 새로고침해도 결과는 그대로예요.')+balStrip+arcadeHtml(B);
+  return head('포인트 게임','전부 서버 정산 — 새로고침해도 결과는 그대로예요.')+balStrip+arcadeHtml(B)+eventsCard(B);
 }
 
 /* ───── 🛍 포인트 상점 페이지 ───── */
@@ -4193,7 +4283,7 @@ function pgShop(){
 }
 
 /* ───── 🙋 내 정보 페이지 ───── */
-const SHOP_CATS=[['crown','👑 전용 칭호'],['nick','💬 칭호'],['badge','🐢 뱃지'],['color','🎨 이름 색'],['frame','🖼 테두리'],['legend','🌌 레전드'],['title','✍️ 커스텀 칭호']];
+const SHOP_CATS=[['crown','👑 특수 수식어 (1개 장착)'],['nick','💬 기본 수식어 (2개까지 장착)'],['badge','🐢 뱃지'],['color','🎨 이름 색'],['frame','🖼 테두리'],['legend','🌌 레전드'],['title','✍️ 커스텀 칭호']];
 function pgMe(){
   const B=bankSession();
   if(B&&B.name&&B.role!=='dev'&&B.items===undefined&&!window._meSync){window._meSync=1;bankRefresh(true).finally(()=>{window._meSync=0})}
@@ -4210,9 +4300,9 @@ function pgMe(){
   const prog=T.next?Math.min(100,Math.max(2,Math.round((Number(B.bal)-lo)/Math.max(1,hiV-lo)*100))):100;
   const items=B.items||{},eq=B.equip||{};
   const invBtn=(cat,id)=>{const it=SHOP_C[cat]&&SHOP_C[cat][id];if(!it)return'';
-    const on=eq[cat]===id||(cat==='title'&&eq.title);
+    const on=cat==='nick'?(Array.isArray(eq.nick)?eq.nick.includes(id):eq.nick===id):(eq[cat]===id||(cat==='title'&&eq.title));
     const face=it.img?`<img src="${it.img}" style="height:18px;vertical-align:-4px;border-radius:5px;${it.px?'image-rendering:pixelated;':''}"> ${esc(it.n)}`:cat==='badge'||cat==='legend'?(it.e||it.n):((it.e?it.e+' ':'')+it.n);
-    return`<button class="btn sm ${on?'gold':'ghost'}" style="${cat==='color'?`color:${it.v};`:''}margin:2px" onclick="shopEquip('${cat}','${on?'off':id}')">${face}${on?' ✓':''}</button>`};
+    return`<button class="btn sm ${on?'gold':'ghost'}" style="${cat==='color'?`color:${it.v};`:''}margin:2px" onclick="shopEquip('${cat}','${cat==='nick'?id:(on?'off':id)}')">${face}${on?' ✓':''}</button>`};
   const invCat=(cat,label)=>{
     const mine=Object.keys(items).filter(k=>k.startsWith(cat+':')).map(k=>k.split(':')[1]);
     if(!mine.length)return'';
@@ -4234,7 +4324,7 @@ function pgMe(){
         <div style="font-size:19px;font-weight:900;margin-top:6px;${colorV?`color:${colorV};text-shadow:0 0 14px ${colorV}66;`:''}">${esc(B.name)}</div>
         <div class="mini dim" style="margin:1px 0 8px">${bankDeco(B.name,eq,'full')}</div>
         <div class="row" style="gap:6px;flex-wrap:wrap">
-          <span class="pill" style="color:${T.c};border-color:${T.c}66;font-weight:900;font-size:12.5px;padding:3px 11px 3px 8px;display:inline-flex;align-items:center">${tierIcon(T.c,13)}${T.name}</span>
+          <span class="pill ${T.pro?'tierPro':''}" style="color:${T.c};border-color:${T.c}66;font-weight:900;font-size:12.5px;padding:3px 11px 3px 8px;display:inline-flex;align-items:center;gap:4px">${T.e} ${T.pro?'🏆 ':''}${T.name}</span>
           ${role?`<span class="pill" style="color:var(--gold);border-color:var(--gold);font-weight:900;font-size:12.5px;padding:3px 11px">👑 ${role}</span>`:''}
           ${B.role==='admin'?'<span class="pill" style="font-size:12.5px;padding:3px 11px">🛡 운영진</span>':''}
         </div>
@@ -4263,7 +4353,7 @@ function pgMe(){
   <div class="card" style="margin-top:14px">
     <h3 style="margin:0 0 6px">🏅 등급 사다리 <span class="tag">포인트가 곧 계급</span></h3>
     <div class="scrollx"><table class="tbl" style="min-width:340px"><thead><tr><th>등급</th><th class="num">필요 포인트</th><th></th></tr></thead><tbody>
-      ${TIER_LADDER.map(([min,nm,c])=>`<tr ${nm===T.name?'style="background:rgba(242,184,75,.08)"':''}><td><span class="pill" style="font-size:11px;color:${c};border-color:${c}55;font-weight:800;display:inline-flex;align-items:center;padding-left:5px">${tierIcon(c,12)}${nm}</span>${nm===T.name?' <b class="mini" style="color:var(--gold)">← 현재</b>':''}</td><td class="num">${fmtAPO(min)}+</td><td class="mini dim">${nm==='🏆 프로선수'?'최고 영예':''}</td></tr>`).join('')}
+      ${TIER_LADDER.map(([min,nm,c])=>`<tr ${nm===T.name?'style="background:rgba(242,184,75,.08)"':''}><td><span class="pill ${min>=1000000?'tierPro':''}" style="font-size:11px;color:${c};border-color:${c}55;font-weight:800;display:inline-flex;align-items:center;gap:4px;padding-left:6px">${TIER_LADDER.find(x=>x[0]===min)[3]} ${min>=1000000?'🏆 ':''}${nm}</span>${nm===T.name?' <b class="mini" style="color:var(--gold)">← 현재</b>':''}</td><td class="num">${fmtAPO(min)}+</td><td class="mini dim">${nm==='🏆 프로선수'?'최고 영예':''}</td></tr>`).join('')}
     </tbody></table></div>
   </div>`;
 }
@@ -4614,7 +4704,7 @@ function pgDashboard(){
     </div>`}).join('')}
   ${isAdmin()?`<div class="row" style="justify-content:flex-end;margin:-4px 0 8px"><button class="btn sm ghost" title="LIVE 티커의 파산 속보 표시/숨김" onclick="state.settings.bustNews=!(state.settings.bustNews!==false);save();render();toast(state.settings.bustNews?'💀 파산 속보 ON':'파산 속보 OFF — 티커에서 숨김 (게시하면 전원 적용)')">${state.settings.bustNews!==false?'💀 파산 속보 ON':'💀 파산 속보 OFF'}</button></div>`:''}
   ${(()=>{const on=(window._bankRoster||[]).filter(r=>r.on);if(!on.length)return'';
-    return`<div class="card" style="margin-bottom:14px;padding:10px 14px"><p class="mini" style="margin:0"><b style="color:var(--win)">🟢 온라인 ${on.length}명</b> — ${on.slice(0,8).map(r=>bankDeco(r.name,r.equip)+tierChip(r.name)).join(' · ')}${on.length>8?` 외 ${on.length-8}명`:''}</p></div>`})()}
+    return`<div class="card" style="margin-bottom:14px;padding:10px 14px"><p class="mini" style="margin:0"><b style="color:var(--win)">🟢 온라인 ${on.length}명</b> — ${on.slice(0,8).map(r=>bankDeco(bareName(r.name),r.equip)+tierChip(r.name)).join(' · ')}${on.length>8?` 외 ${on.length-8}명`:''}</p></div>`})()}
   ${luCarousel()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
@@ -4859,7 +4949,7 @@ function pgRecord(){
       <p class="mini"><b>추천 흐름</b><br>경기 종료 → ①에서 최근 내전 불러오기 → 검수표 확인 → 저장. 끝. 라이엇 키가 만료된 날엔 ②(스크린샷)나 ③(JSON)으로.</p>
     </div>
   </div>
-  <div id="reviewBox" style="margin-top:14px"></div>${gd15Tool()}`;
+  <div id="reviewBox" style="margin-top:14px"></div>`;
 }
 function afterRecord(){
   const drop=$('drop'),input=$('shotFile');
@@ -5601,7 +5691,7 @@ function pgBank(){
     <h3>🏆 아포단 부자 랭킹 <span class="tag">전 멤버 공개 — 포인트는 명예다</span></h3>
     ${roster.length?`<div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>#</th><th>이름</th><th class="num">잔액 (APO)</th><th>등급</th><th>칭호</th>${B&&(B.role==='admin'||B.role==='dev')?'<th>정리</th>':''}</tr></thead><tbody>
       ${roster.map((r,i)=>{const canMod=B&&(B.role==='admin'||B.role==='dev');const T=pointTier(r.bal);const role=apdRole(r.name);
-        return`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${bankDeco(r.name,r.equip,'full')}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td><span class="pill" style="font-size:10px;padding:1px 6px 1px 4px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center">${tierIcon(T.c,11)}${T.name}</span>${role?`<br><span class="pill" style="font-size:10px;padding:1px 6px;color:var(--gold);border-color:var(--gold);font-weight:900;white-space:nowrap">👑 ${role}</span>`:''}</td><td class="mini">${bankBadges(r,roster).map(b=>`<span class="pill" style="font-size:10px;padding:1px 6px;margin-right:3px">${b}</span>`).join('')||'<span class="dim">—</span>'}</td>${canMod?`<td><button class="btn sm ghost" title="잘못 가입한 계정 삭제" onclick="bankPurgeName('${esc(r.name)}','purge')">🗑</button></td>`:''}</tr>`}).join('')}</tbody></table></div>`
+        return`<tr ${B&&B.name===r.name?'style="background:rgba(242,184,75,.08)"':''}><td>${medal(i)}</td><td><b>${bankDeco(r.name,r.equip,'full')}</b>${r.role==='admin'?' <span class="pill" style="font-size:10px;padding:1px 6px">운영진</span>':''}</td><td class="num" style="font-weight:800">${fmtAPO(r.bal)}</td><td><span class="pill ${T.pro?'tierPro':''}" style="font-size:10px;padding:1px 6px 1px 4px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center;gap:3px">${T.e} ${T.pro?'🏆 ':''}${T.name}</span>${role?`<br><span class="pill" style="font-size:10px;padding:1px 6px;color:var(--gold);border-color:var(--gold);font-weight:900;white-space:nowrap">👑 ${role}</span>`:''}</td><td class="mini">${bankBadges(r,roster).map(b=>`<span class="pill" style="font-size:10px;padding:1px 6px;margin-right:3px">${b}</span>`).join('')||'<span class="dim">—</span>'}</td>${canMod?`<td><button class="btn sm ghost" title="잘못 가입한 계정 삭제" onclick="bankPurgeName('${esc(r.name)}','purge')">🗑</button></td>`:''}</tr>`}).join('')}</tbody></table></div>`
     :`<p class="mini dim">${voteApiBase()?'아직 활성 계좌가 없어요 — 1호 가입자가 되어보세요!':'설정에서 서버를 먼저 연결해주세요.'}</p>`}
   </div>`;
   if(!B){
@@ -5688,7 +5778,7 @@ function pgBank(){
     <div class="card derby" style="text-align:center">
       <p class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:900;margin:0">MY BALANCE</p>
       <div style="font-size:34px;font-weight:900;margin:6px 0">${fmtAPO(B.bal)} <span style="font-size:16px;color:var(--gold)">APO</span></div>
-      ${(()=>{const T=pointTier(B.bal),role=apdRole(B.name);return`<div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin:2px 0 4px"><span class="pill" style="color:${T.c};border-color:${T.c}66;font-weight:800;display:inline-flex;align-items:center">${tierIcon(T.c,12)}${T.name}</span>${role?`<span class="pill" style="color:var(--gold);border-color:var(--gold);font-weight:900">👑 ${role}</span>`:''}</div>${T.next?`<p class="mini dim" style="margin:0 0 2px">다음 등급 「${T.next.name}」까지 ${fmtAPO(T.next.need)} APO</p>`:'<p class="mini" style="margin:0 0 2px;color:var(--gold);font-weight:800">정점에 도달했습니다 — 더 오를 곳이 없어요 🏆</p>'}`})()}
+      ${(()=>{const T=pointTier(B.bal),role=apdRole(B.name);return`<div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin:2px 0 4px"><span class="pill ${T.pro?'tierPro':''}" style="color:${T.c};border-color:${T.c}66;font-weight:800;display:inline-flex;align-items:center;gap:4px">${T.e} ${T.pro?'🏆 ':''}${T.name}</span>${role?`<span class="pill" style="color:var(--gold);border-color:var(--gold);font-weight:900">👑 ${role}</span>`:''}</div>${T.next?`<p class="mini dim" style="margin:0 0 2px">다음 등급 「${T.next.name}」까지 ${fmtAPO(T.next.need)} APO</p>`:'<p class="mini" style="margin:0 0 2px;color:var(--gold);font-weight:800">정점에 도달했습니다 — 더 오를 곳이 없어요 🏆</p>'}`})()}
       <p class="mini dim" style="margin:0">${esc(B.name)}${B.role==='admin'?' · 운영진':''}${B.bust?` · 💀 파산 ${B.bust}회`:''}</p>
       <div class="row" style="justify-content:center;gap:8px;margin-top:10px">
         <button class="btn sm" onclick="bankRefresh(true)">🔄 새로고침</button>
