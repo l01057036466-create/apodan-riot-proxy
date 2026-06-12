@@ -2902,7 +2902,7 @@ function bankLogout(){
 async function bankRefresh(force){
   if(!bankToken()||!voteApiBase())return;
   if(window._bankBusy&&!force)return;
-  if(!force&&window._bankLast&&Date.now()-window._bankLast<20000)return;
+  if(!force&&window._bankLast&&Date.now()-window._bankLast<60000)return;
   const tk=bankToken(); // stale 가드: 도중에 로그인/아웃되면 이 결과는 폐기
   window._bankBusy=true;window._bankLast=Date.now();
   try{
@@ -2921,8 +2921,8 @@ async function bankRefresh(force){
       toast('세션이 만료됐어요 — 다시 로그인해주세요.',true);
     }
   }
-  try{window._bankRoster=(await bankCall('roster',null,'GET')).roster}catch(e){}
-  try{const _p=await bankCall('prices',null,'GET');window._srvPx=_p.prices||{};window._srvBase=_p.base||{};window._srvPrem=_p.prem||{}}catch(e){} // 합산가+기준가+수급 분해
+  if(!window._bankRoster||Date.now()-(window._bankSyncAt||0)>120000){try{window._bankRoster=(await bankCall('roster',null,'GET')).roster;window._bankSyncAt=Date.now()}catch(e){}} // roster는 신선하면 재사용
+  if(tab==='bank'||tab==='form'){try{const _p=await bankCall('prices',null,'GET');window._srvPx=_p.prices||{};window._srvBase=_p.base||{};window._srvPrem=_p.prem||{}}catch(e){}} // 시세는 거래소·폼 탭에서만
   window._bankBusy=false;
   const snap=JSON.stringify([window._bank,window._bankRoster,window._bankPending]);
   if(snap!==window._bankSnap){window._bankSnap=snap;try{render()}catch(e){}}
@@ -4154,10 +4154,11 @@ async function arcadeHL(){
   catch(e){toast(e.message,true)}
   finally{window._hlBusy=false}
 }
-async function bankSync(force){ // 공개 roster 폴링 — 등급칩·온라인·잭팟 속보의 연료 (60초 스로틀)
+async function bankSync(force){ // 공개 roster 폴링 — 등급칩·온라인·잭팟 속보의 연료 (4분 스로틀 + 백그라운드 정지 = 서버 요청 절약)
   if(!voteApiBase())return;
+  if(!force&&typeof document!=='undefined'&&document.hidden)return; // 보고 있지 않은 탭은 서버를 쉬게
   const now=Date.now();
-  if(!force&&window._bankSyncAt&&now-window._bankSyncAt<45000)return;
+  if(!force&&window._bankSyncAt&&now-window._bankSyncAt<200000)return;
   window._bankSyncAt=now;
   try{
     const r=await fetch(voteApiBase()+'/api/bank?action=roster');
@@ -6264,7 +6265,8 @@ render();
 loadShared(false); // 호스팅된 링크에서 열렸으면 공유 data.json 자동 확인
 bankSync(true); // 등급칩·온라인·잭팟 속보
 champImgInit(); // 챔피언 초상화 매핑
-setInterval(()=>bankSync(),60000);
+setInterval(()=>bankSync(),240000); // 💾 Upstash 절약: 4분 주기 + 백그라운드 탭 정지
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)bankSync(true)}); // 탭으로 돌아오면 즉시 새로고침
 setInterval(()=>{ // 투표 남은 시간 갱신 (입력 중엔 건너뜀)
   const ae=document.activeElement;
   const typing=ae&&['INPUT','TEXTAREA','SELECT'].includes(ae.tagName);
