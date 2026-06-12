@@ -16329,7 +16329,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-12T15:23:18.670Z",
+  "lastBackupAt": "2026-06-12T15:23:22.694Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -16376,6 +16376,7 @@
    "id": "lu_rq0cthimqakb1ad",
    "date": "2026-06-13",
    "round": "1차",
+   "series": "단판",
    "note": "00시 15분 3차",
    "blue": [
     "p_4siqelqmq7ub77p",
@@ -16385,7 +16386,7 @@
     "p_1imn90xr_mq7nhxuq"
    ],
    "red": [
-    "p_3v5tiwk3_mq7nhxuq",
+    "p_0pw6uy11_mq7nhxuq",
     "p_snn2xfw3_mq7nhxuq",
     "p_5fj5souo_mq7nhxuq",
     "p_wtiaq7m1_mq7nhxuq",
@@ -16393,6 +16394,6 @@
    ]
   }
  ],
- "rev": 95,
- "updatedAt": "2026-06-12T15:23:18.670Z"
+ "rev": 97,
+ "updatedAt": "2026-06-12T15:33:41.594Z"
 }
