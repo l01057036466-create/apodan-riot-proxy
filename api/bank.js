@@ -179,6 +179,29 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, status: ta.status });
     }
 
+    // ── 🎨 그림 뱃지 등록/삭제 (운영자·개발자 — 사이트에서 바로 입점) ──
+    if (req.method === 'POST' && (action === 'artAdd' || action === 'artDel')) {
+      var sArt = await auth(body.token);
+      var okArt = sArt && (sArt.role === 'dev' || sArt.role === 'admin');
+      if (!okArt) return res.status(403).json({ error: '운영자 권한이 필요해요' });
+      var dynRaw2 = await redis(['GET', 'shop:dynart']);
+      var dynM = {}; try { dynM = dynRaw2 ? JSON.parse(dynRaw2) : {}; } catch (eD2) {}
+      if (action === 'artAdd') {
+        var idA = String(body.id || '').trim();
+        var nA = String(body.name || '').trim().slice(0, 20);
+        var pA = Math.round(Number(body.price) || 0);
+        if (!/^u[a-z0-9]{4,20}$/.test(idA)) return res.status(400).json({ error: '잘못된 ID' });
+        if (!nA) return res.status(400).json({ error: '이름을 입력해주세요' });
+        if (pA < 100 || pA > 1000000) return res.status(400).json({ error: '가격은 100~1,000,000 APO' });
+        if (Object.keys(dynM).length >= 40) return res.status(400).json({ error: '커스텀 그림은 40개까지' });
+        dynM[idA] = { n: nA, p: pA };
+      } else {
+        delete dynM[String(body.id || '')];
+      }
+      await redis(['SET', 'shop:dynart', JSON.stringify(dynM)]);
+      return res.status(200).json({ ok: true, art: dynM });
+    }
+
     // ── 개발자 전용: 운영자 임명/해임 + 포인트 발권 (전부 "시스템" 명의) ──
     if (req.method === 'POST' && ['promote', 'demote', 'mint'].indexOf(action) >= 0) {
       var s4 = await auth(body.token);
@@ -783,6 +806,9 @@ module.exports = async function handler(req, res) {
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var cat = String(body.cat || ''), itemId = String(body.item || '');
       var item = SHOP[cat] && SHOP[cat][itemId];
+      if (!item && cat === 'art' && itemId !== 'off') { // 🎨 운영자가 사이트에서 등록한 그림 뱃지
+        try { var dynRaw = await redis(['GET', 'shop:dynart']); var dynM0 = dynRaw ? JSON.parse(dynRaw) : {}; item = dynM0[itemId] || null; } catch (eD) {}
+      }
       if (!item && !(action === 'equipItem' && itemId === 'off')) return res.status(400).json({ error: '없는 아이템' }); // 🐛fix: 'off'(장착 해제)가 항상 400으로 막혀 있던 버그
       aSh.items = aSh.items || {};
       aSh.equip = aSh.equip || {};
