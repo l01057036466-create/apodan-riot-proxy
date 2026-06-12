@@ -125,7 +125,7 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', 'sess:' + q.token, SEC30]); // 활동 중엔 로그아웃 없음 (30일 연장)
       if (s.role === 'dev') return res.status(200).json({ name: '시스템', role: 'dev', bal: null });
       var a3 = s.acct, today = kstDate();
-      await redis(['SET', 'online:' + a3.name, '1', 'EX', '180']); // 🟢 접속 표시 (3분 TTL)
+      await redis(['SET', 'online:' + a3.name, '1', 'EX', '420']); // 🟢 접속 표시 (7분 TTL — 절약형 폴링에 맞춤)
       if (a3.lastDaily !== today && (await redis(['SET', 'daily:' + a3.name + ':' + today, '1', 'NX', 'EX', SEC90])) === 'OK') { // 🐛fix: 동시 접속 이중지급 방지
         a3.lastDaily = today; a3.bal += 500;
         a3.streak = (a3.lastDay && (new Date(today) - new Date(a3.lastDay) === 86400000)) ? (Number(a3.streak) || 0) + 1 : 1;
