@@ -237,6 +237,12 @@ details.fold[open]{padding-bottom:14px}
   .pageHead h2{font-size:19px}
 }
 
+/* ═══ 🟢 온라인 박스 + 🎰 잭팟 티커 ═══ */
+#onlineBox{position:fixed;right:14px;top:150px;width:180px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;z-index:25;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+@media (max-width:1819px){#onlineBox{display:none!important}}
+.tk-jack{color:var(--gold);font-weight:900;text-shadow:0 0 10px rgba(242,184,75,.7);animation:jkBlink .9s infinite alternate}
+@keyframes jkBlink{from{opacity:1}to{opacity:.55}}
+
 /* ═══ 📱 상단 메뉴 모바일 다듬기 — 한 줄 가로 스크롤 + 글자 축소 ═══ */
 nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 @media (max-width:720px){
@@ -3776,18 +3782,25 @@ async function bankGift(){
 const SHOP_C={ // 서버와 동일 카탈로그 (표시용 — 검증은 서버)
   badge:{b1:{e:'🐢',p:5000},b2:{e:'🍀',p:7000},b3:{e:'🌙',p:8000},b4:{e:'🦊',p:10000},b5:{e:'🐯',p:12000},b6:{e:'💀',p:15000},b7:{e:'🔥',p:15000},b8:{e:'🚀',p:18000},b9:{e:'👑',p:20000},b10:{e:'💎',p:25000}},
   color:{c1:{v:'#7fd1ff',n:'아이스',p:10000},c2:{v:'#ff7fb0',n:'핑크',p:10000},c3:{v:'#9dff8a',n:'네온',p:15000},c4:{v:'#c89bff',n:'퍼플',p:20000},c5:{v:'#ff5b5b',n:'블러드',p:25000},c6:{v:'#f2b84b',n:'골드',p:30000}},
-  frame:{f1:{n:'은테',p:25000},f2:{n:'금테',p:50000},f3:{n:'옵시디언',p:100000}},
-  title:{t1:{n:'커스텀 칭호',p:80000}},
+  frame:{f1:{e:'🥈',n:'은테',p:25000},f2:{e:'🥇',n:'금테',p:50000},f3:{e:'🔮',n:'옵시디언',p:100000}},
+  title:{t1:{e:'✍️',n:'커스텀 칭호',p:80000}},
   legend:{l1:{e:'🏛',n:'명예의 전당석',p:500000},l2:{e:'🌌',n:'우주최강',p:1000000}},
-  nick:{n1:{n:'존잘남',p:5000},n2:{n:'존예녀',p:5000},n3:{n:'마음이 따뜻한 사람',p:3000},n4:{n:'인성 1티어',p:8000},n5:{n:'분위기 메이커',p:5000},n6:{n:'아포단의 햇살',p:7000},n7:{n:'츤데레',p:3000},n8:{n:'소문난 효자',p:3000},n9:{n:'동네 인싸',p:4000},n10:{n:'프로 잠수러',p:2000},n11:{n:'칼퇴 요정',p:3000},n12:{n:'야식 전도사',p:2500},n13:{n:'치킨 성애자',p:2500},n14:{n:'민트초코 신봉자',p:1500},n15:{n:'부먹파',p:1000},n16:{n:'찍먹파',p:1000},n17:{n:'평화주의자',p:2000},n18:{n:'협곡의 시인',p:6000},n19:{n:'멘탈 갑',p:8000},n20:{n:'리액션 부자',p:4000},n21:{n:'라면 소믈리에',p:2500},n22:{n:'새벽반 반장',p:3000},n23:{n:'침대 수호자',p:2000},n24:{n:'게임보다 현생',p:1500},n25:{n:'현생보다 게임',p:1500},n26:{n:'잔소리 장인',p:3000},n27:{n:'긍정왕',p:4000},n28:{n:'솔랭 전사',p:5000},n29:{n:'닉값 못 함',p:2000},n30:{n:'닉값 제대로 함',p:6000},n31:{n:'⚡ T1 팬',p:10000},n32:{n:'🐯 GEN 팬',p:10000},n33:{n:'🦅 LCK 본방사수',p:8000},n34:{n:'🐉 LPL 시청자',p:8000}},
-  crown:{x1:{n:'제1회 멸망전 우승 탑',p:0,only:'여썬'},x2:{n:'제1회 멸망전 우승 정글',p:0,only:'혀농'},x3:{n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'},x4:{n:'제1회 멸망전 우승 원딜',p:0,only:'미르'},x5:{n:'제1회 멸망전 우승 서폿',p:0,only:'이래'},x6:{n:'제1회 멸망전 우승 팀장',p:0,only:'미르'}}
+  nick:{n1:{e:'😎',n:'존잘남',p:5000},n2:{e:'💖',n:'존예녀',p:5000},n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000},n4:{e:'😇',n:'인성 1티어',p:8000},n5:{e:'🎉',n:'분위기 메이커',p:5000},n6:{e:'🌞',n:'아포단의 햇살',p:7000},n7:{e:'🐱',n:'츤데레',p:3000},n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000},n9:{e:'🕺',n:'동네 인싸',p:4000},n10:{e:'🤿',n:'프로 잠수러',p:2000},n11:{e:'🧚',n:'칼퇴 요정',p:3000},n12:{e:'🌭',n:'야식 전도사',p:2500},n13:{e:'🍗',n:'치킨 성애자',p:2500},n14:{e:'🍃',n:'민트초코 신봉자',p:1500},n15:{e:'🥣',n:'부먹파',p:1000},n16:{e:'🥢',n:'찍먹파',p:1000},n17:{e:'🕊',n:'평화주의자',p:2000},n18:{e:'📜',n:'협곡의 시인',p:6000},n19:{e:'🧊',n:'멘탈 갑',p:8000},n20:{e:'👏',n:'리액션 부자',p:4000},n21:{e:'🍜',n:'라면 소믈리에',p:2500},n22:{e:'🌙',n:'새벽반 반장',p:3000},n23:{e:'🛏',n:'침대 수호자',p:2000},n24:{e:'🏞',n:'게임보다 현생',p:1500},n25:{e:'🖥',n:'현생보다 게임',p:1500},n26:{e:'📢',n:'잔소리 장인',p:3000},n27:{e:'🌈',n:'긍정왕',p:4000},n28:{e:'⚔️',n:'솔랭 전사',p:5000},n29:{e:'🙃',n:'닉값 못 함',p:2000},n30:{e:'💯',n:'닉값 제대로 함',p:6000},n31:{e:'⚡',n:'T1 팬',p:10000},n32:{e:'🐯',n:'GEN 팬',p:10000},n33:{e:'🦅',n:'LCK 본방사수',p:8000},n34:{e:'🐉',n:'LPL 시청자',p:8000},n35:{e:'🐰',n:'토끼파 두목',p:2000},n36:{e:'🌻',n:'해바라기 화가',p:2000}},
+  crown:{x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'},x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'},x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'},x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'},x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'},x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'}}
 };
+const TIER_LADDER=[[0,'아마추어 아이언','#8f9aa8'],[3000,'동네고수 브론즈','#c08d5e'],[8000,'성실한 실버','#b9c8d8'],[15000,'유망주 골드','#f2b84b'],[30000,'각성한 플래티넘','#3fd9c5'],[60000,'정예 에메랄드','#37c978'],[120000,'칼챔 다이아몬드','#5ea0ff'],[250000,'초인 마스터','#b58cff'],[500000,'괴물 그랜드마스터','#ff5c7a'],[750000,'신계 챌린저','#ffd24a'],[1000000,'🏆 프로선수','#ffffff']];
 function pointTier(bal){ // 포인트 등급 사다리 — 100만 = 프로선수
   bal=Number(bal)||0;
-  const L=[[0,'아마추어 아이언','#8f9aa8'],[3000,'동네고수 브론즈','#c08d5e'],[8000,'성실한 실버','#b9c8d8'],[15000,'유망주 골드','#f2b84b'],[30000,'각성한 플래티넘','#3fd9c5'],[60000,'정예 에메랄드','#37c978'],[120000,'칼챔 다이아몬드','#5ea0ff'],[250000,'초인 마스터','#b58cff'],[500000,'괴물 그랜드마스터','#ff5c7a'],[750000,'신계 챌린저','#ffd24a'],[1000000,'🏆 프로선수','#ffffff']];
+  const L=TIER_LADDER;
   let cur=L[0];for(const e of L)if(bal>=e[0])cur=e;
   const next=L[L.indexOf(cur)+1]||null;
   return{name:cur[1],c:cur[2],next:next?{name:next[1],need:next[0]-bal}:null};
+}
+function tierChip(name){ // 어디서든 이름 옆 등급 — 계좌 있는 멤버는 등급이 따라다녀요
+  const r=(window._bankRoster||[]).find(x=>x.name===String(name));
+  if(!r)return'';
+  const T=pointTier(r.bal);
+  return` <span class="pill" style="font-size:9.5px;padding:1px 6px;color:${T.c};border-color:${T.c}55;font-weight:800;white-space:nowrap;vertical-align:1px">${T.name}</span>`;
 }
 function apdRole(name){ // 운영자 직함
   const b=String(name||'').replace(/^\d+\s*/,'').trim();
@@ -3799,8 +3812,9 @@ function bankDeco(name,equip){ // 장착 효과가 입혀진 이름 HTML
   const color=eq.color&&SHOP_C.color[eq.color]?SHOP_C.color[eq.color].v:'';
   const frame=eq.frame==='f3'?'border:1px solid #b06bff;box-shadow:0 0 6px rgba(176,107,255,.6);border-radius:6px;padding:0 5px;':eq.frame==='f2'?'border:1px solid var(--gold);border-radius:6px;padding:0 5px;':eq.frame==='f1'?'border:1px solid #9aa7bd;border-radius:6px;padding:0 5px;':'';
   const legend=eq.legend&&SHOP_C.legend[eq.legend]?SHOP_C.legend[eq.legend].e+' ':'';
-  const crownT=eq.crown&&SHOP_C.crown[eq.crown]?SHOP_C.crown[eq.crown].n:'';
-  const tTxt=crownT||eq.title||(eq.nick&&SHOP_C.nick[eq.nick]?SHOP_C.nick[eq.nick].n:'');
+  const crownT=eq.crown&&SHOP_C.crown[eq.crown]?'🏆 '+SHOP_C.crown[eq.crown].n:'';
+  const nkI=eq.nick&&SHOP_C.nick[eq.nick]?SHOP_C.nick[eq.nick]:null;
+  const tTxt=crownT||eq.title||(nkI?(nkI.e?nkI.e+' ':'')+nkI.n:'');
   const title=tTxt?`<span style="font-size:10px;${crownT?'color:var(--gold);font-weight:800':'color:var(--mut)'}"> 〔${esc(tTxt)}〕</span>`:'';
   return`<span style="${frame}${color?`color:${color};font-weight:800;`:''}">${legend}${badge}${esc(name)}</span>${title}`;
 }
@@ -3843,18 +3857,85 @@ async function arcadeSpin(){
   catch(e){toast('🎰 '+e.message,true)}
   finally{window._spinBusy=false}
 }
+function scratchFx(prize,jackpot){ // 🎫 복권 연출: 긁는 척 1.2초 → 결과 빵! (꽝도 확실하게)
+  return new Promise(done=>{
+    try{
+      let el=document.getElementById('spinFx');
+      if(!el){el=document.createElement('div');el.id='spinFx';document.body.appendChild(el)}
+      el.style.cssText='position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(8,10,15,.74);backdrop-filter:blur(3px)';
+      el.innerHTML=`<div style="background:var(--panel);border:1px solid var(--gold);border-radius:18px;padding:24px 38px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.5)"><div style="font-size:12px;color:var(--gold);font-weight:900;letter-spacing:.22em">GOLDEN LOTTO</div><div id="scrNum" style="font-size:44px;font-weight:900;margin-top:6px;min-width:200px">🎫</div><div id="scrSub" class="mini dim" style="margin-top:4px">긁는 중…</div></div>`;
+      const faces=['🎫','✨🎫','🪙🎫','🎫✨'];let fi=0;
+      const iv=setInterval(()=>{const sn=document.getElementById('scrNum');if(sn)sn.textContent=faces[fi++%faces.length]},150);
+      setTimeout(()=>{
+        clearInterval(iv);
+        const sn=document.getElementById('scrNum'),sb=document.getElementById('scrSub');
+        if(sn){
+          if(jackpot){sn.textContent='💥 잭팟!!';sn.style.color='var(--gold)';if(sb)sb.innerHTML=`<b style="color:var(--gold);font-size:15px">누적 풀 +${fmtAPO(prize)} APO 독식!</b>`}
+          else if(prize>0){sn.textContent='+'+fmt(prize)+' APO';sn.style.color='var(--win)';if(sb)sb.textContent='당첨! 🎉'}
+          else{sn.textContent='꽝…';sn.style.color='var(--lose)';if(sb)sb.textContent='다음 장을 노려요 (하루 3장)'}
+          sn.style.transition='.18s';sn.style.transform='scale(1.16)';
+        }
+        setTimeout(()=>{el.remove();done()},jackpot?2200:prize>0?1400:1100);
+      },1200);
+    }catch(e){done()}
+  });
+}
 async function arcadeScratch(){
+  if(window._scrBusy)return;window._scrBusy=true;
   try{const j=await bankCall('scratch',{});if(window._bank)window._bank.bal=j.bal;
-    toast(j.jackpot?`🎟💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:j.prize>0?`🎟 +${fmtAPO(j.prize)}! (구매가 300, 남은 ${j.left}장)`:`🎟 꽝… (남은 ${j.left}장)`);
-    fetchArcade();render()}
+    await scratchFx(j.prize,!!j.jackpot);
+    toast(j.jackpot?`🎫💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:j.prize>0?`🎫 +${fmtAPO(j.prize)} APO! (남은 ${j.left}장)`:`🎫 꽝… (남은 ${j.left}장)`,j.prize===0&&!j.jackpot);
+    fetchArcade();bankSync(true);render()}
   catch(e){toast(e.message,true)}
+  finally{window._scrBusy=false}
+}
+function hlFx(win,amt){ // 🃏 하이로우: 승패 플래시 (0.9초)
+  try{
+    let el=document.getElementById('spinFx');
+    if(!el){el=document.createElement('div');el.id='spinFx';document.body.appendChild(el)}
+    el.style.cssText='position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:rgba(8,10,15,.6)';
+    el.innerHTML=`<div style="font-size:52px;font-weight:900;color:${win?'var(--win)':'var(--lose)'};text-shadow:0 0 30px ${win?'rgba(63,217,197,.5)':'rgba(255,92,122,.5)'}">${win?`🃏 WIN +${fmt(amt)}`:`🃏 LOSE −${fmt(amt)}`}</div>`;
+    setTimeout(()=>el.remove(),900);
+  }catch(e){}
 }
 async function arcadeHL(){
+  if(window._hlBusy)return;
   const amt=Math.round(Number($('hlAmt')?.value)||0);
   if(amt<100||amt>2000)return toast('판돈 100~2,000',true);
+  window._hlBusy=true;
   try{const j=await bankCall('highlow',{amount:amt});if(window._bank)window._bank.bal=j.bal;
-    toast(j.win?`🃏 승리! +${fmtAPO(amt)} (더 가? 🔥)`:`🃏 패배… −${fmtAPO(amt)}`);render()}
+    hlFx(j.win,amt);
+    toast(j.win?`🃏 승리! +${fmtAPO(amt)} (남은 ${j.left}판 — 더 가? 🔥)`:`🃏 패배… −${fmtAPO(amt)} (남은 ${j.left}판)`,!j.win);render()}
   catch(e){toast(e.message,true)}
+  finally{window._hlBusy=false}
+}
+async function bankSync(force){ // 공개 roster 폴링 — 등급칩·온라인·잭팟 속보의 연료 (60초 스로틀)
+  if(!voteApiBase())return;
+  const now=Date.now();
+  if(!force&&window._bankSyncAt&&now-window._bankSyncAt<45000)return;
+  window._bankSyncAt=now;
+  try{
+    const r=await fetch(voteApiBase()+'/api/bank?action=roster');
+    const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.roster){
+      const had=!!window._bankRoster;
+      window._bankRoster=j.roster;
+      window._bankFeed=j.feed||[];
+      renderOnlineBox();
+      if(!had&&!isTyping())render(); // 첫 로딩 땐 등급칩 입히러 한 번 다시 그림
+      else renderTicker();
+    }
+  }catch(e){}
+}
+function renderOnlineBox(){ // 🟢 우측 온라인 멤버 (넓은 화면 전용 — CSS로 제어)
+  let el=document.getElementById('onlineBox');
+  const on=(window._bankRoster||[]).filter(r=>r.on);
+  if(!el){el=document.createElement('div');el.id='onlineBox';document.body.appendChild(el)}
+  if(!on.length){el.style.display='none';return}
+  el.style.display='';
+  el.innerHTML=`<div class="mini" style="font-weight:900;color:var(--win);margin-bottom:6px">🟢 온라인 ${on.length}명</div>`
+    +on.slice(0,12).map(r=>`<p class="mini" style="margin:4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${bankDeco(r.name,r.equip)}${tierChip(r.name)}</p>`).join('')
+    +(on.length>12?`<p class="mini dim" style="margin:4px 0 0">외 ${on.length-12}명</p>`:'');
 }
 async function fetchArcade(){
   if(!voteApiBase())return;
@@ -3873,7 +3954,7 @@ function shopHtml(B){
   const cell=(cat,id,it)=>{
     const own=items[cat+':'+id];const on=eq[cat]===id||(cat==='title'&&eq.title&&own);
     return`<div style="border:1px solid ${on?'var(--gold)':'var(--line)'};border-radius:10px;padding:8px;text-align:center;min-width:86px">
-      <div style="font-size:${cat==='badge'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${it.e||it.n}</div>
+      <div style="font-size:${cat==='badge'||cat==='legend'?'22px':'13px'};font-weight:800;${cat==='color'?`color:${it.v}`:''}">${cat==='badge'||cat==='legend'?(it.e||it.n):(it.e?it.e+' ':'')+(it.n||it.e||'')}</div>
       <div class="mini dim">${cat==='crown'?'우승자 전용 · 무료':fmtAPO(it.p)}</div>
       ${own?`<button class="btn sm ${on?'gold':'ghost'}" onclick="shopEquip('${cat}','${on?'off':id}')">${on?'해제':'장착'}</button>`
           :`<button class="btn sm" onclick="shopBuy('${cat}','${id}')">구매</button>`}
@@ -3899,16 +3980,24 @@ function arcadeHtml(B){
   const M0=window._missions||{};const M={count:M0.count||{},claimed:M0.claimed||[]};
   const MD={play:['🎮 내전 출전 1회',500,1],bet:['🎲 베팅 2회',200,2],trade:['📈 주식 거래 1회',200,1],vote:['🏅 MVP/스코어 투표',100,1]};
   const allDone=Object.entries(MD).every(([k,d])=>(M.count[k]||0)>=d[2]);
+  const game=(emoji,name,sub,btn)=>`<div style="border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center;background:var(--panel2)">
+      <div style="font-size:38px;line-height:1">${emoji}</div>
+      <div style="font-weight:900;font-size:15px;margin:8px 0 2px">${name}</div>
+      <div class="mini dim" style="margin:0 0 10px;min-height:16px">${sub}</div>
+      ${btn}</div>`;
   return`<div class="card" style="margin-top:14px">
-    <h3 style="margin:0 0 4px">🎪 오락실 <span class="tag">유료 게임은 기대값 마이너스 — 복구는 내전과 배당으로!</span></h3>
-    <p class="mini" style="margin:0 0 8px;font-weight:900;color:var(--gold)">💰 누적 잭팟: ${fmtAPO(A.jackpot)} APO ${A.news&&A.news[0]?`<span class="dim" style="font-weight:600">· 최근: ${esc(A.news[0].n)} ${A.news[0].t==='jp'?'복권':'룰렛'} 잭팟 +${fmtAPO(A.news[0].v)}!</span>`:''}</p>
-    <div class="row" style="gap:8px;flex-wrap:wrap">
-      <button class="btn gold" onclick="arcadeSpin()">🎰 데일리 룰렛 (무료)</button>
-      <button class="btn" onclick="arcadeScratch()">🎟 스크래치 복권 (300)</button>
-      <span class="row" style="gap:4px"><input id="hlAmt" type="number" value="500" min="100" max="2000" style="width:90px"><button class="btn lose" onclick="arcadeHL()">🃏 하이로우 ×2</button></span>
+    <div style="border:1px solid rgba(242,184,75,.45);border-radius:14px;padding:12px;text-align:center;background:linear-gradient(150deg,rgba(242,184,75,.1),transparent);margin-bottom:12px">
+      <div class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:900">JACKPOT</div>
+      <div style="font-size:30px;font-weight:900;color:var(--gold)">${fmtAPO(A.jackpot)} <span style="font-size:13px">APO</span></div>
+      ${A.news&&A.news[0]?`<div class="mini dim" style="margin-top:2px">최근 잭팟: <b>${esc(A.news[0].n)}</b> +${fmtAPO(A.news[0].v)} APO 🎉</div>`:''}
     </div>
-    <p class="mini dim" style="margin:6px 0 0">룰렛: 매일 무료 1회(7일 연속 출석 시 2회) · 복권: 환급률 ~85%, 판매액 10%가 잭팟 적립, 0.3% 확률로 풀 독식 · 하이로우: 승률 47.5%로 2배, 하루 20판 — 큰수의 법칙상 오래 하면 집(은행)이 이깁니다 🏦</p>
-    <p class="mini" style="margin:10px 0 4px;font-weight:800">📋 주간 미션 <span class="tag">자동 체크 — 인증 필요 없음</span></p>
+    <div class="grid c3" style="gap:10px">
+      ${game('🎰','데일리 룰렛','매일 무료 1회 · 7일 연속 출석 시 2회',`<button class="btn gold" style="width:100%;font-size:14px" onclick="arcadeSpin()">무료로 돌리기</button>`)}
+      ${game('🎫','황금 복권','한 장 300 APO · 하루 3장 · 잭팟의 주인공은?',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">300 APO로 긁기</button>`)}
+      ${game('🃏','하이로우','이기면 판돈 ×2 · 하루 20판',`<div class="row" style="gap:5px;justify-content:center"><input id="hlAmt" type="number" value="500" min="100" max="2000" style="width:84px;text-align:center"><button class="btn lose" onclick="arcadeHL()">베팅!</button></div>`)}
+    </div>
+    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">복권 환급률 ~85%(판매액 10% 잭팟 적립, 0.3% 확률 풀 독식) · 하이로우 승률 47.5% — 오래 하면 은행이 이깁니다. 안정적인 복구는 내전 수당과 베팅 배당으로! 🏦</p></details>
+    <p class="mini" style="margin:12px 0 4px;font-weight:800">📋 주간 미션 <span class="tag">자동 체크 — 인증 필요 없음</span></p>
     ${Object.entries(MD).map(([k,d])=>{const c=M.count[k]||0,done=c>=d[2],got=(M.claimed||[]).includes(k);
       return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${Math.min(c,d[2])}/${d[2]}</b></span>
         ${got?'<span class="dim">✅ 수령</span>':done?`<button class="btn sm gold" onclick="missionClaim('${k}')">+${d[1]} 받기</button>`:`<span class="dim">+${d[1]}</span>`}</p>`}).join('')}
@@ -3916,6 +4005,84 @@ function arcadeHtml(B){
       ${(M.claimed||[]).includes('all')?'<span class="dim">✅ 수령</span>':allDone?`<button class="btn sm gold" onclick="missionClaim('all')">+1,000 받기</button>`:'<span class="dim">+1,000</span>'}</p>
   </div>`;
 }
+/* ───── 🎮 포인트 게임 페이지 ───── */
+function pgGames(){
+  const B=bankSession();
+  const balStrip=B&&B.name&&B.role!=='dev'?`<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>${bankDeco(B.name,B.equip)}${tierChip(B.name)}</div>
+      <div style="font-weight:900;font-size:18px;color:var(--gold)">${B.bal!=null?fmtAPO(B.bal):'—'} <span class="mini">APO</span> <button class="btn sm ghost" onclick="bankRefresh(true)">🔄</button></div>
+    </div>`:'';
+  if(!B)return head('포인트 게임','룰렛·복권·하이로우·주간 미션 — 포인트를 불리는 놀이터예요.')+`
+    <div class="card" style="max-width:520px;margin:30px auto;text-align:center;padding:30px 20px">
+      <div style="font-size:40px">🎪</div>
+      <h3 style="margin:10px 0 6px">로그인하면 게임을 즐길 수 있어요</h3>
+      <p class="mini dim" style="margin:0 0 14px">멤버 계정으로 로그인하면 데일리 룰렛(무료)·황금 복권·하이로우·주간 미션이 열려요.</p>
+      <button class="btn gold" onclick="go('bank')">💰 거래소에서 로그인하기</button>
+    </div>`;
+  if(B.role==='dev'&&!B.bal)return head('포인트 게임','개발자 열람 모드')+`
+    <div class="card" style="margin-bottom:14px;border-style:dashed"><p class="mini dim" style="margin:0">👇 열람용 미리보기 — 유령 세션엔 지갑이 없어서 실제 게임은 멤버 계정으로!</p></div>
+    ${arcadeHtml({name:'시스템',bal:null,items:{},equip:{}})}`;
+  return head('포인트 게임','전부 서버 정산 — 새로고침해도 결과는 그대로예요.')+balStrip+arcadeHtml(B);
+}
+
+/* ───── 🙋 내 정보 페이지 ───── */
+const SHOP_CATS=[['crown','👑 전용 칭호'],['nick','💬 칭호'],['badge','🐢 뱃지'],['color','🎨 이름 색'],['frame','🖼 테두리'],['legend','🌌 레전드'],['title','✍️ 커스텀 칭호']];
+function pgMe(){
+  const B=bankSession();
+  if(!B||!B.name||(B.role==='dev'&&B.bal==null))return head('내 정보','내 등급·칭호·꾸미기를 한 곳에서 관리해요.')+`
+    <div class="card" style="max-width:520px;margin:30px auto;text-align:center;padding:30px 20px">
+      <div style="font-size:40px">🙋</div>
+      <h3 style="margin:10px 0 6px">${B&&B.role==='dev'?'개발자 유령 세션은 프로필이 없어요':'로그인하면 내 정보가 열려요'}</h3>
+      <p class="mini dim" style="margin:0 0 14px">멤버 계정으로 로그인하면 등급, 보유 칭호·꾸미기 관리, 다음 등급까지 남은 포인트를 볼 수 있어요.</p>
+      <button class="btn gold" onclick="go('bank')">💰 거래소에서 로그인하기</button>
+    </div>`;
+  const T=pointTier(B.bal),role=apdRole(B.name);
+  const curIdx=TIER_LADDER.findIndex(e=>e[1]===T.name);
+  const lo=TIER_LADDER[curIdx][0],hiV=T.next?TIER_LADDER[curIdx+1][0]:lo;
+  const prog=T.next?Math.min(100,Math.max(2,Math.round((Number(B.bal)-lo)/Math.max(1,hiV-lo)*100))):100;
+  const items=B.items||{},eq=B.equip||{};
+  const invBtn=(cat,id)=>{const it=SHOP_C[cat]&&SHOP_C[cat][id];if(!it)return'';
+    const on=eq[cat]===id||(cat==='title'&&eq.title);
+    const face=cat==='badge'||cat==='legend'?(it.e||it.n):((it.e?it.e+' ':'')+it.n);
+    return`<button class="btn sm ${on?'gold':'ghost'}" style="${cat==='color'?`color:${it.v};`:''}margin:2px" onclick="shopEquip('${cat}','${on?'off':id}')">${face}${on?' ✓':''}</button>`};
+  const invCat=(cat,label)=>{
+    const mine=Object.keys(items).filter(k=>k.startsWith(cat+':')).map(k=>k.split(':')[1]);
+    if(!mine.length)return'';
+    return`<p class="mini" style="margin:10px 0 2px;font-weight:800">${label}</p><div class="row" style="gap:2px;flex-wrap:wrap">${mine.map(id=>invBtn(cat,id)).join('')}</div>${cat==='title'&&eq.title?`<p class="mini dim" style="margin:4px 0 0">현재 문구: 〔${esc(eq.title)}〕 — 버튼을 다시 누르면 해제, 장착하며 문구 변경</p>`:''}`;
+  };
+  const anyItem=Object.keys(items).length>0;
+  return head('내 정보','등급은 모든 멤버에게 공개돼요 — 포인트는 명예다!')+`
+  <div class="grid c2" style="align-items:start">
+    <div class="card" style="text-align:center">
+      <div style="font-size:17px;margin:4px 0 8px">${bankDeco(B.name,eq)}</div>
+      <div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap">
+        <span class="pill" style="color:${T.c};border-color:${T.c}66;font-weight:900;font-size:13px;padding:4px 12px">${T.name}</span>
+        ${role?`<span class="pill" style="color:var(--gold);border-color:var(--gold);font-weight:900;font-size:13px;padding:4px 12px">👑 ${role}</span>`:''}
+      </div>
+      <div style="font-size:30px;font-weight:900;margin:10px 0 2px">${fmtAPO(B.bal)} <span style="font-size:13px;color:var(--gold)">APO</span></div>
+      ${T.next?`<div class="bar" style="max-width:260px;margin:8px auto 4px"><i style="width:${prog}%"></i></div>
+      <p class="mini dim" style="margin:0">다음 등급 「${T.next.name}」까지 <b>${fmtAPO(T.next.need)} APO</b></p>`
+      :'<p class="mini" style="margin:6px 0 0;color:var(--gold);font-weight:800">정점에 도달했습니다 — 더 오를 곳이 없어요 🏆</p>'}
+      <div class="row" style="justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn sm" onclick="go('games')">🎮 포인트 게임</button>
+        <button class="btn sm" onclick="go('bank')">🛍 상점·지갑</button>
+        <button class="btn sm ghost" onclick="bankRefresh(true)">🔄 새로고침</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 4px">🎽 내 꾸미기 관리 <span class="tag">탭 한 번 = 장착/해제</span></h3>
+      <p class="mini dim" style="margin:0">구매한 것만 여기 떠요. 새 아이템은 💰 거래소 → 🛍 포인트 상점에서! <b>플레이 칭호(오늘의 칭호)는 경기 성적으로 자동 부여라 직접 변경 불가</b>예요.</p>
+      ${anyItem?SHOP_CATS.map(([c,l])=>invCat(c,l)).join(''):'<div class="empty" style="margin-top:10px">아직 보유한 꾸미기가 없어요 — 상점에서 첫 아이템을 골라보세요!</div>'}
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h3 style="margin:0 0 6px">🏅 등급 사다리 <span class="tag">포인트가 곧 계급</span></h3>
+    <div class="scrollx"><table class="tbl" style="min-width:340px"><thead><tr><th>등급</th><th class="num">필요 포인트</th><th></th></tr></thead><tbody>
+      ${TIER_LADDER.map(([min,nm,c])=>`<tr ${nm===T.name?'style="background:rgba(242,184,75,.08)"':''}><td><span class="pill" style="font-size:11px;color:${c};border-color:${c}55;font-weight:800">${nm}</span>${nm===T.name?' <b class="mini" style="color:var(--gold)">← 현재</b>':''}</td><td class="num">${fmtAPO(min)}+</td><td class="mini dim">${nm==='🏆 프로선수'?'최고 영예':''}</td></tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['record','기록하기'],['matches','경기'],['players','플레이어'],
@@ -3928,9 +4095,11 @@ const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['member','📊 선수',['players','laneTier','compare']],
  ['hall','🥇 명예의 전당',['stats','awards']],
  ['bank','💰 거래소',['bank','form']],
+ ['games','🎮 포인트 게임',['games']],
+ ['my','🙋 내 정보',['me']],
  ['etc','⚙️ 설정',['settings']],
 ];
-PAGES.push(['bank','💰 지갑·랭킹']);
+PAGES.push(['bank','💰 지갑·랭킹'],['games','🎮 포인트 게임'],['me','🙋 내 정보']);
 const PAGE_LABEL=Object.fromEntries(PAGES);
 function groupOf(page){return(NAV_GROUPS.find(([,,ps])=>ps.includes(page))||NAV_GROUPS[0])[0]}
 function go(id){tab=id;render();window.scrollTo({top:0})}
@@ -3962,6 +4131,12 @@ function renderTicker(){
     const pts=lineupPoints(LU0);
     if(pts[0])items.push(`${pts[0].e} ${esc(pts[0].h)}`);
   }
+  // 1.5) 🎰 잭팟·대박 속보 (오락실 — 모두에게 송출!)
+  (window._bankFeed||[]).slice(0,3).forEach(f=>{
+    const big=Number(f.v)>=10000;
+    const kind=f.t==='jp'?'🎫 복권 잭팟':f.t==='scr'?'🎫 복권 1등':'🎰 룰렛 잭팟';
+    items.push(`<b class="${big?'tk-jack':'tk-up'}">${kind}${big?' 💥':''}</b> <b>${esc(f.n)}</b>${josa(f.n,'이','가')} +${fmtAPO(f.v)} APO 획득!${big?' 축하합니다!!':''}`);
+  });
   // 2) 당일 밴픽 보드 진행 중
   const todayKey=todayStr();
   const tb=(state.liveBoards&&state.liveBoards[todayKey])||[];
@@ -4058,7 +4233,7 @@ function render(opt){
     return;
   }
   const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
-    champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank};
+    champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank,games:pgGames,me:pgMe};
   $('view').innerHTML=(R[tab]||pgDashboard)();
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
 }
@@ -4251,6 +4426,8 @@ function pgDashboard(){
       <p class="mini" style="margin:5px 0 0;line-height:1.7">🎤 <b style="color:var(--win)">성캐</b> | ${esc(C.sk)}</p>
     </div>`}).join('')}
   ${isAdmin()?`<div class="row" style="justify-content:flex-end;margin:-4px 0 8px"><button class="btn sm ghost" title="LIVE 티커의 파산 속보 표시/숨김" onclick="state.settings.bustNews=!(state.settings.bustNews!==false);save();render();toast(state.settings.bustNews?'💀 파산 속보 ON':'파산 속보 OFF — 티커에서 숨김 (게시하면 전원 적용)')">${state.settings.bustNews!==false?'💀 파산 속보 ON':'💀 파산 속보 OFF'}</button></div>`:''}
+  ${(()=>{const on=(window._bankRoster||[]).filter(r=>r.on);if(!on.length)return'';
+    return`<div class="card" style="margin-bottom:14px;padding:10px 14px"><p class="mini" style="margin:0"><b style="color:var(--win)">🟢 온라인 ${on.length}명</b> — ${on.slice(0,8).map(r=>bankDeco(r.name,r.equip)+tierChip(r.name)).join(' · ')}${on.length>8?` 외 ${on.length-8}명`:''}</p></div>`})()}
   ${luCarousel()}
   <div class="grid c4">
     <div class="kpi"><div class="n">${state.matches.length}</div><div class="l">누적 내전</div></div>
@@ -4642,7 +4819,7 @@ function playerDetail(p){
   const{arr,wl}=formSeries(p.id);
   return`<div class="card">
     <div class="row">
-      <div><h3 style="margin:0">${esc(p.displayName)} ${p.active?'':'<span class="pill">휴면</span>'}</h3>
+      <div><h3 style="margin:0">${esc(p.displayName)}${tierChip(p.displayName)} ${p.active?'':'<span class="pill">휴면</span>'}</h3>
       <p class="mini" style="margin:4px 0 0">${p.riotName?`🎮 ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}`:'<span class="dim">롤 닉네임 미등록</span>'} ${p.memo?` · ${esc(p.memo)}`:''}</p>
       ${p.aliases?.length?`<p class="mini dim" style="margin:3px 0 0">별명: ${p.aliases.map(esc).join(', ')}</p>`:''}</div>
       ${isAdmin()?`<span class="right row">
@@ -4801,7 +4978,7 @@ function syncRoster(){
 function tblPlayers(P){
   if(!P.length)return'<div class="empty">경기 기록이 필요해요.</div>';
   return`<div class="scrollx"><table class="tbl" style="min-width:760px"><thead><tr><th>#</th><th>플레이어</th><th>승률</th><th>전적</th><th class="num">KDA</th><th class="num">평균 딜</th><th class="num">평균 시야</th><th class="num">MVP</th></tr></thead><tbody>
-  ${P.map((s,i)=>`<tr><td class="dim">${i+1}</td><td><b>${esc(s.name)}</b></td>
+  ${P.map((s,i)=>`<tr><td class="dim">${i+1}</td><td><b>${esc(s.name)}</b>${tierChip(s.name)}</td>
     <td><div class="row" style="gap:8px;flex-wrap:nowrap"><span class="${s.winRate>=55?'up':s.winRate<45?'dn':'even'}" style="min-width:46px">${s.winRate}%</span><span class="bar grow"><i style="width:${s.winRate}%"></i></span></div></td>
     <td class="dim">${s.wins}승 ${s.losses}패</td><td class="num">${s.kda}</td>
     <td class="num">${s.avgDmg?fmt(s.avgDmg):'-'}</td><td class="num">${s.avgVision||'-'}</td>
@@ -5019,7 +5196,7 @@ function formBoardHtml(fq){
     const fc=formForecast(r.arr);
     const fcTxt=fc?(fc.dir==='up'?`📈 전문가 전망: 지금 흐름이면 3판 뒤 ~${fc.proj[2]} (상승)`:fc.dir==='down'?`📉 전문가 전망: 흐름 주의, 3판 뒤 ~${fc.proj[2]} — 반등 준비 구간`:`➡️ 전문가 전망: 큰 변화 없이 ~${fc.proj[2]} 부근 횡보`):'';
     const easy=r.price>=115?'쉬운말: 요즘 경기가 아주 잘 풀리고 있어요.':r.price>=100?'쉬운말: 폼이 좋은 편이에요.':r.price>=85?'쉬운말: 살짝 주춤하지만 평범한 범위예요.':'쉬운말: 요즘 잘 안 풀리는 중 — 다음 승리 하나면 분위기가 바뀝니다.';
-    return`<tr><td><b>${esc(r.p.displayName)}</b></td><td>${sparkSvg(r.arr,300,62,fc?fc.proj:null)}${fc?'<div class="mini dim" style="margin-top:2px">초록 점선 = 예측 구간</div>':''}</td>
+    return`<tr><td><b>${esc(r.p.displayName)}</b>${tierChip(r.p.displayName)}</td><td>${sparkSvg(r.arr,300,62,fc?fc.proj:null)}${fc?'<div class="mini dim" style="margin-top:2px">초록 점선 = 예측 구간</div>':''}</td>
     <td class="num"><b class="${r.price>=100?'priceUp':'priceDn'}" style="font-size:17px">${r.price}</b></td>
     <td class="num ${r.delta>0?'up':r.delta<0?'dn':'even'}">${r.delta>0?'▲ +'+r.delta:r.delta<0?'▼ '+r.delta:'-'}</td>
     <td class="num dim">${r.w}승 ${r.g-r.w}패</td><td class="mini" style="max-width:320px">${esc(formComment(r.arr,r.wl))}<br><span class="dim">${easy}</span><br><span style="color:var(--gold)">🎙 ${esc(formCasterLine(r.p.displayName,r.arr,r.wl,r.wl.length))}</span>${fcTxt?`<br><span style="color:var(--win)">${fcTxt}</span>`:''}</td></tr>`}).join('')}</tbody></table></div>`
@@ -5140,7 +5317,7 @@ function stockBoardHtml(q){
         <table class="tbl" style="min-width:430px"><thead><tr><th>종목</th><th class="num">1주 가격</th><th class="num">등락</th><th>주주</th><th></th></tr></thead><tbody>
         ${board.map(r=>{const hs=H[r.name]||[];
           return`<tr style="cursor:pointer;${sel===r.name?'background:rgba(242,184,75,.1)':''}" onclick="pickStock('${esc(r.name)}')">
-          <td><b>${bankDeco(r.name,r.equip)}</b></td>
+          <td><b>${bankDeco(r.name,r.equip)}</b>${tierChip(r.name)}</td>
           <td class="num" style="font-weight:900;font-size:14px">${r.px} <span class="mini dim">APO</span>${r.listed?'':' <span class="pill" style="font-size:9px;padding:1px 5px" title="첫 거래 시 이 폼 주가로 상장돼요">폼가 상장</span>'}</td>
           <td class="num" style="font-weight:800;color:${r.d>0?'var(--lose)':r.d<0?'#5b8cff':'var(--mut)'}">${r.d>0?'▲'+r.d:r.d<0?'▼'+Math.abs(r.d):'—'}</td>
           <td class="mini">${hs.length?hs.slice(0,3).map(h=>`${esc(h.owner)} ${h.q}주`).join(' · ')+(hs.length>3?` 외 ${hs.length-3}명`:''):'<span class="dim">주주 없음</span>'}</td>
@@ -5335,7 +5512,7 @@ function pgBank(){
     </div>
     <p class="mini dim" style="margin:8px 0 0">그날 경기 기록에 등장한 멤버 전원에게 지급돼요. 계좌 없는 멤버는 자동 제외, 같은 날짜 중복 지급은 서버가 막아줍니다.</p>
   </div>`:''}
-  ${B.name?arcadeHtml(B):''}
+  ${B.name?`<div class="card" style="margin-top:14px;text-align:center;border:1px dashed var(--line)"><p class="mini" style="margin:0">🎪 오락실(룰렛·복권·하이로우·미션)은 상단 <b>🎮 포인트 게임</b> 탭으로 이사했어요! <button class="btn sm gold" style="margin-left:6px" onclick="go('games')">바로 가기</button></p></div>`:''}
   ${B.name?shopHtml(B):''}
   ${(B.role==='admin'||B.role==='dev')?`<div class="card" style="margin-top:14px">
     <h3 style="margin:0 0 6px">🎁 상품권 <span class="tag">소소한 보상 — 이벤트·고생수당</span></h3>
@@ -5505,6 +5682,8 @@ function copySummary(){
 /* ───── 부트 ───── */
 render();
 loadShared(false); // 호스팅된 링크에서 열렸으면 공유 data.json 자동 확인
+bankSync(true); // 등급칩·온라인·잭팟 속보
+setInterval(()=>bankSync(),60000);
 setInterval(()=>{ // 투표 남은 시간 갱신 (입력 중엔 건너뜀)
   const ae=document.activeElement;
   const typing=ae&&['INPUT','TEXTAREA','SELECT'].includes(ae.tagName);
