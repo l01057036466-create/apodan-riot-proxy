@@ -824,12 +824,12 @@ module.exports = async function handler(req, res) {
     // ═══ 🛍 포인트 상점 (서버가 가격의 단일 진실) ═══
     var SHOP = {
       badge: { b1:{e:'🐢',p:5000}, b2:{e:'🍀',p:7000}, b3:{e:'🌙',p:8000}, b4:{e:'🦊',p:10000}, b5:{e:'🐯',p:12000}, b6:{e:'💀',p:15000}, b7:{e:'🔥',p:15000}, b8:{e:'🚀',p:18000}, b9:{e:'👑',p:20000}, b10:{e:'💎',p:25000} },
-      color: { c1:{v:'#7fd1ff',n:'아이스',p:10000}, c2:{v:'#ff7fb0',n:'핑크',p:10000}, c3:{v:'#9dff8a',n:'네온',p:15000}, c4:{v:'#c89bff',n:'퍼플',p:20000}, c5:{v:'#ff5b5b',n:'블러드',p:25000}, c6:{v:'#f2b84b',n:'골드',p:30000} },
-      frame: { f1:{e:'🥈',n:'은테',p:25000}, f2:{e:'🥇',n:'금테',p:50000}, f3:{e:'🔮',n:'옵시디언',p:100000} },
+      color: { c1:{v:'#7fd1ff',n:'아이스',p:10000}, c2:{v:'#ff7fb0',n:'핑크',p:10000}, c3:{v:'#9dff8a',n:'네온',p:15000}, c4:{v:'#c89bff',n:'퍼플',p:20000}, c5:{v:'#ff5b5b',n:'블러드',p:25000}, c6:{v:'#f2b84b',n:'골드',p:30000}, c7:{v:'#e2012d',n:'T1 레드',p:15000}, c8:{v:'#a8893a',n:'GEN 골드',p:15000}, c9:{v:'#00c9b1',n:'DK 민트',p:15000}, c10:{v:'#ff6a13',n:'HLE 오렌지',p:15000}, c11:{v:'#4f6dff',n:'DRX 블루',p:15000}, c12:{v:'#d24dff',n:'바이올렛',p:20000}, c13:{v:'#7dffd9',n:'오로라',p:25000}, c14:{v:'#f5f7fa',n:'화이트',p:40000} },
+      frame: { f1:{e:'🥈',n:'은테',p:25000}, f2:{e:'🥇',n:'금테',p:50000}, f3:{e:'🔮',n:'옵시디언',p:100000}, f4:{e:'💠',n:'네온테',p:40000}, f5:{e:'🌹',n:'로즈골드테',p:60000}, f6:{e:'🏅',n:'챔피언 금장',p:150000} },
       title: { t1:{e:'✍️',n:'커스텀 칭호',p:80000} },
       art: { a2:{n:'초록 숲 모자',p:8000}, a3:{n:'구미호 소녀',p:12000}, a4:{n:'수묵 도령',p:12000} }, // 🎨 그림 뱃지 — 클라 SHOP_C.art와 ID·가격 반드시 일치!
       legend: { l1:{e:'🏛',n:'명예의 전당석',p:500000}, l2:{e:'🌌',n:'우주최강',p:1000000} },
-      nick: { n1:{e:'😎',n:'존잘남',p:5000}, n2:{e:'💖',n:'존예녀',p:5000}, n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000}, n4:{e:'😇',n:'인성 1티어',p:8000}, n5:{e:'🎉',n:'분위기 메이커',p:5000}, n6:{e:'🌞',n:'아포단의 햇살',p:7000}, n7:{e:'🐱',n:'츤데레',p:3000}, n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000}, n9:{e:'🕺',n:'동네 인싸',p:4000}, n10:{e:'🤿',n:'프로 잠수러',p:2000}, n11:{e:'🧚',n:'칼퇴 요정',p:3000}, n12:{e:'🌭',n:'야식 전도사',p:2500}, n13:{e:'🍗',n:'치킨 성애자',p:2500}, n14:{e:'🍃',n:'민트초코 신봉자',p:1500}, n15:{e:'🥣',n:'부먹파',p:1000}, n16:{e:'🥢',n:'찍먹파',p:1000}, n17:{e:'🕊',n:'평화주의자',p:2000}, n18:{e:'📜',n:'협곡의 시인',p:6000}, n19:{e:'🧊',n:'멘탈 갑',p:8000}, n20:{e:'👏',n:'리액션 부자',p:4000}, n21:{e:'🍜',n:'라면 소믈리에',p:2500}, n22:{e:'🌙',n:'새벽반 반장',p:3000}, n23:{e:'🛏',n:'침대 수호자',p:2000}, n24:{e:'🏞',n:'게임보다 현생',p:1500}, n25:{e:'🖥',n:'현생보다 게임',p:1500}, n26:{e:'📢',n:'잔소리 장인',p:3000}, n27:{e:'🌈',n:'긍정왕',p:4000}, n28:{e:'⚔️',n:'솔랭 전사',p:5000}, n29:{e:'🙃',n:'닉값 못 함',p:2000}, n30:{e:'💯',n:'닉값 제대로 함',p:6000}, n31:{e:'⚡',n:'T1 팬',p:10000}, n32:{e:'🐯',n:'GEN 팬',p:10000}, n33:{e:'🦅',n:'LCK 본방사수',p:8000}, n34:{e:'🐉',n:'LPL 시청자',p:8000}, n35:{e:'🐰',n:'토끼파 두목',p:2000}, n36:{e:'🌻',n:'해바라기 화가',p:2000} },
+      nick: { n1:{e:'😎',n:'존잘남',p:5000}, n2:{e:'💖',n:'존예녀',p:5000}, n3:{e:'🤗',n:'마음이 따뜻한 사람',p:3000}, n4:{e:'😇',n:'인성 1티어',p:8000}, n5:{e:'🎉',n:'분위기 메이커',p:5000}, n6:{e:'🌞',n:'아포단의 햇살',p:7000}, n7:{e:'🐱',n:'츤데레',p:3000}, n8:{e:'👨‍👩‍👧',n:'소문난 효자',p:3000}, n9:{e:'🕺',n:'동네 인싸',p:4000}, n10:{e:'🤿',n:'프로 잠수러',p:2000}, n11:{e:'🧚',n:'칼퇴 요정',p:3000}, n12:{e:'🌭',n:'야식 전도사',p:2500}, n13:{e:'🍗',n:'치킨 성애자',p:2500}, n14:{e:'🍃',n:'민트초코 신봉자',p:1500}, n15:{e:'🥣',n:'부먹파',p:1000}, n16:{e:'🥢',n:'찍먹파',p:1000}, n17:{e:'🕊',n:'평화주의자',p:2000}, n18:{e:'📜',n:'협곡의 시인',p:6000}, n19:{e:'🧊',n:'멘탈 갑',p:8000}, n20:{e:'👏',n:'리액션 부자',p:4000}, n21:{e:'🍜',n:'라면 소믈리에',p:2500}, n22:{e:'🌙',n:'새벽반 반장',p:3000}, n23:{e:'🛏',n:'침대 수호자',p:2000}, n24:{e:'🏞',n:'게임보다 현생',p:1500}, n25:{e:'🖥',n:'현생보다 게임',p:1500}, n26:{e:'📢',n:'잔소리 장인',p:3000}, n27:{e:'🌈',n:'긍정왕',p:4000}, n28:{e:'⚔️',n:'솔랭 전사',p:5000}, n29:{e:'🙃',n:'닉값 못 함',p:2000}, n30:{e:'💯',n:'닉값 제대로 함',p:6000}, n31:{e:'⚡',n:'T1 팬',p:10000}, n32:{e:'🐯',n:'GEN 팬',p:10000}, n33:{e:'🦅',n:'LCK 본방사수',p:8000}, n34:{e:'🐉',n:'LPL 시청자',p:8000}, n35:{e:'🐰',n:'토끼파 두목',p:2000}, n36:{e:'🌻',n:'해바라기 화가',p:2000}, n37:{e:'🐺',n:'DK 팬',p:10000}, n38:{e:'🧡',n:'HLE 팬',p:10000}, n39:{e:'🌀',n:'DRX 팬',p:10000}, n40:{e:'🧠',n:'밴픽 장인',p:6000}, n41:{e:'⚡',n:'인간 점멸',p:5000}, n42:{e:'👁',n:'시야 장인',p:5000}, n43:{e:'🚌',n:'버스 기사',p:7000}, n44:{e:'💺',n:'버스 승객',p:3000}, n45:{e:'🔥',n:'한타의 신',p:8000}, n46:{e:'🎰',n:'도파민 중독',p:4000} },
       crown: { x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
     };
     if (req.method === 'GET' && action === 'shop') return res.status(200).json({ shop: SHOP });
@@ -860,6 +860,14 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, bal: aSh.bal, items: aSh.items });
       } else {
         if (itemId !== 'off' && !aSh.items[cat + ':' + itemId]) return res.status(403).json({ error: '보유하지 않은 아이템' });
+        if (cat === 'nick' && itemId !== 'off') { // 💬 기본 수식어: 최대 2개, 같은 걸 다시 보내면 해제(토글)
+          var arrN = Array.isArray(aSh.equip.nick) ? aSh.equip.nick.slice() : (aSh.equip.nick ? [aSh.equip.nick] : []);
+          if (arrN.indexOf(itemId) >= 0) arrN = arrN.filter(function (x) { return x !== itemId; });
+          else { arrN.push(itemId); if (arrN.length > 2) arrN.shift(); }
+          if (arrN.length) aSh.equip.nick = arrN; else delete aSh.equip.nick;
+          await putAcct(aSh);
+          return res.status(200).json({ ok: true, equip: aSh.equip });
+        }
         if (itemId === 'off') delete aSh.equip[cat];
         else if (cat === 'title') {
           var tx = String(body.text || '').slice(0, 12).trim();
@@ -1019,6 +1027,62 @@ module.exports = async function handler(req, res) {
       await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sV.name, 'vote', '1']);
       return res.status(200).json({ ok: true, pick: pk });
     }
+    // ── 🎁 운영진 특별 이벤트: 회장 주3회(총 1,000) · 부회장 주1회(총 500) — 선착순 봉투 ──
+    function bareSrv(n) { return String(n || '').replace(/^\d+\s*/, '').trim(); }
+    var EV_QUOTA = { '물방울': { role: '회장', per: 3, cap: 1000 }, '미르': { role: '부회장', per: 1, cap: 500 } };
+    async function evList() { try { return JSON.parse((await redis(['GET', 'events:list'])) || '[]'); } catch (e) { return []; } }
+    async function evSave(l) { await redis(['SET', 'events:list', JSON.stringify(l.slice(-6)), 'EX', SEC90]); }
+    if (req.method === 'GET' && action === 'events') {
+      var lE = (await evList()).filter(function (e) { return Date.now() - e.ts < 7 * 86400000; });
+      var quota = null;
+      var sE0 = await auth(q.token);
+      if (sE0 && sE0.name) {
+        var bq = EV_QUOTA[bareSrv(sE0.name)];
+        if (bq) { var wkQ = Math.floor(Date.now() / 604800000); quota = { role: bq.role, per: bq.per, cap: bq.cap, used: Number(await redis(['GET', 'ev:q:' + wkQ + ':' + bareSrv(sE0.name)])) || 0 }; }
+      }
+      return res.status(200).json({ events: lE, quota: quota });
+    }
+    if (req.method === 'POST' && action === 'eventCreate') {
+      var sE = await auth(body.token);
+      if (!sE || !sE.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var bE = bareSrv(sE.name), QE = EV_QUOTA[bE];
+      if (!QE) return res.status(403).json({ error: '회장·부회장만 이벤트를 열 수 있어요' });
+      var tE = String(body.title || '').trim().slice(0, 24);
+      var payE = Math.round(Number(body.pay) || 0), slotE = Math.round(Number(body.slots) || 0);
+      if (!tE) return res.status(400).json({ error: '이벤트 이름을 입력해주세요' });
+      if (payE < 50) return res.status(400).json({ error: '1인당 50 APO 이상' });
+      if (slotE < 1 || slotE > 30) return res.status(400).json({ error: '인원은 1~30명' });
+      if (payE * slotE > QE.cap) return res.status(400).json({ error: '총 지급액(' + (payE * slotE) + ')이 ' + QE.role + ' 한도 ' + QE.cap + ' APO를 넘어요' });
+      var wkE = Math.floor(Date.now() / 604800000);
+      var usedE = Number(await redis(['INCRBY', 'ev:q:' + wkE + ':' + bE, '1']));
+      await redis(['EXPIRE', 'ev:q:' + wkE + ':' + bE, '1209600']);
+      if (usedE > QE.per) { await redis(['INCRBY', 'ev:q:' + wkE + ':' + bE, '-1']); return res.status(429).json({ error: '이번 주 ' + QE.role + ' 이벤트 횟수(' + QE.per + '회)를 다 썼어요' }); }
+      var lC = await evList();
+      lC.push({ id: 'e' + Date.now().toString(36), by: bE, role: QE.role, title: tE, pay: payE, slots: slotE, got: [], ts: Date.now() });
+      await evSave(lC);
+      return res.status(200).json({ ok: true, left: QE.per - usedE });
+    }
+    if (req.method === 'POST' && action === 'eventJoin') {
+      if (!(await acctLock('evj:' + String(body.id || '')))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
+      try {
+        var sJ = await auth(body.token);
+        if (!sJ || !sJ.name) return res.status(401).json({ error: '로그인이 필요해요' });
+        var lJ = await evList();
+        var evJ = lJ.find(function (e) { return e.id === String(body.id || ''); });
+        if (!evJ) return res.status(404).json({ error: '이벤트가 없어요' });
+        if (evJ.got.indexOf(sJ.name) >= 0) return res.status(409).json({ error: '이미 받았어요!' });
+        if (evJ.got.length >= evJ.slots) return res.status(400).json({ error: '선착순 마감!' });
+        var aJ = await getAcct(sJ.name);
+        if (!aJ || aJ.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+        aJ.bal += evJ.pay;
+        evJ.got.push(sJ.name);
+        await putAcct(aJ);
+        await evSave(lJ);
+        await ledger(aJ.name, '🎁 ' + evJ.role + ' ' + evJ.by + ' 이벤트: ' + evJ.title, evJ.pay, aJ.bal);
+        return res.status(200).json({ ok: true, bal: aJ.bal, left: evJ.slots - evJ.got.length });
+      } finally { await acctUnlock('evj:' + String(body.id || '')); }
+    }
+
     // ── ⏱ MVP 투표 타이머 (운영진: N분 뒤 자동 마감) ──
     if (req.method === 'POST' && action === 'mvpTimer') {
       var sT9 = await auth(body.token);
