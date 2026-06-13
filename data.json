@@ -19704,7 +19704,7 @@
   "lastBackupAt": "2026-06-13T15:17:35.740Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
-  "maintenance": false,
+  "maintenance": true,
   "bustNews": true,
   "artShop": {
    "umqb5i3d1": {
@@ -19797,8 +19797,8 @@
    ]
   }
  ],
- "rev": 213,
- "updatedAt": "2026-06-13T15:38:02.249Z",
+ "rev": 214,
+ "updatedAt": "2026-06-13T18:03:47.093Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
