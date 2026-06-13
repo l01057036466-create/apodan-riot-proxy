@@ -4,8 +4,10 @@
 // 필수 설정: Vercel 프로젝트 환경변수 RIOT_API_KEY = RGAPI-로 시작하는 키
 // 하는 일: 사이트(브라우저)는 라이엇을 직접 못 부르므로,
 //          이 함수가 키를 숨긴 채 대신 호출해서 결과만 돌려줍니다.
+// v2: 티어 조회(rank) 액션 추가 — 솔랭/자랭 티어 자동 불러오기용
 // ============================================================
-const HOST = 'https://asia.api.riotgames.com'; // 한국 계정·경기 라우팅
+const HOST = 'https://asia.api.riotgames.com';   // 계정·경기 라우팅(지역 단위)
+const PLATFORM = 'https://kr.api.riotgames.com';  // 리그(티어) 라우팅(플랫폼 단위) — 한국 서버
 
 export default async function handler(req, res) {
   // 어디서 열든(file:// 포함) 사이트가 부를 수 있게 CORS 개방
@@ -29,8 +31,11 @@ export default async function handler(req, res) {
   } else if (q.action === 'match') {       // 경기 ID → 전체 상세 (10명 KDA·딜량·시야·밴 등)
     if (!q.id) return res.status(400).json({ error: 'id가 필요해요.' });
     url = `${HOST}/lol/match/v5/matches/${encodeURIComponent(q.id)}`;
+  } else if (q.action === 'rank') {        // puuid → 솔랭/자랭 티어 (배열로 반환)
+    if (!q.puuid) return res.status(400).json({ error: 'puuid가 필요해요.' });
+    url = `${PLATFORM}/lol/league/v4/entries/by-puuid/${encodeURIComponent(q.puuid)}`;
   } else {
-    return res.status(400).json({ error: 'action은 resolve / ids / match 중 하나여야 해요.' });
+    return res.status(400).json({ error: 'action은 resolve / ids / match / rank 중 하나여야 해요.' });
   }
 
   try {
@@ -45,7 +50,7 @@ export default async function handler(req, res) {
       return res.status(r.status).json({ error: msg });
     }
     if (q.action === 'ids') return res.status(200).json({ ids: body });
-    return res.status(200).json(body);
+    return res.status(200).json(body);   // rank: LeagueEntry 배열 그대로 반환
   } catch (e) {
     return res.status(500).json({ error: '중계 서버 오류: ' + e.message });
   }
