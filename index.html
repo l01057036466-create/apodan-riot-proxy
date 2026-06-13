@@ -3718,28 +3718,86 @@ const CASTER_SK=[ // 성캐: 샤우팅 캐스터
  '{hot} 4연승 도전!! 역사가 쓰여집니다!!','전 세계 아포단 팬 여러분 안녕하십니까!!',
  '이 순간을 위해 일주일을 기다렸습니다!!','승부의 신이시여, 오늘은 어느 편입니까!!'
 ];
-function casterLines(L0){ // 라인업(회차)별 해설 듀오 — 회차마다 다른 멘트
-  const P=statPlayers().filter(p=>p.games>=3);
-  const top=[...P].sort((a,b)=>b.winRate-a.winRate)[0];
-  const hot=[...P].sort((a,b)=>{const sa=streaksOf(a.id).cw||0,sb=streaksOf(b.id).cw||0;return sb-sa})[0];
-  const cold=[...P].sort((a,b)=>{const sa=streaksOf(a.id).cl||0,sb=streaksOf(b.id).cl||0;return sb-sa})[0];
+const CASTER_KT_LU=[ // 클템 — 실제 어록 기반(체급·밸류·통나무·천라지망·삼국지·따운 등)
+ '오늘 라인업, {a1} 쪽이 체급에서 살짝 앞섭니다 — 근데 체급 높다고 항상 이기는 거 아닌 거, 세상 사람들 다 알죠?',
+ '{a1} 대 {a2} — 이거 적장이 3합을 못 버텨요. 초반에 승부 갈립니다',
+ '{hot}이 지금 통나무를 들어주고 있어요 — 이 선수만 안 흔들리면 나머지가 너무 편해요',
+ '{a2} 막을 사람? 자신 있게 손드는 사람이 없어요. 그럼… 어쩔 건데!',
+ '{a1}, 후반 밸류가 높아요. 20분만 버티면 딸깍, 알 알 알 — 궁만 맞춰도 이깁니다',
+ '{hot} 지금 괴물이에요 괴물!! 둘이 붙어도 못 잡아요 — 대! 화! 가! 안 돼요!',
+ '{cold}, 폼 차트가 딱 바닥 다지기예요. 기분이 좀 나쁘긴 한데, 반등 각 나옵니다',
+ '{a1}네 정글이 {a2}한테 자릿세 한 번 내주는 순간, 세금계산서 발행됩니다',
+ '결국 이 내전이라는 게임은 5명이 하는 거거든요 — {hot} 혼자 커도 넷이 못 받쳐주면 퓨어 빵딜이에요',
+ '지금 {a2}가 {a1}한테 O/X 퀴즈를 내고 있어요. 틀리면? {a2}는 그냥 끝입니다',
+ '제 분석엔 {a1} 살짝 우세 — 근데 사실 {a2}도 할 말은 있거든요!',
+ '{a1}, 오늘의 대장군은 {hot}입니다. 장군님만 안 쓰러지면 돼요',
+ '밴픽에서 이미 51대 49로 {a1} 쪽으로 기울었다고 봅니다',
+ '{a1} 조합, 맛이 제대로 살았어요 — {a2}가 이 맛을 어떻게 죽이느냐가 관건입니다',
+ '{hot} 폼이요? 라면 끓이다 불 조절 실패한 수준으로 끓어오르고 있어요',
+ '{a2} 이거… 무서운데요? {a1} 폼이 지금 불사신이에요, 안 죽어요',
+ '{a1}도 {a2}도 이길 이유가 있어요 — 이게 제일 무서운 매치업입니다',
+ '천라지망 한 번 제대로 펼치면 {a2}는 빠져나갈 곳이 없죠? — 근데 이게 또 잘 뚫리거든요',
+ '냉정하게, {a1}와 {a2} 중 오늘 기세 안 밀리는 쪽이 가져갑니다. 한타는 결국 기세예요',
+ '{cold} 살아나면 이 팀 전체가 같이 삽니다 — 통나무를 다시 들어줘야 해요',
+ '{a1} 잘 큰 거 세상 사람들 다 알아요 — 문제는 그걸 {a2}가 어떻게 막느냐죠',
+ '고난도 밴픽이에요, {a1} — 소화하면 대박, 못 하면… 제가 더 말 안 할게요'
+];
+const CASTER_SK_LU=[ // 성캐 — 실제 엔딩콜/하이텐션 웅장 수사 기반
+ '누가 {a1}을 의심했습니까!! 누가 알파의 폼을 부정했습니까!! 오늘, {a1} 증명합니다!!',
+ '라인업 공개!! 알파의 {a1}, 베타의 {a2}!! 오늘 밤 협곡의 지배자를 가립니다!!',
+ '{a1} 대 {a2}!! 창과 방패의 대결!! 이 한 판, 절대 놓치지 마십시오!!',
+ '오늘 이 한 판을 위해, 우리가 모인 겁니다!! {a1}, {a2}!! 운명의 대결!!',
+ '베팅 마감 임박!! {a1}의 알파 {a}% 대 {a2}의 베타 {b}%!! 후회 없는 선택, 지금입니다!!',
+ '{hot} 선수 등장!! 지금 이 폼, 그 누구도 막을 수 없습니다!!',
+ '{cold} 선수!! 오늘 칼을 갈고 나왔습니다!! 부활의 서막, 지금부터입니다!!',
+ '누가 {a2}를 무시했습니까!! 베타의 {a2}, 오늘 모든 걸 뒤집습니다!!',
+ '오늘의 주인공은!! 알파의 {a1}입니까, 베타의 {a2}입니까!! 곧, 가려집니다!!',
+ '협곡에 흐르는 폭풍전야의 고요!! {a1}와 {a2}, 자존심을 건 단 한 판!!',
+ '여러분, 음소거 푸십시오!! {a1} 대 {a2}!! 지금, 시작합니다!!',
+ '{a1}의 왕좌를 {a2}가 노립니다!! 오늘 밤, 협곡의 왕은 누구입니까!!',
+ '이게 바로 아포단 내전입니다 여러분!! {a1}, {a2}!! 심장 부여잡으십시오!!',
+ '{hot}의 폼은 진짜입니다!! 오늘도 캐리, 예약합니다!!',
+ '디스코드가 폭발했습니다!! 알파 {a1}, 베타 {a2}!! 오늘 라인업 실화입니까!!',
+ '단 한 번의 내전!! {a1}와 {a2}, 그 누구도 결과를 예측할 수 없습니다!!',
+ '{a2} 선수의 눈빛!! 오늘 다릅니다!! 뭔가, 보여줄 기세입니다!!',
+ '자, 양 팀 입장합니다!! {a1}의 알파, {a2}의 베타!! 정면 충돌!!',
+ '오늘 이 무대의 주인이 되기 위해!! {a1}, 그리고 {a2}!! 갑니다!!',
+ '누가 오늘의 승자를 장담합니까!! {a1}냐, {a2}냐!! 협곡이 답합니다!!'
+];
+function casterLines(L0){ // 회차별 해설 듀오 — 공지된 라인업 선수 기준
+  const allP=statPlayers();
   const Ls=L0?[L0]:allLineups();
+  const blue=(Ls[0]&&Ls[0].blue)||[],red=(Ls[0]&&Ls[0].red)||[];
+  const lineIds=[...blue,...red];
+  const hasLU=lineIds.length>=2;
+  const stat=id=>allP.find(p=>p.id===id);
+  // top/hot/cold: 라인업이 있으면 그 안에서, 없으면 전체에서
+  const poolP=(hasLU?lineIds.map(stat).filter(Boolean):allP.filter(p=>p.games>=3));
+  const base=poolP.length?poolP:allP.filter(p=>p.games>=3);
+  const aceOf=ids=>{const c=ids.map(stat).filter(Boolean).sort((a,b)=>b.winRate-a.winRate)[0];if(c)return c;const f=ids[0];return f?{id:f,name:nameOf(f),winRate:50}:null};
+  const ace1=hasLU?aceOf(blue.length?blue:lineIds):null,ace2=hasLU?aceOf(red.length?red:lineIds):null;
+  let top=[...base].sort((a,b)=>b.winRate-a.winRate)[0];
+  let hot=[...base].sort((a,b)=>(streaksOf(b.id).cw||0)-(streaksOf(a.id).cw||0))[0]||top;
+  let cold=[...base].sort((a,b)=>(streaksOf(b.id).cl||0)-(streaksOf(a.id).cl||0))[0]||top;
+  if(hasLU){top=top||ace1||ace2;hot=hot||ace1||ace2;cold=cold||ace2||ace1;} // 기록 없을 때도 라인업 선수로
   const key=Ls[0]?voteKey(Ls[0]):'';
   const M=(window._mkts||{})[key]||{};
   const tot=(M.alpha||0)+(M.beta||0);
   const a=tot?Math.round(M.alpha/tot*100):50,b=tot?100-Math.round(M.alpha/tot*100):50;
   const rNum=Ls[0]?Number(REWARD_SLUG[Ls[0].round||'1차']||String(Ls[0].round||'1').replace(/[^0-9]/g,'')||'1'):0; // 투배럭A=4·B=5로 시드 분리
   const seed=Number((Ls[0]?Ls[0].date:sessionDay()).replace(/-/g,''))+rNum*97;
+  const px=p=>String(p?(stockPx(p.name)||marketPrice(state.players.find(x=>x.id===p.id))||100):100);
   const fill=s=>s
     .replace(/\{hot_i\}/g,hot?josa(hot.name,'을','를'):'를')
-    .replace(/\{hot(px)?\}/g,m=>m==='{hotpx}'?String(hot?(stockPx(hot.name)||marketPrice(state.players.find(x=>x.id===hot.id))||100):100):(hot?hot.name:'에이스'))
-    .replace(/\{top(wr)?\}/g,m=>m==='{topwr}'?String(top?top.winRate:50):(top?top.name:'1황'))
+    .replace(/\{hotpx\}/g,px(hot)).replace(/\{hot\}/g,hot?hot.name:'에이스')
+    .replace(/\{topwr\}/g,String(top?top.winRate:50)).replace(/\{top\}/g,top?top.name:'1황')
     .replace(/\{cold\}/g,cold?cold.name:'슬럼퍼')
+    .replace(/\{a1wr\}/g,String(ace1?ace1.winRate:50)).replace(/\{a1\}/g,ace1?ace1.name:'알파 에이스')
+    .replace(/\{a2wr\}/g,String(ace2?ace2.winRate:50)).replace(/\{a2\}/g,ace2?ace2.name:'베타 에이스')
     .replace(/\{a\}/g,String(a)).replace(/\{b\}/g,String(b));
-  // 라이벌 더비 탐지: 라인업 양 팀에 서로 라이벌인 쌍이 있나
+  // 라이벌 더비 탐지
   let derbyTxt='';
-  if(Ls[0]){
-    const blue=(Ls[0].blue||[]),red=(Ls[0].red||[]);
+  if(hasLU){
     for(const bid of blue){const rv=rivalOf(bid);if(rv&&red.includes(rv.id)){
       const n1=nameOf(bid).replace(/^\d+\s*/,''),n2=rv.name.replace(/^\d+\s*/,'');
       derbyTxt=(n1.slice(0,1)+n2.slice(0,1))+' 더비 ('+nameOf(bid)+' vs '+rv.name+')';break}}
@@ -3751,11 +3809,17 @@ function casterLines(L0){ // 라인업(회차)별 해설 듀오 — 회차마다
     hotLane=({TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'})[hl]||'';
     const pool=PRO_COMPARE[hl]||PRO_COMPARE.MID;hotPro=pool[Math.abs(seed)%(pool.length-1)+1];}
   const fill2=s=>fill(s).replace(/\{hotlane\}/g,hotLane||'').replace(/\{hotpro\}/g,hotPro||'에이스').replace(/\{derby\}/g,derbyTxt||'라이벌');
-  // 멘트 풀 구성: 기본 + 상황부(프로/더비)를 섞어 더 다양하게
-  const ktPool=[...CASTER_KT,...CASTER_PRO];
-  if(derbyTxt)ktPool.push(...CASTER_DERBY);
-  const skPool=[...CASTER_SK];
-  if(derbyTxt)skPool.push(...CASTER_DERBY.map(d=>d+'!!'));
+  // 풀 구성: 라인업이 있으면 매콤 소개 풀을 2배 가중으로 우선
+  const named=s=>/\{(a1|a2|hot|cold|top)\}/.test(s); // 선수를 지칭하는 멘트만 추림 (무라인업 폴백용)
+  let ktPool,skPool;
+  if(hasLU){ // 라인업이 있으면 클템·성캐 어록 풀만 사용 (실제 선수 지칭 + 어록 톤 보장)
+    ktPool=[...CASTER_KT_LU,...CASTER_PRO];
+    skPool=[...CASTER_SK_LU];
+  }else{
+    ktPool=[...CASTER_KT,...CASTER_PRO];
+    skPool=[...CASTER_SK];
+  }
+  if(derbyTxt){ktPool.push(...CASTER_DERBY);skPool.push(...CASTER_DERBY.map(d=>d+'!!'))}
   return{
     kt:fill2(ktPool[Math.abs(seed*7)%ktPool.length]),
     sk:fill2(skPool[Math.abs(seed*13)%skPool.length])
