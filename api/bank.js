@@ -197,22 +197,22 @@ module.exports = async function handler(req, res) {
         if (!aCo || aCo.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
         var gCo = aCo.equip && aCo.equip.avG;
         if (gCo !== 'm' && gCo !== 'f') return res.status(400).json({ error: '먼저 캐릭터를 생성해주세요 (내 정보 탭)' });
-        var catgCo = String(body.catg || '');
-        if (['lol', 'ghibli', 'disney', 'anime', 'daily'].indexOf(catgCo) < 0) return res.status(400).json({ error: '카테고리 오류' });
+        // 🎨 세계관 통합(코스튬 1종) — 여캐 17종(2~18) · 남캐 준비중. 옛 세계관 ID는 폐지(클라에서 자동으로 기본 외모 처리).
+        var COS_NUMS = { f: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], m: [] };
+        var validCo = COS_NUMS[gCo] || [];
+        if (!validCo.length) return res.status(400).json({ error: gCo === 'm' ? '남캐 코스튬은 아직 준비 중이에요 — 곧 추가됩니다!' : '코스튬을 준비 중이에요' });
         var pickCo = body.pick == null ? null : Math.round(Number(body.pick));
         var priceCo = pickCo == null ? 10000 : 50000;
         aCo.items = aCo.items || {};
         var idCo;
         if (pickCo != null) {
-          if (pickCo === 1) return res.status(400).json({ error: '1번은 기본 캐릭터예요 (무료) — 2~64번에서 골라주세요' });
-          if (!(pickCo >= 2 && pickCo <= 64)) return res.status(400).json({ error: '번호는 2~64' });
-          idCo = gCo + '-' + catgCo + '-' + pickCo;
+          if (validCo.indexOf(pickCo) < 0) return res.status(400).json({ error: '없는 코스튬이에요' });
+          idCo = gCo + '-c-' + pickCo;
           if (aCo.items['cos:' + idCo]) return res.status(409).json({ error: '이미 보유한 코스튬이에요 — 내 정보에서 입혀보세요!' });
         } else {
-          var pool = [];
-          for (var ci = 2; ci <= 64; ci++) if (!aCo.items['cos:' + gCo + '-' + catgCo + '-' + ci]) pool.push(ci);
-          if (!pool.length) return res.status(400).json({ error: '🎉 이 카테고리 63종을 전부 모았어요! 컬렉션 완성!' });
-          idCo = gCo + '-' + catgCo + '-' + pool[Math.floor(Math.random() * pool.length)];
+          var pool = validCo.filter(function (n) { return !aCo.items['cos:' + gCo + '-c-' + n]; });
+          if (!pool.length) return res.status(400).json({ error: '🎉 코스튬을 전부 모았어요! 컬렉션 완성!' });
+          idCo = gCo + '-c-' + pool[Math.floor(Math.random() * pool.length)];
         }
         if (aCo.bal < priceCo) return res.status(400).json({ error: '잔액 부족 (' + priceCo + ' APO 필요)' });
         aCo.bal -= priceCo;
@@ -220,7 +220,7 @@ module.exports = async function handler(req, res) {
         aCo.equip = aCo.equip || {};
         aCo.equip.cos = idCo; // 뽑자마자 자동 착용
         await putAcct(aCo);
-        await ledger(aCo.name, '🎲 코스튬 뽑기 (' + catgCo + ' ' + idCo.split('-')[2] + '번' + (pickCo == null ? ' · 랜덤' : ' · 선택') + ')', -priceCo, aCo.bal);
+        await ledger(aCo.name, '🎲 코스튬 뽑기 (' + idCo.split('-')[2] + '번' + (pickCo == null ? ' · 랜덤' : ' · 선택') + ')', -priceCo, aCo.bal);
         return res.status(200).json({ ok: true, item: idCo, bal: aCo.bal });
       } finally { await acctUnlock('cos:' + sCo.name); }
     }
@@ -959,7 +959,7 @@ module.exports = async function handler(req, res) {
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var cat = String(body.cat || ''), itemId = String(body.item || '');
       var item = SHOP[cat] && SHOP[cat][itemId];
-      var COS_RE_S = /^([mf])-(lol|ghibli|disney|anime|daily)-([2-9]|[1-5][0-9]|6[0-4])$/;
+      var COS_RE_S = /^([mf])-c-([2-9]|[1-5][0-9]|6[0-4])$/;
       if (!item && cat === 'cos' && (itemId === 'off' || COS_RE_S.test(itemId))) item = { n: '코스튬', p: 0 }; // 👤 코스튬 (cosBuy로만 획득)
       if (!item && cat === 'avG' && (itemId === 'm' || itemId === 'f')) item = { n: '캐릭터 성별', p: 0 }; // 👤 캐릭터 생성(무료)
       if (!item && cat === 'art' && itemId !== 'off') { // 🎨 운영자가 사이트에서 등록한 그림 뱃지
