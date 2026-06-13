@@ -4543,12 +4543,12 @@ function pgMe(){
 
 /* ───── 내비게이션 ───── */
 const PAGES=[
- ['dashboard','대시보드'],['login','로그인'],['record','기록하기'],['matches','경기'],['players','플레이어'],
+ ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['record','기록하기'],['matches','경기'],['players','플레이어'],
  ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
- ['live','⚔️ 내전',['today','matches','balance']],
+ ['live','⚔️ 내전',['notice','today','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
  ['hall','🥇 명예의 전당',['stats','awards']],
@@ -4562,7 +4562,7 @@ PAGES.push(['bank','💰 지갑·랭킹'],['games','🎮 포인트 게임'],['sh
 const PAGE_LABEL=Object.fromEntries(PAGES);
 function groupOf(page){return(NAV_GROUPS.find(([,,ps])=>ps.includes(page))||NAV_GROUPS[0])[0]}
 function go(id){tab=id;render();window.scrollTo({top:0})}
-const ADMIN_ONLY_PAGES=new Set(['record']);
+const ADMIN_ONLY_PAGES=new Set(['record','notice']);
 function visiblePages(){return isAdmin()?PAGES:PAGES.filter(([id])=>!ADMIN_ONLY_PAGES.has(id))}
 function renderNav(){
   const dirty=isAdmin()&&lsGet('apodan_dirty')==='1'
@@ -4694,7 +4694,7 @@ function render(opt){
     </div>`;
     return;
   }
-  const R={dashboard:pgDashboard,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
+  const R={dashboard:pgDashboard,notice:pgNotice,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
     champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
   let _xs=[];try{document.querySelectorAll('#view [id]').forEach(el=>{if(el.scrollLeft>0)_xs.push([el.id,el.scrollLeft])})}catch(e){} // 가로 스크롤 보존
   const _se=(typeof document!=='undefined'&&document.scrollingElement)||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
@@ -4964,69 +4964,39 @@ function mrListHtml(q){
     ||'<span class="mini dim">검색 결과가 없어요.</span>';
 }
 function mrFilter(){const box=$('mrList');if(box)box.innerHTML=mrListHtml($('mrQ')?.value||'')}
-function mrShuffle(mode){
+function mrShuffle(){
   const ids=Object.keys(window._mrSel||{});
   if(ids.length<2)return toast('참가자를 2명 이상 체크해주세요.',true);
-  if(ids.length>10)return toast(`한 판은 최대 10명이에요 — 현재 ${ids.length}명, 체크를 줄여주세요.`,true);
   const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-  let order=shuf([...ids]),blue=[],red=[];
-  if(mode==='balance'){ // 폼 스네이크 드래프트: 강한 순 A B B A A B B A…
-    order.sort((a,b)=>playerPowerOf(b)-playerPowerOf(a));
-    order.forEach((id,i)=>{(i%4===0||i%4===3)?blue.push(id):red.push(id)});
-    shuf(blue);shuf(red); // 팀 내부 순서(=라인)는 랜덤
-  }else{
-    blue=order.slice(0,Math.ceil(order.length/2));red=order.slice(Math.ceil(order.length/2));
-  }
-  let champs=null;
-  if($('mrChamp')?.checked){ // 진짜 아수라장: 랜덤 챔피언 (오늘 피어리스 픽 금지 챔프 제외)
-    const FS=fearlessState(window._todayDate||todayStr(),window._todayRound||'1차');
-    const banned=new Set(FS.pickBanned.map(x=>x.champ));
-    const pool=shuf(CHAMPIONS.filter(c=>!banned.has(c)));
-    champs={};[...blue,...red].forEach((id,i)=>champs[id]=pool[i]||'-');
-  }
-  const avg=t=>t.length?Math.round(t.reduce((a,id)=>a+playerPowerOf(id),0)/t.length):0;
-  window._mrRes={blue,red,champs,pb:avg(blue),pr:avg(red),mode};
+  const order=shuf([...ids]);
+  const half=Math.ceil(order.length/2);
+  window._mrRes={t1:order.slice(0,half),t2:order.slice(half)};
   const out=$('mrOut');if(out)out.innerHTML=mrResultHtml();
 }
 function mrResultHtml(){
   const R=window._mrRes;if(!R)return'';
-  const lanes=['탑','정글','미드','원딜','서폿'];
-  const side=(ids,tag,col,pw)=>`<div><p class="mini" style="margin:0 0 6px;font-weight:800;color:${col}">${tag} <span class="dim" style="font-weight:600">팀파워 ${pw}</span></p>
-    ${ids.map((id,i)=>`<p class="mini" style="margin:3px 0">${ids.length===5?`<span class="dim">${lanes[i]}</span> `:''}<b>${esc(nameOf(id))}</b>${R.champs?` <span class="pill" style="font-size:10px;padding:1px 6px;display:inline-flex;align-items:center;gap:3px">${champFace(R.champs[id],14)}${esc(R.champs[id])}</span>`:''}</p>`).join('')}</div>`;
-  const gap=Math.abs(R.pb-R.pr);
+  const side=(ids,tag,col)=>`<div><p class="mini" style="margin:0 0 6px;font-weight:800;color:${col}">${tag} <span class="dim" style="font-weight:600">${ids.length}명</span></p>
+    ${ids.map(id=>`<p class="mini" style="margin:3px 0"><b>${esc(nameOf(id))}</b></p>`).join('')}</div>`;
   return`<div class="hr"></div>
-  <div class="grid c2">${side(R.blue,'🅰 알파','var(--gold)',R.pb)}${side(R.red,'🅱 베타','var(--win)',R.pr)}</div>
-  <p class="mini dim" style="margin:8px 0 0">${R.mode==='balance'?`⚖ 폼 주가 스네이크 밸런스 — 팀파워 격차 ${gap} (라인 배치는 랜덤)`:'🌪 완전 랜덤 — 결과에 대한 항의는 주사위에게 부탁드립니다'}${R.champs?' · 챔피언은 오늘 피어리스 픽 금지 챔프를 빼고 뽑았어요':''}</p>
+  <div class="grid c2">${side(R.t1,'1팀','var(--gold)')}${side(R.t2,'2팀','var(--win)')}</div>
+  <p class="mini dim" style="margin:8px 0 0">🌪 완전 랜덤 분배 — 결과에 대한 항의는 주사위에게 부탁드립니다</p>
   <div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap">
-    <button class="btn sm gold" onclick="mrToLineup()">🏟 이 결과를 아래 라인업 공지 칸에 채우기</button>
-    <button class="btn sm ghost" onclick="mrShuffle(window._mrRes.mode)">🎲 다시 돌리기</button>
+    <button class="btn sm ghost" onclick="mrShuffle()">🎲 다시 돌리기</button>
   </div>`;
-}
-function mrToLineup(){
-  const R=window._mrRes;if(!R)return;
-  if(R.blue.length!==5||R.red.length!==5)return toast('라인업 공지 채우기는 5대5일 때만 가능해요.',true);
-  window._luDraft=window._luDraft||{};
-  R.blue.forEach((id,i)=>window._luDraft[i+1]=nameOf(id));
-  R.red.forEach((id,i)=>window._luDraft[i+6]=nameOf(id));
-  render();
-  toast('라인업 칸에 채웠어요 — 회차 고르고 [라인업 공지하기]만 누르면 끝!');
-  setTimeout(()=>{const el=$('lu1');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},80);
 }
 function asuraCard(){
   const n=Object.keys(window._mrSel||{}).length;
   return`<div class="card" style="margin-bottom:14px;border:1px solid rgba(181,140,255,.45)">
-    <h3 style="margin:0 0 4px">🌪 아수라장 팀 랜덤 <span class="tag">참가자 체크 → 버튼 한 번 → 팀 완성</span></h3>
-    <p class="mini dim" style="margin:0 0 8px">완전 랜덤은 순수 주사위, 밸런스 랜덤은 폼 주가+승률 스네이크로 양 팀 전력을 비슷하게. 5대5면 라인까지 랜덤 배정돼요.</p>
+    <h3 style="margin:0 0 4px">🌪 아수라장 <span class="tag">참가자 체크 → 버튼 한 번 → 1·2팀 완성</span></h3>
+    <p class="mini dim" style="margin:0 0 8px">참가할 선수를 고르면 완전 랜덤으로 1팀·2팀에 나눠드려요. (전력을 맞춘 공평한 5:5는 ⚖️ 팀 짜주기 탭에서!)</p>
     <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
       <input id="mrQ" placeholder="🔎 이름·초성 검색" style="max-width:200px" oninput="mrFilter()">
-      <span class="pill">선택 <b id="mrCount">${n}</b>명 / 최대 10</span>
+      <span class="pill">선택 <b id="mrCount">${n}</b>명</span>
       <button class="btn sm ghost" onclick="window._mrSel={};window._mrRes=null;render()">전체 해제</button>
     </div>
     <div id="mrList" class="row" style="gap:6px;flex-wrap:wrap;max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px">${mrListHtml('')}</div>
     <div class="row" style="margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center">
-      <button class="btn gold" onclick="mrShuffle('pure')">🎲 완전 랜덤</button>
-      <button class="btn" onclick="mrShuffle('balance')">⚖ 밸런스 랜덤 (폼 기반)</button>
-      <label class="row" style="gap:5px;cursor:pointer;align-items:center"><input type="checkbox" id="mrChamp" ${window._mrChamp?'checked':''} onchange="window._mrChamp=this.checked" style="width:16px;height:16px"><span class="mini">🃏 랜덤 챔피언까지 (진짜 아수라장 모드)</span></label>
+      <button class="btn gold" onclick="mrShuffle()">🎲 랜덤으로 1·2팀 나누기</button>
     </div>
     <div id="mrOut">${mrResultHtml()}</div>
   </div>`;
@@ -5099,6 +5069,10 @@ function gd15Apply(){
     toast(`📊 GD@15 저장 — ${r.applied}명 (${r.minute}분 프레임 기준)`);
   }catch(e){toast('실패: '+e.message,true)}
 }
+function pgNotice(){
+  if(!isAdmin())return head('내전 공지','운영진 전용')+`<div class="card"><p class="mini dim" style="margin:0">🏟 내전 라인업 공지는 운영진 전용이에요 — 설정 탭에서 운영자 PIN으로 로그인해주세요.</p></div>`;
+  return head('🏟 내전 공지','매일 내전 라인업(1차·2차…)을 멤버 전원에게 공지하고 베팅을 여는 곳이에요. 팀을 랜덤으로 나누려면 ⚖️ 팀짜주기 → 🌪 아수라장 탭을 이용하세요.')+lineupEditor();
+}
 function pgRecord(){
   return head('기록하기','라이엇 연동이 가장 정확해요(딜량·시야·밴·챔피언까지 자동). 어떤 방법이든 자동 저장은 없고, 항상 검수 후 저장됩니다.')+pgRecordInner();
 }
@@ -5107,8 +5081,6 @@ function pgRecordInner(){
   const anchors=state.players.filter(p=>p.active&&p.riotName);
   const anchorSel=state.settings.riotAnchor||anchors[0]?.id||'';
   return `
-  ${asuraCard()}
-  ${lineupEditor()}
   <div class="card" style="border-color:rgba(242,184,75,.45)">
     <h3>① 라이엇 자동 불러오기 <span class="tag">정확도 100% · 추천</span></h3>
     <p class="mini">중계 서버를 한 번만 연결해두면, 경기 끝나고 버튼 하나로 10명 전적이 통째로 들어와요. 설정 방법은 채팅 가이드 참고 (라이엇 키 발급 → Vercel 배포 → 주소 입력).</p>
@@ -5659,8 +5631,9 @@ function balCopy(i){
 function pgBalance(){
   if(!isAdmin())return head('팀 짜주기','운영진 전용')+`<div class="card"><p class="mini dim" style="margin:0">⚖️ 빅데이터 팀 밸런스는 운영자 전용이에요 — 설정 탭에서 운영자 PIN으로 로그인해주세요.</p></div>`;
   const _balView=window._balView||'team';
-  const _balSubnav=`<div class="subnav" style="margin-bottom:12px"><button class="${_balView==='team'?'on':''}" onclick="window._balView='team';render()">⚖️ 팀 짜주기</button><button class="${_balView==='record'?'on':''}" onclick="window._balView='record';render()">📝 기록하기·아수라장</button></div>`;
-  if(_balView==='record')return head('📝 기록하기 · 아수라장','경기 기록과 아수라장 팀 랜덤을 여기서 — 운영진 전용.')+_balSubnav+pgRecordInner();
+  const _balSubnav=`<div class="subnav" style="margin-bottom:12px"><button class="${_balView==='team'?'on':''}" onclick="window._balView='team';render()">⚖️ 팀 짜주기</button><button class="${_balView==='asura'?'on':''}" onclick="window._balView='asura';render()">🌪 아수라장</button><button class="${_balView==='record'?'on':''}" onclick="window._balView='record';render()">📝 경기 기록</button></div>`;
+  if(_balView==='asura')return head('🌪 아수라장','참가 선수를 완전 랜덤으로 1팀·2팀에 나눠요 — 운영진 전용.')+_balSubnav+asuraCard();
+  if(_balView==='record')return head('📝 경기 기록','라이엇 연동·수동 입력으로 끝난 경기 결과를 기록해요 — 운영진 전용.')+_balSubnav+pgRecordInner();
   const sel=window._balSel||{};
   const selN=Object.keys(sel).length;
   const cand=state.players.filter(p=>p.active);
