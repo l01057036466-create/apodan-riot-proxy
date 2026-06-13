@@ -18719,6 +18719,951 @@
      "championId": "라이즈"
     }
    ]
+  },
+  {
+   "id": "m_1e36nf6mqci1ieo",
+   "createdAt": "2026-06-13T15:17:28.560Z",
+   "playedAt": "2026-06-13",
+   "setNumber": 8,
+   "winnerTeam": "RED",
+   "gameId": "8257563056",
+   "durationMin": 36,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "미르수리",
+     "playerId": "p_jlc2q699_mq7nhxup",
+     "championId": "갱플랭크",
+     "kills": 6,
+     "deaths": 11,
+     "assists": 4,
+     "stats": {
+      "cs": 249,
+      "goldEarned": 16322,
+      "damageToChampions": 33833,
+      "damageTaken": 36804,
+      "visionScore": 19,
+      "wardsPlaced": 6,
+      "wardsKilled": 1,
+      "controlWardsBought": 0,
+      "crowdControlScore": 22,
+      "damageToObjectives": 4755,
+      "damageToTurrets": 2315,
+      "healing": 8696,
+      "selfMitigatedDamage": 21757,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
+     "championId": "우디르",
+     "kills": 3,
+     "deaths": 9,
+     "assists": 6,
+     "stats": {
+      "cs": 243,
+      "goldEarned": 13364,
+      "damageToChampions": 15720,
+      "damageTaken": 43816,
+      "visionScore": 38,
+      "wardsPlaced": 2,
+      "wardsKilled": 11,
+      "controlWardsBought": 0,
+      "crowdControlScore": 34,
+      "damageToObjectives": 30348,
+      "damageToTurrets": 7355,
+      "healing": 12137,
+      "selfMitigatedDamage": 39132,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "팀원죽이기",
+     "playerId": "p_07v55ab9_mq7nhxuq",
+     "championId": "아지르",
+     "kills": 5,
+     "deaths": 6,
+     "assists": 3,
+     "stats": {
+      "cs": 256,
+      "goldEarned": 13999,
+      "damageToChampions": 33144,
+      "damageTaken": 26564,
+      "visionScore": 23,
+      "wardsPlaced": 6,
+      "wardsKilled": 5,
+      "controlWardsBought": 2,
+      "crowdControlScore": 14,
+      "damageToObjectives": 6353,
+      "damageToTurrets": 3807,
+      "healing": 3208,
+      "selfMitigatedDamage": 17976,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "봄의꽃",
+     "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "championId": "애쉬",
+     "kills": 3,
+     "deaths": 2,
+     "assists": 5,
+     "stats": {
+      "cs": 344,
+      "goldEarned": 15795,
+      "damageToChampions": 24618,
+      "damageTaken": 18581,
+      "visionScore": 42,
+      "wardsPlaced": 12,
+      "wardsKilled": 8,
+      "controlWardsBought": 1,
+      "crowdControlScore": 56,
+      "damageToObjectives": 5145,
+      "damageToTurrets": 3818,
+      "healing": 6752,
+      "selfMitigatedDamage": 10908,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "물방울",
+     "playerId": "p_j93ommzd_mq7nhxuq",
+     "championId": "애니비아",
+     "kills": 1,
+     "deaths": 6,
+     "assists": 8,
+     "stats": {
+      "cs": 55,
+      "goldEarned": 9333,
+      "damageToChampions": 17171,
+      "damageTaken": 27888,
+      "visionScore": 117,
+      "wardsPlaced": 56,
+      "wardsKilled": 13,
+      "controlWardsBought": 27,
+      "crowdControlScore": 54,
+      "damageToObjectives": 889,
+      "damageToTurrets": 207,
+      "healing": 2878,
+      "selfMitigatedDamage": 11884,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "죄 인",
+     "playerId": "p_1v451ep9_mq7nhxuq",
+     "championId": "말파이트",
+     "kills": 11,
+     "deaths": 5,
+     "assists": 7,
+     "stats": {
+      "cs": 224,
+      "goldEarned": 15576,
+      "damageToChampions": 31815,
+      "damageTaken": 41887,
+      "visionScore": 28,
+      "wardsPlaced": 14,
+      "wardsKilled": 0,
+      "controlWardsBought": 1,
+      "crowdControlScore": 38,
+      "damageToObjectives": 11081,
+      "damageToTurrets": 9252,
+      "healing": 12314,
+      "selfMitigatedDamage": 114116,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "릴리아",
+     "kills": 2,
+     "deaths": 0,
+     "assists": 16,
+     "stats": {
+      "cs": 278,
+      "goldEarned": 15138,
+      "damageToChampions": 20292,
+      "damageTaken": 40280,
+      "visionScore": 52,
+      "wardsPlaced": 9,
+      "wardsKilled": 12,
+      "controlWardsBought": 7,
+      "crowdControlScore": 22,
+      "damageToObjectives": 39525,
+      "damageToTurrets": 730,
+      "healing": 30174,
+      "selfMitigatedDamage": 24501,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "twitch소혁",
+     "playerId": "p_wqf3x0omq7ub77q",
+     "championId": "코르키",
+     "kills": 15,
+     "deaths": 6,
+     "assists": 10,
+     "stats": {
+      "cs": 280,
+      "goldEarned": 19603,
+      "damageToChampions": 56936,
+      "damageTaken": 33865,
+      "visionScore": 17,
+      "wardsPlaced": 9,
+      "wardsKilled": 3,
+      "controlWardsBought": 0,
+      "crowdControlScore": 6,
+      "damageToObjectives": 48509,
+      "damageToTurrets": 19135,
+      "healing": 14283,
+      "selfMitigatedDamage": 16911,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "championId": "케이틀린",
+     "kills": 5,
+     "deaths": 5,
+     "assists": 5,
+     "stats": {
+      "cs": 280,
+      "goldEarned": 14753,
+      "damageToChampions": 19153,
+      "damageTaken": 18537,
+      "visionScore": 26,
+      "wardsPlaced": 9,
+      "wardsKilled": 9,
+      "controlWardsBought": 0,
+      "crowdControlScore": 9,
+      "damageToObjectives": 30493,
+      "damageToTurrets": 9866,
+      "healing": 6365,
+      "selfMitigatedDamage": 8319,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
+     "championId": "노틸러스",
+     "kills": 1,
+     "deaths": 2,
+     "assists": 20,
+     "stats": {
+      "cs": 30,
+      "goldEarned": 10669,
+      "damageToChampions": 8792,
+      "damageTaken": 29164,
+      "visionScore": 121,
+      "wardsPlaced": 54,
+      "wardsKilled": 12,
+      "controlWardsBought": 25,
+      "crowdControlScore": 52,
+      "damageToObjectives": 7538,
+      "damageToTurrets": 2922,
+      "healing": 12652,
+      "selfMitigatedDamage": 37185,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "녹턴"
+    },
+    {
+     "team": "BLUE",
+     "championId": "갈리오"
+    },
+    {
+     "team": "BLUE",
+     "championId": "쓰레쉬"
+    },
+    {
+     "team": "BLUE",
+     "championId": "야스오"
+    },
+    {
+     "team": "BLUE",
+     "championId": "헤카림"
+    },
+    {
+     "team": "RED",
+     "championId": "사일러스"
+    },
+    {
+     "team": "RED",
+     "championId": "크산테"
+    },
+    {
+     "team": "RED",
+     "championId": "바루스"
+    },
+    {
+     "team": "RED",
+     "championId": "시비르"
+    },
+    {
+     "team": "RED",
+     "championId": "사이온"
+    }
+   ]
+  },
+  {
+   "id": "m_tbbi29amqci1if4",
+   "createdAt": "2026-06-13T15:17:28.576Z",
+   "playedAt": "2026-06-13",
+   "setNumber": 9,
+   "winnerTeam": "RED",
+   "gameId": "8257664239",
+   "durationMin": 30,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "죄 인",
+     "playerId": "p_1v451ep9_mq7nhxuq",
+     "championId": "크산테",
+     "kills": 2,
+     "deaths": 7,
+     "assists": 1,
+     "stats": {
+      "cs": 169,
+      "goldEarned": 8619,
+      "damageToChampions": 11013,
+      "damageTaken": 39462,
+      "visionScore": 7,
+      "wardsPlaced": 4,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 33,
+      "damageToObjectives": 6529,
+      "damageToTurrets": 6529,
+      "healing": 6917,
+      "selfMitigatedDamage": 45239,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "녹턴",
+     "kills": 3,
+     "deaths": 4,
+     "assists": 4,
+     "stats": {
+      "cs": 181,
+      "goldEarned": 10220,
+      "damageToChampions": 13774,
+      "damageTaken": 31871,
+      "visionScore": 26,
+      "wardsPlaced": 6,
+      "wardsKilled": 4,
+      "controlWardsBought": 5,
+      "crowdControlScore": 168,
+      "damageToObjectives": 23028,
+      "damageToTurrets": 3363,
+      "healing": 12817,
+      "selfMitigatedDamage": 15395,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "twitch소혁",
+     "playerId": "p_wqf3x0omq7ub77q",
+     "championId": "루시안",
+     "kills": 1,
+     "deaths": 7,
+     "assists": 2,
+     "stats": {
+      "cs": 211,
+      "goldEarned": 9840,
+      "damageToChampions": 20921,
+      "damageTaken": 20757,
+      "visionScore": 25,
+      "wardsPlaced": 9,
+      "wardsKilled": 2,
+      "controlWardsBought": 1,
+      "crowdControlScore": 0,
+      "damageToObjectives": 10287,
+      "damageToTurrets": 4934,
+      "healing": 3224,
+      "selfMitigatedDamage": 12187,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "championId": "시비르",
+     "kills": 1,
+     "deaths": 5,
+     "assists": 5,
+     "stats": {
+      "cs": 214,
+      "goldEarned": 10202,
+      "damageToChampions": 20427,
+      "damageTaken": 15583,
+      "visionScore": 15,
+      "wardsPlaced": 7,
+      "wardsKilled": 4,
+      "controlWardsBought": 0,
+      "crowdControlScore": 2,
+      "damageToObjectives": 7339,
+      "damageToTurrets": 6743,
+      "healing": 2470,
+      "selfMitigatedDamage": 6665,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
+     "championId": "멜",
+     "kills": 2,
+     "deaths": 4,
+     "assists": 3,
+     "stats": {
+      "cs": 30,
+      "goldEarned": 8348,
+      "damageToChampions": 16837,
+      "damageTaken": 15945,
+      "visionScore": 103,
+      "wardsPlaced": 49,
+      "wardsKilled": 14,
+      "controlWardsBought": 21,
+      "crowdControlScore": 45,
+      "damageToObjectives": 2434,
+      "damageToTurrets": 968,
+      "healing": 1521,
+      "selfMitigatedDamage": 4906,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "미르수리",
+     "playerId": "p_jlc2q699_mq7nhxup",
+     "championId": "암베사",
+     "kills": 5,
+     "deaths": 1,
+     "assists": 8,
+     "stats": {
+      "cs": 216,
+      "goldEarned": 11844,
+      "damageToChampions": 27144,
+      "damageTaken": 19290,
+      "visionScore": 17,
+      "wardsPlaced": 6,
+      "wardsKilled": 3,
+      "controlWardsBought": 0,
+      "crowdControlScore": 14,
+      "damageToObjectives": 17144,
+      "damageToTurrets": 8268,
+      "healing": 6232,
+      "selfMitigatedDamage": 33072,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
+     "championId": "사일러스",
+     "kills": 5,
+     "deaths": 2,
+     "assists": 10,
+     "stats": {
+      "cs": 235,
+      "goldEarned": 13720,
+      "damageToChampions": 21956,
+      "damageTaken": 30326,
+      "visionScore": 27,
+      "wardsPlaced": 3,
+      "wardsKilled": 5,
+      "controlWardsBought": 1,
+      "crowdControlScore": 78,
+      "damageToObjectives": 30147,
+      "damageToTurrets": 4498,
+      "healing": 19176,
+      "selfMitigatedDamage": 25171,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "팀원죽이기",
+     "playerId": "p_07v55ab9_mq7nhxuq",
+     "championId": "아칼리",
+     "kills": 12,
+     "deaths": 1,
+     "assists": 3,
+     "stats": {
+      "cs": 189,
+      "goldEarned": 12824,
+      "damageToChampions": 32719,
+      "damageTaken": 23416,
+      "visionScore": 25,
+      "wardsPlaced": 6,
+      "wardsKilled": 5,
+      "controlWardsBought": 2,
+      "crowdControlScore": 3,
+      "damageToObjectives": 5533,
+      "damageToTurrets": 2162,
+      "healing": 7698,
+      "selfMitigatedDamage": 16501,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "봄의꽃",
+     "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "championId": "징크스",
+     "kills": 4,
+     "deaths": 3,
+     "assists": 5,
+     "stats": {
+      "cs": 255,
+      "goldEarned": 14678,
+      "damageToChampions": 13892,
+      "damageTaken": 18879,
+      "visionScore": 26,
+      "wardsPlaced": 8,
+      "wardsKilled": 7,
+      "controlWardsBought": 0,
+      "crowdControlScore": 13,
+      "damageToObjectives": 14972,
+      "damageToTurrets": 9943,
+      "healing": 6957,
+      "selfMitigatedDamage": 13404,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "물방울",
+     "playerId": "p_j93ommzd_mq7nhxuq",
+     "championId": "브라움",
+     "kills": 1,
+     "deaths": 2,
+     "assists": 13,
+     "stats": {
+      "cs": 20,
+      "goldEarned": 8126,
+      "damageToChampions": 6453,
+      "damageTaken": 23168,
+      "visionScore": 90,
+      "wardsPlaced": 41,
+      "wardsKilled": 9,
+      "controlWardsBought": 16,
+      "crowdControlScore": 32,
+      "damageToObjectives": 2216,
+      "damageToTurrets": 517,
+      "healing": 5595,
+      "selfMitigatedDamage": 31021,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "베인"
+    },
+    {
+     "team": "BLUE",
+     "championId": "말자하"
+    },
+    {
+     "team": "BLUE",
+     "championId": "바이"
+    },
+    {
+     "team": "BLUE",
+     "championId": "리븐"
+    },
+    {
+     "team": "BLUE",
+     "championId": "요네"
+    },
+    {
+     "team": "RED",
+     "championId": "스몰더"
+    },
+    {
+     "team": "RED",
+     "championId": "트리스타나"
+    },
+    {
+     "team": "RED",
+     "championId": "카이사"
+    },
+    {
+     "team": "RED",
+     "championId": "룰루"
+    },
+    {
+     "team": "RED",
+     "championId": "알리스타"
+    }
+   ]
+  },
+  {
+   "id": "m_m2i1lklmqci1iff",
+   "createdAt": "2026-06-13T15:17:28.587Z",
+   "playedAt": "2026-06-13",
+   "setNumber": 10,
+   "winnerTeam": "RED",
+   "gameId": "8257754932",
+   "durationMin": 33,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "미르수리",
+     "playerId": "p_jlc2q699_mq7nhxup",
+     "championId": "아트록스",
+     "kills": 3,
+     "deaths": 8,
+     "assists": 2,
+     "stats": {
+      "cs": 255,
+      "goldEarned": 12687,
+      "damageToChampions": 24401,
+      "damageTaken": 36336,
+      "visionScore": 19,
+      "wardsPlaced": 9,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 24,
+      "damageToObjectives": 5502,
+      "damageToTurrets": 5502,
+      "healing": 10934,
+      "selfMitigatedDamage": 42495,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
+     "championId": "나피리",
+     "kills": 6,
+     "deaths": 6,
+     "assists": 2,
+     "stats": {
+      "cs": 252,
+      "goldEarned": 14500,
+      "damageToChampions": 20377,
+      "damageTaken": 30509,
+      "visionScore": 31,
+      "wardsPlaced": 3,
+      "wardsKilled": 5,
+      "controlWardsBought": 1,
+      "crowdControlScore": 7,
+      "damageToObjectives": 20695,
+      "damageToTurrets": 0,
+      "healing": 13041,
+      "selfMitigatedDamage": 18118,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "팀원죽이기",
+     "playerId": "p_07v55ab9_mq7nhxuq",
+     "championId": "에코",
+     "kills": 3,
+     "deaths": 6,
+     "assists": 5,
+     "stats": {
+      "cs": 231,
+      "goldEarned": 11656,
+      "damageToChampions": 23132,
+      "damageTaken": 30353,
+      "visionScore": 25,
+      "wardsPlaced": 6,
+      "wardsKilled": 5,
+      "controlWardsBought": 0,
+      "crowdControlScore": 10,
+      "damageToObjectives": 6452,
+      "damageToTurrets": 4398,
+      "healing": 9018,
+      "selfMitigatedDamage": 18041,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "봄의꽃",
+     "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "championId": "제라스",
+     "kills": 1,
+     "deaths": 4,
+     "assists": 4,
+     "stats": {
+      "cs": 277,
+      "goldEarned": 12139,
+      "damageToChampions": 23062,
+      "damageTaken": 15815,
+      "visionScore": 31,
+      "wardsPlaced": 13,
+      "wardsKilled": 4,
+      "controlWardsBought": 4,
+      "crowdControlScore": 22,
+      "damageToObjectives": 4913,
+      "damageToTurrets": 4500,
+      "healing": 1641,
+      "selfMitigatedDamage": 7867,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "물방울",
+     "playerId": "p_j93ommzd_mq7nhxuq",
+     "championId": "카르마",
+     "kills": 0,
+     "deaths": 6,
+     "assists": 5,
+     "stats": {
+      "cs": 33,
+      "goldEarned": 7462,
+      "damageToChampions": 3802,
+      "damageTaken": 22904,
+      "visionScore": 95,
+      "wardsPlaced": 39,
+      "wardsKilled": 10,
+      "controlWardsBought": 17,
+      "crowdControlScore": 24,
+      "damageToObjectives": 388,
+      "damageToTurrets": 388,
+      "healing": 5554,
+      "selfMitigatedDamage": 14374,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "죄 인",
+     "playerId": "p_1v451ep9_mq7nhxuq",
+     "championId": "이렐리아",
+     "kills": 5,
+     "deaths": 4,
+     "assists": 5,
+     "stats": {
+      "cs": 327,
+      "goldEarned": 16538,
+      "damageToChampions": 26144,
+      "damageTaken": 33656,
+      "visionScore": 17,
+      "wardsPlaced": 9,
+      "wardsKilled": 1,
+      "controlWardsBought": 0,
+      "crowdControlScore": 15,
+      "damageToObjectives": 26678,
+      "damageToTurrets": 26678,
+      "healing": 15506,
+      "selfMitigatedDamage": 37100,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "제드",
+     "kills": 6,
+     "deaths": 1,
+     "assists": 9,
+     "stats": {
+      "cs": 248,
+      "goldEarned": 14479,
+      "damageToChampions": 23712,
+      "damageTaken": 33979,
+      "visionScore": 31,
+      "wardsPlaced": 4,
+      "wardsKilled": 5,
+      "controlWardsBought": 2,
+      "crowdControlScore": 13,
+      "damageToObjectives": 44032,
+      "damageToTurrets": 3284,
+      "healing": 17874,
+      "selfMitigatedDamage": 24985,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "twitch소혁",
+     "playerId": "p_wqf3x0omq7ub77q",
+     "championId": "카타리나",
+     "kills": 14,
+     "deaths": 5,
+     "assists": 7,
+     "stats": {
+      "cs": 191,
+      "goldEarned": 15210,
+      "damageToChampions": 50134,
+      "damageTaken": 35113,
+      "visionScore": 23,
+      "wardsPlaced": 7,
+      "wardsKilled": 4,
+      "controlWardsBought": 0,
+      "crowdControlScore": 1,
+      "damageToObjectives": 12550,
+      "damageToTurrets": 8013,
+      "healing": 12217,
+      "selfMitigatedDamage": 16151,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "championId": "진",
+     "kills": 4,
+     "deaths": 1,
+     "assists": 9,
+     "stats": {
+      "cs": 275,
+      "goldEarned": 14505,
+      "damageToChampions": 13331,
+      "damageTaken": 19906,
+      "visionScore": 6,
+      "wardsPlaced": 5,
+      "wardsKilled": 1,
+      "controlWardsBought": 1,
+      "crowdControlScore": 21,
+      "damageToObjectives": 18740,
+      "damageToTurrets": 4695,
+      "healing": 9138,
+      "selfMitigatedDamage": 7866,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
+     "championId": "룰루",
+     "kills": 1,
+     "deaths": 2,
+     "assists": 17,
+     "stats": {
+      "cs": 33,
+      "goldEarned": 9745,
+      "damageToChampions": 4559,
+      "damageTaken": 17650,
+      "visionScore": 127,
+      "wardsPlaced": 49,
+      "wardsKilled": 15,
+      "controlWardsBought": 20,
+      "crowdControlScore": 32,
+      "damageToObjectives": 4538,
+      "damageToTurrets": 1819,
+      "healing": 6271,
+      "selfMitigatedDamage": 8408,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "헤카림"
+    },
+    {
+     "team": "BLUE",
+     "championId": "리 신"
+    },
+    {
+     "team": "BLUE",
+     "championId": "오공"
+    },
+    {
+     "team": "BLUE",
+     "championId": "오른"
+    },
+    {
+     "team": "BLUE",
+     "championId": "빅토르"
+    },
+    {
+     "team": "RED",
+     "championId": "케인"
+    },
+    {
+     "team": "RED",
+     "championId": "카직스"
+    },
+    {
+     "team": "RED",
+     "championId": "렝가"
+    },
+    {
+     "team": "RED",
+     "championId": "올라프"
+    },
+    {
+     "team": "RED",
+     "championId": "리산드라"
+    }
+   ]
   }
  ],
  "voteRooms": [],
@@ -18726,7 +19671,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T14:48:40.358Z",
+  "lastBackupAt": "2026-06-13T14:48:47.322Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -18805,7 +19750,6 @@
    "id": "lu_2xj8fqnmqcgyo01",
    "date": "2026-06-13",
    "round": "3차",
-   "series": "3판 2선승",
    "note": "",
    "blue": [
     "p_1v451ep9_mq7nhxuq",
@@ -18826,7 +19770,6 @@
    "id": "lu_vv4dwm7mqch0bpl",
    "date": "2026-06-13",
    "round": "4차",
-   "series": "3판 2선승",
    "note": "",
    "blue": [
     "p_2dlhnzwn_mq7nhxuq",
@@ -18844,7 +19787,7 @@
    ]
   }
  ],
- "rev": 207,
- "updatedAt": "2026-06-13T14:48:40.358Z",
+ "rev": 209,
+ "updatedAt": "2026-06-13T15:17:28.592Z",
  "hiddenReviews": []
 }
