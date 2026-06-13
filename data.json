@@ -18726,7 +18726,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T14:47:35.668Z",
+  "lastBackupAt": "2026-06-13T14:48:40.358Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -18844,7 +18844,7 @@
    ]
   }
  ],
- "rev": 206,
- "updatedAt": "2026-06-13T14:48:33.610Z",
+ "rev": 207,
+ "updatedAt": "2026-06-13T14:48:40.358Z",
  "hiddenReviews": []
 }
