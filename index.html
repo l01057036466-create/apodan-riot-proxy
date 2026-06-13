@@ -2811,7 +2811,13 @@ function allLineups(){
   return state.lineup?[Object.assign({id:'legacy',round:'1차'},state.lineup)]:[];
 }
 function lineupOf(id){return allLineups().find(l=>l.id===id)||allLineups()[0]||null}
-function voteKey(L){const s=ROUND_SLUG[L.round||'1차']||'';return L.date+(s?'#'+s:'')}
+function voteKey(L){
+  L=L||{};
+  let d=String(L.date||'').trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))d=sessionDay(); // 날짜가 비었거나 형식이 이상하면 오늘로 보정 → 서버 'market 형식 오류' 방지
+  const s=ROUND_SLUG[L.round||'1차']||'';
+  return d+(s?'#'+s:'');
+}
 
 function toggleAutoPublish(){
   if(needAdmin())return;
