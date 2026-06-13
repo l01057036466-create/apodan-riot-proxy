@@ -204,13 +204,14 @@ module.exports = async function handler(req, res) {
         aCo.items = aCo.items || {};
         var idCo;
         if (pickCo != null) {
-          if (!(pickCo >= 1 && pickCo <= 64)) return res.status(400).json({ error: '번호는 1~64' });
+          if (pickCo === 1) return res.status(400).json({ error: '1번은 기본 캐릭터예요 (무료) — 2~64번에서 골라주세요' });
+          if (!(pickCo >= 2 && pickCo <= 64)) return res.status(400).json({ error: '번호는 2~64' });
           idCo = gCo + '-' + catgCo + '-' + pickCo;
           if (aCo.items['cos:' + idCo]) return res.status(409).json({ error: '이미 보유한 코스튬이에요 — 내 정보에서 입혀보세요!' });
         } else {
           var pool = [];
-          for (var ci = 1; ci <= 64; ci++) if (!aCo.items['cos:' + gCo + '-' + catgCo + '-' + ci]) pool.push(ci);
-          if (!pool.length) return res.status(400).json({ error: '🎉 이 카테고리 64종을 전부 모았어요! 컬렉션 완성!' });
+          for (var ci = 2; ci <= 64; ci++) if (!aCo.items['cos:' + gCo + '-' + catgCo + '-' + ci]) pool.push(ci);
+          if (!pool.length) return res.status(400).json({ error: '🎉 이 카테고리 63종을 전부 모았어요! 컬렉션 완성!' });
           idCo = gCo + '-' + catgCo + '-' + pool[Math.floor(Math.random() * pool.length)];
         }
         if (aCo.bal < priceCo) return res.status(400).json({ error: '잔액 부족 (' + priceCo + ' APO 필요)' });
@@ -631,7 +632,8 @@ module.exports = async function handler(req, res) {
       var tgtAcct = await getAcct(tgt);
       if (!price && !tgtAcct) return res.status(404).json({ error: '"' + tgt + '"는 등록된 종목(멤버)이 아니에요 — 시세판에서 골라주세요' });
       if (!price) { // 미상장 → 폼 주가(힌트)로 상장
-        SX.base[tgt] = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0))) || 100;
+        var listH = Math.round(Number(body.hint) || 0);
+        SX.base[tgt] = (listH >= 20 && listH <= 400) ? listH : 100; // 🚧 상장가 안전 범위 (말도 안 되는 힌트로 뻥튀기 상장 차단)
         SX.prem[tgt] = 0;
         price = SX.base[tgt];
         await savePx(SX);
@@ -639,10 +641,16 @@ module.exports = async function handler(req, res) {
       } else { // 🩺 자가 치유: 거래자의 폼 힌트 쪽으로 기준가 자동 수렴 (운영진 접속 불필요)
         // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
         var hintB = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0)));
+        if (hintB && (hintB > SX.base[tgt] * 2 + 50 || hintB < SX.base[tgt] / 2 - 50)) hintB = 0; // 🚧 비정상 힌트(조작 시도) 무시
+        var dayK = 'sdrift:' + tgt + ':' + new Date().toISOString().slice(0, 10);
+        var drift0 = Number(await redis(['GET', dayK])) || 0;
         if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
           var stepB = Math.max(-16, Math.min(16, Math.round((hintB - SX.base[tgt]) / 2)));
+          stepB = Math.max(-40 - drift0, Math.min(40 - drift0, stepB)); // 🚧 일일 기준가 변동 한도 ±40 (조작 봉쇄)
+          if (!stepB) stepB = 0;
           var beforeC = price;
           SX.base[tgt] = Math.max(10, Math.min(999, SX.base[tgt] + stepB));
+          if (stepB) { await redis(['INCRBY', dayK, String(stepB)]); await redis(['EXPIRE', dayK, '90000']); }
           price = clampPx(SX.base[tgt] + premCap(SX.base[tgt], SX.prem[tgt]));
           if (Math.abs(price - beforeC) >= 2) await pushHist(tgt, price, 'form');
         }
@@ -933,7 +941,7 @@ module.exports = async function handler(req, res) {
 
     // ═══ 🛍 포인트 상점 (서버가 가격의 단일 진실) ═══
     var SHOP = {
-      badge: { b1:{e:'🐢',p:5000}, b2:{e:'🍀',p:7000}, b3:{e:'🌙',p:8000}, b4:{e:'🦊',p:10000}, b5:{e:'🐯',p:12000}, b6:{e:'💀',p:15000}, b7:{e:'🔥',p:15000}, b8:{e:'🚀',p:18000}, b9:{e:'👑',p:20000}, b10:{e:'💎',p:25000} },
+      badge: { b1:{e:'🐢',p:5000}, b2:{e:'🍀',p:7000}, b3:{e:'🌙',p:8000}, b4:{e:'🦊',p:10000}, b5:{e:'🐯',p:12000}, b6:{e:'💀',p:15000}, b7:{e:'🔥',p:15000}, b8:{e:'🚀',p:18000}, b9:{e:'👑',p:20000}, b10:{e:'💎',p:25000}, b11:{e:'🐶',n:'강아지',p:800},b12:{e:'🐱',n:'고양이',p:800},b13:{e:'🐸',n:'개구리',p:1000},b14:{e:'🐵',n:'원숭이',p:1000},b15:{e:'🐮',n:'소',p:1000},b16:{e:'🐷',n:'돼지',p:1000},b17:{e:'🐴',n:'말',p:1200},b18:{e:'🐹',n:'햄스터',p:1200},b19:{e:'🐰',n:'토끼',p:1200},b20:{e:'🐻',n:'곰',p:1500},b21:{e:'🐨',n:'코알라',p:1500},b22:{e:'🐧',n:'펭귄',p:1500},b23:{e:'🦝',n:'너구리',p:1500},b24:{e:'🦥',n:'나무늘보',p:2000},b25:{e:'🦉',n:'부엉이',p:2000},b26:{e:'🐼',n:'판다',p:2000},b27:{e:'🦦',n:'수달',p:2500},b28:{e:'🐺',n:'늑대',p:2500},b29:{e:'🦁',n:'사자',p:3000},b30:{e:'🦅',n:'독수리',p:3000},b31:{e:'🦄',n:'유니콘',p:5000},b32:{e:'🐲',n:'드래곤',p:8000},b33:{e:'🦢',n:'백조',p:2500},b34:{e:'🐌',n:'달팽이',p:800},b35:{e:'🦗',n:'귀뚜라미',p:800},b36:{e:'🐝',n:'꿀벌',p:1200},b37:{e:'🐞',n:'무당벌레',p:1200},b38:{e:'🦋',n:'나비',p:1500},b39:{e:'🪲',n:'장수풍뎅이',p:2000},b40:{e:'🦂',n:'전갈',p:2500},b41:{e:'🦸',n:'히어로',p:5000},b42:{e:'🦸‍♀️',n:'히어로걸',p:5000},b43:{e:'🛡️',n:'방패 용사',p:6000},b44:{e:'🔨',n:'천둥 망치',p:6000},b45:{e:'🕷️',n:'거미 영웅',p:6000},b46:{e:'🤖',n:'강철 심장',p:6000},b47:{e:'🧙',n:'마법 박사',p:6000},b48:{e:'💚',n:'녹색 거인',p:6000} },
       color: {c7:{v:'#e2012d',n:'T1 레드',p:50000},c8:{v:'grad:#8c6f1f,#f2d98c',n:'GEN 골드',p:50000},c10:{v:'#ff6a13',n:'HLE 오렌지',p:35000},c9:{v:'#00c9b1',n:'DK 민트',p:30000},c15:{v:'grad:#ff3328,#5a0000',n:'KT 레드블랙',p:25000},c11:{v:'grad:#b01e8e,#ff5fc8',n:'KRX 자주',p:20000},c17:{v:'#ffd23f',n:'BFX 옐로',p:15000},c16:{v:'#ff5a47',n:'NS 코랄',p:12000},c18:{v:'#c98e4c',n:'BRO 브라운',p:12000},c19:{v:'#ff4d6b',n:'DNF 체리',p:12000},c20:{v:'grad:#2f7bff,#bfe6ff',n:'BLG 블루',p:40000},c21:{v:'#ef1c2f',n:'JDG 레드',p:30000},c25:{v:'#f3efe0',n:'G2 아이보리',p:35000},c22:{v:'grad:#ff6f61,#ffc04d',n:'WBG 선셋',p:25000},c23:{v:'#c2185b',n:'AL 크림슨',p:20000},c24:{v:'#e8ecf2',n:'IG 실버',p:20000},rb:{v:'rainbow',n:'🌈 무지개',p:200000}},
       frame: { f1:{e:'🥈',n:'은테',p:25000}, f2:{e:'🥇',n:'금테',p:50000}, f3:{e:'🔮',n:'옵시디언',p:100000}, f4:{e:'💠',n:'네온테',p:40000}, f5:{e:'🌹',n:'로즈골드테',p:60000}, f6:{e:'🏅',n:'챔피언 금장',p:150000}, ft1:{e:'⭐',n:'T1 테두리',p:30000}, ft2:{e:'🐯',n:'GEN 테두리',p:30000}, ft3:{e:'🧡',n:'HLE 테두리',p:20000}, ft4:{e:'🐺',n:'DK 테두리',p:18000}, ft5:{e:'🤖',n:'KT 테두리',p:15000}, ft6:{e:'🟣',n:'KRX 테두리',p:12000}, ft7:{e:'🍜',n:'NS 테두리',p:10000}, ft8:{e:'🥊',n:'BFX 테두리',p:10000}, ft9:{e:'🛩',n:'BRO 테두리',p:8000}, ft10:{e:'🦊',n:'DNF 테두리',p:8000}, ft11:{e:'🌊',n:'BLG 테두리',p:20000}, ft12:{e:'🔱',n:'JDG 테두리',p:18000}, ft13:{e:'🌅',n:'WBG 테두리',p:15000}, ft14:{e:'🗡',n:'AL 테두리',p:12000}, ft15:{e:'🪽',n:'IG 테두리',p:15000}, ft16:{e:'🥷',n:'G2 테두리',p:18000} },
       title: { t1:{e:'✍️',n:'커스텀 칭호',p:80000} },
@@ -951,7 +959,7 @@ module.exports = async function handler(req, res) {
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var cat = String(body.cat || ''), itemId = String(body.item || '');
       var item = SHOP[cat] && SHOP[cat][itemId];
-      var COS_RE_S = /^([mf])-(lol|ghibli|disney|anime|daily)-([1-9]|[1-5][0-9]|6[0-4])$/;
+      var COS_RE_S = /^([mf])-(lol|ghibli|disney|anime|daily)-([2-9]|[1-5][0-9]|6[0-4])$/;
       if (!item && cat === 'cos' && (itemId === 'off' || COS_RE_S.test(itemId))) item = { n: '코스튬', p: 0 }; // 👤 코스튬 (cosBuy로만 획득)
       if (!item && cat === 'avG' && (itemId === 'm' || itemId === 'f')) item = { n: '캐릭터 성별', p: 0 }; // 👤 캐릭터 생성(무료)
       if (!item && cat === 'art' && itemId !== 'off') { // 🎨 운영자가 사이트에서 등록한 그림 뱃지
