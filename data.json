@@ -125,9 +125,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "BFAs0on9W-rXVZ91lScPG3Rbai5JmaWZ6JwqeODG2SFLM9RkFZ04slFE0U0q-kIIy3gx8gxcigwkfQ"
   },
   {
    "id": "p_zvlhtj7s_mq7nhxuq",
@@ -141,9 +141,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "에메랄드",
+   "flexTier": "플래티넘",
+   "riotPuuid": "OmpuE_nXlDLSooUReqY03NUAATqrfxV1rLD3DTL4ptFDQMT449uVrdQJEU-SUilos8MmvoTtYoes4g"
   },
   {
    "id": "p_2dlhnzwn_mq7nhxuq",
@@ -723,8 +723,8 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
+   "soloTier": "실버",
+   "flexTier": "플래티넘",
    "riotPuuid": "esvkYYOwd6HtD44KqwEyLNBm77WRviWACCtoR-qDaGLtBrSdOG4bA842bA_811NNfqUPSDDJv6sjzQ"
   },
   {
@@ -741,9 +741,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "플래티넘",
+   "flexTier": "언랭",
+   "riotPuuid": "Becha7dC2TgrodqoHgKxraLR5VavvZmu9LDsCLBYB4GoblJ6mJ92XN-BxMV5udPCiKEO6ZyA6PAQyQ"
   },
   {
    "id": "p_so05ompmq7ub77q",
@@ -758,9 +758,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "플래티넘",
+   "flexTier": "플래티넘",
+   "riotPuuid": "6WWh05EbWdVeS7HqYOMws9lvLKqJQ8EVj4bfH7gQn8Q2dvJhHdOsBpELjxdUciUHDfgsGm1v8bwgfA"
   },
   {
    "id": "p_hnx30qcmq7ub77q",
@@ -21042,7 +21042,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T18:03:54.410Z",
+  "lastBackupAt": "2026-06-13T23:29:09.616Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21138,8 +21138,8 @@
    ]
   }
  ],
- "rev": 216,
- "updatedAt": "2026-06-13T23:29:02.317Z",
+ "rev": 218,
+ "updatedAt": "2026-06-13T23:29:12.170Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
