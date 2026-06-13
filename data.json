@@ -12,7 +12,10 @@
     "00이래"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "에메랄드",
+   "riotPuuid": "aCGZXAgj4b4BOg2pPw19SpbIG-9qt0nsBhBDl7hXwyNIY8svMt3stXeVgVjwIccmqwt-1aC_QuVqMg"
   },
   {
    "id": "p_zupqjv6b_mq7nhxup",
@@ -25,7 +28,10 @@
     "00누워"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "플래티넘",
+   "riotPuuid": "XXdkdi2F3GrB-IEf0xs7Ezpw-9jXfIZ7PQ4g9CCYyQfWbpXTV75z6baCFSkYm771GyXjvlCYS37POQ"
   },
   {
    "id": "p_q7r7dkyg_mq7nhxup",
@@ -38,7 +44,10 @@
     "00루혁"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "다이아",
+   "riotPuuid": "GWBuS3hb2nqnc4mamusR4ZF0YEd5DAHVCTvpATRhhK5IjXTJY8lD9c76NsjQ-biRQsHmMMWuCZSfiw"
   },
   {
    "id": "p_9813bijx_mq7nhxup",
@@ -51,7 +60,10 @@
     "00나깅"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "그랜드마스터",
+   "riotPuuid": "VoBhuRpS_5DGCtRpg2thLEauWlMUlmgkN2KQKY0_IJQCdefz0ZVmpm7ZUTr32YdOM9e_uVVWbapzdA"
   },
   {
    "id": "p_4xbhzjtm_mq7nhxup",
@@ -64,7 +76,10 @@
     "00대수"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "실버",
+   "riotPuuid": "NAmqTZL7f3ROJ4fnF_9jXYTJBd0zBGaumJG96YPGDymfTLD2EOQRrqrttRWXkfw84u766wYV1XzVeQ"
   },
   {
    "id": "p_hdu5pzwf_mq7nhxup",
@@ -77,7 +92,10 @@
     "00라떼"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "실버",
+   "flexTier": "브론즈",
+   "riotPuuid": "GwAwcb9X0DCA2KAE6dCgI2qovGWF4iXA1W_0TvaZBpAEbU27mhPna4ct2vgBIKOYrVscIwku_ZgXyw"
   },
   {
    "id": "p_jlc2q699_mq7nhxup",
@@ -90,7 +108,10 @@
     "00미르"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "마스터",
+   "flexTier": "에메랄드",
+   "riotPuuid": "uqpvK2yJwD4Jmj1BZVDgb5-dPjLsF8XvYdkUDoQv1Bst0uBLfxlJRgh8eIq5euTL-OuMsleoj3_pAw"
   },
   {
    "id": "p_73fj5gp9_mq7nhxuq",
@@ -103,7 +124,10 @@
     "00성민"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_zvlhtj7s_mq7nhxuq",
@@ -116,7 +140,10 @@
     "01걸비"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_2dlhnzwn_mq7nhxuq",
@@ -129,7 +156,10 @@
     "01구구"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_5fj5souo_mq7nhxuq",
@@ -142,7 +172,10 @@
     "01국물"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_svkv85m9_mq7nhxuq",
@@ -155,7 +188,10 @@
     "01백정"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_53io5pq0_mq7nhxuq",
@@ -168,7 +204,10 @@
     "01사과"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "플래티넘",
+   "riotPuuid": "MzXzQMQtAMlSPpxoXcSeHKIVUxJQ1PLmVeCARkeaUM3eknShg8bG5kybpRalS89NeQ3iFImQZALp3w"
   },
   {
    "id": "p_60ospv2c_mq7nhxuq",
@@ -182,7 +221,10 @@
     "철도너구리"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "골드",
+   "riotPuuid": "jUX2APdEbIefzb9Sx9-GkDoB-TN04ZquyClSi4STE1a_BuA6KrY9hzhsrzg9iuAowwT3-bw-_u1O7w"
   },
   {
    "id": "p_b0ryjti5_mq7nhxuq",
@@ -195,7 +237,10 @@
     "01준표"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_1v451ep9_mq7nhxuq",
@@ -208,7 +253,10 @@
     "01초보"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "플래티넘",
+   "riotPuuid": "Lv7YfqByRpmKEid9ib-fRLjev2gpiEzuO3MOtMXXYw7KMhuQGQGjusmGWyqeiOuUDqHchTj7wB2nag"
   },
   {
    "id": "p_07v55ab9_mq7nhxuq",
@@ -221,7 +269,10 @@
     "01팀죽"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "에메랄드",
+   "riotPuuid": "9bwBtosr-vX6CobRFV7MzNB6SPRbNg6o3WFVLP45kUOInurFUYzycu4tlu7NmvgVF3U0Lfez12dHUA"
   },
   {
    "id": "p_snn2xfw3_mq7nhxuq",
@@ -234,7 +285,10 @@
     "02미드"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "골드",
+   "riotPuuid": "f7zLLNw0tA5xz83AWrxJoldrbJuTQBYNAfls_IxjcIZI_qIVy1dkP5xxEN4QM6E5D0JnF8_8hOC8qw"
   },
   {
    "id": "p_wtiaq7m1_mq7nhxuq",
@@ -247,7 +301,10 @@
     "02봄꽃"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "에메랄드",
+   "riotPuuid": "8ycEHgtntvs-9eoSjarm6Vh6aLWcVggBlw_o8xR0vuv2X-af77BGPkkMwcbW49i92oJO7eOeznuncA"
   },
   {
    "id": "p_gcjvk0v7_mq7nhxuq",
@@ -260,7 +317,10 @@
     "02외않되"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "실버",
+   "flexTier": "실버",
+   "riotPuuid": "QLo9jOVk38uVI7hRqmry3auvK-_j4Vi-j6ZvBdK0qo_z_b6_VB3OEc0a8MrtTphmvZbPojL17MNYGA"
   },
   {
    "id": "p_faxcf4rq_mq7nhxuq",
@@ -273,7 +333,10 @@
     "02우정"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "플래티넘",
+   "riotPuuid": "vs5yi7Gsf2PWsa6d4tcKoXFALMdYIuYNyH0JMdJimmHZMe5tgeSivyOcjtYRBHCIxBZ_Gct3TQic5A"
   },
   {
    "id": "p_h7k04k4c_mq7nhxuq",
@@ -286,7 +349,10 @@
     "04서하"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "마스터",
+   "flexTier": "다이아",
+   "riotPuuid": "U4h1lOl6OOUssyCjLHHvxwVNr_hvZD-XF388MnPmpsaw-MzEppC0TKFNs6LjxiSxxF1nu0C5cs0VbQ"
   },
   {
    "id": "p_1imn90xr_mq7nhxuq",
@@ -299,7 +365,10 @@
     "04수아"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "실버",
+   "flexTier": "브론즈",
+   "riotPuuid": "OQ1D8dOyARG7P34TuIWuMCxIzke3_ZkfdN5XCTQ310S96INXEPtB_c9yC3HfkxyR9f4fgl0jRrk2bQ"
   },
   {
    "id": "p_3v5tiwk3_mq7nhxuq",
@@ -312,7 +381,10 @@
     "04우악"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "마스터",
+   "flexTier": "에메랄드",
+   "riotPuuid": "NwgdKwLqV0qmJv9cUEKqO2wGj1WB0ULS7-RHayFDh2bSR9CSwsQ5uxaJg-TdNTshCGApSGBvAJJBcg"
   },
   {
    "id": "p_si39mrju_mq7nhxuq",
@@ -326,7 +398,10 @@
     "BAM"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "MioVBGmXDIwlVw58NHEw63i_kylVSsFBjr-UiPKbzO0iyQBhiWMm1NElS5AdUYNMC7wEf2Rw5hiPmg"
   },
   {
    "id": "p_ujjbme0y_mq7nhxuq",
@@ -339,7 +414,10 @@
     "05체인"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "실버",
+   "flexTier": "골드",
+   "riotPuuid": "ZMq0VXh7zmyWS4El_JYxZxzYEnBu7FjS3PCijHc_UAz_tOodmyb52FJLsPl0D5MUQH0RD0WAjBx0jQ"
   },
   {
    "id": "p_jot48yoa_mq7nhxuq",
@@ -352,7 +430,10 @@
     "96스티븐"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "골드",
+   "riotPuuid": "Zz0c77V4JTSthKrvRhhCEHVUGTuYkwJsZKLd6E2TNU384WS2yiE5h_V-I0yKA9BHXQyAdoz5j-eojg"
   },
   {
    "id": "p_37h5qp33_mq7nhxuq",
@@ -365,7 +446,10 @@
     "96여썬"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "언랭",
+   "flexTier": "에메랄드",
+   "riotPuuid": "Ps7pWBTCt1il0XACXfyk43SZDAb4IMRPn6xjkZNQRGlRP9ArvRksC8m4EJtVuFhrMxDvPTYz-3G2gw"
   },
   {
    "id": "p_0pw6uy11_mq7nhxuq",
@@ -378,7 +462,10 @@
     "96팀분위기곱창났네"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "GFxoNMP49DeV8pwpR191fE4HGLhBEHdx_QgcqPj67cwAvHZDo0nMhcgOqy3g5uHTvdHh3hII56oAqw"
   },
   {
    "id": "p_29ndxd5j_mq7nhxuq",
@@ -391,7 +478,10 @@
     "98LuckyGrasp"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "브론즈",
+   "riotPuuid": "x46O-T8zl1XXcf40r7Z0e5a049qUGMOWcD2TX0Kd714KnAOwHbRbnSYBVyj0FZdT4Q485PPSTRENkg"
   },
   {
    "id": "p_j93ommzd_mq7nhxuq",
@@ -404,7 +494,10 @@
     "98물방울"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "플래티넘",
+   "riotPuuid": "XSspnNVR3cNV2LK9VbT0LqSjgoOzFmCedbgyn_-Y9pUhbFpdRQRvM0M0Nv6BQnlAcfeeXxD_WrL0OQ"
   },
   {
    "id": "p_bqvhy1r3_mq7nhxuq",
@@ -417,7 +510,10 @@
     "99건이"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "에메랄드",
+   "riotPuuid": "-7v6A-keEqtvYPjeJB_9RivVAS9ed98Lamy5x-2kWj486wS2pgugbcJJEnKktfAdM0-6zN0o0II3Xw"
   },
   {
    "id": "p_w3emkfoa_mq7nhxuq",
@@ -430,7 +526,10 @@
     "99소리"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "다이아",
+   "riotPuuid": "NjVUF4dmGYftfKztj99p5ChmGIbDb0U9dJFtv3tGOqrEkgTxB8G3pqoSWRoxGCCtBY2Iqb7fvs7NXA"
   },
   {
    "id": "p_00q5dhm1_mq7nhxuq",
@@ -443,7 +542,10 @@
     "99언지"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "zb8DWiO55LxyoIjQNKRkaP-459dJoGPWh3jucj6pH5Ph0pC20JsAx6oyLok5BG0EqBrLMm_xaya06A"
   },
   {
    "id": "p_0g6qhb6e_mq7nhxuq",
@@ -456,7 +558,10 @@
     "99유메"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "골드",
+   "riotPuuid": "TRYA1007SQ77edmlM6loJSYzO6lr-jiFnYGxCtxbN_5mgrdSx-BPJOwk2mn1hggPD_MBuM5kbIlpUA"
   },
   {
    "id": "p_imjto1qf_mq7nhxuq",
@@ -469,7 +574,10 @@
     "99잭슨"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "마스터",
+   "flexTier": "에메랄드",
+   "riotPuuid": "KlCWilkhx_eEVNhSkwreks1C5dYusGA5enEZYJnEAZmsqYG2kgGxMvw0OtN4Cq5UWSin5J91sPD74g"
   },
   {
    "id": "p_8yzih1s6_mq7nhxuq",
@@ -482,7 +590,10 @@
     "99존윅"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_r6ogprumq7ub77n",
@@ -496,7 +607,10 @@
     "저주받은콜라"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "플래티넘",
+   "riotPuuid": "yUsPD-8i_yoo54Laz_yhA9Y4Ghh0D5NKVMfmEza_whSWsS7_SjKst8gx_lB3bJhf7D_BMvoydM4M4w"
   },
   {
    "id": "p_rgrfacqmq7ub77n",
@@ -509,7 +623,10 @@
     "테무산안재현"
    ],
    "active": false,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_p4y4tq6mq7ub77o",
@@ -522,7 +639,10 @@
     "04잔성"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_gi86d5qmq7ub77o",
@@ -535,7 +655,10 @@
     "96세혀닝"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "에메랄드",
+   "riotPuuid": "tmU0tb3uzUxpD5kJ-l648sHob1mMSWwxHigSNmZLi01ZVf4Ebqdr8881-gGpi8EQ8f5J9mnP_YfuwQ"
   },
   {
    "id": "p_t5dvobpmq7ub77o",
@@ -548,7 +671,10 @@
     "01혀농"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "qzuqU1oSMkPQHngvQVWsT4ImN-zdnXBMt4labfbNSAAvT-iXcbD4cPKrl7aVbVHYkzq9S9fl9bAH6Q"
   },
   {
    "id": "p_egsig4emq7ub77p",
@@ -562,7 +688,10 @@
     "강후추"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "언랭",
+   "flexTier": "언랭",
+   "riotPuuid": "K0EU5w8LNlwI7g2xvEAkrgQ1S7c29oWayj8HpL7d-7BxeBrYrLgctk3n7yffk57sWKztvg_OIlx71w"
   },
   {
    "id": "p_4siqelqmq7ub77p",
@@ -576,7 +705,10 @@
     "Mevius01"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "다이아",
+   "flexTier": "다이아",
+   "riotPuuid": "piI07K-is-tvIrwBOw1EkH06pown0Ch7_je8B7MoqAKbYwwA6kP5oXFpFsjI93Cx7MECYohRqmMq8A"
   },
   {
    "id": "p_ze5lbhymq7ub77p",
@@ -590,7 +722,10 @@
     "Savege"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": "esvkYYOwd6HtD44KqwEyLNBm77WRviWACCtoR-qDaGLtBrSdOG4bA842bA_811NNfqUPSDDJv6sjzQ"
   },
   {
    "id": "p_wqf3x0omq7ub77q",
@@ -605,7 +740,10 @@
     "twitch소혁"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_so05ompmq7ub77q",
@@ -619,21 +757,27 @@
     "자야놀자야"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_hnx30qcmq7ub77q",
    "displayName": "98 씽 긋",
    "kakaoName": "98 씽 긋",
-   "riotName": "",
-   "riotTag": "",
+   "riotName": "씽 긋",
+   "riotTag": "kr1",
    "aliases": [
     "씽 긋",
     "98씽긋",
     "씽긋"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "언랭",
+   "flexTier": "언랭",
+   "riotPuuid": ""
   },
   {
    "id": "p_04s7kxlmq8v3l9m",
@@ -645,7 +789,10 @@
     "97맹이"
    ],
    "active": false,
-   "memo": "탈주자"
+   "memo": "탈주자",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_146qyvimq95eim4",
@@ -657,7 +804,10 @@
     "만나가가"
    ],
    "active": false,
-   "memo": "기록 보존용 (탈퇴·외부 인원)"
+   "memo": "기록 보존용 (탈퇴·외부 인원)",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   },
   {
    "id": "p_vzht71kmq95rwys",
@@ -670,7 +820,10 @@
     "00 규동"
    ],
    "active": true,
-   "memo": ""
+   "memo": "",
+   "soloTier": "",
+   "flexTier": "",
+   "riotPuuid": ""
   }
  ],
  "matches": [
@@ -695,6 +848,8 @@
      "deaths": 1,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 9231,
@@ -722,6 +877,8 @@
      "deaths": 2,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 140,
       "goldEarned": 10706,
@@ -749,6 +906,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 192,
       "goldEarned": 10638,
@@ -776,6 +935,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 210,
       "goldEarned": 13523,
@@ -803,6 +964,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 6668,
@@ -830,6 +993,8 @@
      "deaths": 2,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 153,
       "goldEarned": 6847,
@@ -857,6 +1022,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 164,
       "goldEarned": 8747,
@@ -884,6 +1051,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 156,
       "goldEarned": 7075,
@@ -911,6 +1080,8 @@
      "deaths": 5,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 207,
       "goldEarned": 11517,
@@ -938,6 +1109,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 5677,
@@ -1020,6 +1193,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 199,
       "goldEarned": 8756,
@@ -1047,6 +1222,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 165,
       "goldEarned": 9564,
@@ -1074,6 +1251,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 121,
       "goldEarned": 6394,
@@ -1101,6 +1280,8 @@
      "deaths": 4,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 8733,
@@ -1128,6 +1309,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 6439,
@@ -1155,6 +1338,8 @@
      "deaths": 2,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 12241,
@@ -1182,6 +1367,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 228,
       "goldEarned": 12175,
@@ -1209,6 +1396,8 @@
      "deaths": 1,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 8393,
@@ -1236,6 +1425,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 223,
       "goldEarned": 11114,
@@ -1263,6 +1454,8 @@
      "deaths": 1,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 8546,
@@ -1345,6 +1538,8 @@
      "deaths": 8,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 225,
       "goldEarned": 10051,
@@ -1372,6 +1567,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 205,
       "goldEarned": 13187,
@@ -1399,6 +1596,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 186,
       "goldEarned": 8891,
@@ -1426,6 +1625,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 232,
       "goldEarned": 11531,
@@ -1453,6 +1654,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 7654,
@@ -1480,6 +1683,8 @@
      "deaths": 3,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 170,
       "goldEarned": 10978,
@@ -1507,6 +1712,8 @@
      "deaths": 3,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 268,
       "goldEarned": 19057,
@@ -1534,6 +1741,8 @@
      "deaths": 1,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 157,
       "goldEarned": 9902,
@@ -1561,6 +1770,8 @@
      "deaths": 0,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 261,
       "goldEarned": 16281,
@@ -1588,6 +1799,8 @@
      "deaths": 5,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 8318,
@@ -1670,6 +1883,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 11537,
@@ -1697,6 +1912,8 @@
      "deaths": 7,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 202,
       "goldEarned": 12012,
@@ -1724,6 +1941,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 7333,
@@ -1751,6 +1970,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 282,
       "goldEarned": 13175,
@@ -1778,6 +1999,8 @@
      "deaths": 7,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 37,
       "goldEarned": 6555,
@@ -1805,6 +2028,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 274,
       "goldEarned": 15236,
@@ -1832,6 +2057,8 @@
      "deaths": 1,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 242,
       "goldEarned": 14820,
@@ -1859,6 +2086,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 12315,
@@ -1886,6 +2115,8 @@
      "deaths": 2,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 268,
       "goldEarned": 16088,
@@ -1913,6 +2144,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 44,
       "goldEarned": 9288,
@@ -1995,6 +2228,8 @@
      "deaths": 2,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 151,
       "goldEarned": 9619,
@@ -2020,6 +2255,8 @@
      "deaths": 2,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 104,
       "goldEarned": 7446,
@@ -2046,6 +2283,8 @@
      "deaths": 3,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 7306,
@@ -2072,6 +2311,8 @@
      "deaths": 1,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 166,
       "goldEarned": 8994,
@@ -2097,6 +2338,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 31,
       "goldEarned": 7448,
@@ -2123,6 +2366,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 101,
       "goldEarned": 6252,
@@ -2147,6 +2392,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 100,
       "goldEarned": 6476,
@@ -2172,6 +2419,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 161,
       "goldEarned": 7275,
@@ -2197,6 +2446,8 @@
      "deaths": 5,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 9688,
@@ -2222,6 +2473,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 36,
       "goldEarned": 6099,
@@ -2301,6 +2554,8 @@
      "deaths": 3,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 157,
       "goldEarned": 10619,
@@ -2326,6 +2581,8 @@
      "deaths": 3,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 154,
       "goldEarned": 9969,
@@ -2352,6 +2609,8 @@
      "deaths": 0,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 162,
       "goldEarned": 9378,
@@ -2377,6 +2636,8 @@
      "deaths": 3,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 152,
       "goldEarned": 12477,
@@ -2403,6 +2664,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 8941,
@@ -2429,6 +2692,8 @@
      "deaths": 8,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 133,
       "goldEarned": 8805,
@@ -2455,6 +2720,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 117,
       "goldEarned": 7406,
@@ -2480,6 +2747,8 @@
      "deaths": 3,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 157,
       "goldEarned": 7284,
@@ -2506,6 +2775,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 154,
       "goldEarned": 7499,
@@ -2529,6 +2800,8 @@
      "deaths": 10,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 6074,
@@ -2609,6 +2882,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 204,
       "goldEarned": 12829,
@@ -2635,6 +2910,8 @@
      "deaths": 0,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 15451,
@@ -2661,6 +2938,8 @@
      "deaths": 1,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 254,
       "goldEarned": 14016,
@@ -2687,6 +2966,8 @@
      "deaths": 6,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 11518,
@@ -2711,6 +2992,8 @@
      "deaths": 3,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 10934,
@@ -2737,6 +3020,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 166,
       "goldEarned": 8006,
@@ -2762,6 +3047,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 146,
       "goldEarned": 10063,
@@ -2788,6 +3075,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 255,
       "goldEarned": 11099,
@@ -2813,6 +3102,8 @@
      "deaths": 9,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 204,
       "goldEarned": 13526,
@@ -2839,6 +3130,8 @@
      "deaths": 8,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 7424,
@@ -2920,6 +3213,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 171,
       "goldEarned": 8236,
@@ -2947,6 +3242,8 @@
      "deaths": 2,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 170,
       "goldEarned": 13884,
@@ -2974,6 +3271,8 @@
      "deaths": 5,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 138,
       "goldEarned": 7632,
@@ -3001,6 +3300,8 @@
      "deaths": 0,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 14461,
@@ -3028,6 +3329,8 @@
      "deaths": 0,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 17,
       "goldEarned": 6997,
@@ -3055,6 +3358,8 @@
      "deaths": 4,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 168,
       "goldEarned": 8402,
@@ -3082,6 +3387,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 126,
       "goldEarned": 8464,
@@ -3109,6 +3416,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 146,
       "goldEarned": 7036,
@@ -3136,6 +3445,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 194,
       "goldEarned": 8281,
@@ -3163,6 +3474,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 5347,
@@ -3245,6 +3558,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 144,
       "goldEarned": 7560,
@@ -3272,6 +3587,8 @@
      "deaths": 11,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 127,
       "goldEarned": 7582,
@@ -3299,6 +3616,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 140,
       "goldEarned": 7120,
@@ -3326,6 +3645,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 11365,
@@ -3353,6 +3674,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 8100,
@@ -3380,6 +3703,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 12599,
@@ -3407,6 +3732,8 @@
      "deaths": 0,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 227,
       "goldEarned": 15169,
@@ -3434,6 +3761,8 @@
      "deaths": 6,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 150,
       "goldEarned": 8933,
@@ -3461,6 +3790,8 @@
      "deaths": 5,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 12443,
@@ -3488,6 +3819,8 @@
      "deaths": 5,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 48,
       "goldEarned": 9966,
@@ -3570,6 +3903,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 179,
       "goldEarned": 9304,
@@ -3597,6 +3932,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 131,
       "goldEarned": 7388,
@@ -3624,6 +3961,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 125,
       "goldEarned": 5933,
@@ -3651,6 +3990,8 @@
      "deaths": 8,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 9918,
@@ -3678,6 +4019,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 6347,
@@ -3705,6 +4048,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 9935,
@@ -3732,6 +4077,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 176,
       "goldEarned": 13873,
@@ -3759,6 +4106,8 @@
      "deaths": 0,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 153,
       "goldEarned": 9893,
@@ -3786,6 +4135,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 168,
       "goldEarned": 11432,
@@ -3813,6 +4164,8 @@
      "deaths": 1,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 12,
       "goldEarned": 7309,
@@ -3895,6 +4248,8 @@
      "deaths": 3,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 132,
       "goldEarned": 10218,
@@ -3922,6 +4277,8 @@
      "deaths": 5,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 129,
       "goldEarned": 10733,
@@ -3949,6 +4306,8 @@
      "deaths": 3,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 9867,
@@ -3976,6 +4335,8 @@
      "deaths": 2,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 154,
       "goldEarned": 10862,
@@ -4003,6 +4364,8 @@
      "deaths": 0,
      "assists": 24,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 7251,
@@ -4030,6 +4393,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 112,
       "goldEarned": 6069,
@@ -4057,6 +4422,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 111,
       "goldEarned": 8930,
@@ -4084,6 +4451,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 93,
       "goldEarned": 5306,
@@ -4111,6 +4480,8 @@
      "deaths": 8,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 155,
       "goldEarned": 11399,
@@ -4138,6 +4509,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 4998,
@@ -4220,6 +4593,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 227,
       "goldEarned": 13590,
@@ -4247,6 +4622,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 212,
       "goldEarned": 13701,
@@ -4274,6 +4651,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 12009,
@@ -4301,6 +4680,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 247,
       "goldEarned": 14773,
@@ -4328,6 +4709,8 @@
      "deaths": 1,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 8130,
@@ -4355,6 +4738,8 @@
      "deaths": 3,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 193,
       "goldEarned": 8845,
@@ -4382,6 +4767,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 153,
       "goldEarned": 11907,
@@ -4409,6 +4796,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 210,
       "goldEarned": 11833,
@@ -4436,6 +4825,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 10703,
@@ -4463,6 +4854,8 @@
      "deaths": 10,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 7224,
@@ -4545,6 +4938,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 179,
       "goldEarned": 12240,
@@ -4572,6 +4967,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 181,
       "goldEarned": 14326,
@@ -4599,6 +4996,8 @@
      "deaths": 8,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 236,
       "goldEarned": 14209,
@@ -4626,6 +5025,8 @@
      "deaths": 3,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 209,
       "goldEarned": 12019,
@@ -4653,6 +5054,8 @@
      "deaths": 5,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 7686,
@@ -4680,6 +5083,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 164,
       "goldEarned": 8522,
@@ -4707,6 +5112,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 153,
       "goldEarned": 9857,
@@ -4734,6 +5141,8 @@
      "deaths": 9,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 152,
       "goldEarned": 12120,
@@ -4761,6 +5170,8 @@
      "deaths": 6,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 203,
       "goldEarned": 10909,
@@ -4788,6 +5199,8 @@
      "deaths": 6,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 7099,
@@ -4870,6 +5283,8 @@
      "deaths": 4,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 13959,
@@ -4897,6 +5312,8 @@
      "deaths": 4,
      "assists": 20,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 185,
       "goldEarned": 13331,
@@ -4924,6 +5341,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 149,
       "goldEarned": 15501,
@@ -4951,6 +5370,8 @@
      "deaths": 5,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 209,
       "goldEarned": 15167,
@@ -4978,6 +5399,8 @@
      "deaths": 4,
      "assists": 18,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 8424,
@@ -5005,6 +5428,8 @@
      "deaths": 10,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 143,
       "goldEarned": 9784,
@@ -5032,6 +5457,8 @@
      "deaths": 11,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 11053,
@@ -5059,6 +5486,8 @@
      "deaths": 9,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 235,
       "goldEarned": 14411,
@@ -5086,6 +5515,8 @@
      "deaths": 10,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 173,
       "goldEarned": 12954,
@@ -5113,6 +5544,8 @@
      "deaths": 8,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 36,
       "goldEarned": 9052,
@@ -5195,6 +5628,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 176,
       "goldEarned": 8388,
@@ -5219,6 +5654,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 8757,
@@ -5243,6 +5680,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 210,
       "goldEarned": 9893,
@@ -5269,6 +5708,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 10222,
@@ -5294,6 +5735,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 5715,
@@ -5319,6 +5762,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 183,
       "goldEarned": 10048,
@@ -5345,6 +5790,8 @@
      "deaths": 3,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 178,
       "goldEarned": 11157,
@@ -5369,6 +5816,8 @@
      "deaths": 3,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 208,
       "goldEarned": 10153,
@@ -5395,6 +5844,8 @@
      "deaths": 0,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 246,
       "goldEarned": 14990,
@@ -5421,6 +5872,8 @@
      "deaths": 1,
      "assists": 18,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 12,
       "goldEarned": 7541,
@@ -5501,6 +5954,8 @@
      "deaths": 5,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 141,
       "goldEarned": 9391,
@@ -5527,6 +5982,8 @@
      "deaths": 8,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 171,
       "goldEarned": 13219,
@@ -5552,6 +6009,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 11923,
@@ -5578,6 +6037,8 @@
      "deaths": 9,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 234,
       "goldEarned": 12325,
@@ -5603,6 +6064,8 @@
      "deaths": 6,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 8856,
@@ -5629,6 +6092,8 @@
      "deaths": 2,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 191,
       "goldEarned": 15092,
@@ -5654,6 +6119,8 @@
      "deaths": 5,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 189,
       "goldEarned": 13306,
@@ -5679,6 +6146,8 @@
      "deaths": 6,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 210,
       "goldEarned": 11597,
@@ -5705,6 +6174,8 @@
      "deaths": 7,
      "assists": 18,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 257,
       "goldEarned": 16023,
@@ -5730,6 +6201,8 @@
      "deaths": 2,
      "assists": 28,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 9868,
@@ -5811,6 +6284,8 @@
      "deaths": 0,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 7119,
@@ -5836,6 +6311,8 @@
      "deaths": 0,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 161,
       "goldEarned": 9211,
@@ -5861,6 +6338,8 @@
      "deaths": 1,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 12335,
@@ -5887,6 +6366,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 166,
       "goldEarned": 8453,
@@ -5912,6 +6393,8 @@
      "deaths": 0,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 22,
       "goldEarned": 5536,
@@ -5938,6 +6421,8 @@
      "deaths": 3,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 140,
       "goldEarned": 5459,
@@ -5961,6 +6446,8 @@
      "deaths": 6,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 106,
       "goldEarned": 6167,
@@ -5985,6 +6472,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 121,
       "goldEarned": 5245,
@@ -6010,6 +6499,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 136,
       "goldEarned": 6032,
@@ -6035,6 +6526,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 4270,
@@ -6114,6 +6607,8 @@
      "deaths": 3,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 178,
       "goldEarned": 8953,
@@ -6141,6 +6636,8 @@
      "deaths": 3,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 10825,
@@ -6168,6 +6665,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 240,
       "goldEarned": 13413,
@@ -6195,6 +6694,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 10602,
@@ -6222,6 +6723,8 @@
      "deaths": 2,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 55,
       "goldEarned": 8451,
@@ -6249,6 +6752,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 257,
       "goldEarned": 12306,
@@ -6276,6 +6781,8 @@
      "deaths": 0,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 236,
       "goldEarned": 12223,
@@ -6303,6 +6810,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 199,
       "goldEarned": 15098,
@@ -6330,6 +6839,8 @@
      "deaths": 0,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 337,
       "goldEarned": 15895,
@@ -6357,6 +6868,8 @@
      "deaths": 0,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 32,
       "goldEarned": 8466,
@@ -6439,6 +6952,8 @@
      "deaths": 0,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 149,
       "goldEarned": 7881,
@@ -6466,6 +6981,8 @@
      "deaths": 0,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 163,
       "goldEarned": 8445,
@@ -6493,6 +7010,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 150,
       "goldEarned": 8993,
@@ -6520,6 +7039,8 @@
      "deaths": 1,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 11665,
@@ -6547,6 +7068,8 @@
      "deaths": 0,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 6045,
@@ -6574,6 +7097,8 @@
      "deaths": 3,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 103,
       "goldEarned": 5225,
@@ -6601,6 +7126,8 @@
      "deaths": 3,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 141,
       "goldEarned": 8096,
@@ -6628,6 +7155,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 166,
       "goldEarned": 7035,
@@ -6655,6 +7184,8 @@
      "deaths": 5,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 127,
       "goldEarned": 7084,
@@ -6682,6 +7213,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 37,
       "goldEarned": 5415,
@@ -6764,6 +7297,8 @@
      "deaths": 1,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 88,
       "goldEarned": 5838,
@@ -6791,6 +7326,8 @@
      "deaths": 6,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 173,
       "goldEarned": 9273,
@@ -6818,6 +7355,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 271,
       "goldEarned": 11162,
@@ -6845,6 +7384,8 @@
      "deaths": 7,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 234,
       "goldEarned": 9870,
@@ -6872,6 +7413,8 @@
      "deaths": 1,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 36,
       "goldEarned": 6018,
@@ -6899,6 +7442,8 @@
      "deaths": 1,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 10190,
@@ -6926,6 +7471,8 @@
      "deaths": 0,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 181,
       "goldEarned": 10082,
@@ -6953,6 +7500,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 166,
       "goldEarned": 10529,
@@ -6980,6 +7529,8 @@
      "deaths": 0,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 274,
       "goldEarned": 14734,
@@ -7007,6 +7558,8 @@
      "deaths": 0,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 7862,
@@ -7085,6 +7638,8 @@
      "deaths": 3,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 118,
       "goldEarned": 8969,
@@ -7112,6 +7667,8 @@
      "deaths": 7,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 272,
       "goldEarned": 17845,
@@ -7139,6 +7696,8 @@
      "deaths": 6,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 344,
       "goldEarned": 21079,
@@ -7166,6 +7725,8 @@
      "deaths": 4,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 384,
       "goldEarned": 19501,
@@ -7193,6 +7754,8 @@
      "deaths": 7,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 40,
       "goldEarned": 10282,
@@ -7220,6 +7783,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 213,
       "goldEarned": 10863,
@@ -7247,6 +7812,8 @@
      "deaths": 8,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 13844,
@@ -7274,6 +7841,8 @@
      "deaths": 8,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 336,
       "goldEarned": 20142,
@@ -7301,6 +7870,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 353,
       "goldEarned": 17029,
@@ -7328,6 +7899,8 @@
      "deaths": 6,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 11106,
@@ -7410,6 +7983,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 221,
       "goldEarned": 12653,
@@ -7437,6 +8012,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 15005,
@@ -7464,6 +8041,8 @@
      "deaths": 5,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 325,
       "goldEarned": 22090,
@@ -7491,6 +8070,8 @@
      "deaths": 2,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 363,
       "goldEarned": 16977,
@@ -7518,6 +8099,8 @@
      "deaths": 4,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 10452,
@@ -7545,6 +8128,8 @@
      "deaths": 3,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 111,
       "goldEarned": 8343,
@@ -7572,6 +8157,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 260,
       "goldEarned": 20195,
@@ -7599,6 +8186,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 340,
       "goldEarned": 18378,
@@ -7626,6 +8215,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 380,
       "goldEarned": 19384,
@@ -7653,6 +8244,8 @@
      "deaths": 8,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 9365,
@@ -7735,6 +8328,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 89,
       "goldEarned": 8483,
@@ -7762,6 +8357,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 272,
       "goldEarned": 16998,
@@ -7789,6 +8386,8 @@
      "deaths": 6,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 251,
       "goldEarned": 18805,
@@ -7816,6 +8415,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 326,
       "goldEarned": 17381,
@@ -7843,6 +8444,8 @@
      "deaths": 3,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 8888,
@@ -7870,6 +8473,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 173,
       "goldEarned": 9811,
@@ -7897,6 +8502,8 @@
      "deaths": 7,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 14038,
@@ -7924,6 +8531,8 @@
      "deaths": 10,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 199,
       "goldEarned": 12434,
@@ -7951,6 +8560,8 @@
      "deaths": 3,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 294,
       "goldEarned": 13921,
@@ -7978,6 +8589,8 @@
      "deaths": 5,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 8192,
@@ -8060,6 +8673,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 83,
       "goldEarned": 4384,
@@ -8087,6 +8702,8 @@
      "deaths": 6,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 95,
       "goldEarned": 5183,
@@ -8114,6 +8731,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 105,
       "goldEarned": 5033,
@@ -8141,6 +8760,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 111,
       "goldEarned": 5456,
@@ -8168,6 +8789,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 15,
       "goldEarned": 4230,
@@ -8195,6 +8818,8 @@
      "deaths": 1,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 145,
       "goldEarned": 7282,
@@ -8222,6 +8847,8 @@
      "deaths": 0,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 101,
       "goldEarned": 8319,
@@ -8249,6 +8876,8 @@
      "deaths": 0,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 165,
       "goldEarned": 7349,
@@ -8276,6 +8905,8 @@
      "deaths": 1,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 149,
       "goldEarned": 9420,
@@ -8303,6 +8934,8 @@
      "deaths": 3,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 19,
       "goldEarned": 5019,
@@ -8381,6 +9014,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 227,
       "goldEarned": 12755,
@@ -8408,6 +9043,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 301,
       "goldEarned": 15822,
@@ -8435,6 +9072,8 @@
      "deaths": 3,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 243,
       "goldEarned": 12098,
@@ -8462,6 +9101,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 353,
       "goldEarned": 19161,
@@ -8489,6 +9130,8 @@
      "deaths": 5,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 8886,
@@ -8516,6 +9159,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 209,
       "goldEarned": 10397,
@@ -8543,6 +9188,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 197,
       "goldEarned": 11880,
@@ -8570,6 +9217,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 278,
       "goldEarned": 17241,
@@ -8597,6 +9246,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 419,
       "goldEarned": 21037,
@@ -8624,6 +9275,8 @@
      "deaths": 4,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 10297,
@@ -8706,6 +9359,8 @@
      "deaths": 15,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 13495,
@@ -8733,6 +9388,8 @@
      "deaths": 9,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 204,
       "goldEarned": 14110,
@@ -8760,6 +9417,8 @@
      "deaths": 12,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 200,
       "goldEarned": 12170,
@@ -8787,6 +9446,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 393,
       "goldEarned": 20991,
@@ -8814,6 +9475,8 @@
      "deaths": 11,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 9419,
@@ -8841,6 +9504,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 308,
       "goldEarned": 21326,
@@ -8868,6 +9533,8 @@
      "deaths": 3,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 246,
       "goldEarned": 13373,
@@ -8895,6 +9562,8 @@
      "deaths": 12,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 17987,
@@ -8922,6 +9591,8 @@
      "deaths": 1,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 334,
       "goldEarned": 17851,
@@ -8949,6 +9620,8 @@
      "deaths": 1,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 49,
       "goldEarned": 9162,
@@ -9031,6 +9704,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 268,
       "goldEarned": 12564,
@@ -9058,6 +9733,8 @@
      "deaths": 3,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 192,
       "goldEarned": 11231,
@@ -9085,6 +9762,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 252,
       "goldEarned": 14786,
@@ -9112,6 +9791,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 301,
       "goldEarned": 14519,
@@ -9139,6 +9820,8 @@
      "deaths": 3,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 7065,
@@ -9166,6 +9849,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 293,
       "goldEarned": 16161,
@@ -9193,6 +9878,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 185,
       "goldEarned": 12961,
@@ -9220,6 +9907,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 236,
       "goldEarned": 13599,
@@ -9247,6 +9936,8 @@
      "deaths": 0,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 337,
       "goldEarned": 17950,
@@ -9274,6 +9965,8 @@
      "deaths": 3,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 8999,
@@ -9356,6 +10049,8 @@
      "deaths": 11,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 204,
       "goldEarned": 15682,
@@ -9383,6 +10078,8 @@
      "deaths": 7,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 193,
       "goldEarned": 14595,
@@ -9410,6 +10107,8 @@
      "deaths": 7,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 259,
       "goldEarned": 14031,
@@ -9437,6 +10136,8 @@
      "deaths": 7,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 336,
       "goldEarned": 21844,
@@ -9464,6 +10165,8 @@
      "deaths": 3,
      "assists": 30,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 14,
       "goldEarned": 10598,
@@ -9491,6 +10194,8 @@
      "deaths": 8,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 249,
       "goldEarned": 18836,
@@ -9518,6 +10223,8 @@
      "deaths": 10,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 190,
       "goldEarned": 11037,
@@ -9545,6 +10252,8 @@
      "deaths": 9,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 306,
       "goldEarned": 17755,
@@ -9572,6 +10281,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 307,
       "goldEarned": 16954,
@@ -9599,6 +10310,8 @@
      "deaths": 7,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 51,
       "goldEarned": 9372,
@@ -9681,6 +10394,8 @@
      "deaths": 3,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 240,
       "goldEarned": 14310,
@@ -9708,6 +10423,8 @@
      "deaths": 3,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 218,
       "goldEarned": 15417,
@@ -9735,6 +10452,8 @@
      "deaths": 9,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 10744,
@@ -9762,6 +10481,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 283,
       "goldEarned": 16499,
@@ -9789,6 +10510,8 @@
      "deaths": 2,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 9736,
@@ -9816,6 +10539,8 @@
      "deaths": 9,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 10447,
@@ -9843,6 +10568,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 205,
       "goldEarned": 13664,
@@ -9870,6 +10597,8 @@
      "deaths": 3,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 207,
       "goldEarned": 10401,
@@ -9897,6 +10626,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 259,
       "goldEarned": 13805,
@@ -9924,6 +10655,8 @@
      "deaths": 7,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 11066,
@@ -10006,6 +10739,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 239,
       "goldEarned": 10362,
@@ -10033,6 +10768,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 183,
       "goldEarned": 12429,
@@ -10060,6 +10797,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 225,
       "goldEarned": 9433,
@@ -10087,6 +10826,8 @@
      "deaths": 8,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 208,
       "goldEarned": 9968,
@@ -10114,6 +10855,8 @@
      "deaths": 11,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 8449,
@@ -10141,6 +10884,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 211,
       "goldEarned": 12812,
@@ -10168,6 +10913,8 @@
      "deaths": 4,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 240,
       "goldEarned": 14144,
@@ -10195,6 +10942,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 202,
       "goldEarned": 9666,
@@ -10222,6 +10971,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 280,
       "goldEarned": 19016,
@@ -10249,6 +11000,8 @@
      "deaths": 3,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 9414,
@@ -10331,6 +11084,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 258,
       "goldEarned": 13895,
@@ -10358,6 +11113,8 @@
      "deaths": 5,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 15099,
@@ -10385,6 +11142,8 @@
      "deaths": 8,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 192,
       "goldEarned": 12552,
@@ -10412,6 +11171,8 @@
      "deaths": 6,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 273,
       "goldEarned": 14938,
@@ -10439,6 +11200,8 @@
      "deaths": 8,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 9598,
@@ -10466,6 +11229,8 @@
      "deaths": 8,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 167,
       "goldEarned": 10577,
@@ -10493,6 +11258,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 256,
       "goldEarned": 16647,
@@ -10520,6 +11287,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 194,
       "goldEarned": 12364,
@@ -10547,6 +11316,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 283,
       "goldEarned": 16372,
@@ -10574,6 +11345,8 @@
      "deaths": 6,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 10426,
@@ -10656,6 +11429,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 181,
       "goldEarned": 9192,
@@ -10683,6 +11458,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 11570,
@@ -10710,6 +11487,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 10623,
@@ -10737,6 +11516,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 292,
       "goldEarned": 13445,
@@ -10764,6 +11545,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 6993,
@@ -10791,6 +11574,8 @@
      "deaths": 0,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 271,
       "goldEarned": 13518,
@@ -10818,6 +11603,8 @@
      "deaths": 2,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 194,
       "goldEarned": 11477,
@@ -10845,6 +11632,8 @@
      "deaths": 3,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 191,
       "goldEarned": 11251,
@@ -10872,6 +11661,8 @@
      "deaths": 3,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 265,
       "goldEarned": 16285,
@@ -10899,6 +11690,8 @@
      "deaths": 0,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 8859,
@@ -10977,6 +11770,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 197,
       "goldEarned": 9329,
@@ -11004,6 +11799,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 185,
       "goldEarned": 11099,
@@ -11031,6 +11828,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 8086,
@@ -11058,6 +11857,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 10285,
@@ -11085,6 +11886,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 6472,
@@ -11112,6 +11915,8 @@
      "deaths": 3,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 8508,
@@ -11139,6 +11944,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 244,
       "goldEarned": 15732,
@@ -11166,6 +11973,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 117,
       "goldEarned": 8672,
@@ -11193,6 +12002,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 261,
       "goldEarned": 12508,
@@ -11220,6 +12031,8 @@
      "deaths": 1,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 8032,
@@ -11302,6 +12115,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 14888,
@@ -11329,6 +12144,8 @@
      "deaths": 2,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 211,
       "goldEarned": 13102,
@@ -11356,6 +12173,8 @@
      "deaths": 3,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 190,
       "goldEarned": 10139,
@@ -11383,6 +12202,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 222,
       "goldEarned": 15248,
@@ -11410,6 +12231,8 @@
      "deaths": 5,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 61,
       "goldEarned": 9873,
@@ -11437,6 +12260,8 @@
      "deaths": 11,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 9872,
@@ -11464,6 +12289,8 @@
      "deaths": 6,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 8616,
@@ -11491,6 +12318,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 10142,
@@ -11518,6 +12347,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 251,
       "goldEarned": 11633,
@@ -11545,6 +12376,8 @@
      "deaths": 7,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 42,
       "goldEarned": 8281,
@@ -11627,6 +12460,8 @@
      "deaths": 6,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 104,
       "goldEarned": 5157,
@@ -11654,6 +12489,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 123,
       "goldEarned": 5910,
@@ -11681,6 +12518,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 84,
       "goldEarned": 4565,
@@ -11708,6 +12547,8 @@
      "deaths": 5,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 9027,
@@ -11735,6 +12576,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 4464,
@@ -11762,6 +12605,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 153,
       "goldEarned": 8019,
@@ -11789,6 +12634,8 @@
      "deaths": 1,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 143,
       "goldEarned": 8588,
@@ -11816,6 +12663,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 145,
       "goldEarned": 12245,
@@ -11843,6 +12692,8 @@
      "deaths": 0,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 183,
       "goldEarned": 10678,
@@ -11870,6 +12721,8 @@
      "deaths": 3,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 17,
       "goldEarned": 5423,
@@ -11952,6 +12805,8 @@
      "deaths": 1,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 159,
       "goldEarned": 9002,
@@ -11979,6 +12834,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 139,
       "goldEarned": 10965,
@@ -12006,6 +12863,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 118,
       "goldEarned": 9598,
@@ -12033,6 +12892,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 282,
       "goldEarned": 19329,
@@ -12060,6 +12921,8 @@
      "deaths": 4,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 7602,
@@ -12087,6 +12950,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 168,
       "goldEarned": 7673,
@@ -12114,6 +12979,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 170,
       "goldEarned": 11522,
@@ -12141,6 +13008,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 129,
       "goldEarned": 6718,
@@ -12168,6 +13037,8 @@
      "deaths": 8,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 173,
       "goldEarned": 12400,
@@ -12195,6 +13066,8 @@
      "deaths": 6,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 6295,
@@ -12277,6 +13150,8 @@
      "deaths": 3,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 243,
       "goldEarned": 16647,
@@ -12304,6 +13179,8 @@
      "deaths": 3,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 225,
       "goldEarned": 13876,
@@ -12331,6 +13208,8 @@
      "deaths": 4,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 199,
       "goldEarned": 10133,
@@ -12358,6 +13237,8 @@
      "deaths": 6,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 15545,
@@ -12385,6 +13266,8 @@
      "deaths": 4,
      "assists": 20,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 8360,
@@ -12412,6 +13295,8 @@
      "deaths": 7,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 9424,
@@ -12439,6 +13324,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 191,
       "goldEarned": 11289,
@@ -12466,6 +13353,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 205,
       "goldEarned": 10216,
@@ -12493,6 +13382,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 239,
       "goldEarned": 16356,
@@ -12520,6 +13411,8 @@
      "deaths": 4,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 19,
       "goldEarned": 8905,
@@ -12602,6 +13495,8 @@
      "deaths": 3,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 181,
       "goldEarned": 13028,
@@ -12627,6 +13522,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 13513,
@@ -12652,6 +13549,8 @@
      "deaths": 6,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 168,
       "goldEarned": 9315,
@@ -12678,6 +13577,8 @@
      "deaths": 5,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 243,
       "goldEarned": 15163,
@@ -12703,6 +13604,8 @@
      "deaths": 2,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 32,
       "goldEarned": 8273,
@@ -12729,6 +13632,8 @@
      "deaths": 7,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 178,
       "goldEarned": 9109,
@@ -12755,6 +13660,8 @@
      "deaths": 7,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 148,
       "goldEarned": 11120,
@@ -12781,6 +13688,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 168,
       "goldEarned": 8623,
@@ -12807,6 +13716,8 @@
      "deaths": 6,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 230,
       "goldEarned": 13929,
@@ -12833,6 +13744,8 @@
      "deaths": 6,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 43,
       "goldEarned": 9067,
@@ -12913,6 +13826,8 @@
      "deaths": 4,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 216,
       "goldEarned": 14196,
@@ -12938,6 +13853,8 @@
      "deaths": 2,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 13092,
@@ -12964,6 +13881,8 @@
      "deaths": 0,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 186,
       "goldEarned": 9729,
@@ -12990,6 +13909,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 287,
       "goldEarned": 18608,
@@ -13015,6 +13936,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 9974,
@@ -13041,6 +13964,8 @@
      "deaths": 9,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 163,
       "goldEarned": 8018,
@@ -13067,6 +13992,8 @@
      "deaths": 8,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 203,
       "goldEarned": 14675,
@@ -13092,6 +14019,8 @@
      "deaths": 4,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 238,
       "goldEarned": 8804,
@@ -13118,6 +14047,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 228,
       "goldEarned": 9578,
@@ -13143,6 +14074,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 43,
       "goldEarned": 6520,
@@ -13224,6 +14157,8 @@
      "deaths": 3,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 241,
       "goldEarned": 15337,
@@ -13250,6 +14185,8 @@
      "deaths": 1,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 281,
       "goldEarned": 19356,
@@ -13275,6 +14212,8 @@
      "deaths": 1,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 183,
       "goldEarned": 10543,
@@ -13301,6 +14240,8 @@
      "deaths": 2,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 299,
       "goldEarned": 15966,
@@ -13326,6 +14267,8 @@
      "deaths": 0,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 36,
       "goldEarned": 9291,
@@ -13352,6 +14295,8 @@
      "deaths": 9,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 242,
       "goldEarned": 10025,
@@ -13378,6 +14323,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 203,
       "goldEarned": 11564,
@@ -13404,6 +14351,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 216,
       "goldEarned": 9010,
@@ -13427,6 +14376,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 276,
       "goldEarned": 14320,
@@ -13452,6 +14403,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 25,
       "goldEarned": 7302,
@@ -13517,6 +14470,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 137,
       "goldEarned": 7499,
@@ -13543,6 +14498,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 158,
       "goldEarned": 9065,
@@ -13569,6 +14526,8 @@
      "deaths": 0,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 151,
       "goldEarned": 6822,
@@ -13595,6 +14554,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 165,
       "goldEarned": 12967,
@@ -13621,6 +14582,8 @@
      "deaths": 0,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 7145,
@@ -13647,6 +14610,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 154,
       "goldEarned": 7404,
@@ -13673,6 +14638,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 147,
       "goldEarned": 7998,
@@ -13699,6 +14666,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 160,
       "goldEarned": 6050,
@@ -13725,6 +14694,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 129,
       "goldEarned": 6175,
@@ -13751,6 +14722,8 @@
      "deaths": 6,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 16,
       "goldEarned": 4504,
@@ -13832,6 +14805,8 @@
      "deaths": 2,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 219,
       "goldEarned": 12881,
@@ -13858,6 +14833,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 14295,
@@ -13884,6 +14861,8 @@
      "deaths": 4,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 11844,
@@ -13910,6 +14889,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 263,
       "goldEarned": 14654,
@@ -13936,6 +14917,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 8051,
@@ -13962,6 +14945,8 @@
      "deaths": 6,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 232,
       "goldEarned": 11181,
@@ -13988,6 +14973,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 9958,
@@ -14014,6 +15001,8 @@
      "deaths": 4,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 9744,
@@ -14040,6 +15029,8 @@
      "deaths": 6,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 307,
       "goldEarned": 15221,
@@ -14066,6 +15057,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 8037,
@@ -14143,6 +15136,8 @@
      "deaths": 3,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 215,
       "goldEarned": 12349,
@@ -14169,6 +15164,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 193,
       "goldEarned": 12201,
@@ -14195,6 +15192,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 113,
       "goldEarned": 8139,
@@ -14221,6 +15220,8 @@
      "deaths": 5,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 172,
       "goldEarned": 14507,
@@ -14247,6 +15248,8 @@
      "deaths": 5,
      "assists": 20,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 7921,
@@ -14273,6 +15276,8 @@
      "deaths": 2,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 164,
       "goldEarned": 11939,
@@ -14299,6 +15304,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 162,
       "goldEarned": 10274,
@@ -14325,6 +15332,8 @@
      "deaths": 7,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 7851,
@@ -14351,6 +15360,8 @@
      "deaths": 8,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 174,
       "goldEarned": 9866,
@@ -14377,6 +15388,8 @@
      "deaths": 8,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 6915,
@@ -14454,6 +15467,8 @@
      "deaths": 4,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 198,
       "goldEarned": 12799,
@@ -14481,6 +15496,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 199,
       "goldEarned": 13051,
@@ -14508,6 +15525,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 198,
       "goldEarned": 10075,
@@ -14535,6 +15554,8 @@
      "deaths": 4,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 329,
       "goldEarned": 19405,
@@ -14562,6 +15583,8 @@
      "deaths": 5,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 11134,
@@ -14589,6 +15612,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 209,
       "goldEarned": 12199,
@@ -14616,6 +15641,8 @@
      "deaths": 5,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 171,
       "goldEarned": 9906,
@@ -14643,6 +15670,8 @@
      "deaths": 4,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 238,
       "goldEarned": 10081,
@@ -14670,6 +15699,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 260,
       "goldEarned": 15390,
@@ -14697,6 +15728,8 @@
      "deaths": 6,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 38,
       "goldEarned": 8213,
@@ -14779,6 +15812,8 @@
      "deaths": 9,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 228,
       "goldEarned": 12178,
@@ -14806,6 +15841,8 @@
      "deaths": 6,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 195,
       "goldEarned": 11118,
@@ -14833,6 +15870,8 @@
      "deaths": 10,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 176,
       "goldEarned": 10914,
@@ -14860,6 +15899,8 @@
      "deaths": 4,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 315,
       "goldEarned": 18938,
@@ -14887,6 +15928,8 @@
      "deaths": 4,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 15,
       "goldEarned": 8409,
@@ -14914,6 +15957,8 @@
      "deaths": 7,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 13427,
@@ -14941,6 +15986,8 @@
      "deaths": 6,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 250,
       "goldEarned": 19047,
@@ -14968,6 +16015,8 @@
      "deaths": 2,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 194,
       "goldEarned": 11748,
@@ -14995,6 +16044,8 @@
      "deaths": 7,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 304,
       "goldEarned": 16126,
@@ -15022,6 +16073,8 @@
      "deaths": 4,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 33,
       "goldEarned": 9531,
@@ -15104,6 +16157,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 188,
       "goldEarned": 11710,
@@ -15131,6 +16186,8 @@
      "deaths": 3,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 11345,
@@ -15158,6 +16215,8 @@
      "deaths": 3,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 237,
       "goldEarned": 11668,
@@ -15185,6 +16244,8 @@
      "deaths": 0,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 203,
       "goldEarned": 12393,
@@ -15212,6 +16273,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 19,
       "goldEarned": 8619,
@@ -15239,6 +16302,8 @@
      "deaths": 5,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 159,
       "goldEarned": 7276,
@@ -15266,6 +16331,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 145,
       "goldEarned": 8818,
@@ -15293,6 +16360,8 @@
      "deaths": 2,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 9748,
@@ -15320,6 +16389,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 177,
       "goldEarned": 10147,
@@ -15347,6 +16418,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 6420,
@@ -15429,6 +16502,8 @@
      "deaths": 8,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 142,
       "goldEarned": 8089,
@@ -15456,6 +16531,8 @@
      "deaths": 8,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 125,
       "goldEarned": 8686,
@@ -15483,6 +16560,8 @@
      "deaths": 9,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 177,
       "goldEarned": 9604,
@@ -15510,6 +16589,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 259,
       "goldEarned": 13715,
@@ -15537,6 +16618,8 @@
      "deaths": 5,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 7619,
@@ -15564,6 +16647,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 237,
       "goldEarned": 14596,
@@ -15591,6 +16676,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 186,
       "goldEarned": 13621,
@@ -15618,6 +16705,8 @@
      "deaths": 1,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 13439,
@@ -15645,6 +16734,8 @@
      "deaths": 4,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 161,
       "goldEarned": 10785,
@@ -15672,6 +16763,8 @@
      "deaths": 4,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 8661,
@@ -15734,6 +16827,8 @@
      "deaths": 4,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 245,
       "goldEarned": 13468,
@@ -15760,6 +16855,8 @@
      "deaths": 2,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 12484,
@@ -15786,6 +16883,8 @@
      "deaths": 1,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 315,
       "goldEarned": 16746,
@@ -15812,6 +16911,8 @@
      "deaths": 3,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 316,
       "goldEarned": 17052,
@@ -15838,6 +16939,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 12,
       "goldEarned": 9125,
@@ -15864,6 +16967,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 206,
       "goldEarned": 10941,
@@ -15890,6 +16995,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 258,
       "goldEarned": 14374,
@@ -15916,6 +17023,8 @@
      "deaths": 5,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 246,
       "goldEarned": 11036,
@@ -15942,6 +17051,8 @@
      "deaths": 5,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 312,
       "goldEarned": 14350,
@@ -15968,6 +17079,8 @@
      "deaths": 7,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 7228,
@@ -16049,6 +17162,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 240,
       "goldEarned": 9322,
@@ -16075,6 +17190,8 @@
      "deaths": 4,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 223,
       "goldEarned": 12160,
@@ -16101,6 +17218,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 272,
       "goldEarned": 12518,
@@ -16127,6 +17246,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 274,
       "goldEarned": 14170,
@@ -16153,6 +17274,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 7549,
@@ -16179,6 +17302,8 @@
      "deaths": 2,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 255,
       "goldEarned": 14500,
@@ -16205,6 +17330,8 @@
      "deaths": 3,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 259,
       "goldEarned": 12388,
@@ -16231,6 +17358,8 @@
      "deaths": 1,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 296,
       "goldEarned": 13623,
@@ -16257,6 +17386,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 284,
       "goldEarned": 15474,
@@ -16283,6 +17414,8 @@
      "deaths": 4,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 8704,
@@ -16364,6 +17497,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 329,
       "goldEarned": 19104,
@@ -16390,6 +17525,8 @@
      "deaths": 3,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 225,
       "goldEarned": 14105,
@@ -16416,6 +17553,8 @@
      "deaths": 1,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 293,
       "goldEarned": 16794,
@@ -16442,6 +17581,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 354,
       "goldEarned": 17867,
@@ -16468,6 +17609,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 31,
       "goldEarned": 8785,
@@ -16494,6 +17637,8 @@
      "deaths": 8,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 260,
       "goldEarned": 11729,
@@ -16520,6 +17665,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 14917,
@@ -16546,6 +17693,8 @@
      "deaths": 9,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 283,
       "goldEarned": 13126,
@@ -16572,6 +17721,8 @@
      "deaths": 5,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 355,
       "goldEarned": 16914,
@@ -16598,6 +17749,8 @@
      "deaths": 4,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 16,
       "goldEarned": 8136,
@@ -16679,6 +17832,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 205,
       "goldEarned": 11149,
@@ -16705,6 +17860,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 158,
       "goldEarned": 9569,
@@ -16731,6 +17888,8 @@
      "deaths": 2,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 174,
       "goldEarned": 11242,
@@ -16757,6 +17916,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 216,
       "goldEarned": 10897,
@@ -16783,6 +17944,8 @@
      "deaths": 1,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 6683,
@@ -16809,6 +17972,8 @@
      "deaths": 4,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 159,
       "goldEarned": 7906,
@@ -16835,6 +18000,8 @@
      "deaths": 3,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 143,
       "goldEarned": 8290,
@@ -16861,6 +18028,8 @@
      "deaths": 5,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 147,
       "goldEarned": 8801,
@@ -16887,6 +18056,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 244,
       "goldEarned": 10870,
@@ -16913,6 +18084,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 5882,
@@ -16994,6 +18167,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 305,
       "goldEarned": 17223,
@@ -17020,6 +18195,8 @@
      "deaths": 6,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 221,
       "goldEarned": 14342,
@@ -17046,6 +18223,8 @@
      "deaths": 10,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 303,
       "goldEarned": 15502,
@@ -17072,6 +18251,8 @@
      "deaths": 9,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 317,
       "goldEarned": 16807,
@@ -17098,6 +18279,8 @@
      "deaths": 8,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 9607,
@@ -17124,6 +18307,8 @@
      "deaths": 2,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 266,
       "goldEarned": 19425,
@@ -17150,6 +18335,8 @@
      "deaths": 8,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 239,
       "goldEarned": 14784,
@@ -17176,6 +18363,8 @@
      "deaths": 4,
      "assists": 21,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 227,
       "goldEarned": 14178,
@@ -17202,6 +18391,8 @@
      "deaths": 2,
      "assists": 19,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 310,
       "goldEarned": 18685,
@@ -17228,6 +18419,8 @@
      "deaths": 2,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 56,
       "goldEarned": 12745,
@@ -17309,6 +18502,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 41,
       "goldEarned": 2936,
@@ -17336,6 +18531,8 @@
      "deaths": 1,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 2852,
@@ -17377,6 +18574,8 @@
      "deaths": 0,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 2647,
@@ -17404,6 +18603,8 @@
      "deaths": 2,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 7,
       "goldEarned": 1418,
@@ -17445,6 +18646,8 @@
      "deaths": 4,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 133,
       "goldEarned": 9879,
@@ -17472,6 +18675,8 @@
      "deaths": 2,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 220,
       "goldEarned": 14202,
@@ -17499,6 +18704,8 @@
      "deaths": 6,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 144,
       "goldEarned": 11833,
@@ -17526,6 +18733,8 @@
      "deaths": 4,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 267,
       "goldEarned": 20147,
@@ -17553,6 +18762,8 @@
      "deaths": 4,
      "assists": 24,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 34,
       "goldEarned": 10158,
@@ -17580,6 +18791,8 @@
      "deaths": 7,
      "assists": 0,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 14896,
@@ -17607,6 +18820,8 @@
      "deaths": 9,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 148,
       "goldEarned": 11273,
@@ -17634,6 +18849,8 @@
      "deaths": 9,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 10717,
@@ -17661,6 +18878,8 @@
      "deaths": 7,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 279,
       "goldEarned": 12118,
@@ -17688,6 +18907,8 @@
      "deaths": 10,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 7407,
@@ -17770,6 +18991,8 @@
      "deaths": 12,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 235,
       "goldEarned": 11493,
@@ -17797,6 +19020,8 @@
      "deaths": 8,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 165,
       "goldEarned": 10868,
@@ -17824,6 +19049,8 @@
      "deaths": 3,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 266,
       "goldEarned": 12358,
@@ -17851,6 +19078,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 316,
       "goldEarned": 13855,
@@ -17878,6 +19107,8 @@
      "deaths": 3,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 6884,
@@ -17905,6 +19136,8 @@
      "deaths": 4,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 263,
       "goldEarned": 16133,
@@ -17932,6 +19165,8 @@
      "deaths": 0,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 279,
       "goldEarned": 16104,
@@ -17959,6 +19194,8 @@
      "deaths": 0,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 11434,
@@ -17986,6 +19223,8 @@
      "deaths": 4,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 278,
       "goldEarned": 16696,
@@ -18013,6 +19252,8 @@
      "deaths": 4,
      "assists": 15,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 8847,
@@ -18095,6 +19336,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 234,
       "goldEarned": 14383,
@@ -18122,6 +19365,8 @@
      "deaths": 2,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 13102,
@@ -18149,6 +19394,8 @@
      "deaths": 1,
      "assists": 14,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 223,
       "goldEarned": 10318,
@@ -18176,6 +19423,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 236,
       "goldEarned": 16706,
@@ -18203,6 +19452,8 @@
      "deaths": 0,
      "assists": 22,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 21,
       "goldEarned": 7972,
@@ -18230,6 +19481,8 @@
      "deaths": 7,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 210,
       "goldEarned": 10044,
@@ -18257,6 +19510,8 @@
      "deaths": 9,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 9549,
@@ -18284,6 +19539,8 @@
      "deaths": 3,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 233,
       "goldEarned": 11831,
@@ -18311,6 +19568,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 253,
       "goldEarned": 12556,
@@ -18338,6 +19597,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 16,
       "goldEarned": 7099,
@@ -18420,6 +19681,8 @@
      "deaths": 7,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 190,
       "goldEarned": 9596,
@@ -18447,6 +19710,8 @@
      "deaths": 5,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 13403,
@@ -18474,6 +19739,8 @@
      "deaths": 5,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 257,
       "goldEarned": 15221,
@@ -18501,6 +19768,8 @@
      "deaths": 8,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 265,
       "goldEarned": 13998,
@@ -18528,6 +19797,8 @@
      "deaths": 9,
      "assists": 11,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 32,
       "goldEarned": 8455,
@@ -18555,6 +19826,8 @@
      "deaths": 4,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 230,
       "goldEarned": 14772,
@@ -18582,6 +19855,8 @@
      "deaths": 5,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 220,
       "goldEarned": 15289,
@@ -18609,6 +19884,8 @@
      "deaths": 6,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 182,
       "goldEarned": 10307,
@@ -18636,6 +19913,8 @@
      "deaths": 5,
      "assists": 12,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 291,
       "goldEarned": 19294,
@@ -18663,6 +19942,8 @@
      "deaths": 3,
      "assists": 24,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 24,
       "goldEarned": 9489,
@@ -18741,6 +20022,8 @@
      "deaths": 11,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 249,
       "goldEarned": 16322,
@@ -18768,6 +20051,8 @@
      "deaths": 9,
      "assists": 6,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 243,
       "goldEarned": 13364,
@@ -18795,6 +20080,8 @@
      "deaths": 6,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 256,
       "goldEarned": 13999,
@@ -18822,6 +20109,8 @@
      "deaths": 2,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 344,
       "goldEarned": 15795,
@@ -18849,6 +20138,8 @@
      "deaths": 6,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 55,
       "goldEarned": 9333,
@@ -18876,6 +20167,8 @@
      "deaths": 5,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 224,
       "goldEarned": 15576,
@@ -18903,6 +20196,8 @@
      "deaths": 0,
      "assists": 16,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 278,
       "goldEarned": 15138,
@@ -18930,6 +20225,8 @@
      "deaths": 6,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 280,
       "goldEarned": 19603,
@@ -18957,6 +20254,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 280,
       "goldEarned": 14753,
@@ -18984,6 +20283,8 @@
      "deaths": 2,
      "assists": 20,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 10669,
@@ -19066,6 +20367,8 @@
      "deaths": 7,
      "assists": 1,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 169,
       "goldEarned": 8619,
@@ -19093,6 +20396,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 181,
       "goldEarned": 10220,
@@ -19120,6 +20425,8 @@
      "deaths": 7,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 211,
       "goldEarned": 9840,
@@ -19147,6 +20454,8 @@
      "deaths": 5,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 10202,
@@ -19174,6 +20483,8 @@
      "deaths": 4,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 30,
       "goldEarned": 8348,
@@ -19201,6 +20512,8 @@
      "deaths": 1,
      "assists": 8,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 216,
       "goldEarned": 11844,
@@ -19228,6 +20541,8 @@
      "deaths": 2,
      "assists": 10,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 235,
       "goldEarned": 13720,
@@ -19255,6 +20570,8 @@
      "deaths": 1,
      "assists": 3,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 189,
       "goldEarned": 12824,
@@ -19282,6 +20599,8 @@
      "deaths": 3,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 255,
       "goldEarned": 14678,
@@ -19309,6 +20628,8 @@
      "deaths": 2,
      "assists": 13,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 20,
       "goldEarned": 8126,
@@ -19391,6 +20712,8 @@
      "deaths": 8,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 255,
       "goldEarned": 12687,
@@ -19418,6 +20741,8 @@
      "deaths": 6,
      "assists": 2,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 252,
       "goldEarned": 14500,
@@ -19445,6 +20770,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 231,
       "goldEarned": 11656,
@@ -19472,6 +20799,8 @@
      "deaths": 4,
      "assists": 4,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 277,
       "goldEarned": 12139,
@@ -19499,6 +20828,8 @@
      "deaths": 6,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 33,
       "goldEarned": 7462,
@@ -19526,6 +20857,8 @@
      "deaths": 4,
      "assists": 5,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 327,
       "goldEarned": 16538,
@@ -19553,6 +20886,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 248,
       "goldEarned": 14479,
@@ -19580,6 +20915,8 @@
      "deaths": 5,
      "assists": 7,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 191,
       "goldEarned": 15210,
@@ -19607,6 +20944,8 @@
      "deaths": 1,
      "assists": 9,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 275,
       "goldEarned": 14505,
@@ -19634,6 +20973,8 @@
      "deaths": 2,
      "assists": 17,
      "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 33,
       "goldEarned": 9745,
@@ -19701,7 +21042,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T15:17:35.740Z",
+  "lastBackupAt": "2026-06-13T18:03:54.410Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -19797,8 +21138,8 @@
    ]
   }
  ],
- "rev": 214,
- "updatedAt": "2026-06-13T18:03:47.093Z",
+ "rev": 216,
+ "updatedAt": "2026-06-13T23:29:02.317Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
