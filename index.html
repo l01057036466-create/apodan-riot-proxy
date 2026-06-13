@@ -294,7 +294,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
     <div class="mark">🏆</div>
     <div class="brand">
       <h1>아포단 내전실록</h1>
-      <p>APODAN CIVIL WAR ARCHIVE · <b>v3.1</b></p>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.0</b></p>
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
@@ -311,7 +311,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 <script>
 'use strict';
 /* ============================================================
-   아포단 내전실록 v3.1 — 단일 파일 로컬 앱
+   아포단 내전실록 v4.0 — 단일 파일 로컬 앱
    데이터는 이 브라우저 localStorage에 저장됩니다.
    ============================================================ */
 
@@ -443,7 +443,21 @@ function aliasGuess(name){
   if(bare)out.add(bare.replace(/\s+/g,''));
   return [...out].filter(Boolean);
 }
-function makePlayer(name){return{id:uid('p'),displayName:name,kakaoName:name,riotName:'',riotTag:'',aliases:aliasGuess(name),active:true,memo:''}}
+function makePlayer(name){return{id:uid('p'),displayName:name,kakaoName:name,riotName:'',riotTag:'',aliases:aliasGuess(name),active:true,memo:'',soloTier:'',flexTier:'',riotPuuid:''}}
+const SOLO_TIERS=['언랭','아이언','브론즈','실버','골드','플래티넘','에메랄드','다이아','마스터','그랜드마스터','챌린저'];
+function soloTierRank(t){const i=SOLO_TIERS.indexOf(t||'');return i<=0?null:i;} // 1(아이언)~10(챌린저), 언랭/미입력→null
+// ── 통합 체급 토대: 솔랭/자랭 티어 → 기준 점수, 내전 프로지표로 흔들기 ──
+const TIER_BASE={아이언:28,브론즈:36,실버:44,골드:52,플래티넘:60,에메랄드:66,다이아:73,마스터:82,그랜드마스터:89,챌린저:95};
+function tierBaseScore(pid){ const p=byId(pid); if(!p)return null; const sv=TIER_BASE[p.soloTier]??null, fv=TIER_BASE[p.flexTier]??null; if(sv==null&&fv==null)return null; if(sv!=null&&fv!=null)return Math.round(sv*0.6+fv*0.4); return sv!=null?sv:fv; }
+function stockBase(pid){ const b=tierBaseScore(pid); return b==null?100:Math.round(100+(b-46)*1.6); } // 주식 기준가(솔랭/자랭 출발점)
+function playerGamesN(pid){ let n=0; state.matches.forEach(m=>m.participants.forEach(p=>{if(p.playerId===pid)n++})); return n; }
+function scrimPerf01(pid){ const lane=playerMainLane(pid); if(!lane)return 0.5; const r=ratesMap(lane).get(pid); if(!r||!r.games)return 0.5; return talentPerf(r,lane); } // 주 라인 내전 프로지표 0~1
+function playerPower(pid){ // 0~100 통합 체급
+  const base=tierBaseScore(pid), perf=scrimPerf01(pid);
+  if(base==null){ let g=0,w=0; state.matches.forEach(m=>m.participants.forEach(p=>{if(p.playerId===pid){g++;if(p.team===m.winnerTeam)w++}})); return Math.round((perf*0.8+(g?w/g:0.5)*0.2)*100); }
+  const g=playerGamesN(pid), conf=g/(g+6); let delta=(perf-0.5)*44; delta=Math.max(-18,Math.min(22,delta));
+  return Math.round(Math.max(5,Math.min(99,base+delta*conf)));
+}
 function rosterToPlayer(e){
   const p=makePlayer(e.n);
   const {riotName,riotTag}=parseRiot(e.r);
@@ -461,7 +475,7 @@ function fixState(s){
     kakaoName:p.kakaoName||p.displayName||p.name||'',
     riotName:p.riotName||'',riotTag:p.riotTag||'',
     aliases:Array.isArray(p.aliases)?p.aliases.filter(Boolean):aliasGuess(p.displayName||p.name||''),
-    active:p.active!==false, memo:p.memo||''
+    active:p.active!==false, memo:p.memo||'', soloTier:p.soloTier||'', flexTier:p.flexTier||'', riotPuuid:p.riotPuuid||''
   }));
   s.matches=(Array.isArray(s.matches)?s.matches:[]).map(m=>({
     id:m.id||uid('m'),
@@ -776,7 +790,7 @@ function gamePerf(m,p){ // 한 경기에서 그 선수의 체급 퍼포먼스 0~
     deathsPg:num(p.deaths), richN:has(st.damageToChampions)?1:0,
     dpm:num(st.damageToChampions)/mins, cspm:num(st.cs)/mins, vspm:num(st.visionScore)/mins,
     objpm:num(st.damageToObjectives)/mins, ccpm:num(st.crowdControlScore)/mins,
-    utilpm:(num(st.healing)+num(st.selfMitigatedDamage))/mins, soloPg:num(st.soloKills),
+    utilpm:(num(st.healing)+num(st.selfMitigatedDamage))/mins, soloPg:num(st.soloKills), hasSolo:('soloKills' in st),
     dmgShare:has(st.dmgShare)?+st.dmgShare:null, tankShare:has(st.tankShare)?+st.tankShare:null,
     gd15:p.gd15!=null?p.gd15:null, csd15:p.csd15!=null?p.csd15:null, xpd15:p.xpd15!=null?p.xpd15:null
   };
@@ -786,7 +800,7 @@ function formSeries(id){ // 폼 주가: 승패+연승+MVP+체급 퍼포먼스+�
   const ck=state.matches.length+'|'+(state.matches[state.matches.length-1]?.id||'');
   if(_fsCache.key!==ck){_fsCache.key=ck;_fsCache.map=new Map()}
   if(_fsCache.map.has(id))return _fsCache.map.get(id);
-  let v=100,streak=0; const arr=[100],wl=[],reasons=[];
+  const _b0=stockBase(id); let v=_b0,streak=0; const arr=[_b0],wl=[],reasons=[];
   const runStats={};
   const rv=rivalOf(id);
   const allMs=[...state.matches].sort((a,b)=>sortKey(a).localeCompare(sortKey(b)));
@@ -938,22 +952,23 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
   state.matches.forEach(m=>{
     if(excludeDate&&m.playedAt===excludeDate)return;
     const mins=(m.durationMin&&m.durationMin>=5)?m.durationMin:28; // 시간 없으면 평균 28분 가정
-    const tk={BLUE:0,RED:0};
-    m.participants.forEach(p=>{if(p.playerId)tk[p.team]+=num(p.kills)});
+    const tk={BLUE:0,RED:0},td={BLUE:0,RED:0},tg={BLUE:0,RED:0},ttk={BLUE:0,RED:0};
+    m.participants.forEach(p=>{if(!p.playerId)return;const st=p.stats||{};tk[p.team]+=num(p.kills);td[p.team]+=num(st.damageToChampions);tg[p.team]+=num(st.goldEarned);ttk[p.team]+=num(st.damageTaken)});
     m.participants.forEach(p=>{
       if(!p.playerId)return;
       if(laneKo&&LANE_KO[p.lane]!==laneKo)return;
-      if(!agg.has(p.playerId))agg.set(p.playerId,{g:0,w:0,min:0,dmg:0,cs:0,vis:0,obj:0,tur:0,gold:0,cc:0,heal:0,taken:0,mitig:0,d:0,k:0,a:0,kpSum:0,kpG:0,solo:0,rich:0,dsh:0,dshN:0,tsh:0,tshN:0,gd:0,gdN:0,csd:0,csdN:0,xpd:0,xpdN:0});
+      if(!agg.has(p.playerId))agg.set(p.playerId,{g:0,w:0,min:0,dmg:0,cs:0,vis:0,obj:0,tur:0,gold:0,cc:0,heal:0,taken:0,mitig:0,d:0,k:0,a:0,kpSum:0,kpG:0,solo:0,soloN:0,rich:0,dsh:0,dshN:0,tsh:0,tshN:0,gsh:0,gshN:0,gd:0,gdN:0,csd:0,csdN:0,xpd:0,xpdN:0});
       const s=agg.get(p.playerId),st=p.stats||{};
       s.g++;s.min+=mins; if(p.team===m.winnerTeam)s.w++;
       s.dmg+=num(st.damageToChampions);s.cs+=num(st.cs);s.vis+=num(st.visionScore);
       s.obj+=num(st.damageToObjectives);s.tur+=num(st.damageToTurrets);s.gold+=num(st.goldEarned);
       s.cc+=num(st.crowdControlScore);s.heal+=num(st.healing);
       s.taken+=num(st.damageTaken);s.mitig+=num(st.selfMitigatedDamage);
-      s.solo+=num(st.soloKills);
+      s.solo+=num(st.soloKills); if('soloKills' in st)s.soloN++;
       if(num(st.damageToChampions)>0)s.rich++; // 프로 지표(딜 등)가 있는 판 수
-      if(isFinite(+st.dmgShare)&&+st.dmgShare>0){s.dsh+=+st.dmgShare;s.dshN++}
-      if(isFinite(+st.tankShare)&&+st.tankShare>0){s.tsh+=+st.tankShare;s.tshN++}
+      if(td[p.team]>0){s.dsh+=num(st.damageToChampions)/td[p.team]*100;s.dshN++} // 팀 딜 점유율(팀 합으로 직접 계산 → 추출기 경기도 반영)
+      if(ttk[p.team]>0){s.tsh+=num(st.damageTaken)/ttk[p.team]*100;s.tshN++} // 팀 탱킹 점유율
+      if(tg[p.team]>0){s.gsh+=num(st.goldEarned)/tg[p.team]*100;s.gshN++} // 팀 골드 점유율
       if(p.gd15!=null){s.gd+=p.gd15;s.gdN++}
       if(p.csd15!=null){s.csd+=p.csd15;s.csdN++}
       if(p.xpd15!=null){s.xpd+=p.xpd15;s.xpdN++}
@@ -970,8 +985,8 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
     dpg:s.gold>0?s.dmg/(s.gold/1000):0, gpm:s.min?s.gold/s.min:0,
     deathsPg:s.g?s.d/s.g:0, kda:s.d?(s.k+s.a)/s.d:(s.k+s.a),
     kp:s.kpG?Math.round(s.kpSum/s.kpG*1000)/10:0, solo:s.solo,
-    wins:s.w, richN:s.rich, soloPg:s.g?s.solo/s.g:0,
-    dmgShare:s.dshN?Math.round(s.dsh/s.dshN*10)/10:null, tankShare:s.tshN?Math.round(s.tsh/s.tshN*10)/10:null,
+    wins:s.w, richN:s.rich, soloPg:s.g?s.solo/s.g:0, hasSolo:s.soloN>0,
+    dmgShare:s.dshN?Math.round(s.dsh/s.dshN*10)/10:null, tankShare:s.tshN?Math.round(s.tsh/s.tshN*10)/10:null, goldShare:s.gshN?Math.round(s.gsh/s.gshN*10)/10:null,
     gd15:s.gdN?Math.round(s.gd/s.gdN):null, csd15:s.csdN?Math.round(s.csd/s.csdN):null, xpd15:s.xpdN?Math.round(s.xpd/s.xpdN):null,
     avgDmg:s.g?Math.round(s.dmg/s.g):0
   }));
@@ -1809,6 +1824,35 @@ function saveDraft(){
    브라우저는 라이엇을 직접 못 부르므로(키 보안·CORS),
    중계 함수 주소를 설정 후 사용합니다. 정확도 100%.
    ============================================================ */
+function riotTierKo(t){const M={IRON:'아이언',BRONZE:'브론즈',SILVER:'실버',GOLD:'골드',PLATINUM:'플래티넘',EMERALD:'에메랄드',DIAMOND:'다이아',MASTER:'마스터',GRANDMASTER:'그랜드마스터',CHALLENGER:'챌린저'};return M[String(t||'').toUpperCase()]||'언랭';}
+async function autoFetchTiers(){
+  if(needAdmin())return;
+  if(!(state.settings.proxyUrl||'').trim())return toast('먼저 설정에서 중계 서버 주소를 입력해주세요.',true);
+  const targets=state.players.filter(p=>p.active&&(p.riotName||'').trim());
+  if(!targets.length)return toast('롤 닉네임#태그가 입력된 멤버가 없어요. 선수 수정에서 먼저 넣어주세요.',true);
+  if(!confirm(targets.length+'명의 솔랭·자랭 티어를 라이엇에서 불러올게요. 약 '+Math.ceil(targets.length*0.8)+'초 걸려요.'))return;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  let ok=0,fail=0;const fails=[];
+  for(let i=0;i<targets.length;i++){
+    const p=targets[i];
+    try{
+      let puuid=p.riotPuuid;
+      if(!puuid){const acc=await riotApi({action:'resolve',name:p.riotName,tag:p.riotTag||'KR1'});puuid=acc.puuid;p.riotPuuid=puuid;}
+      const entries=await riotApi({action:'rank',puuid});
+      const arr=Array.isArray(entries)?entries:[];
+      const solo=arr.find(e=>e.queueType==='RANKED_SOLO_5x5');
+      const flex=arr.find(e=>e.queueType==='RANKED_FLEX_SR');
+      p.soloTier=solo?riotTierKo(solo.tier):'언랭';
+      p.flexTier=flex?riotTierKo(flex.tier):'언랭';
+      ok++;
+    }catch(e){fail++;fails.push(p.displayName+': '+(e.message||e));}
+    if(i%5===0||i===targets.length-1)toast('티어 불러오는 중… '+(i+1)+'/'+targets.length);
+    await sleep(700);
+  }
+  save();render();
+  toast('완료! 성공 '+ok+'명'+(fail?(', 실패 '+fail+'명 (콘솔 확인)'):'')+'.');
+  if(fails.length)console.log('티어 불러오기 실패:',fails);
+}
 async function riotApi(params){
   const base=(state.settings.proxyUrl||'').trim().replace(/\/+$/,'');
   if(!base)throw new Error('중계 서버 주소를 먼저 입력해주세요.');
@@ -2147,15 +2191,9 @@ function clearLineup(id){
   window._luDraft=null;save();render();toast('해당 회차 공지를 내렸어요.');
 }
 function editLineup(id){window._luEdit=id;window._luDraft=null;render()}
-function teamPower(ids){ // 폼 주가 60% + 통산 승률 40%
-  const P=statPlayers();
-  const vals=ids.map(id=>{
-    const s=P.find(x=>x.id===id);
-    const price=formSeries(id).arr.at(-1)||100;
-    const wr=(s&&s.games?s.winRate:50)*2;
-    return price*.6+wr*.4;
-  });
-  return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:100;
+function teamPower(ids){ // 통합 체급(솔랭/자랭 기준 + 내전 프로지표) 평균
+  const vals=ids.map(id=>playerPower(id));
+  return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:50;
 }
 function lineupOdds(L){
   L=L||allLineups()[0]; if(!L||!L.blue.length||!L.red.length)return null;
@@ -2613,7 +2651,7 @@ const TAL_M={
   objpm:{av:r=>r.richN>0, get:r=>r.objpm, sc:(v,t)=>clamp01(v/t)},
   ccpm:{av:r=>r.richN>0, get:r=>r.ccpm, sc:(v,t)=>clamp01(v/t)},
   utilpm:{av:r=>r.richN>0, get:r=>r.utilpm, sc:(v,t)=>clamp01(v/t)},
-  soloPg:{av:r=>r.richN>0, get:r=>r.soloPg, sc:(v,t)=>clamp01(v/t)},
+  soloPg:{av:r=>!!r.hasSolo, get:r=>r.soloPg, sc:(v,t)=>clamp01(v/t)},
   dmgShare:{av:r=>r.dmgShare!=null, get:r=>r.dmgShare, sc:(v,t)=>clamp01(v/t)},
   tankShare:{av:r=>r.tankShare!=null, get:r=>r.tankShare, sc:(v,t)=>clamp01(v/t)},
   gd15:{av:r=>r.gd15!=null, get:r=>r.gd15, sc:(v,t)=>clamp01(.5+.5*v/t)},
@@ -2634,16 +2672,19 @@ function talentPerf(r,laneKo){ // 0~1 개인 퍼포먼스 (가용 지표만으�
   cfg.forEach(([key,w,t])=>{const M=TAL_M[key];if(!M||!M.av(r))return;const v=M.get(r);if(v==null||!isFinite(v))return;sum+=M.sc(v,t)*w;wsum+=w});
   return wsum>0?sum/wsum:.5; // 데이터 전무 시 중립값
 }
-function talentScore(r,laneKo){ // 0~100 체급 점수
+function talentScore(r,laneKo,pid){ // 0~100 체급: 솔랭/자랭 기준 + 내전 프로지표로 흔들기
   if(!r||!r.games)return 0;
-  const bayes=(r.wins+4)/(r.games+8); // 표본 보정 승률(처음 0.5)
-  return Math.round((talentPerf(r,laneKo)*.75+bayes*.25)*1000)/10;
+  const perf=talentPerf(r,laneKo), bayes=(r.wins+4)/(r.games+8);
+  const base=(pid!=null)?tierBaseScore(pid):null;
+  if(base==null)return Math.round((perf*.75+bayes*.25)*1000)/10; // 티어 없으면 기존(순수 내전)
+  const conf=r.games/(r.games+6); let delta=(perf-0.5)*44; delta=Math.max(-18,Math.min(22,delta)); // 폼으로 ±, 승패는 거의 안 봄(업셋 보호)
+  return Math.round(Math.max(5,Math.min(99,base+delta*conf))*10)/10;
 }
 function talentRows(excludeDate){ // 라인별 체급 점수 행 (높은 순)
   const out={};
   LANE_LIST.forEach(lane=>{
     const rates=ratesMap(lane,excludeDate); const arr=[];
-    rates.forEach((r,pid)=>arr.push({pid,games:r.games,wins:r.wins,winRate:pct(r.wins,r.games),kda:Math.round(r.kda*10)/10,score:talentScore(r,lane),rate:r}));
+    rates.forEach((r,pid)=>arr.push({pid,games:r.games,wins:r.wins,winRate:pct(r.wins,r.games),kda:Math.round(r.kda*10)/10,score:talentScore(r,lane,pid),rate:r}));
     out[lane]=arr.sort((a,b)=>b.score-a.score||b.games-a.games);
   });
   return out;
@@ -2653,10 +2694,11 @@ function laneTierBoard(excludeDate){
   LANE_LIST.forEach(lane=>{
     const list=rows[lane];
     list.forEach(r=>{
-      const g=r.games,s=r.score;
-      if(g<=2)r.tier=9;            // 아이언: 참여 최소(1~2판)
-      else if(g<=5)r.tier=8;       // 브론즈: 가끔(3~5판)
-      else r.tier=s>=78?2:s>=70?3:s>=62?4:s>=54?5:s>=46?6:7; // 6판+: 마스터·다이아·에메·플래·골드·실버(절대 구간)
+      const g=r.games,s=r.score,anc=tierBaseScore(r.pid)!=null;
+      if(!anc&&g<=2)r.tier=9;            // (티어 미입력) 아이언: 참여 최소(1~2판)
+      else if(!anc&&g<=5)r.tier=8;       // (티어 미입력) 브론즈: 가끔(3~5판)
+      else if(anc)r.tier=s>=78?2:s>=70?3:s>=62?4:s>=54?5:s>=46?6:s>=38?7:s>=30?8:9; // 티어 기준+내전 보정
+      else r.tier=s>=78?2:s>=70?3:s>=62?4:s>=54?5:s>=46?6:7;
     });
     out[lane]={list,king:list.find(r=>r.games>=6)||null}; // 6판+ 라인 1위(=그랜드마스터)
   });
@@ -4077,16 +4119,14 @@ function champFace(ko,size){ // 챔프 얼굴(이미지 or 색상 토큰)
 }
 function ratingStars(score){ const f=Math.max(1,Math.min(5,Math.round(score/2))); let s=''; for(let i=1;i<=5;i++)s+=`<span style="color:${i<=f?'#3aa0ff':'#3a4150'};font-size:13px">★</span>`; return s; }
 function ratingColor(score){ return score>=8.5?'#2ec27e':score>=6.5?'#7cc6ff':score>=4.5?'#c9cf3a':score>=3?'#ff8a3a':'#ff4d5e'; }
-function matchRatings(m){ // 결과 데이터 기반 0~10 평점 (참여율·KDA·승패·MVP)
+function matchRatings(m){ // 0~10 평점 — 프로지표(gamePerf) 기반, 진 팀도 활약대로 차등
   const parts=(m.participants||[]).filter(p=>p.playerId);
   const wt=m.winnerTeam==='RED'?'RED':'BLUE';
-  const tk={BLUE:0,RED:0}; parts.forEach(p=>tk[p.team]+=num(p.kills));
   const rate=p=>{
-    const win=p.team===wt, k=num(p.kills),d=num(p.deaths),a=num(p.assists);
-    const team=Math.max(1,tk[p.team]); const kp=Math.min(1.2,(k+a)/team); const kda=(k+a)/Math.max(1,d);
-    let s=5.0+(win?1.3:-1.3)+Math.max(-2.5,Math.min(3.0,(kda-2.2)*0.9))+(kp-0.55)*2.5+Math.min(1.0,k*0.1)-Math.min(2.2,d*0.22);
-    s=Math.max(2.0,Math.min(9.9,s));
-    if(m.mvpId===p.playerId)s=Math.min(10,Math.max(s,8.7)+0.3);
+    const win=p.team===wt, gp=gamePerf(m,p); // 0~1 프로지표 퍼포먼스
+    let s=1.2+gp*8.6+(win?0.4:-0.4); // 잘하면 져도 높게, 못하면 이겨도 낮게
+    s=Math.max(1.0,Math.min(9.9,s));
+    if(m.mvpId===p.playerId)s=Math.min(10,Math.max(s,8.5)+0.3);
     return Math.round(s*10)/10;
   };
   return parts.map(p=>({p,score:rate(p),win:p.team===wt,k:num(p.kills),d:num(p.deaths),a:num(p.assists)}));
@@ -6213,7 +6253,8 @@ function pgPlayers(){
       <div class="pList" id="pListBox">${playerListHtml(list)}</div>
       ${isAdmin()?`<div class="hr"></div>
       <button class="btn" style="width:100%" onclick="editingPlayer='__new__';render()">＋ 새 플레이어 등록</button>
-      <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="syncRoster()">확정 명단과 동기화</button>`:''}
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="syncRoster()">확정 명단과 동기화</button>
+      <button class="btn ghost sm" style="width:100%;margin-top:8px" onclick="autoFetchTiers()">🏅 솔랭·자랭 티어 자동 불러오기</button>`:''}
     </div>
     <div style="display:grid;gap:14px">
       ${editingPlayer?playerForm(e):p?playerDetail(p):'<div class="empty">왼쪽에서 플레이어를 선택해주세요.</div>'}
@@ -6331,6 +6372,8 @@ function playerForm(p){
     <div class="f"><label>롤 닉네임#태그</label><input id="fpRiot" value="${esc(p?(p.riotName+(p.riotTag?'#'+p.riotTag:'')):'')}" placeholder="예: 잭 슨#고양이"></div>
     <div class="f"><label>별명 (쉼표 구분, 사진 판독 매칭용)</label><input id="fpAlias" value="${esc((p?.aliases||[]).join(', '))}" placeholder="잭슨, 잭손"></div>
     <div class="f"><label>메모</label><input id="fpMemo" value="${esc(p?.memo||'')}"></div>
+    <div class="f"><label>솔랭 티어 <span class="dim">(체급 보정·간극 비교용)</span></label><select id="fpSolo">${SOLO_TIERS.map(t=>`<option value="${t}"${(p?.soloTier||'언랭')===t?' selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="f"><label>자유랭 티어 <span class="dim">(팀게임 기준)</span></label><select id="fpFlex">${SOLO_TIERS.map(t=>`<option value="${t}"${(p?.flexTier||'언랭')===t?' selected':''}>${t}</option>`).join('')}</select></div>
   </div>
   <div class="row" style="margin-top:12px">
     <button class="btn gold" onclick="savePlayerForm()">${isNew?'등록':'저장'}</button>
@@ -6344,14 +6387,16 @@ function savePlayerForm(){
   const{riotName,riotTag}=parseRiot($('fpRiot').value.trim());
   const aliases=$('fpAlias').value.split(',').map(x=>x.trim()).filter(Boolean);
   const memo=$('fpMemo').value.trim();
+  const soloTier=$('fpSolo')?$('fpSolo').value:'';
+  const flexTier=$('fpFlex')?$('fpFlex').value:'';
   if(editingPlayer==='__new__'){
     if(findPlayer(name))return toast('이미 비슷한 이름이 있어요. 필요하면 병합 기능을 쓰세요.',true);
     const p=makePlayer(name);
-    Object.assign(p,{riotName,riotTag,memo,aliases:aliases.length?aliases:p.aliases});
+    Object.assign(p,{riotName,riotTag,memo,soloTier,flexTier,aliases:aliases.length?aliases:p.aliases});
     state.players.push(p);selPlayer=p.id;toast('플레이어를 등록했어요.');
   }else{
     const p=byId(editingPlayer); if(!p)return;
-    Object.assign(p,{displayName:name,kakaoName:name,riotName,riotTag,memo,aliases:aliases.length?aliases:aliasGuess(name)});
+    Object.assign(p,{displayName:name,kakaoName:name,riotName,riotTag,memo,soloTier,flexTier,aliases:aliases.length?aliases:aliasGuess(name)});
     toast('플레이어를 수정했어요.');
   }
   editingPlayer=null;save();render();
@@ -6443,7 +6488,7 @@ function pgCompare(){
   const laneB=(window._cmpLB&&lanesB.some(l=>l.lane===window._cmpLB))?window._cmpLB:(lanesB[0]?.lane||null);
   const hA=playerHex(A.id,laneA),hB=playerHex(B.id,laneB);
   const rAl=laneA?ratesMap(laneA).get(A.id):rA, rBl=laneB?ratesMap(laneB).get(B.id):rB; // 비교 라인 기준 체급
-  const tA=rAl?talentScore(rAl,laneA||playerMainLane(A.id)):0, tB=rBl?talentScore(rBl,laneB||playerMainLane(B.id)):0;
+  const tA=rAl?talentScore(rAl,laneA||playerMainLane(A.id),A.id):0, tB=rBl?talentScore(rBl,laneB||playerMainLane(B.id),B.id):0;
   const sel=(id,val)=>`<select onchange="window._cmp${id}=this.value;window._cmpL${id}=null;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%">${P.map(s=>`<option value="${s.id}"${s.id===val?' selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
   const laneSel=(id,lanes,val)=>lanes.length>1?`<select onchange="window._cmpL${id}=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%;margin-top:6px">${lanes.map(l=>`<option value="${l.lane}"${l.lane===val?' selected':''}>${esc(l.lane)} (${l.games}판)</option>`).join('')}</select>`:(lanes[0]?`<p class="mini dim" style="margin:6px 0 0">${esc(lanes[0].lane)} ${lanes[0].games}판</p>`:'');
   const f1=v=>Math.round(v*10)/10;
@@ -6461,6 +6506,7 @@ function pgCompare(){
     ['평균 딜량',rA.avgDmg,rB.avgDmg,'','높을수록'],
     ['솔로킬 누적',rA.solo,rB.solo,'','높을수록'],
     ['딜 점유율',rA.dmgShare,rB.dmgShare,'%','높을수록'],
+    ['골드 점유율',rA.goldShare,rB.goldShare,'%','높을수록'],
     ['15분 골드차 (GD@15)',rA.gd15,rB.gd15,'','높을수록'],
     ['15분 CS차 (CSD@15)',rA.csd15,rB.csd15,'','높을수록'],
     ['15분 경험치차 (XPD@15)',rA.xpd15,rB.xpd15,'','높을수록'],
@@ -6529,9 +6575,10 @@ function balRating(pid,lane){ // 선수×라인 점수: 폼 + 라인 숙련(표�
   const conf=Math.min(1,g/6);
   const laneFit=g?((w/g*100-50)*0.5*conf+conf*8):0;
   const overall=tg?((tw/tg*100-50)*0.3*Math.min(1,tg/10)):0;
-  const{arr}=formSeries(pid);
-  const form=arr.length?(arr[arr.length-1]-100)*0.15:0;
-  const r=50+laneFit+overall+form;
+  const base=tierBaseScore(pid);
+  let r;
+  if(base!=null){ r=base+laneFit*0.6+overall*0.5; } // 솔랭/자랭 기준 + 라인숙련·통산 약간
+  else{ const{arr}=formSeries(pid); const form=arr.length?(arr[arr.length-1]-stockBase(pid))*0.15:0; r=50+laneFit+overall+form; }
   window._balCache[key]=r;
   return r;
 }
@@ -6851,6 +6898,18 @@ function deltaBadge(d){
   if(!d)return'<span class="dim mini">-</span>';
   return d>0?`<span style="color:var(--win);font-weight:900">▲${d}</span>`:`<span style="color:var(--lose);font-weight:900">▼${-d}</span>`;
 }
+function laneProLine(lane,rt){ // 라인별 핵심 프로 지표 한 줄 (체급을 만든 근거를 바로 보여줌)
+  if(!rt)return '<span class="dim">지표 수집 전</span>';
+  const i0=v=>v==null?'—':Math.round(v), i1=v=>v==null?'—':(Math.round(v*10)/10);
+  const pc=v=>v==null?'—':Math.round(v)+'%', sg=v=>v==null?'—':(v>0?'+'+Math.round(v):''+Math.round(v));
+  let it;
+  if(lane==='탑')      it=[['GD@15',sg(rt.gd15)],['딜',i0(rt.dpm)],['딜%',pc(rt.dmgShare)],['탱%',pc(rt.tankShare)]];
+  else if(lane==='정글')it=[['킬관여',pc(rt.kp)],['오브젝트/분',i0(rt.objpm)],['시야/분',i1(rt.vspm)],['딜',i0(rt.dpm)]];
+  else if(lane==='미드')it=[['딜',i0(rt.dpm)],['딜%',pc(rt.dmgShare)],['GD@15',sg(rt.gd15)],['킬관여',pc(rt.kp)]];
+  else if(lane==='원딜')it=[['딜',i0(rt.dpm)],['딜%',pc(rt.dmgShare)],['CS/분',i1(rt.cspm)],['GD@15',sg(rt.gd15)]];
+  else                 it=[['시야/분',i1(rt.vspm)],['킬관여',pc(rt.kp)],['케어/분',i0(rt.utilpm)],['CC/분',i1(rt.ccpm)]];
+  return it.map(([k,v])=>`<span class="dim">${k}</span> <b>${v}</b>`).join('<span class="dim"> · </span>');
+}
 function pgLaneTier(){
   const{board,delta,rankDelta,lastDate}=laneTierDelta();
   const any=LANE_LIST.some(l=>board[l].list.length);
@@ -6864,22 +6923,28 @@ function pgLaneTier(){
         <h3 style="margin:0">${esc(lane)}</h3>
         ${king?`<span class="pill gold" style="font-weight:900;font-size:14px">👑 ${lane} 최강자: ${esc(nameOf(king.pid))} <span class="dim" style="font-weight:600">(${king.games}판 · 체급 ${king.score})</span></span>`:`<span class="mini dim">라인 1위 공석 — 6판 이상 1위가 👑 그랜드마스터 왕좌를 가져갑니다</span>`}
       </div>
-      <div class="scrollx" style="margin-top:8px"><table class="tbl" style="min-width:760px"><thead><tr><th>티어</th><th>멤버</th><th class="num">판수</th><th class="num">승률</th><th class="num">KDA</th><th class="num">체급</th><th>변동</th><th>코멘트</th></tr></thead><tbody>
+      <div style="margin-top:6px">
       ${list.map(r=>{
         const d=delta[lane+'|'+r.pid],rd=rankDelta?rankDelta[lane+'|'+r.pid]:null;
         const mover=typeof d==='number'&&d!==0;
-        return`<tr style="${mover?(d>0?'background:rgba(63,217,197,.07)':'background:rgba(255,92,122,.06)'):''}">
-        <td>${tierBadge(r.tier)}</td>
-        <td><b>${esc(nameOf(r.pid))}</b></td>
-        <td class="num">${r.games}</td>
-        <td class="num ${r.winRate>=50?'up':'dn'}">${r.winRate}%</td>
-        <td class="num">${r.kda}</td>
-        <td class="num"><b>${r.score}</b></td>
-        <td>${deltaBadge(d)}${typeof rd==='number'&&rd!==0?`<div class="mini ${rd>0?'up':'dn'}" style="font-weight:800">순위 ${rd>0?'+'+rd:rd}</div>`:''}</td>
-        <td class="mini" style="max-width:330px;min-width:220px">${esc(laneTip(lane,r.pid,r.tier,r.games))}</td>
-      </tr>`}).join('')}</tbody></table></div>
+        const bg=mover?(d>0?'background:rgba(63,217,197,.06);':'background:rgba(255,92,122,.05);'):'';
+        const scol=r.score>=78?'var(--gold)':r.score>=54?'var(--win)':r.score<46?'var(--mut)':'';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid var(--line);${bg}">
+        <span style="flex:none">${tierBadge(r.tier)}</span>
+        <div style="flex:1 1 150px;min-width:130px;overflow:hidden">
+          <div style="font-weight:800">${esc(nameOf(r.pid))} <span class="dim mini" style="font-weight:600">· ${r.games}판</span></div>
+          <div class="mini" style="margin-top:2px"><span class="${r.winRate>=50?'up':'dn'}">승 ${r.winRate}%</span><span class="dim"> · </span>KDA ${r.kda}</div>
+          <div class="mini" style="margin-top:3px">${laneProLine(lane,r.rate)}</div>
+        </div>
+        <div style="flex:none;text-align:right;min-width:58px">
+          <div class="mini dim" style="line-height:1.1">체급</div>
+          <div style="font-weight:900;font-size:18px;${scol?`color:${scol}`:''}">${r.score}</div>
+          <div style="margin-top:2px">${deltaBadge(d)}${typeof rd==='number'&&rd!==0?` <span class="mini ${rd>0?'up':'dn'}" style="font-weight:800">순위${rd>0?'+'+rd:rd}</span>`:''}</div>
+        </div>
+      </div>`}).join('')}
+      </div>
     </div>`}).join('')+
-  `<p class="mini dim">체급은 라인별 프로 지표(딜·라인전·킬관여·시야 등)로 매겨져요 — 개인 퍼포먼스 75% + 승률 25%. 잘 싸우면 져도 체급은 인정되고, 절대 기준이라 남의 성적엔 안 흔들립니다. 6판을 채우면 실버 이상으로 올라와요.</p>`;
+  `<p class="mini dim">체급은 라인별 프로 지표(딜·라인전·킬관여·시야 등)로 매겨져요 — 개인 퍼포먼스 75% + 승률 25%. 각 선수 옆 지표가 그 체급을 만든 근거예요(더 자세한 비교는 1:1 비교에서). 잘 싸우면 져도 체급은 인정되고, 절대 기준이라 남의 성적엔 안 흔들립니다. 6판을 채우면 실버 이상으로 올라와요.</p>`;
 }
 
 /* ───── 칭호 ───── */
