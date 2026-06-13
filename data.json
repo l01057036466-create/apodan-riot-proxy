@@ -157,9 +157,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "에메랄드",
+   "flexTier": "마스터",
+   "riotPuuid": "GMSBa9-Ezw3fZyuqGgXJ-Jnyj1MYlvEk4DKs2ICmqxCQmdVL0gVqcPs5CIbCBnTgxGC0u2OBzqt9_Q"
   },
   {
    "id": "p_5fj5souo_mq7nhxuq",
@@ -189,9 +189,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": ""
+   "soloTier": "마스터",
+   "flexTier": "다이아",
+   "riotPuuid": "dG8t-hUUItLma96r2izzv7-5Bo7iFzWmZ4UeVbRL4nrdaeG6AUAd8eFXiz5pLjDKAxO5uPLR0O2cPQ"
   },
   {
    "id": "p_53io5pq0_mq7nhxuq",
@@ -776,8 +776,8 @@
    "active": true,
    "memo": "",
    "soloTier": "언랭",
-   "flexTier": "언랭",
-   "riotPuuid": ""
+   "flexTier": "골드",
+   "riotPuuid": "5UZ3XBGRmVNJdYqcV4aYcSCeCbzOcK77e0VbMgaxPQvL8zrHMDBuvE4bCW99VBDuW_WHFo7s6KvYdw"
   },
   {
    "id": "p_04s7kxlmq8v3l9m",
@@ -21042,7 +21042,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T23:29:09.616Z",
+  "lastBackupAt": "2026-06-13T23:29:18.887Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21138,8 +21138,8 @@
    ]
   }
  ],
- "rev": 218,
- "updatedAt": "2026-06-13T23:29:12.170Z",
+ "rev": 220,
+ "updatedAt": "2026-06-13T23:31:47.058Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
