@@ -22944,30 +22944,9 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [
-  {
-   "id": "lu_5s1cahlmqdkg97f",
-   "date": "2026-06-14",
-   "round": "1차",
-   "note": "20시",
-   "blue": [
-    "p_j93ommzd_mq7nhxuq",
-    "p_h7k04k4c_mq7nhxuq",
-    "p_jlc2q699_mq7nhxup",
-    "p_wtiaq7m1_mq7nhxuq",
-    "p_00q5dhm1_mq7nhxuq"
-   ],
-   "red": [
-    "p_0g6qhb6e_mq7nhxuq",
-    "p_4siqelqmq7ub77p",
-    "p_gi86d5qmq7ub77o",
-    "p_ze5lbhymq7ub77p",
-    "p_29ndxd5j_mq7nhxuq"
-   ]
-  }
- ],
- "rev": 259,
- "updatedAt": "2026-06-14T13:22:48.583Z",
+ "lineups": [],
+ "rev": 260,
+ "updatedAt": "2026-06-14T13:36:48.442Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
