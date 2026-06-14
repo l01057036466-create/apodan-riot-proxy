@@ -185,16 +185,16 @@
    "id": "p_5fj5souo_mq7nhxuq",
    "displayName": "01 국물",
    "kakaoName": "01 국물",
-   "riotName": "",
-   "riotTag": "",
+   "riotName": "국 물",
+   "riotTag": "1234",
    "aliases": [
     "국물",
     "01국물"
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
+   "soloTier": "언랭",
+   "flexTier": "언랭",
    "riotPuuid": "",
    "soloPos": "",
    "subPos": ""
@@ -21144,7 +21144,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-14T01:27:38.772Z",
+  "lastBackupAt": "2026-06-14T01:28:49.261Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21240,8 +21240,8 @@
    ]
   }
  ],
- "rev": 227,
- "updatedAt": "2026-06-14T01:28:42.548Z",
+ "rev": 229,
+ "updatedAt": "2026-06-14T01:29:18.064Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
