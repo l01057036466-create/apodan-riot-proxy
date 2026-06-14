@@ -294,7 +294,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
     <div class="mark">🏆</div>
     <div class="brand">
       <h1>아포단 내전실록</h1>
-      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.5</b></p>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.6</b></p>
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
@@ -311,7 +311,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 <script>
 'use strict';
 /* ============================================================
-   아포단 내전실록 v4.5 — 단일 파일 로컬 앱
+   아포단 내전실록 v4.6 — 단일 파일 로컬 앱
    데이터는 이 브라우저 localStorage에 저장됩니다.
    ============================================================ */
 
@@ -465,6 +465,26 @@ function rosterToPlayer(e){
   if(riotName)p.aliases=[...new Set([...p.aliases,riotName.replace(/\s+/g,'')])];
   return p;
 }
+const ROLES5=['TOP','JUNGLE','MID','ADC','SUPPORT'];
+function _perm5(){ if(_perm5._c)return _perm5._c; const out=[]; const go=(arr,rest)=>{ if(!rest.length){out.push(arr);return} rest.forEach((x,i)=>go(arr.concat(x),rest.slice(0,i).concat(rest.slice(i+1)))) }; go([],[0,1,2,3,4]); _perm5._c=out; return out; }
+function resolveTeamLanes(team){ // 한 팀(5명) 포지션을 1라인 1명으로 자동 보정 (스탯 기반 + 클라 라벨 존중)
+  if(!team||team.length!==5)return;
+  if(ROLES5.every(r=>team.filter(p=>p.lane===r).length===1))return; // 이미 정상 → 손대지 않음
+  const S=(p,k)=>num((p.stats||{})[k]);
+  const mk=k=>{const vs=team.map(p=>S(p,k)),mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs);return p=>mx>mn?(S(p,k)-mn)/(mx-mn):0.5;};
+  const nCs=mk('cs'),nGold=mk('goldEarned'),nVis=mk('visionScore'),nWard=mk('wardsPlaced'),nObj=mk('damageToObjectives'),nDmg=mk('damageToChampions'),nTaken=mk('damageTaken'),nMit=mk('selfMitigatedDamage'),nTur=mk('damageToTurrets');
+  const fit=(p,role)=>{
+    if(role==='SUPPORT')return (1-nCs(p))*1.3+(1-nGold(p))*1.0+nVis(p)*1.2+nWard(p)*0.8; // 적은 farm·많은 시야
+    if(role==='JUNGLE') return nObj(p)*2.0+(1-nVis(p))*0.2+0.3;                          // 오브젝트 딜 압도
+    if(role==='ADC')    return nCs(p)*1.2+nDmg(p)*1.0+nTur(p)*0.6+(1-nTaken(p))*0.6;     // 많은 CS·딜·낮은 피해
+    if(role==='MID')    return nDmg(p)*1.3+nCs(p)*0.8+(1-nMit(p))*0.3;                    // 높은 딜
+    return nTaken(p)*1.0+nMit(p)*1.0+nCs(p)*0.5+nTur(p)*0.4;                              // TOP: 탱·경감
+  };
+  const BONUS=0.6; let best=null,bv=-Infinity;
+  _perm5().forEach(order=>{ let sc=0; for(let i=0;i<5;i++){const p=team[order[i]];sc+=fit(p,ROLES5[i]); if(p.lane===ROLES5[i])sc+=BONUS;} if(sc>bv){bv=sc;best=order;} });
+  for(let i=0;i<5;i++)team[best[i]].lane=ROLES5[i];
+}
+function fixMatchLanes(m){ if(!m||!Array.isArray(m.participants))return; ['BLUE','RED'].forEach(t=>{const team=m.participants.filter(p=>p.team===t); if(team.length===5)resolveTeamLanes(team);}); }
 function freshState(){return fixState({version:3,players:ROSTER.map(rosterToPlayer),matches:[],voteRooms:[],settings:{mvpMinutes:10}})}
 function fixState(s){
   s=s&&typeof s==='object'?s:{};
@@ -496,6 +516,7 @@ function fixState(s){
     })),
     bans:Array.isArray(m.bans)?m.bans:[]
   }));
+  s.matches.forEach(fixMatchLanes); // 포지션 중복(정글 2명 등) 자동 교정
   s.voteRooms=Array.isArray(s.voteRooms)?s.voteRooms:[];
   s.hiddenReviews=Array.isArray(s.hiddenReviews)?s.hiddenReviews:[];
   s.nameReqs=Array.isArray(s.nameReqs)?s.nameReqs:[];
@@ -1687,7 +1708,9 @@ function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제
   fresh.sort((a,b)=>String(a.playedAt).localeCompare(String(b.playedAt)));
   fresh.forEach(d=>{
     d.setNumber=state.matches.filter(m=>m.playedAt===d.playedAt).length+1; // 날짜별 세트 자동
-    state.matches.push({id:uid('m'),createdAt:new Date().toISOString(),...d});
+    const mm={id:uid('m'),createdAt:new Date().toISOString(),...d};
+    fixMatchLanes(mm); // 포지션 중복 자동 교정
+    state.matches.push(mm);
     pricesAfterMatch(); // 차트 실시간
   });
   save();
