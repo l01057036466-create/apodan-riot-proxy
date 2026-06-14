@@ -1026,23 +1026,23 @@ module.exports = async function handler(req, res) {
       if (prize >= 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSp.name, t: 'spin', v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
       return res.status(200).json({ ok: true, prize: prize, bal: aSp.bal, left: maxSpin - used });
     }
-    // 🎟 스크래치 복권 (300 APO, 하루 3장, 환급 ~85% + 손실 10% 잭팟 적립)
+    // 🎟 스크래치 복권 (1,000 APO, 하루 3장, 환급 ~85% + 손실 10% 잭팟 적립)
     if (req.method === 'POST' && action === 'scratch') {
       var sSc2 = await auth(body.token);
       if (!sSc2 || !sSc2.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var aSc = await getAcct(sSc2.name);
       if (!aSc || aSc.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-      if (aSc.bal < 300) return res.status(400).json({ error: '복권은 300 APO' });
+      if (aSc.bal < 1000) return res.status(400).json({ error: '복권은 1,000 APO' });
       var dSc = kstDate();
       var nSc = Number(await redis(['INCRBY', 'scr:' + dSc + ':' + aSc.name, '1']));
       await redis(['EXPIRE', 'scr:' + dSc + ':' + aSc.name, '93600']);
       if (nSc > 3) return res.status(429).json({ error: '복권은 하루 3장까지! (도박은 적당히 🙏)' });
-      aSc.bal -= 300;
+      aSc.bal -= 1000;
       await redis(['SET', 'arcade:jackpot', '1000', 'NX']); // 시드 1,000 보장
-      await redis(['INCRBY', 'arcade:jackpot', '30']); // 판매액 10% 적립
-      var pz = pickWeighted([[0, 55], [100, 20], [300, 15], [600, 7], [1500, 2.7], ['JP', 0.3]]);
+      await redis(['INCRBY', 'arcade:jackpot', '100']); // 판매액 10% 적립
+      var pz = pickWeighted([[0, 55], [300, 20], [1000, 15], [2000, 7], [5000, 2.7], ['JP', 0.3]]);
       var wonJp = 0;
-      if (pz === 1500) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'scr', v: 1500, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🎫 복권 1등 속보
+      if (pz === 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'scr', v: 5000, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🎫 복권 1등 속보
       if (pz === 'JP') {
         wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 1000;
         await redis(['SET', 'arcade:jackpot', '1000']); // 시드 리셋
@@ -1055,14 +1055,14 @@ module.exports = async function handler(req, res) {
       await ledger(aSc.name, wonJp ? '🎟💥 복권 잭팟!! 누적 풀 전액' : '🎟 스크래치 복권', pz - 300, aSc.bal);
       return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, bal: aSc.bal, left: 3 - nSc });
     }
-    // 🃏 하이로우 더블 (100~2,000, 승률 47.5% — 하우스 엣지 5%)
+    // 🃏 하이로우 더블 (100~20,000, 승률 47.5% — 하우스 엣지 5%)
     if (req.method === 'POST' && action === 'highlow') {
       var sHL = await auth(body.token);
       if (!sHL || !sHL.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var aHL = await getAcct(sHL.name);
       if (!aHL || aHL.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var amtH = Math.round(Number(body.amount) || 0);
-      if (amtH < 100 || amtH > 2000) return res.status(400).json({ error: '판돈은 100~2,000 APO' });
+      if (amtH < 100 || amtH > 20000) return res.status(400).json({ error: '판돈은 100~20,000 APO' });
       if (aHL.bal < amtH) return res.status(400).json({ error: '잔액 부족' });
       var dHL = kstDate();
       var nHL = Number(await redis(['INCRBY', 'hl:' + dHL + ':' + aHL.name, '1']));
@@ -1077,6 +1077,7 @@ module.exports = async function handler(req, res) {
       aHL = await busted(aHL);
       await putAcct(aHL);
       await ledger(aHL.name, winH ? '🃏 하이로우 승! ×2' : '🃏 하이로우 패…', winH ? amtH : -amtH, aHL.bal);
+      if (winH && amtH >= 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aHL.name, t: 'hl', v: amtH, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🃏 하이로우 대박 속보
       return res.status(200).json({ ok: true, win: winH, bal: aHL.bal, left: 20 - nHL });
       } finally { await acctUnlock(sHL.name); }
     }
