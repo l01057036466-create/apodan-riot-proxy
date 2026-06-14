@@ -294,7 +294,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
     <div class="mark">🏆</div>
     <div class="brand">
       <h1>아포단 내전실록</h1>
-      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.6</b></p>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.7</b></p>
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
@@ -311,7 +311,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 <script>
 'use strict';
 /* ============================================================
-   아포단 내전실록 v4.6 — 단일 파일 로컬 앱
+   아포단 내전실록 v4.7 — 단일 파일 로컬 앱
    데이터는 이 브라우저 localStorage에 저장됩니다.
    ============================================================ */
 
@@ -810,7 +810,7 @@ const MVP_W={ // 라인별 MVP 가중치 — 각 라인 시그니처 지표를 �
 function _perfRow(m,p){ // 한 선수의 원지표 묶음(정규화 전)
   const st=p.stats||{};
   const mins=(m.durationMin&&m.durationMin>=5)?m.durationMin:28;
-  let tk=0,tg=0; (m.participants||[]).forEach(x=>{if(x.playerId&&x.team===p.team){tk+=num(x.kills);tg+=num((x.stats||{}).goldEarned)}});
+  let tk=0,tg=0,td=0,tt=0; (m.participants||[]).forEach(x=>{if(x.playerId&&x.team===p.team){const xs=x.stats||{};tk+=num(x.kills);tg+=num(xs.goldEarned);td+=num(xs.damageToChampions);tt+=num(xs.damageTaken)}});
   const has=v=>isFinite(+v)&&+v>0;
   return {
     games:1,wins:0,kda:(num(p.kills)+num(p.assists))/Math.max(1,num(p.deaths)),
@@ -819,7 +819,7 @@ function _perfRow(m,p){ // 한 선수의 원지표 묶음(정규화 전)
     dpm:num(st.damageToChampions)/mins, cspm:num(st.cs)/mins, vspm:num(st.visionScore)/mins,
     objpm:num(st.damageToObjectives)/mins, ccpm:num(st.crowdControlScore)/mins,
     utilpm:(num(st.healing)+num(st.selfMitigatedDamage))/mins, soloPg:num(st.soloKills), hasSolo:('soloKills' in st),
-    dmgShare:has(st.dmgShare)?+st.dmgShare:null, tankShare:has(st.tankShare)?+st.tankShare:null,
+    dmgShare:has(st.dmgShare)?+st.dmgShare:((td>0&&has(st.damageToChampions))?num(st.damageToChampions)/td*100:null), tankShare:has(st.tankShare)?+st.tankShare:((tt>0&&has(st.damageTaken))?num(st.damageTaken)/tt*100:null),
     goldShare:(tg>0&&has(st.goldEarned))?num(st.goldEarned)/tg*100:null,
     gd15:p.gd15!=null?p.gd15:null, csd15:p.csd15!=null?p.csd15:null, xpd15:p.xpd15!=null?p.xpd15:null
   };
@@ -1656,6 +1656,9 @@ function jsonToMatch(obj){ // 외부 JSON 1건 → 경기 데이터 (단건/일�
       lane:LANES.includes(String(p.lane||'').toUpperCase())?String(p.lane).toUpperCase():LANES[i%5],
       rawName, playerId:fp?.id||'', championId:champ,
       kills:num(p.kills??p.k),deaths:num(p.deaths??p.d),assists:num(p.assists??p.a),
+      gd15:(p.gd15!=null&&isFinite(Number(p.gd15)))?Math.round(Number(p.gd15)):null,
+      csd15:(p.csd15!=null&&isFinite(Number(p.csd15)))?Math.round(Number(p.csd15)):null,
+      xpd15:(p.xpd15!=null&&isFinite(Number(p.xpd15)))?Math.round(Number(p.xpd15)):null,
       stats:pickStats(p)};
   });
   const bans=[];
@@ -1682,7 +1685,24 @@ function importJson(){
   $('reviewBox').scrollIntoView({behavior:'smooth',block:'start'});
   toast('JSON을 검수 화면으로 불러왔어요.');
 }
-function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제외 + 일괄 저장
+function enrichExisting(d){ // 중복 경기에 새 지표(솔로킬·15분 리드)가 있으면 기존 경기에 채워넣기
+  let ex=null;
+  if(d.gameId)ex=state.matches.find(m=>m.gameId===d.gameId);
+  if(!ex)ex=state.matches.find(m=>matchSig(m)===matchSig(d));
+  if(!ex)return 0;
+  let added=0;
+  (d.participants||[]).forEach(np=>{
+    const ep=(np.rawName&&ex.participants.find(q=>q.rawName&&q.rawName===np.rawName))
+      ||(np.playerId&&ex.participants.find(q=>q.playerId===np.playerId))
+      ||ex.participants.find(q=>q.team===np.team&&q.championId&&q.championId===np.championId);
+    if(!ep)return;
+    ['gd15','csd15','xpd15'].forEach(k=>{ if(ep[k]==null&&np[k]!=null){ep[k]=np[k];added++} });
+    const ns=np.stats||{}; ep.stats=ep.stats||{};
+    if(!('soloKills' in ep.stats)&&('soloKills' in ns)){ep.stats.soloKills=num(ns.soloKills);added++}
+  });
+  return added;
+}
+function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제외/보강 + 일괄 저장
   let datas=arr.map(jsonToMatch).filter(Boolean);
   if(!datas.length)return toast('가져올 경기가 없어요.',true);
   const isGhost=d=>(d.durationMin!=null&&d.durationMin<5)||(d.participants||[]).every(p=>num(p.kills)+num(p.deaths)+num(p.assists)===0);
@@ -1691,15 +1711,15 @@ function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제
   if(!datas.length)return toast(`전부 5분 미만 무효 게임(다시하기 등)이라 건너뛰었어요.`);
   const seenSig=new Set(state.matches.map(matchSig));
   const seenGid=new Set(state.matches.map(m=>m.gameId).filter(Boolean));
-  const fresh=[];
+  const fresh=[]; let enriched=0;
   for(const d of datas){
-    if((d.gameId&&seenGid.has(d.gameId))||seenSig.has(matchSig(d)))continue;
+    if((d.gameId&&seenGid.has(d.gameId))||seenSig.has(matchSig(d))){enriched+=enrichExisting(d);continue;}
     if(d.gameId)seenGid.add(d.gameId);
     seenSig.add(matchSig(d));
     fresh.push(d);
   }
   const dup=datas.length-fresh.length;
-  if(!fresh.length)return toast('전부 이미 저장된 경기예요. (중복 '+dup+'건 건너뜀)');
+  if(!fresh.length){ if(enriched){save();render();} return toast(enriched?`기존 경기에 새 지표 ${enriched}개를 보강했어요! (솔로킬·15분 리드 등) 🎉`:'전부 이미 저장된 경기예요. (중복 '+dup+'건 건너뜀)'); }
   const unmatched=fresh.reduce((n,d)=>n+d.participants.filter(p=>!p.playerId&&p.rawName).length,0);
   let msg=`${fresh.length}경기를 한 번에 저장할까요?`;
   if(dup)msg+=` (이미 있는 ${dup}건은 제외)`;
@@ -1714,7 +1734,7 @@ function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제
     pricesAfterMatch(); // 차트 실시간
   });
   save();
-  toast(`내전 ${fresh.length}판을 저장했어요.`+(dup?` (중복 ${dup}건 제외)`:'')+(typeof ghosts!=='undefined'&&ghosts?` (무효 게임 ${ghosts}건 제외)`:''));
+  toast(`내전 ${fresh.length}판을 저장했어요.`+(dup?` (중복 ${dup}건 제외)`:'')+(enriched?` · 기존 경기 지표 ${enriched}개 보강`:'')+(typeof ghosts!=='undefined'&&ghosts?` (무효 게임 ${ghosts}건 제외)`:''));
   go('matches');
 }
 function jsonSample(){
@@ -6119,9 +6139,16 @@ function lineupCard(L){
     ${O?`<p class="mini dim" style="margin:10px 0 0">두 배당 모두 재미용 — 데이터 배당은 폼·승률 계산, 유저 배당은 관전자 투표(기기당 1표). 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`:''}
   </div>`;
 }
+function matchIntensity(m){ // 치열도: 평점 높고 + 양팀 접전(격차 작음)
+  const rt=(typeof matchRatings==='function')?matchRatings(m):[]; if(!rt.length)return -1;
+  const w=rt.filter(x=>x.win),l=rt.filter(x=>!x.win);
+  const av=a=>a.length?a.reduce((s,x)=>s+x.score,0)/a.length:0;
+  return av(rt)-Math.abs(av(w)-av(l))*1.4;
+}
 function pgDashboard(){
   const P=statPlayers(),A=makeAwards().slice(0,6);
-  const recent=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))[0];
+  const _rp=[...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a))).slice(0,12); // 최근 12경기 중
+  const recent=_rp.length?_rp.map(m=>({m,s:matchIntensity(m)})).sort((a,b)=>b.s-a.s)[0].m:null; // 가장 치열했던 한 판
   const meta=statChamps().filter(c=>c.picks>=2)[0];
   return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
   ${(()=>{if(voteApiBase()){bankLoadRoster();if(window._trades===undefined){window._trades=null;loadTrades().then(()=>softRender())}}const rb=recentBusts(48);if(!rb.length)return'';
@@ -6146,7 +6173,7 @@ function pgDashboard(){
     <div class="kpi"><div class="n">${meta?esc(meta.champion):'—'}</div><div class="l">아포단 메타픽</div></div>
   </div>
   <div class="grid c2" style="margin-top:14px">
-    <div class="card"><h3>최근 경기</h3>${recent?matchInner(recent,true):'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
+    <div class="card"><h3>최근 경기 <span class="tag">🔥 가장 치열했던 한 판</span></h3>${recent?matchInner(recent,true):'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
     <div class="card"><h3>오늘의 칭호 <span class="tag">AUTO</span></h3>
       ${A.length?`<div class="awards">${A.map(awardCard).join('')}</div>`:'<div class="empty">경기를 몇 판 기록하면 칭호가 자동으로 생겨요.</div>'}
     </div>
