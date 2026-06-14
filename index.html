@@ -5370,8 +5370,10 @@ async function loadCmts(board,force){
   try{
     const j=await commentCall('list',{board},'GET');
     window._cmtCache[board]=Array.isArray(j.comments)?j.comments:[];
+    window._cmtLikes=window._cmtLikes||{}; window._cmtLikes[board]=j.likes||{};
     window._cmtLoad[board]=Date.now();
-    if(typeof render==='function')render('force');
+    // 입력 중이면 화면을 건드리지 않음(softRender) — 작성 중인 글 보호
+    if(typeof softRender==='function')softRender(); else if(typeof render==='function')render('force');
   }catch(e){ window._cmtCache[board]=window._cmtCache[board]||[]; window._cmtLoad[board]=Date.now(); }
   finally{ window._cmtInflight[board]=false; }
 }
@@ -5391,9 +5393,7 @@ function cmtRow(c,board,isReply){
   const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
   const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
   const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
-  const likeCell=c.real
-    ? `<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`
-    : `<div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
+  const likeCell=`<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
   const sz=isReply?26:30, fs=isReply?13:16;
   let bg='';
   if(isReply)bg='margin-left:30px;background:rgba(255,255,255,.02)';
@@ -5467,6 +5467,14 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   Object.keys(repliesByParent).forEach(function(k){
     if(!topIds[k]){ repliesByParent[k].forEach(function(o){ o.best=false; tops.push(o); }); delete repliesByParent[k]; }
   });
+  // 3.5) 서버 좋아요 반영: 가짜 댓글 = 시드기본 + 서버추천, 실제 댓글 = 서버추천
+  const lk=(window._cmtLikes&&window._cmtLikes[board])||{};
+  function applyLike(c){
+    if(c.real){ c.like=(lk[c.id]!=null?lk[c.id]:(c.like||0)); }
+    else { if(c._seed==null)c._seed=(c.like||0); c.like=c._seed+(lk[c.id]||0); }
+  }
+  tops.forEach(applyLike);
+  Object.keys(repliesByParent).forEach(function(k){ repliesByParent[k].forEach(applyLike); });
   // 4) 렌더
   let body='';
   tops.forEach(function(t){
@@ -5505,7 +5513,11 @@ async function submitCmt(board,parent){
     if(tEl)tEl.value='';
     if(parent){ window._cmtReplyOpen=window._cmtReplyOpen||{}; window._cmtReplyOpen[board+'|'+parent]=false; }
     if(typeof render==='function')render('force');
-  }catch(e){ if(typeof toast==='function')toast(e.message||'등록 실패',true); }
+  }catch(e){
+    let m=e.message||'등록 실패';
+    if(/\b404\b/.test(m))m='댓글 서버(api/comments.js)가 아직 배포 안 된 것 같아요. 저장소에 추가하고 배포해주세요.';
+    if(typeof toast==='function')toast(m,true);
+  }
 }
 /* 답글 작성칸 토글 (로그인 필수) */
 function cmtReply(board,cid){
@@ -5516,16 +5528,20 @@ function cmtReply(board,cid){
   window._cmtReplyOpen[k]=!window._cmtReplyOpen[k];
   if(typeof render==='function')render('force');
 }
-/* 실제 댓글 좋아요(추천) — 로그인 필수 */
+/* 댓글 좋아요(추천) — 로그인 필수, 가짜·실제 모두 가능 */
 async function likeCmt(board,id){
   const B=bankSession();
   if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 추천할 수 있어요',true); return; }
-  if(!voteApiBase())return;
+  if(!voteApiBase()){ if(typeof toast==='function')toast('서버가 연결돼야 추천할 수 있어요',true); return; }
   try{
     const j=await commentCall('like',{board:board,id:id},'POST');
+    window._cmtLikes=window._cmtLikes||{}; window._cmtLikes[board]=window._cmtLikes[board]||{};
+    if(j&&typeof j.like!=='undefined')window._cmtLikes[board][id]=j.like;
+    else window._cmtLikes[board][id]=(window._cmtLikes[board][id]||0)+1;
+    // 실제 댓글 객체에도 반영(목록 캐시)
     const arr=(window._cmtCache&&window._cmtCache[board])||[];
     const c=arr.find(function(x){ return x.id===id; });
-    if(c)c.like=(j&&j.like)||((c.like||0)+1);
+    if(c)c.like=window._cmtLikes[board][id];
     if(typeof render==='function')render('force');
   }catch(e){ if(typeof toast==='function')toast(e.message||'추천 실패',true); }
 }
