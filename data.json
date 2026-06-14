@@ -193,9 +193,9 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "언랭",
-   "flexTier": "언랭",
-   "riotPuuid": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "pKdPKLE5-N3z4a_193rcLX9LXPd87WON4M-pcpxucSv-2j0saBjuKKyD8EUsmg4U5inQ7kdfStQkOw",
    "soloPos": "",
    "subPos": ""
   },
@@ -21144,7 +21144,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-14T01:28:49.261Z",
+  "lastBackupAt": "2026-06-14T01:29:24.751Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21240,8 +21240,8 @@
    ]
   }
  ],
- "rev": 229,
- "updatedAt": "2026-06-14T01:29:18.064Z",
+ "rev": 231,
+ "updatedAt": "2026-06-14T01:30:23.938Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
