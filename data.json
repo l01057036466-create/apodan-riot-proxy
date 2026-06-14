@@ -22103,78 +22103,6 @@
    ]
   },
   {
-   "id": "m_9prmkl5mqdt79rb",
-   "playedAt": "2026-06-14",
-   "setNumber": 4,
-   "winnerTeam": "BLUE",
-   "memo": "클라이언트 추출 입력",
-   "mvpId": null,
-   "gameId": "8258976943",
-   "durationMin": 17,
-   "createdAt": "2026-06-14T13:17:39.239Z",
-   "participants": [
-    {
-     "team": "BLUE",
-     "lane": "TOP",
-     "playerId": "p_0g6qhb6e_mq7nhxuq",
-     "rawName": "딜폿하면원딜안함",
-     "championId": "크산테",
-     "kills": 4,
-     "deaths": 5,
-     "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
-     "stats": {
-      "cs": 58,
-      "goldEarned": 5092,
-      "damageToChampions": 18993,
-      "damageTaken": 15978,
-      "visionScore": 0,
-      "wardsPlaced": 0,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
-      "crowdControlScore": 41,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
-      "healing": 2298,
-      "selfMitigatedDamage": 14391,
-      "soloKills": 0
-     }
-    },
-    {
-     "team": "RED",
-     "lane": "JUNGLE",
-     "playerId": "p_gi86d5qmq7ub77o",
-     "rawName": "세혀닝",
-     "championId": "사이온",
-     "kills": 5,
-     "deaths": 4,
-     "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
-     "stats": {
-      "cs": 102,
-      "goldEarned": 7148,
-      "damageToChampions": 14274,
-      "damageTaken": 24256,
-      "visionScore": 11,
-      "wardsPlaced": 6,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
-      "crowdControlScore": 27,
-      "damageToObjectives": 6538,
-      "damageToTurrets": 6538,
-      "healing": 4602,
-      "selfMitigatedDamage": 21437,
-      "soloKills": 0
-     }
-    }
-   ],
-   "bans": []
-  },
-  {
    "id": "m_mxjrfmrmqdt79s4",
    "playedAt": "2026-06-14",
    "setNumber": 5,
@@ -22870,7 +22798,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-14T13:17:49.159Z",
+  "lastBackupAt": "2026-06-14T13:36:56.160Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -22945,8 +22873,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 260,
- "updatedAt": "2026-06-14T13:36:48.442Z",
+ "rev": 262,
+ "updatedAt": "2026-06-14T13:38:26.608Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
