@@ -5431,11 +5431,11 @@ function cmtComposer(board,parent){
   }
   const sid=_cmtSafeId(parent?(board+'|'+parent):board);
   const ph=parent?'답글 달기…':'댓글 남기기…';
-  const onkey=`if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitCmt('${board}','${parent||''}')}`;
+  const onkey=`if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitCmt(this,'${board}','${parent||''}')}`;
   return `<div style="display:flex;gap:6px;align-items:center;${parent?'margin:4px 0 4px 30px':'margin:6px 0 8px'}">
     <span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>
     <input id="ct_${sid}" maxlength="300" placeholder="${ph}" onkeydown="${onkey}" style="flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card2,#161922);color:var(--fg)" />
-    <button class="btn sm" style="flex:none" onclick="submitCmt('${board}','${parent||''}')">등록</button>
+    <button class="btn sm" style="flex:none" onclick="submitCmt(this,'${board}','${parent||''}')">등록</button>
   </div>`;
 }
 
@@ -5517,25 +5517,29 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   ${body}`;
 }
 
-/* 댓글/답글 등록 (로그인 필수) */
-async function submitCmt(board,parent){
-  parent=parent||'';
-  const B=bankSession();
-  if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 댓글을 달 수 있어요',true); if(typeof go==='function')go('bank'); return; }
-  const sid=_cmtSafeId(parent?(board+'|'+parent):board);
-  const tEl=byId('ct_'+sid);
-  const text=(tEl&&tEl.value||'').trim();
-  if(!text){ if(typeof toast==='function')toast('내용을 입력해주세요',true); if(tEl)tEl.focus(); return; }
-  if(!voteApiBase()){ if(typeof toast==='function')toast('서버가 연결돼야 댓글이 달려요 (설정 → 투표 서버)',true); return; }
+/* 댓글/답글 등록 (로그인 필수) — el=클릭된 버튼/엔터친 인풋 */
+async function submitCmt(el,board,parent){
   try{
+    parent=parent||'';
+    const B=bankSession();
+    if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 댓글을 달 수 있어요',true); if(typeof go==='function')go('bank'); return; }
+    // 입력칸: 같은 작성칸 안에서 직접 찾기 (id 충돌·중복 렌더에도 안전), 실패 시 id로 폴백
+    let tEl=null;
+    if(el&&el.parentNode&&el.parentNode.querySelector)tEl=el.parentNode.querySelector('input');
+    if(!tEl)tEl=(typeof $==='function'?$:byId)('ct_'+_cmtSafeId(parent?(board+'|'+parent):board));
+    const text=(tEl&&tEl.value||'').trim();
+    if(!text){ if(typeof toast==='function')toast('내용을 입력해주세요',true); if(tEl&&tEl.focus)tEl.focus(); return; }
+    if(!voteApiBase()){ if(typeof toast==='function')toast('서버가 연결돼야 댓글이 달려요 (설정 → 투표 서버)',true); return; }
     const j=await commentCall('add',{board:board,text:text,parent:parent},'POST'); // 닉 안 보냄 → 서버가 로그인 계정명 사용
     window._cmtCache=window._cmtCache||{}; window._cmtCache[board]=window._cmtCache[board]||[];
     if(j&&j.comment)window._cmtCache[board].push(j.comment);
     if(tEl)tEl.value='';
     if(parent){ window._cmtReplyOpen=window._cmtReplyOpen||{}; window._cmtReplyOpen[board+'|'+parent]=false; }
+    window._ime=false; // 한글 조합 플래그 잔류로 렌더가 막히는 것 방지
     if(typeof render==='function')render('force');
+    if(typeof toast==='function')toast('댓글을 남겼어요 ✅');
   }catch(e){
-    let m=e.message||'등록 실패';
+    let m=(e&&e.message)||'등록 실패';
     if(/알 수 없는 요청|\b404\b/.test(m))m='댓글 기능이 포함된 최신 bank.js로 배포해야 해요 (api/bank.js 갱신 후 재배포).';
     if(typeof toast==='function')toast(m,true);
   }
