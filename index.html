@@ -294,7 +294,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
     <div class="mark">🏆</div>
     <div class="brand">
       <h1>아포단 내전실록</h1>
-      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.7</b></p>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v4.8</b></p>
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
@@ -311,7 +311,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 <script>
 'use strict';
 /* ============================================================
-   아포단 내전실록 v4.7 — 단일 파일 로컬 앱
+   아포단 내전실록 v4.8 — 단일 파일 로컬 앱
    데이터는 이 브라우저 localStorage에 저장됩니다.
    ============================================================ */
 
@@ -1719,7 +1719,7 @@ function importBulk(arr){ // 내전 추출기 "전부 변환" 묶음: 중복 제
     fresh.push(d);
   }
   const dup=datas.length-fresh.length;
-  if(!fresh.length){ if(enriched){save();render();} return toast(enriched?`기존 경기에 새 지표 ${enriched}개를 보강했어요! (솔로킬·15분 리드 등) 🎉`:'전부 이미 저장된 경기예요. (중복 '+dup+'건 건너뜀)'); }
+  if(!fresh.length){ if(enriched){save();render();} return toast(enriched?`기존 경기에 새 지표 ${enriched}개를 보강했어요! (솔로킬·15분 리드 등) 🎉`:`이미 저장된 경기예요 (중복 ${dup}건). 파일에 새 지표(솔로킬·15분 리드)가 없어서 추가된 건 없어요.`); }
   const unmatched=fresh.reduce((n,d)=>n+d.participants.filter(p=>!p.playerId&&p.rawName).length,0);
   let msg=`${fresh.length}경기를 한 번에 저장할까요?`;
   if(dup)msg+=` (이미 있는 ${dup}건은 제외)`;
