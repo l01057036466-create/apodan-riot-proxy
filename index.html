@@ -5109,6 +5109,10 @@ const CC_NICK_APODAN=['아싸4년차','집순이','집돌이','포획대상1호'
 const CC_FAN_NICK=['{n}빠순이','{n}빠돌이','{n}안티','{n}수비대','{n}찐팬','{n}거품론자','{n}까','{n}광팬','{n}만본다','{n}찜','{n}지킴이','{n}응원단','{n}안티계왕','{n}매니저','{n}홀릭','{n}없으면못봄'];
 const CC_AVA=['🐯','😎','🤡','👽','🐶','🐱','🦊','🐰','🐻','🦁','🐸','🐵','🐔','🤖','👻','💀','🎮','🍗','🐍','🦅','🐢','🐼','🦝','🐺','🐗','🦄','🐲','🔥','⭐','🍀','🌙','☕','🍜','🐧','🦉','🐹','🐙','🦖','🐝','🦜'];
 const CC_AVA_BG=['#3a2e12','#16302a','#2a1620','#1a2740','#2e1a3a','#3a1a1a','#16321a','#322a12','#1a3232','#2a1a32'];
+// ── 짭(사칭) 닉용 유명인/캐릭터 이름 (가짜 입장번호 + 이 이름 = "98 마이클잭슨") ──
+const CC_NICK_CELEB=['마이클잭슨','페이커','손흥민','메시','호날두','뽀로로','루피','일론머스크','관우','조조','제갈량','이순신','세종대왕','강호동','유재석','침착맨','쯔양','부산갈매기','내일은날씨','지나가던etc','피카츄','짱구','도라에몽','김프로','이대리','옆집강아지','우리집고양이','배고픈사람','퇴근시켜줘','월급루팡','웅앵웅','어디보자','관전자A','익명의롤린이','동네형','산타할아버지','홍길동','김아무개','전직프로(자칭)'];
+// ── 가짜 답글(티키타카) 풀 — 짧은 리액션/반박 ──
+const CC_REPLY=['ㄹㅇㅋㅋ','이거 맞말이다','ㄴㄴ 그건 아니지','팩트네','반박 못 하겠다','어그로 ㄴㄴ','ㅇㅈ ㅋㅋ','그건 좀 선넘었다','진정해라 ㅋㅋ','캡처해둔다','이게 맞냐 진짜','동의한다','뇌피셜 ㄴㄴ','국룰이지','ㅗㅜㅑ','정배충 또 시작','역배가 국룰','ㅋㅋㅋㅋㅋ','웃기네 ㅋㅋ','그래서 누가 이기는데','님 글 캡처감','윗댓 진정','이건 인정','반박시 님 말이 맞음','ㄹㅇ 공감','그건 오바다','선동 ㄴㄴ','팩트로 조지네','ㅇㅋㅇㅋ','이 댓글 박제','과몰입 ㄴㄴ','담백하게 인정','그래도 그건 좀','님 뭐 보고 말하는 거임','ㅋㅋ 또 시작','이런 게 떡밥이지','내 말이','글쎄다','노잼','개추 박는다','비추 누른다','이건 좀 아닌 듯','맞말 대잔치','캭 인정','님 분석 좋다','이 정도면 선수 가족인 듯','뇌절 ㄴㄴ','담엔 좀 더 잘하겠지'];
 /* ── 시드 PRNG (공지/경기별 고정 — 폴링 리렌더에도 안 흔들림) ── */
 function _ccHash(s){let h=2166136261>>>0;s=String(s||'');for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function _ccRng(seed){let a=(seed>>>0)||1;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -5118,6 +5122,13 @@ function _ccShuffleIdx(n,rng){const a=Array.from({length:n},(_,i)=>i);for(let i=
 /* ── 닉네임 생성 (빠/안티 + 아싸 + 후푸JR + 롤테마 믹스) ── */
 function ccNick(rng, roster){
   const r=rng();
+  // 짭(사칭) 닉 (~8%): 가짜 입장번호 + 로스터/유명인 이름 → "00 물방울" / "98 마이클잭슨"
+  if(r<0.08){
+    const num=('0'+Math.floor(rng()*100)).slice(-2);
+    const useRoster=roster&&roster.length&&rng()<0.5;
+    const name=useRoster?_ccPick(roster,rng):_ccPick(CC_NICK_CELEB,rng);
+    return num+' '+name;
+  }
   // 선수 개인 빠/안티 닉 (로스터 있을 때 ~20%)
   if(roster&&roster.length&&r<0.20){
     const who=_ccPick(roster,rng);
@@ -5233,16 +5244,11 @@ function communityFeed(L){
   byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r.ago=ccAgo(40+i*25+rng()*120)});
   let acc=0;
   rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
-  const best=byLike.slice(0,3), rest=rows.filter(r=>!bestSet.has(r._o));
-  const headCount=N;
-  const body=best.map(c=>ccRow(c,true)).join('')+rest.map(c=>ccRow(c,false)).join('');
-  return `<div class="hr"></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 2px">
-    <p class="mini" style="margin:0;font-weight:800;color:var(--mut)">🗯 떡밥 게시판 <span class="pill" style="font-size:10px;padding:0 7px;font-weight:800">💬 ${headCount}</span></p>
-    <span class="mini dim" style="font-size:10px">추천순 · 익명 댓글</span>
-  </div>
-  <p class="mini dim" style="margin:0 0 4px;font-size:10.5px">※ 멤버들의 관전평을 모은 자동 떡밥글이에요 (재미용)</p>
-  ${body}`;
+  const board=_cmtBoard(L.id);
+  maybeLoadCmts(board);
+  rows.forEach(r=>{ r.id='f|'+board+'|'+r._o; r.best=bestSet.has(r._o); });
+  const fakeTops=byLike.slice(0,3).concat(rows.filter(r=>!bestSet.has(r._o)));
+  return cmtBoardHTML(board, fakeTops, rng, parts, '🗯 떡밥 게시판', '※ 멤버 자동 관전평 + 실제 댓글이 함께 모이는 게시판이에요 (닉네임 자유 · 답글 가능)');
 }
 function ccToggle(id){ window._cfOpen=window._cfOpen||{}; window._cfOpen[id]=!window._cfOpen[id]; if(typeof render==='function')render('force'); }
 
@@ -5319,18 +5325,211 @@ function resultFeed(m){
   byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r.ago=ccAgo(40+i*25+rng()*120)});
   let acc=0;
   rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
-  const best=byLike.slice(0,3), rest=rows.filter(r=>!bestSet.has(r._o));
-  const headCount=N; // 판당 10개 이하라 전부 노출 (표기수 = 실제수)
-  const body=best.map(c=>ccRow(c,true)).join('')+rest.map(c=>ccRow(c,false)).join('');
-  return `<div class="hr"></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 2px">
-    <p class="mini" style="margin:0;font-weight:800;color:var(--mut)">🗯 경기 반응 <span class="pill" style="font-size:10px;padding:0 7px;font-weight:800">💬 ${headCount}</span></p>
-    <span class="mini dim" style="font-size:10px">추천순 · 익명 댓글</span>
-  </div>
-  <p class="mini dim" style="margin:0 0 4px;font-size:10.5px">※ 경기 끝나고 멤버들이 남긴 반응을 모은 자동 떡밥글이에요 (재미용)</p>
-  ${body}`;
+  const board=_cmtBoard('m:'+m.id);
+  maybeLoadCmts(board);
+  rows.forEach(r=>{ r.id='f|'+board+'|'+r._o; r.best=bestSet.has(r._o); });
+  const fakeTops=byLike.slice(0,3).concat(rows.filter(r=>!bestSet.has(r._o)));
+  return cmtBoardHTML(board, fakeTops, rng, parts, '🗯 경기 반응', '※ 멤버 자동 반응 + 실제 댓글이 함께 모이는 게시판이에요 (닉네임 자유 · 답글 가능)');
 }
 function rfToggle(id){ window._rfOpen=window._rfOpen||{}; window._rfOpen[id]=!window._rfOpen[id]; if(typeof render==='function')render('force'); }
+/* ═══════════ 💬 실시간 댓글 시스템 (실제 유저 댓글 + 가짜 자동댓글 혼합 · 답글 · 좋아요) ═══════════ */
+/* board id 안전화 (서버 정규식 [A-Za-z0-9:_-] 와 일치) */
+function _cmtBoard(raw){ return String(raw||'').replace(/[^A-Za-z0-9:_\-]/g,'_').slice(0,80); }
+function _cmtSafeId(s){ return 'c'+_ccHash(String(s||'')); }
+const CMT_NICK_KEY='apodan_cmt_nick';
+function cmtNick(){ return lsGet(CMT_NICK_KEY)||''; }
+function cmtSetNick(v){ lsSet(CMT_NICK_KEY,String(v||'').slice(0,20)); }
+
+/* 댓글 API 호출 (bankCall 과 동일 베이스/방식) */
+async function commentCall(action,body,method){
+  const api=voteApiBase();
+  if(!api)throw new Error('서버 미연결 — 설정에서 투표 서버(같은 주소)를 먼저 연결해주세요');
+  const url=api+'/api/comments?action='+encodeURIComponent(action)+(method==='GET'&&body&&body.board?('&board='+encodeURIComponent(body.board)):'');
+  const opt=method==='GET'?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({token:bankToken()},body||{}))};
+  const r=await fetch(url,opt);
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+
+/* 게시판별 실제 댓글 로딩 (15초 쓰로틀, 폴링 리렌더 루프 방지) */
+function maybeLoadCmts(board){
+  if(!board||!voteApiBase())return;
+  window._cmtLoad=window._cmtLoad||{}; window._cmtInflight=window._cmtInflight||{};
+  if(window._cmtInflight[board])return;
+  if(window._cmtLoad[board]&&Date.now()-window._cmtLoad[board]<15000)return;
+  setTimeout(function(){ loadCmts(board); },0);
+}
+async function loadCmts(board,force){
+  if(!board)return;
+  window._cmtCache=window._cmtCache||{}; window._cmtLoad=window._cmtLoad||{}; window._cmtInflight=window._cmtInflight||{};
+  if(!voteApiBase()){ window._cmtCache[board]=window._cmtCache[board]||[]; return; }
+  if(window._cmtInflight[board])return;
+  if(!force&&window._cmtLoad[board]&&Date.now()-window._cmtLoad[board]<15000)return;
+  window._cmtInflight[board]=true;
+  try{
+    const j=await commentCall('list',{board},'GET');
+    window._cmtCache[board]=Array.isArray(j.comments)?j.comments:[];
+    window._cmtLoad[board]=Date.now();
+    if(typeof render==='function')render('force');
+  }catch(e){ window._cmtCache[board]=window._cmtCache[board]||[]; window._cmtLoad[board]=Date.now(); }
+  finally{ window._cmtInflight[board]=false; }
+}
+
+/* 실제 댓글 → 렌더 객체 (아바타/배경은 id로 고정) */
+function ccAgoTs(ts){ if(!ts)return '방금'; const m=(Date.now()-ts)/60000; return m<0?'방금':ccAgo(m); }
+function _realToObj(rc){
+  const rr=_ccRng(_ccHash('rc|'+(rc.id||'')));
+  return { id:rc.id, nick:rc.nick||'익명', text:rc.text||'', ago:ccAgoTs(rc.ts), like:rc.like||0,
+    ava:_ccPick(CC_AVA,rr), bg:_ccPick(CC_AVA_BG,rr), real:true, best:false, parent:rc.parent||'', _ts:rc.ts||0 };
+}
+
+/* 댓글 한 줄 (top/답글 공용). 실제 댓글은 👍 클릭 가능 + LIVE 표식 */
+function cmtRow(c,board,isReply){
+  const likeCol=c.like>=60?'#ff8a3a':c.like>=15?'var(--gold)':'var(--dim)';
+  const bestBadge=(c.best&&!isReply)?'<span class="pill" style="font-size:9px;padding:0 5px;font-weight:900;border-color:var(--lose);color:var(--lose)">BEST</span>':'';
+  const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
+  const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
+  const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
+  const likeCell=c.real
+    ? `<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`
+    : `<div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
+  const sz=isReply?26:30, fs=isReply?13:16;
+  let bg='';
+  if(isReply)bg='margin-left:30px;background:rgba(255,255,255,.02)';
+  else if(c.best)bg='background:rgba(242,184,75,.05)';
+  return `<div style="display:flex;gap:9px;padding:8px 2px;border-top:1px solid var(--line);${bg}">
+    <div style="width:${sz}px;height:${sz}px;border-radius:50%;flex:none;background:${c.bg};display:grid;place-items:center;font-size:${fs}px">${c.ava}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        ${bestBadge}${liveBadge}
+        <b style="font-size:12px;color:var(--mut)">${esc(c.nick)}</b>
+        <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
+        ${replyBtn}
+      </div>
+      <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${esc(c.text)}</p>
+    </div>
+    ${likeCell}
+  </div>`;
+}
+
+/* 작성칸 (로그인 필수 · 작성자=내 계정명) */
+function cmtComposer(board,parent){
+  const B=bankSession();
+  if(!B||!B.name){
+    if(parent)return ''; // 답글칸은 비로그인 시 표시 안 함 (메인 안내로 충분)
+    return `<div style="display:flex;gap:8px;align-items:center;justify-content:space-between;margin:6px 0 8px;padding:9px 11px;border:1px dashed var(--line);border-radius:10px;background:var(--card2,#161922)">
+      <span class="mini dim" style="font-size:12px">🔒 댓글을 남기려면 거래소에서 로그인하세요</span>
+      <button class="btn sm" style="flex:none" onclick="go('bank')">로그인하러 가기</button>
+    </div>`;
+  }
+  const sid=_cmtSafeId(parent?(board+'|'+parent):board);
+  const ph=parent?'답글 달기…':'댓글 남기기…';
+  const onkey=`if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitCmt('${board}','${parent||''}')}`;
+  return `<div style="display:flex;gap:6px;align-items:center;${parent?'margin:4px 0 4px 30px':'margin:6px 0 8px'}">
+    <span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>
+    <input id="ct_${sid}" maxlength="300" placeholder="${ph}" onkeydown="${onkey}" style="flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card2,#161922);color:var(--fg)" />
+    <button class="btn sm" style="flex:none" onclick="submitCmt('${board}','${parent||''}')">등록</button>
+  </div>`;
+}
+
+/* 보드 전체 렌더: 가짜 top + 가짜 답글 + 실제 댓글/답글 혼합 (실제는 최신이 위로) */
+function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
+  const repliesByParent={};
+  // 1) 가짜 답글 (45% 확률, 1~2개) — 티키타카
+  fakeTops.forEach(function(t){
+    if(rng()<0.45){
+      const n=1+Math.floor(rng()*2), reps=[];
+      for(let i=0;i<n;i++){
+        reps.push({ id:t.id+'|fr'+i, nick:ccNick(rng,roster), text:_ccPick(CC_REPLY,rng),
+          ava:_ccPick(CC_AVA,rng), bg:_ccPick(CC_AVA_BG,rng),
+          like:Math.floor(Math.pow(rng(),2.6)*45), ago:ccAgo(Math.floor(rng()*100)),
+          real:false, best:false, parent:t.id, _ts:0 });
+      }
+      repliesByParent[t.id]=reps;
+    }
+  });
+  // 2) 실제 댓글 병합
+  const real=(window._cmtCache&&window._cmtCache[board])||[];
+  const realTops=[];
+  real.forEach(function(rc){
+    if(!rc||!rc.id)return;
+    const o=_realToObj(rc);
+    if(rc.parent){ (repliesByParent[rc.parent]=repliesByParent[rc.parent]||[]).push(o); }
+    else realTops.push(o);
+  });
+  realTops.sort(function(a,b){ return (b._ts||0)-(a._ts||0); }); // 실제 최신이 위
+  Object.keys(repliesByParent).forEach(function(k){ repliesByParent[k].sort(function(a,b){ return (a._ts||0)-(b._ts||0); }); });
+  // 3) top 순서: 실제(최신) → 가짜(BEST 먼저)
+  let tops=realTops.concat(fakeTops);
+  const topIds={}; tops.forEach(function(t){ topIds[t.id]=1; });
+  // 부모를 못 찾은 답글(고아) → 일반 댓글로 표시 (유실 방지)
+  Object.keys(repliesByParent).forEach(function(k){
+    if(!topIds[k]){ repliesByParent[k].forEach(function(o){ o.best=false; tops.push(o); }); delete repliesByParent[k]; }
+  });
+  // 4) 렌더
+  let body='';
+  tops.forEach(function(t){
+    body+=cmtRow(t,board,false);
+    const rk=board+'|'+t.id;
+    if(window._cmtReplyOpen&&window._cmtReplyOpen[rk]) body+=cmtComposer(board,t.id);
+    (repliesByParent[t.id]||[]).forEach(function(rp){ body+=cmtRow(rp,board,true); });
+  });
+  let cnt=tops.length; Object.keys(repliesByParent).forEach(function(k){ cnt+=repliesByParent[k].length; });
+  const noServer=!voteApiBase();
+  return `<div class="hr"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 2px">
+    <p class="mini" style="margin:0;font-weight:800;color:var(--mut)">${title} <span class="pill" style="font-size:10px;padding:0 7px;font-weight:800">💬 ${cnt}</span></p>
+    <span class="mini dim" style="font-size:10px">실시간 · 익명 댓글</span>
+  </div>
+  <p class="mini dim" style="margin:0 0 4px;font-size:10.5px">${note}</p>
+  ${cmtComposer(board,'')}
+  ${noServer?'<p class="mini dim" style="margin:0 0 6px;font-size:10px;color:var(--lose)">⚠ 서버 미연결 상태라 지금은 자동 댓글만 보여요. 설정 → 투표 서버를 연결하면 실제 댓글이 달려요.</p>':''}
+  ${body}`;
+}
+
+/* 댓글/답글 등록 (로그인 필수) */
+async function submitCmt(board,parent){
+  parent=parent||'';
+  const B=bankSession();
+  if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 댓글을 달 수 있어요',true); if(typeof go==='function')go('bank'); return; }
+  const sid=_cmtSafeId(parent?(board+'|'+parent):board);
+  const tEl=byId('ct_'+sid);
+  const text=(tEl&&tEl.value||'').trim();
+  if(!text){ if(typeof toast==='function')toast('내용을 입력해주세요',true); if(tEl)tEl.focus(); return; }
+  if(!voteApiBase()){ if(typeof toast==='function')toast('서버가 연결돼야 댓글이 달려요 (설정 → 투표 서버)',true); return; }
+  try{
+    const j=await commentCall('add',{board:board,text:text,parent:parent},'POST'); // 닉 안 보냄 → 서버가 로그인 계정명 사용
+    window._cmtCache=window._cmtCache||{}; window._cmtCache[board]=window._cmtCache[board]||[];
+    if(j&&j.comment)window._cmtCache[board].push(j.comment);
+    if(tEl)tEl.value='';
+    if(parent){ window._cmtReplyOpen=window._cmtReplyOpen||{}; window._cmtReplyOpen[board+'|'+parent]=false; }
+    if(typeof render==='function')render('force');
+  }catch(e){ if(typeof toast==='function')toast(e.message||'등록 실패',true); }
+}
+/* 답글 작성칸 토글 (로그인 필수) */
+function cmtReply(board,cid){
+  const B=bankSession();
+  if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 답글을 달 수 있어요',true); if(typeof go==='function')go('bank'); return; }
+  window._cmtReplyOpen=window._cmtReplyOpen||{};
+  const k=board+'|'+cid;
+  window._cmtReplyOpen[k]=!window._cmtReplyOpen[k];
+  if(typeof render==='function')render('force');
+}
+/* 실제 댓글 좋아요(추천) — 로그인 필수 */
+async function likeCmt(board,id){
+  const B=bankSession();
+  if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 추천할 수 있어요',true); return; }
+  if(!voteApiBase())return;
+  try{
+    const j=await commentCall('like',{board:board,id:id},'POST');
+    const arr=(window._cmtCache&&window._cmtCache[board])||[];
+    const c=arr.find(function(x){ return x.id===id; });
+    if(c)c.like=(j&&j.like)||((c.like||0)+1);
+    if(typeof render==='function')render('force');
+  }catch(e){ if(typeof toast==='function')toast(e.message||'추천 실패',true); }
+}
+
 
 /* ═══════════ 🐯 후푸 풀카드 — 업로드 이미지 1:1 복제 ═══════════ */
 /* 팀 미니 뱃지 (🅰 알파=골드, 🅱 베타=틸) */
