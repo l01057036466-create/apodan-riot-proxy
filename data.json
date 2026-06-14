@@ -814,8 +814,8 @@
    "soloTier": "실버",
    "flexTier": "플래티넘",
    "riotPuuid": "esvkYYOwd6HtD44KqwEyLNBm77WRviWACCtoR-qDaGLtBrSdOG4bA842bA_811NNfqUPSDDJv6sjzQ",
-   "soloPos": "",
-   "subPos": ""
+   "soloPos": "JUNGLE",
+   "subPos": "ADC"
   },
   {
    "id": "p_wqf3x0omq7ub77q",
@@ -834,8 +834,8 @@
    "soloTier": "플래티넘",
    "flexTier": "언랭",
    "riotPuuid": "Becha7dC2TgrodqoHgKxraLR5VavvZmu9LDsCLBYB4GoblJ6mJ92XN-BxMV5udPCiKEO6ZyA6PAQyQ",
-   "soloPos": "",
-   "subPos": ""
+   "soloPos": "ADC",
+   "subPos": "JUNGLE"
   },
   {
    "id": "p_so05ompmq7ub77q",
@@ -853,7 +853,7 @@
    "soloTier": "플래티넘",
    "flexTier": "플래티넘",
    "riotPuuid": "6WWh05EbWdVeS7HqYOMws9lvLKqJQ8EVj4bfH7gQn8Q2dvJhHdOsBpELjxdUciUHDfgsGm1v8bwgfA",
-   "soloPos": "",
+   "soloPos": "SUPPORT",
    "subPos": ""
   },
   {
@@ -872,8 +872,8 @@
    "soloTier": "언랭",
    "flexTier": "골드",
    "riotPuuid": "5UZ3XBGRmVNJdYqcV4aYcSCeCbzOcK77e0VbMgaxPQvL8zrHMDBuvE4bCW99VBDuW_WHFo7s6KvYdw",
-   "soloPos": "",
-   "subPos": ""
+   "soloPos": "TOP",
+   "subPos": "MID"
   },
   {
    "id": "p_04s7kxlmq8v3l9m",
@@ -913,16 +913,16 @@
    "id": "p_vzht71kmq95rwys",
    "displayName": "00 규동",
    "kakaoName": "00 규동",
-   "riotName": "",
-   "riotTag": "",
+   "riotName": "Rudbeckla",
+   "riotTag": "kr1",
    "aliases": [
     "규동",
     "00 규동"
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
+   "soloTier": "언랭",
+   "flexTier": "언랭",
    "riotPuuid": "",
    "soloPos": "",
    "subPos": ""
@@ -21144,7 +21144,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T23:31:57.467Z",
+  "lastBackupAt": "2026-06-14T01:25:54.394Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21240,8 +21240,8 @@
    ]
   }
  ],
- "rev": 222,
- "updatedAt": "2026-06-13T23:31:57.467Z",
+ "rev": 225,
+ "updatedAt": "2026-06-14T01:27:32.072Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
