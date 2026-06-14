@@ -15,7 +15,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "에메랄드",
-   "riotPuuid": "aCGZXAgj4b4BOg2pPw19SpbIG-9qt0nsBhBDl7hXwyNIY8svMt3stXeVgVjwIccmqwt-1aC_QuVqMg"
+   "riotPuuid": "aCGZXAgj4b4BOg2pPw19SpbIG-9qt0nsBhBDl7hXwyNIY8svMt3stXeVgVjwIccmqwt-1aC_QuVqMg",
+   "soloPos": "ADC",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_zupqjv6b_mq7nhxup",
@@ -31,7 +33,9 @@
    "memo": "",
    "soloTier": "골드",
    "flexTier": "플래티넘",
-   "riotPuuid": "XXdkdi2F3GrB-IEf0xs7Ezpw-9jXfIZ7PQ4g9CCYyQfWbpXTV75z6baCFSkYm771GyXjvlCYS37POQ"
+   "riotPuuid": "XXdkdi2F3GrB-IEf0xs7Ezpw-9jXfIZ7PQ4g9CCYyQfWbpXTV75z6baCFSkYm771GyXjvlCYS37POQ",
+   "soloPos": "SUPPORT",
+   "subPos": "JUNGLE"
   },
   {
    "id": "p_q7r7dkyg_mq7nhxup",
@@ -47,7 +51,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "다이아",
-   "riotPuuid": "GWBuS3hb2nqnc4mamusR4ZF0YEd5DAHVCTvpATRhhK5IjXTJY8lD9c76NsjQ-biRQsHmMMWuCZSfiw"
+   "riotPuuid": "GWBuS3hb2nqnc4mamusR4ZF0YEd5DAHVCTvpATRhhK5IjXTJY8lD9c76NsjQ-biRQsHmMMWuCZSfiw",
+   "soloPos": "TOP",
+   "subPos": "MID"
   },
   {
    "id": "p_9813bijx_mq7nhxup",
@@ -63,7 +69,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "그랜드마스터",
-   "riotPuuid": "VoBhuRpS_5DGCtRpg2thLEauWlMUlmgkN2KQKY0_IJQCdefz0ZVmpm7ZUTr32YdOM9e_uVVWbapzdA"
+   "riotPuuid": "VoBhuRpS_5DGCtRpg2thLEauWlMUlmgkN2KQKY0_IJQCdefz0ZVmpm7ZUTr32YdOM9e_uVVWbapzdA",
+   "soloPos": "ADC",
+   "subPos": "JUNGLE"
   },
   {
    "id": "p_4xbhzjtm_mq7nhxup",
@@ -79,7 +87,9 @@
    "memo": "",
    "soloTier": "골드",
    "flexTier": "실버",
-   "riotPuuid": "NAmqTZL7f3ROJ4fnF_9jXYTJBd0zBGaumJG96YPGDymfTLD2EOQRrqrttRWXkfw84u766wYV1XzVeQ"
+   "riotPuuid": "NAmqTZL7f3ROJ4fnF_9jXYTJBd0zBGaumJG96YPGDymfTLD2EOQRrqrttRWXkfw84u766wYV1XzVeQ",
+   "soloPos": "SUPPORT",
+   "subPos": ""
   },
   {
    "id": "p_hdu5pzwf_mq7nhxup",
@@ -95,7 +105,9 @@
    "memo": "",
    "soloTier": "실버",
    "flexTier": "브론즈",
-   "riotPuuid": "GwAwcb9X0DCA2KAE6dCgI2qovGWF4iXA1W_0TvaZBpAEbU27mhPna4ct2vgBIKOYrVscIwku_ZgXyw"
+   "riotPuuid": "GwAwcb9X0DCA2KAE6dCgI2qovGWF4iXA1W_0TvaZBpAEbU27mhPna4ct2vgBIKOYrVscIwku_ZgXyw",
+   "soloPos": "SUPPORT",
+   "subPos": ""
   },
   {
    "id": "p_jlc2q699_mq7nhxup",
@@ -111,7 +123,9 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "에메랄드",
-   "riotPuuid": "uqpvK2yJwD4Jmj1BZVDgb5-dPjLsF8XvYdkUDoQv1Bst0uBLfxlJRgh8eIq5euTL-OuMsleoj3_pAw"
+   "riotPuuid": "uqpvK2yJwD4Jmj1BZVDgb5-dPjLsF8XvYdkUDoQv1Bst0uBLfxlJRgh8eIq5euTL-OuMsleoj3_pAw",
+   "soloPos": "ADC",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_73fj5gp9_mq7nhxuq",
@@ -127,7 +141,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "다이아",
-   "riotPuuid": "BFAs0on9W-rXVZ91lScPG3Rbai5JmaWZ6JwqeODG2SFLM9RkFZ04slFE0U0q-kIIy3gx8gxcigwkfQ"
+   "riotPuuid": "BFAs0on9W-rXVZ91lScPG3Rbai5JmaWZ6JwqeODG2SFLM9RkFZ04slFE0U0q-kIIy3gx8gxcigwkfQ",
+   "soloPos": "TOP",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_zvlhtj7s_mq7nhxuq",
@@ -143,7 +159,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "플래티넘",
-   "riotPuuid": "OmpuE_nXlDLSooUReqY03NUAATqrfxV1rLD3DTL4ptFDQMT449uVrdQJEU-SUilos8MmvoTtYoes4g"
+   "riotPuuid": "OmpuE_nXlDLSooUReqY03NUAATqrfxV1rLD3DTL4ptFDQMT449uVrdQJEU-SUilos8MmvoTtYoes4g",
+   "soloPos": "ADC",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_2dlhnzwn_mq7nhxuq",
@@ -159,7 +177,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "마스터",
-   "riotPuuid": "GMSBa9-Ezw3fZyuqGgXJ-Jnyj1MYlvEk4DKs2ICmqxCQmdVL0gVqcPs5CIbCBnTgxGC0u2OBzqt9_Q"
+   "riotPuuid": "GMSBa9-Ezw3fZyuqGgXJ-Jnyj1MYlvEk4DKs2ICmqxCQmdVL0gVqcPs5CIbCBnTgxGC0u2OBzqt9_Q",
+   "soloPos": "TOP",
+   "subPos": "ADC"
   },
   {
    "id": "p_5fj5souo_mq7nhxuq",
@@ -175,7 +195,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_svkv85m9_mq7nhxuq",
@@ -191,7 +213,9 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "다이아",
-   "riotPuuid": "dG8t-hUUItLma96r2izzv7-5Bo7iFzWmZ4UeVbRL4nrdaeG6AUAd8eFXiz5pLjDKAxO5uPLR0O2cPQ"
+   "riotPuuid": "dG8t-hUUItLma96r2izzv7-5Bo7iFzWmZ4UeVbRL4nrdaeG6AUAd8eFXiz5pLjDKAxO5uPLR0O2cPQ",
+   "soloPos": "JUNGLE",
+   "subPos": ""
   },
   {
    "id": "p_53io5pq0_mq7nhxuq",
@@ -207,7 +231,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "플래티넘",
-   "riotPuuid": "MzXzQMQtAMlSPpxoXcSeHKIVUxJQ1PLmVeCARkeaUM3eknShg8bG5kybpRalS89NeQ3iFImQZALp3w"
+   "riotPuuid": "MzXzQMQtAMlSPpxoXcSeHKIVUxJQ1PLmVeCARkeaUM3eknShg8bG5kybpRalS89NeQ3iFImQZALp3w",
+   "soloPos": "JUNGLE",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_60ospv2c_mq7nhxuq",
@@ -224,7 +250,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "골드",
-   "riotPuuid": "jUX2APdEbIefzb9Sx9-GkDoB-TN04ZquyClSi4STE1a_BuA6KrY9hzhsrzg9iuAowwT3-bw-_u1O7w"
+   "riotPuuid": "jUX2APdEbIefzb9Sx9-GkDoB-TN04ZquyClSi4STE1a_BuA6KrY9hzhsrzg9iuAowwT3-bw-_u1O7w",
+   "soloPos": "MID",
+   "subPos": "ADC"
   },
   {
    "id": "p_b0ryjti5_mq7nhxuq",
@@ -240,7 +268,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_1v451ep9_mq7nhxuq",
@@ -256,7 +286,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "플래티넘",
-   "riotPuuid": "Lv7YfqByRpmKEid9ib-fRLjev2gpiEzuO3MOtMXXYw7KMhuQGQGjusmGWyqeiOuUDqHchTj7wB2nag"
+   "riotPuuid": "Lv7YfqByRpmKEid9ib-fRLjev2gpiEzuO3MOtMXXYw7KMhuQGQGjusmGWyqeiOuUDqHchTj7wB2nag",
+   "soloPos": "JUNGLE",
+   "subPos": "TOP"
   },
   {
    "id": "p_07v55ab9_mq7nhxuq",
@@ -272,7 +304,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "에메랄드",
-   "riotPuuid": "9bwBtosr-vX6CobRFV7MzNB6SPRbNg6o3WFVLP45kUOInurFUYzycu4tlu7NmvgVF3U0Lfez12dHUA"
+   "riotPuuid": "9bwBtosr-vX6CobRFV7MzNB6SPRbNg6o3WFVLP45kUOInurFUYzycu4tlu7NmvgVF3U0Lfez12dHUA",
+   "soloPos": "ADC",
+   "subPos": "TOP"
   },
   {
    "id": "p_snn2xfw3_mq7nhxuq",
@@ -288,7 +322,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "골드",
-   "riotPuuid": "f7zLLNw0tA5xz83AWrxJoldrbJuTQBYNAfls_IxjcIZI_qIVy1dkP5xxEN4QM6E5D0JnF8_8hOC8qw"
+   "riotPuuid": "f7zLLNw0tA5xz83AWrxJoldrbJuTQBYNAfls_IxjcIZI_qIVy1dkP5xxEN4QM6E5D0JnF8_8hOC8qw",
+   "soloPos": "MID",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_wtiaq7m1_mq7nhxuq",
@@ -304,7 +340,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "에메랄드",
-   "riotPuuid": "8ycEHgtntvs-9eoSjarm6Vh6aLWcVggBlw_o8xR0vuv2X-af77BGPkkMwcbW49i92oJO7eOeznuncA"
+   "riotPuuid": "8ycEHgtntvs-9eoSjarm6Vh6aLWcVggBlw_o8xR0vuv2X-af77BGPkkMwcbW49i92oJO7eOeznuncA",
+   "soloPos": "ADC",
+   "subPos": ""
   },
   {
    "id": "p_gcjvk0v7_mq7nhxuq",
@@ -320,7 +358,9 @@
    "memo": "",
    "soloTier": "실버",
    "flexTier": "실버",
-   "riotPuuid": "QLo9jOVk38uVI7hRqmry3auvK-_j4Vi-j6ZvBdK0qo_z_b6_VB3OEc0a8MrtTphmvZbPojL17MNYGA"
+   "riotPuuid": "QLo9jOVk38uVI7hRqmry3auvK-_j4Vi-j6ZvBdK0qo_z_b6_VB3OEc0a8MrtTphmvZbPojL17MNYGA",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_faxcf4rq_mq7nhxuq",
@@ -336,7 +376,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "플래티넘",
-   "riotPuuid": "vs5yi7Gsf2PWsa6d4tcKoXFALMdYIuYNyH0JMdJimmHZMe5tgeSivyOcjtYRBHCIxBZ_Gct3TQic5A"
+   "riotPuuid": "vs5yi7Gsf2PWsa6d4tcKoXFALMdYIuYNyH0JMdJimmHZMe5tgeSivyOcjtYRBHCIxBZ_Gct3TQic5A",
+   "soloPos": "SUPPORT",
+   "subPos": "ADC"
   },
   {
    "id": "p_h7k04k4c_mq7nhxuq",
@@ -352,7 +394,9 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "다이아",
-   "riotPuuid": "U4h1lOl6OOUssyCjLHHvxwVNr_hvZD-XF388MnPmpsaw-MzEppC0TKFNs6LjxiSxxF1nu0C5cs0VbQ"
+   "riotPuuid": "U4h1lOl6OOUssyCjLHHvxwVNr_hvZD-XF388MnPmpsaw-MzEppC0TKFNs6LjxiSxxF1nu0C5cs0VbQ",
+   "soloPos": "MID",
+   "subPos": "ADC"
   },
   {
    "id": "p_1imn90xr_mq7nhxuq",
@@ -368,7 +412,9 @@
    "memo": "",
    "soloTier": "실버",
    "flexTier": "브론즈",
-   "riotPuuid": "OQ1D8dOyARG7P34TuIWuMCxIzke3_ZkfdN5XCTQ310S96INXEPtB_c9yC3HfkxyR9f4fgl0jRrk2bQ"
+   "riotPuuid": "OQ1D8dOyARG7P34TuIWuMCxIzke3_ZkfdN5XCTQ310S96INXEPtB_c9yC3HfkxyR9f4fgl0jRrk2bQ",
+   "soloPos": "SUPPORT",
+   "subPos": ""
   },
   {
    "id": "p_3v5tiwk3_mq7nhxuq",
@@ -384,7 +430,9 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "에메랄드",
-   "riotPuuid": "NwgdKwLqV0qmJv9cUEKqO2wGj1WB0ULS7-RHayFDh2bSR9CSwsQ5uxaJg-TdNTshCGApSGBvAJJBcg"
+   "riotPuuid": "NwgdKwLqV0qmJv9cUEKqO2wGj1WB0ULS7-RHayFDh2bSR9CSwsQ5uxaJg-TdNTshCGApSGBvAJJBcg",
+   "soloPos": "TOP",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_si39mrju_mq7nhxuq",
@@ -401,7 +449,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "다이아",
-   "riotPuuid": "MioVBGmXDIwlVw58NHEw63i_kylVSsFBjr-UiPKbzO0iyQBhiWMm1NElS5AdUYNMC7wEf2Rw5hiPmg"
+   "riotPuuid": "MioVBGmXDIwlVw58NHEw63i_kylVSsFBjr-UiPKbzO0iyQBhiWMm1NElS5AdUYNMC7wEf2Rw5hiPmg",
+   "soloPos": "TOP",
+   "subPos": "ADC"
   },
   {
    "id": "p_ujjbme0y_mq7nhxuq",
@@ -417,7 +467,9 @@
    "memo": "",
    "soloTier": "실버",
    "flexTier": "골드",
-   "riotPuuid": "ZMq0VXh7zmyWS4El_JYxZxzYEnBu7FjS3PCijHc_UAz_tOodmyb52FJLsPl0D5MUQH0RD0WAjBx0jQ"
+   "riotPuuid": "ZMq0VXh7zmyWS4El_JYxZxzYEnBu7FjS3PCijHc_UAz_tOodmyb52FJLsPl0D5MUQH0RD0WAjBx0jQ",
+   "soloPos": "SUPPORT",
+   "subPos": "ADC"
   },
   {
    "id": "p_jot48yoa_mq7nhxuq",
@@ -433,7 +485,9 @@
    "memo": "",
    "soloTier": "골드",
    "flexTier": "골드",
-   "riotPuuid": "Zz0c77V4JTSthKrvRhhCEHVUGTuYkwJsZKLd6E2TNU384WS2yiE5h_V-I0yKA9BHXQyAdoz5j-eojg"
+   "riotPuuid": "Zz0c77V4JTSthKrvRhhCEHVUGTuYkwJsZKLd6E2TNU384WS2yiE5h_V-I0yKA9BHXQyAdoz5j-eojg",
+   "soloPos": "ADC",
+   "subPos": "MID"
   },
   {
    "id": "p_37h5qp33_mq7nhxuq",
@@ -449,7 +503,9 @@
    "memo": "",
    "soloTier": "언랭",
    "flexTier": "에메랄드",
-   "riotPuuid": "Ps7pWBTCt1il0XACXfyk43SZDAb4IMRPn6xjkZNQRGlRP9ArvRksC8m4EJtVuFhrMxDvPTYz-3G2gw"
+   "riotPuuid": "Ps7pWBTCt1il0XACXfyk43SZDAb4IMRPn6xjkZNQRGlRP9ArvRksC8m4EJtVuFhrMxDvPTYz-3G2gw",
+   "soloPos": "TOP",
+   "subPos": ""
   },
   {
    "id": "p_0pw6uy11_mq7nhxuq",
@@ -465,7 +521,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "다이아",
-   "riotPuuid": "GFxoNMP49DeV8pwpR191fE4HGLhBEHdx_QgcqPj67cwAvHZDo0nMhcgOqy3g5uHTvdHh3hII56oAqw"
+   "riotPuuid": "GFxoNMP49DeV8pwpR191fE4HGLhBEHdx_QgcqPj67cwAvHZDo0nMhcgOqy3g5uHTvdHh3hII56oAqw",
+   "soloPos": "TOP",
+   "subPos": ""
   },
   {
    "id": "p_29ndxd5j_mq7nhxuq",
@@ -481,7 +539,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "브론즈",
-   "riotPuuid": "x46O-T8zl1XXcf40r7Z0e5a049qUGMOWcD2TX0Kd714KnAOwHbRbnSYBVyj0FZdT4Q485PPSTRENkg"
+   "riotPuuid": "x46O-T8zl1XXcf40r7Z0e5a049qUGMOWcD2TX0Kd714KnAOwHbRbnSYBVyj0FZdT4Q485PPSTRENkg",
+   "soloPos": "TOP",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_j93ommzd_mq7nhxuq",
@@ -497,7 +557,9 @@
    "memo": "",
    "soloTier": "골드",
    "flexTier": "플래티넘",
-   "riotPuuid": "XSspnNVR3cNV2LK9VbT0LqSjgoOzFmCedbgyn_-Y9pUhbFpdRQRvM0M0Nv6BQnlAcfeeXxD_WrL0OQ"
+   "riotPuuid": "XSspnNVR3cNV2LK9VbT0LqSjgoOzFmCedbgyn_-Y9pUhbFpdRQRvM0M0Nv6BQnlAcfeeXxD_WrL0OQ",
+   "soloPos": "MID",
+   "subPos": "JUNGLE"
   },
   {
    "id": "p_bqvhy1r3_mq7nhxuq",
@@ -513,7 +575,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "에메랄드",
-   "riotPuuid": "-7v6A-keEqtvYPjeJB_9RivVAS9ed98Lamy5x-2kWj486wS2pgugbcJJEnKktfAdM0-6zN0o0II3Xw"
+   "riotPuuid": "-7v6A-keEqtvYPjeJB_9RivVAS9ed98Lamy5x-2kWj486wS2pgugbcJJEnKktfAdM0-6zN0o0II3Xw",
+   "soloPos": "MID",
+   "subPos": "TOP"
   },
   {
    "id": "p_w3emkfoa_mq7nhxuq",
@@ -529,7 +593,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "다이아",
-   "riotPuuid": "NjVUF4dmGYftfKztj99p5ChmGIbDb0U9dJFtv3tGOqrEkgTxB8G3pqoSWRoxGCCtBY2Iqb7fvs7NXA"
+   "riotPuuid": "NjVUF4dmGYftfKztj99p5ChmGIbDb0U9dJFtv3tGOqrEkgTxB8G3pqoSWRoxGCCtBY2Iqb7fvs7NXA",
+   "soloPos": "SUPPORT",
+   "subPos": ""
   },
   {
    "id": "p_00q5dhm1_mq7nhxuq",
@@ -545,7 +611,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "다이아",
-   "riotPuuid": "zb8DWiO55LxyoIjQNKRkaP-459dJoGPWh3jucj6pH5Ph0pC20JsAx6oyLok5BG0EqBrLMm_xaya06A"
+   "riotPuuid": "zb8DWiO55LxyoIjQNKRkaP-459dJoGPWh3jucj6pH5Ph0pC20JsAx6oyLok5BG0EqBrLMm_xaya06A",
+   "soloPos": "SUPPORT",
+   "subPos": ""
   },
   {
    "id": "p_0g6qhb6e_mq7nhxuq",
@@ -561,7 +629,9 @@
    "memo": "",
    "soloTier": "골드",
    "flexTier": "골드",
-   "riotPuuid": "TRYA1007SQ77edmlM6loJSYzO6lr-jiFnYGxCtxbN_5mgrdSx-BPJOwk2mn1hggPD_MBuM5kbIlpUA"
+   "riotPuuid": "TRYA1007SQ77edmlM6loJSYzO6lr-jiFnYGxCtxbN_5mgrdSx-BPJOwk2mn1hggPD_MBuM5kbIlpUA",
+   "soloPos": "MID",
+   "subPos": "SUPPORT"
   },
   {
    "id": "p_imjto1qf_mq7nhxuq",
@@ -577,7 +647,9 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "에메랄드",
-   "riotPuuid": "KlCWilkhx_eEVNhSkwreks1C5dYusGA5enEZYJnEAZmsqYG2kgGxMvw0OtN4Cq5UWSin5J91sPD74g"
+   "riotPuuid": "KlCWilkhx_eEVNhSkwreks1C5dYusGA5enEZYJnEAZmsqYG2kgGxMvw0OtN4Cq5UWSin5J91sPD74g",
+   "soloPos": "MID",
+   "subPos": ""
   },
   {
    "id": "p_8yzih1s6_mq7nhxuq",
@@ -593,7 +665,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_r6ogprumq7ub77n",
@@ -610,7 +684,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "플래티넘",
-   "riotPuuid": "yUsPD-8i_yoo54Laz_yhA9Y4Ghh0D5NKVMfmEza_whSWsS7_SjKst8gx_lB3bJhf7D_BMvoydM4M4w"
+   "riotPuuid": "yUsPD-8i_yoo54Laz_yhA9Y4Ghh0D5NKVMfmEza_whSWsS7_SjKst8gx_lB3bJhf7D_BMvoydM4M4w",
+   "soloPos": "JUNGLE",
+   "subPos": ""
   },
   {
    "id": "p_rgrfacqmq7ub77n",
@@ -626,7 +702,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_p4y4tq6mq7ub77o",
@@ -642,7 +720,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_gi86d5qmq7ub77o",
@@ -658,7 +738,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "에메랄드",
-   "riotPuuid": "tmU0tb3uzUxpD5kJ-l648sHob1mMSWwxHigSNmZLi01ZVf4Ebqdr8881-gGpi8EQ8f5J9mnP_YfuwQ"
+   "riotPuuid": "tmU0tb3uzUxpD5kJ-l648sHob1mMSWwxHigSNmZLi01ZVf4Ebqdr8881-gGpi8EQ8f5J9mnP_YfuwQ",
+   "soloPos": "ADC",
+   "subPos": "MID"
   },
   {
    "id": "p_t5dvobpmq7ub77o",
@@ -674,7 +756,9 @@
    "memo": "",
    "soloTier": "에메랄드",
    "flexTier": "다이아",
-   "riotPuuid": "qzuqU1oSMkPQHngvQVWsT4ImN-zdnXBMt4labfbNSAAvT-iXcbD4cPKrl7aVbVHYkzq9S9fl9bAH6Q"
+   "riotPuuid": "qzuqU1oSMkPQHngvQVWsT4ImN-zdnXBMt4labfbNSAAvT-iXcbD4cPKrl7aVbVHYkzq9S9fl9bAH6Q",
+   "soloPos": "JUNGLE",
+   "subPos": "MID"
   },
   {
    "id": "p_egsig4emq7ub77p",
@@ -691,7 +775,9 @@
    "memo": "",
    "soloTier": "언랭",
    "flexTier": "언랭",
-   "riotPuuid": "K0EU5w8LNlwI7g2xvEAkrgQ1S7c29oWayj8HpL7d-7BxeBrYrLgctk3n7yffk57sWKztvg_OIlx71w"
+   "riotPuuid": "K0EU5w8LNlwI7g2xvEAkrgQ1S7c29oWayj8HpL7d-7BxeBrYrLgctk3n7yffk57sWKztvg_OIlx71w",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_4siqelqmq7ub77p",
@@ -708,7 +794,9 @@
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "다이아",
-   "riotPuuid": "piI07K-is-tvIrwBOw1EkH06pown0Ch7_je8B7MoqAKbYwwA6kP5oXFpFsjI93Cx7MECYohRqmMq8A"
+   "riotPuuid": "piI07K-is-tvIrwBOw1EkH06pown0Ch7_je8B7MoqAKbYwwA6kP5oXFpFsjI93Cx7MECYohRqmMq8A",
+   "soloPos": "JUNGLE",
+   "subPos": "TOP"
   },
   {
    "id": "p_ze5lbhymq7ub77p",
@@ -725,7 +813,9 @@
    "memo": "",
    "soloTier": "실버",
    "flexTier": "플래티넘",
-   "riotPuuid": "esvkYYOwd6HtD44KqwEyLNBm77WRviWACCtoR-qDaGLtBrSdOG4bA842bA_811NNfqUPSDDJv6sjzQ"
+   "riotPuuid": "esvkYYOwd6HtD44KqwEyLNBm77WRviWACCtoR-qDaGLtBrSdOG4bA842bA_811NNfqUPSDDJv6sjzQ",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_wqf3x0omq7ub77q",
@@ -743,7 +833,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "언랭",
-   "riotPuuid": "Becha7dC2TgrodqoHgKxraLR5VavvZmu9LDsCLBYB4GoblJ6mJ92XN-BxMV5udPCiKEO6ZyA6PAQyQ"
+   "riotPuuid": "Becha7dC2TgrodqoHgKxraLR5VavvZmu9LDsCLBYB4GoblJ6mJ92XN-BxMV5udPCiKEO6ZyA6PAQyQ",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_so05ompmq7ub77q",
@@ -760,7 +852,9 @@
    "memo": "",
    "soloTier": "플래티넘",
    "flexTier": "플래티넘",
-   "riotPuuid": "6WWh05EbWdVeS7HqYOMws9lvLKqJQ8EVj4bfH7gQn8Q2dvJhHdOsBpELjxdUciUHDfgsGm1v8bwgfA"
+   "riotPuuid": "6WWh05EbWdVeS7HqYOMws9lvLKqJQ8EVj4bfH7gQn8Q2dvJhHdOsBpELjxdUciUHDfgsGm1v8bwgfA",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_hnx30qcmq7ub77q",
@@ -777,7 +871,9 @@
    "memo": "",
    "soloTier": "언랭",
    "flexTier": "골드",
-   "riotPuuid": "5UZ3XBGRmVNJdYqcV4aYcSCeCbzOcK77e0VbMgaxPQvL8zrHMDBuvE4bCW99VBDuW_WHFo7s6KvYdw"
+   "riotPuuid": "5UZ3XBGRmVNJdYqcV4aYcSCeCbzOcK77e0VbMgaxPQvL8zrHMDBuvE4bCW99VBDuW_WHFo7s6KvYdw",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_04s7kxlmq8v3l9m",
@@ -792,7 +888,9 @@
    "memo": "탈주자",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_146qyvimq95eim4",
@@ -807,7 +905,9 @@
    "memo": "기록 보존용 (탈퇴·외부 인원)",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   },
   {
    "id": "p_vzht71kmq95rwys",
@@ -823,7 +923,9 @@
    "memo": "",
    "soloTier": "",
    "flexTier": "",
-   "riotPuuid": ""
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   }
  ],
  "matches": [
@@ -21042,7 +21144,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-13T23:31:54.263Z",
+  "lastBackupAt": "2026-06-13T23:31:57.467Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -21138,10 +21240,12 @@
    ]
   }
  ],
- "rev": 221,
- "updatedAt": "2026-06-13T23:31:54.263Z",
+ "rev": 222,
+ "updatedAt": "2026-06-13T23:31:57.467Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
- ]
+ ],
+ "nameReqs": [],
+ "mvpPaid": {}
 }
