@@ -5437,7 +5437,7 @@ async function arcadeScratch(){
   if(window._scrBusy)return;window._scrBusy=true;
   try{const j=await bankCall('scratch',{});if(window._bank)window._bank.bal=j.bal;
     await scratchFx(j.prize,!!j.jackpot,j.pot);
-    toast(j.jackpot?`🎫💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:j.prize>0?`🎫 위로상 +${fmtAPO(j.prize)} APO! (남은 ${j.left}장)`:`🎫 꽝… 풀 ${fmtAPO(j.pot)} (남은 ${j.left}장)`,j.prize===0&&!j.jackpot);
+    toast(j.jackpot?`🎫💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:j.prize>0?`🎫 위로상 +${fmtAPO(j.prize)} APO! (오늘 한도 ${fmtAPO(j.capLeft)} 남음)`:`🎫 꽝… 풀 ${fmtAPO(j.pot)} (오늘 한도 ${fmtAPO(j.capLeft)} 남음)`,j.prize===0&&!j.jackpot);
     fetchArcade();bankSync(true);render()}
   catch(e){toast(e.message,true)}
   finally{window._scrBusy=false}
@@ -5481,7 +5481,7 @@ async function arcadePachinko(){
   window._pcBusy=true;
   try{const j=await bankCall('pachinko',{pick});if(window._bank)window._bank.bal=j.bal;
     await pachinkoFx(j);
-    const msg=j.rank===1?`🎰💥 1등 잭팟!! +${fmtAPO(j.prize)} APO!!`:j.prize>=5000?`🎰 ${j.rank}등! +${fmtAPO(j.prize)} APO (남은 ${j.left}판)`:j.prize>0?`🎰 ${j.rank}등 +${fmtAPO(j.prize)} (남은 ${j.left}판)`:`🎰 ${j.rank}등 꽝… (남은 ${j.left}판)`;
+    const msg=j.rank===1?`🎰💥 1등 잭팟!! +${fmtAPO(j.prize)} APO!!`:j.prize>=5000?`🎰 ${j.rank}등! +${fmtAPO(j.prize)} APO (한도 ${fmtAPO(j.capLeft)} 남음)`:j.prize>0?`🎰 ${j.rank}등 +${fmtAPO(j.prize)} (한도 ${fmtAPO(j.capLeft)} 남음)`:`🎰 ${j.rank}등 꽝… (한도 ${fmtAPO(j.capLeft)} 남음)`;
     toast(msg,j.prize===0);
     fetchArcade();bankSync(true);render()}
   catch(e){toast('🎰 '+e.message,true)}
@@ -5629,10 +5629,10 @@ function arcadeHtml(B){
     </div>
     <div class="grid c3" style="gap:10px">
       ${game('🎴','데일리 이치방쿠지','매일 무료 1회 · 7일 연속 출석 시 2회 · 꽝 없는 등급뽑기',`<button class="btn gold" style="width:100%;font-size:14px" onclick="arcadeSpin()">무료로 뽑기</button>`)}
-      ${game('🎫','누적 복권','한 장 500 APO · 당첨까지 풀이 계속 쌓여요 · 하루 10장',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">500 APO로 긁기</button>`)}
-      ${game('🎰','빠칭코 넘버','참가비 5,000 · 1~100 적중 시 잭팟! · 하루 20판',`<div class="row" style="gap:4px;justify-content:center"><input id="pcPick" type="number" min="1" max="100" placeholder="1~100" style="width:70px;text-align:center;font-weight:900;font-size:15px;color:var(--text);background:var(--inset);border:1px solid var(--gold)"><button class="btn ghost" style="padding:6px 9px" onclick="pcRandom()">🎲</button><button class="btn lose" style="font-weight:900" onclick="arcadePachinko()">베팅!</button></div>`)}
+      ${game('🎫','누적 복권','한 장 500 APO · 당첨까지 풀이 계속 쌓여요 · 하루 한도 3만(통합)',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">500 APO로 긁기</button>`)}
+      ${game('🎰','빠칭코 넘버','참가비 5,000 · 1~100 적중 시 잭팟! · 하루 한도 3만(통합)',`<div class="row" style="gap:4px;justify-content:center"><input id="pcPick" type="number" min="1" max="100" placeholder="1~100" style="width:70px;text-align:center;font-weight:900;font-size:15px;color:var(--text);background:var(--inset);border:1px solid var(--gold)"><button class="btn ghost" style="padding:6px 9px" onclick="pcRandom()">🎲</button><button class="btn lose" style="font-weight:900" onclick="arcadePachinko()">베팅!</button></div>`)}
     </div>
-    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(A~E상, 꽝 없음·소소) · 🎫 누적 복권: 한 장 500, 90%가 풀에 쌓이고 2% 확률로 풀 전액 독식(당첨까지 계속 누적) · 🎰 빠칭코: 5,000 참가, 내 번호(1~100)가 추첨번호와 맞으면 1등=누적 잭팟, 아니면 2~10등 차등(환급률 ~85%). 오래 하면 은행이 이깁니다 — 복구는 내전 수당으로! 🏦</p></details>
+    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(A~E상, 꽝 없음·소소) · 🎫 누적 복권: 한 장 500, 90%가 풀에 쌓이고 2% 확률로 풀 전액 독식(당첨까지 계속 누적) · 🎰 빠칭코: 5,000 참가, 내 번호(1~100)가 추첨번호와 맞으면 1등=누적 잭팟, 아니면 2~10등 차등(환급률 ~85%). 💰 복권·빠칭코는 하루 합쳐 <b>30,000 APO</b>까지만 쓸 수 있어요(통합 한도 — 멘붕 방지). 오래 하면 은행이 이깁니다 — 복구는 내전 수당으로! 🏦</p></details>
     <p class="mini" style="margin:12px 0 4px;font-weight:800">📋 주간 미션 <span class="tag">자동 체크 — 인증 필요 없음</span></p>
     ${Object.entries(MD).map(([k,d])=>{const c=M.count[k]||0,done=c>=d[2],got=(M.claimed||[]).includes(k);
       return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${Math.min(c,d[2])}/${d[2]}</b></span>
