@@ -408,7 +408,7 @@
     "수아",
     "04수아"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "실버",
    "flexTier": "브론즈",
@@ -22204,8 +22204,8 @@
    ]
   }
  ],
- "rev": 251,
- "updatedAt": "2026-06-14T09:51:01.076Z",
+ "rev": 252,
+ "updatedAt": "2026-06-14T11:51:10.013Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
