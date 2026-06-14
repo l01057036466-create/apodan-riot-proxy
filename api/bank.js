@@ -1359,7 +1359,10 @@ module.exports = async function handler(req, res) {
       var cbUid = cbWho.name ? crypto.createHash('sha256').update('u|' + cbWho.name).digest('hex').slice(0, 12) : 'dev';
       var cbCd = await redis(['SET', 'cmtcd:' + cbUid + ':' + cbB2, '1', 'NX', 'EX', '1']);
       if (cbCd === null) return res.status(429).json({ error: '너무 빨라요 — 잠깐 뒤에 다시 ㅎㅎ' });
+      var cbEq = (cbWho.acct && cbWho.acct.equip) || {};
+      var cbDeco = {}; ['art', 'color', 'frame', 'badge', 'legend'].forEach(function (k) { if (cbEq[k]) cbDeco[k] = cbEq[k]; });
       var cbItem = { id: 'u' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), nick: cbNick, text: cbText, ts: Date.now(), parent: cbParent, uid: cbUid };
+      if (Object.keys(cbDeco).length) cbItem.deco = cbDeco;
       await redis(['RPUSH', 'cmt:' + cbB2, JSON.stringify(cbItem)]);
       await redis(['LTRIM', 'cmt:' + cbB2, '-800', '-1']);
       await redis(['EXPIRE', 'cmt:' + cbB2, SEC_CMT]);
