@@ -85,7 +85,7 @@ module.exports = async function handler(req, res) {
       }
       // 오래된 것부터(작성순) 정렬해서 내려줌
       out.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
-      return res.status(200).json({ comments: out });
+      return res.status(200).json({ comments: out, likes: likes });
     }
 
     // ── 작성 (로그인 필수) ──
