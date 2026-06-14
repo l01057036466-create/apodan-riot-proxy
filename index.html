@@ -5113,6 +5113,8 @@ const CC_AVA_BG=['#3a2e12','#16302a','#2a1620','#1a2740','#2e1a3a','#3a1a1a','#1
 const CC_NICK_CELEB=['마이클잭슨','페이커','손흥민','메시','호날두','뽀로로','루피','일론머스크','관우','조조','제갈량','이순신','세종대왕','강호동','유재석','침착맨','쯔양','부산갈매기','내일은날씨','지나가던etc','피카츄','짱구','도라에몽','김프로','이대리','옆집강아지','우리집고양이','배고픈사람','퇴근시켜줘','월급루팡','웅앵웅','어디보자','관전자A','익명의롤린이','동네형','산타할아버지','홍길동','김아무개','전직프로(자칭)'];
 // ── 가짜 답글(티키타카) 풀 — 짧은 리액션/반박 ──
 const CC_REPLY=['ㄹㅇㅋㅋ','이거 맞말이다','ㄴㄴ 그건 아니지','팩트네','반박 못 하겠다','어그로 ㄴㄴ','ㅇㅈ ㅋㅋ','그건 좀 선넘었다','진정해라 ㅋㅋ','캡처해둔다','이게 맞냐 진짜','동의한다','뇌피셜 ㄴㄴ','국룰이지','ㅗㅜㅑ','정배충 또 시작','역배가 국룰','ㅋㅋㅋㅋㅋ','웃기네 ㅋㅋ','그래서 누가 이기는데','님 글 캡처감','윗댓 진정','이건 인정','반박시 님 말이 맞음','ㄹㅇ 공감','그건 오바다','선동 ㄴㄴ','팩트로 조지네','ㅇㅋㅇㅋ','이 댓글 박제','과몰입 ㄴㄴ','담백하게 인정','그래도 그건 좀','님 뭐 보고 말하는 거임','ㅋㅋ 또 시작','이런 게 떡밥이지','내 말이','글쎄다','노잼','개추 박는다','비추 누른다','이건 좀 아닌 듯','맞말 대잔치','캭 인정','님 분석 좋다','이 정도면 선수 가족인 듯','뇌절 ㄴㄴ','담엔 좀 더 잘하겠지'];
+// ── NPC 자동 답글 풀 (유저 댓글에 미리 정해둔 반응 — {nick} = 댓글 작성자) ──
+const CC_NPC_REPLY=['{nick}님 ㄹㅇ 인정','윗분 말이 맞음 ㅋㅋ','{nick}님 분석 깔끔하네요','오 {nick}님 글 보고 갑니다','{nick}님 그건 좀 ㅋㅋ','{nick}님 캡처해갑니다','이게 맞말이지','{nick}님 과몰입 ㄴㄴ ㅋㅋ','윗댓 진정하셈','{nick}님 ㅇㅈ ㅋㅋ','반박 못 함 인정','{nick}님 선동 ㄴㄴ','국룰이네 ㅋㅋ','{nick}님 글에 개추 박음','{nick}님 글 비추 누름 ㅋㅋ','음 글쎄요…','{nick}님 그래서 누가 이김?','윗분 뇌피셜 ㄴㄴ','{nick}님 팩트네요','ㅋㅋㅋㅋㅋ','{nick}님 또 시작이네 ㅋㅋ','이 댓글 박제합니다','{nick}님 담백하게 인정','웃기네 ㅋㅋㅋ','{nick}님 일리 있다','{nick}님은 선수 가족인 듯','윗분 말 들으니 그렇네','{nick}님 그건 오바','내 말이 그 말','{nick}님 닉부터 어그로 ㅋㅋ','ㅇㅋㅇㅋ 인정','{nick}님 이건 좀 아닌 듯','와 {nick}님 글 공감되네','{nick}님 진짜 그럼?'];
 /* ── 시드 PRNG (공지/경기별 고정 — 폴링 리렌더에도 안 흔들림) ── */
 function _ccHash(s){let h=2166136261>>>0;s=String(s||'');for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function _ccRng(seed){let a=(seed>>>0)||1;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -5216,14 +5218,14 @@ function communityFeed(L){
     if(rng()<0.12)like+=Math.floor(rng()*180); // 가끔 폭발하는 댓글
     rows.push({text,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like,_o:i});
   }
-  // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 최고 추천으로 베스트 상단 고정
+  // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 신고 누적으로 항상 맨 밑에 깔림
   let yi=-1;
   if(rows.length){
     yi=Math.floor(rng()*rows.length);
     rows[yi].text=ccFill(_ccPick(YEOPO_PRE,rng),parts,teams,date,rng,aParts,bParts);
     rows[yi].nick='방구석여포';
-    rows[yi].like=240+Math.floor(rng()*500);
-    rows[yi].ava='🔥'; rows[yi].bg='#3a1410';
+    rows[yi].like=Math.floor(rng()*6); // 비추 받아서 추천 바닥
+    rows[yi].ava='🔥'; rows[yi].bg='#3a1410'; rows[yi]._yeopo=true;
   }
   // 🐱 베리(물방울네 고양이) — 물방울/미르/유메 출전 경기에만 1명 (방구석여포와 다른 슬롯)
   const berryT=berryTargets(parts);
@@ -5298,14 +5300,14 @@ function resultFeed(m){
     if(rng()<0.12)like+=Math.floor(rng()*180);
     rows.push({text,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like,_o:i});
   }
-  // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 최고 추천으로 베스트 상단 고정
+  // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 신고 누적으로 항상 맨 밑에 깔림
   let yi=-1;
   if(rows.length){
     yi=Math.floor(rng()*rows.length);
     rows[yi].text=resFill(_ccPick(YEOPO_RES,rng),D,parts,rng);
     rows[yi].nick='방구석여포';
-    rows[yi].like=240+Math.floor(rng()*500);
-    rows[yi].ava='🔥'; rows[yi].bg='#3a1410';
+    rows[yi].like=Math.floor(rng()*6); // 비추 받아서 추천 바닥
+    rows[yi].ava='🔥'; rows[yi].bg='#3a1410'; rows[yi]._yeopo=true;
   }
   // 🐱 베리(물방울네 고양이) — 물방울/미르/유메 출전 경기에만 1명 (방구석여포와 다른 슬롯)
   const berryT=berryTargets(parts);
@@ -5389,20 +5391,22 @@ function _realToObj(rc){
 /* 댓글 한 줄 (top/답글 공용). 실제 댓글은 👍 클릭 가능 + LIVE 표식 */
 function cmtRow(c,board,isReply){
   const likeCol=c.like>=60?'#ff8a3a':c.like>=15?'var(--gold)':'var(--dim)';
-  const bestBadge=(c.best&&!isReply)?'<span class="pill" style="font-size:9px;padding:0 5px;font-weight:900;border-color:var(--lose);color:var(--lose)">BEST</span>':'';
+  const bestBadge=(c.best&&!isReply&&!c._yeopo)?'<span class="pill" style="font-size:9px;padding:0 5px;font-weight:900;border-color:var(--lose);color:var(--lose)">BEST</span>':'';
   const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
+  const yeopoBadge=c._yeopo?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--lose);color:var(--lose)">🚫 신고 누적</span>':'';
   const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
   const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
   const likeCell=`<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
   const sz=isReply?26:30, fs=isReply?13:16;
   let bg='';
-  if(isReply)bg='margin-left:30px;background:rgba(255,255,255,.02)';
+  if(c._yeopo)bg='opacity:.62;background:rgba(214,77,77,.05)';
+  else if(isReply)bg='margin-left:30px;background:rgba(255,255,255,.02)';
   else if(c.best)bg='background:rgba(242,184,75,.05)';
   return `<div style="display:flex;gap:9px;padding:8px 2px;border-top:1px solid var(--line);${bg}">
     <div style="width:${sz}px;height:${sz}px;border-radius:50%;flex:none;background:${c.bg};display:grid;place-items:center;font-size:${fs}px">${c.ava}</div>
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        ${bestBadge}${liveBadge}
+        ${bestBadge}${liveBadge}${yeopoBadge}
         <b style="font-size:12px;color:var(--mut)">${esc(c.nick)}</b>
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
         ${replyBtn}
@@ -5459,6 +5463,19 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
     else realTops.push(o);
   });
   realTops.sort(function(a,b){ return (b._ts||0)-(a._ts||0); }); // 실제 최신이 위
+  // 2.5) NPC 자동 답글 — 유저 댓글마다 미리 정해둔 반응을 닮 (시드=댓글id → 새로고침해도 동일)
+  realTops.forEach(function(rt){
+    const rr=_ccRng(_ccHash('npc|'+rt.id));
+    const n=1+Math.floor(rr()*2), reps=[]; // 유저 댓글마다 항상 1~2개 반응
+    for(let i=0;i<n;i++){
+      reps.push({ id:'npc|'+rt.id+'|'+i, nick:ccNick(rr,roster),
+        text:_ccPick(CC_NPC_REPLY,rr).replace(/\{nick\}/g, rt.nick||'윗분'),
+        ava:_ccPick(CC_AVA,rr), bg:_ccPick(CC_AVA_BG,rr),
+        like:Math.floor(Math.pow(rr(),2.6)*30), ago:ccAgo(1+Math.floor(rr()*50)),
+        real:false, best:false, parent:rt.id, _ts:(rt._ts||0)+i+1 });
+    }
+    repliesByParent[rt.id]=reps.concat(repliesByParent[rt.id]||[]);
+  });
   Object.keys(repliesByParent).forEach(function(k){ repliesByParent[k].sort(function(a,b){ return (a._ts||0)-(b._ts||0); }); });
   // 3) top 순서: 실제(최신) → 가짜(BEST 먼저)
   let tops=realTops.concat(fakeTops);
@@ -5467,6 +5484,8 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   Object.keys(repliesByParent).forEach(function(k){
     if(!topIds[k]){ repliesByParent[k].forEach(function(o){ o.best=false; tops.push(o); }); delete repliesByParent[k]; }
   });
+  // 🔥 방구석여포(신고 누적)는 항상 맨 밑으로 (안정 정렬: 나머지 순서 유지)
+  tops.sort(function(a,b){ return (a._yeopo?1:0)-(b._yeopo?1:0); });
   // 3.5) 서버 좋아요 반영: 가짜 댓글 = 시드기본 + 서버추천, 실제 댓글 = 서버추천
   const lk=(window._cmtLikes&&window._cmtLikes[board])||{};
   function applyLike(c){
