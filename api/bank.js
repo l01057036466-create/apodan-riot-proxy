@@ -1008,7 +1008,7 @@ module.exports = async function handler(req, res) {
       for (var i = 0; i < table.length; i++) { acc += table[i][1]; if (r < acc) return table[i][0]; }
       return table[table.length - 1][0];
     }
-    // 🎰 데일리 룰렛 (무료 1회, 7일 연속 출석 시 2회) — 출석의 변동 보상화
+    // 🎴 데일리 이치방쿠지 (무료 1회, 7일 연속 출석 시 2회) — 매번 등급 보상(꽝 없음·소소)
     if (req.method === 'POST' && action === 'spin') {
       var sSp = await auth(body.token);
       if (!sSp || !sSp.name) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -1019,73 +1019,89 @@ module.exports = async function handler(req, res) {
       var used = Number(await redis(['INCRBY', 'spin:' + dSp + ':' + aSp.name, '1']));
       await redis(['EXPIRE', 'spin:' + dSp + ':' + aSp.name, '93600']);
       if (used > maxSpin) return res.status(429).json({ error: '오늘 스핀 소진! ' + (maxSpin === 1 ? '7일 연속 출석하면 하루 2회' : '내일 또 만나요') });
-      var prize = pickWeighted([[50, 55], [150, 30], [300, 10], [600, 4], [5000, 1]]);
-      aSp.bal += prize;
+      var kRank = pickWeighted([['A', 3], ['B', 12], ['C', 25], ['D', 35], ['E', 25]]);
+      var kPrize = { A: 3000, B: 1000, C: 500, D: 200, E: 100 }[kRank];
+      aSp.bal += kPrize;
       await putAcct(aSp);
-      await ledger(aSp.name, prize >= 5000 ? '🎰💥 룰렛 잭팟!!' : '🎰 데일리 룰렛', prize, aSp.bal);
-      if (prize >= 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSp.name, t: 'spin', v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
-      return res.status(200).json({ ok: true, prize: prize, bal: aSp.bal, left: maxSpin - used });
+      await ledger(aSp.name, '🎴 이치방쿠지 ' + kRank + '상', kPrize, aSp.bal);
+      return res.status(200).json({ ok: true, prize: kPrize, rank: kRank, bal: aSp.bal, left: maxSpin - used });
     }
-    // 🎟 스크래치 복권 (1,000 APO, 하루 3장, 환급 ~85% + 손실 10% 잭팟 적립)
+    // 🎫 누적 복권 (500 APO, 하루 10장, 90% 풀 적립 → 당첨까지 계속 쌓임)
     if (req.method === 'POST' && action === 'scratch') {
       var sSc2 = await auth(body.token);
       if (!sSc2 || !sSc2.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var aSc = await getAcct(sSc2.name);
       if (!aSc || aSc.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-      if (aSc.bal < 1000) return res.status(400).json({ error: '복권은 1,000 APO' });
+      if (aSc.bal < 500) return res.status(400).json({ error: '복권은 500 APO' });
       var dSc = kstDate();
       var nSc = Number(await redis(['INCRBY', 'scr:' + dSc + ':' + aSc.name, '1']));
       await redis(['EXPIRE', 'scr:' + dSc + ':' + aSc.name, '93600']);
-      if (nSc > 3) return res.status(429).json({ error: '복권은 하루 3장까지! (도박은 적당히 🙏)' });
-      aSc.bal -= 1000;
-      await redis(['SET', 'arcade:jackpot', '1000', 'NX']); // 시드 1,000 보장
-      await redis(['INCRBY', 'arcade:jackpot', '100']); // 판매액 10% 적립
-      var pz = pickWeighted([[0, 55], [300, 20], [1000, 15], [2000, 7], [5000, 2.7], ['JP', 0.3]]);
+      if (nSc > 10) return res.status(429).json({ error: '복권은 하루 10장까지! (도박은 적당히 🙏)' });
+      aSc.bal -= 500;
+      await redis(['SET', 'arcade:jackpot', '5000', 'NX']); // 시드 5,000 보장
+      await redis(['INCRBY', 'arcade:jackpot', '450']); // 판매액 90% 풀 적립
+      var pz = pickWeighted([['JP', 2], [1000, 8], [0, 90]]);
       var wonJp = 0;
-      if (pz === 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'scr', v: 5000, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🎫 복권 1등 속보
       if (pz === 'JP') {
-        wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 1000;
-        await redis(['SET', 'arcade:jackpot', '1000']); // 시드 리셋
+        wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 5000;
+        await redis(['SET', 'arcade:jackpot', '5000']); // 시드 리셋
         pz = wonJp;
         await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'jp', v: wonJp, ts: new Date().toISOString() })]);
         await redis(['LTRIM', 'arcade:news', '0', '9']);
       }
       if (pz > 0) aSc.bal += pz;
       await putAcct(aSc);
-      await ledger(aSc.name, wonJp ? '🎟💥 복권 잭팟!! 누적 풀 전액' : '🎟 스크래치 복권', pz - 300, aSc.bal);
-      return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, bal: aSc.bal, left: 3 - nSc });
+      await ledger(aSc.name, wonJp ? '🎫💥 복권 누적 잭팟!! 풀 전액' : (pz > 0 ? '🎫 복권 위로상' : '🎫 복권 꽝'), pz - 500, aSc.bal);
+      var potNowSc = wonJp ? 5000 : (Number(await redis(['GET', 'arcade:jackpot'])) || 5000);
+      return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, pot: potNowSc, bal: aSc.bal, left: 10 - nSc });
     }
-    // 🃏 하이로우 더블 (100~20,000, 승률 47.5% — 하우스 엣지 5%)
-    if (req.method === 'POST' && action === 'highlow') {
-      var sHL = await auth(body.token);
-      if (!sHL || !sHL.name) return res.status(401).json({ error: '로그인이 필요해요' });
-      var aHL = await getAcct(sHL.name);
-      if (!aHL || aHL.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-      var amtH = Math.round(Number(body.amount) || 0);
-      if (amtH < 100 || amtH > 20000) return res.status(400).json({ error: '판돈은 100~20,000 APO' });
-      if (aHL.bal < amtH) return res.status(400).json({ error: '잔액 부족' });
-      var dHL = kstDate();
-      var nHL = Number(await redis(['INCRBY', 'hl:' + dHL + ':' + aHL.name, '1']));
-      await redis(['EXPIRE', 'hl:' + dHL + ':' + aHL.name, '93600']);
-      if (nHL > 20) return res.status(429).json({ error: '하이로우는 하루 20판까지! 내일 복수전 🙏' });
-      if (!(await acctLock(sHL.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
+    // 🎰 빠칭코 넘버 (5,000 APO, 1~100 픽 · 1등=번호 일치→누적 잭팟 전액+롤오버 · 2~10등 이치방쿠지식)
+    if (req.method === 'POST' && action === 'pachinko') {
+      var sPc = await auth(body.token);
+      if (!sPc || !sPc.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aPc = await getAcct(sPc.name);
+      if (!aPc || aPc.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+      var pick = Math.round(Number(body.pick) || 0);
+      if (pick < 1 || pick > 100) return res.status(400).json({ error: '1~100 중 번호를 골라주세요' });
+      var ENTRY = 5000;
+      if (aPc.bal < ENTRY) return res.status(400).json({ error: '참가비 5,000 APO 부족' });
+      var dPc = kstDate();
+      var nPc = Number(await redis(['INCRBY', 'pcn:' + dPc + ':' + aPc.name, '1']));
+      await redis(['EXPIRE', 'pcn:' + dPc + ':' + aPc.name, '93600']);
+      if (nPc > 20) return res.status(429).json({ error: '빠칭코는 하루 20판까지! 내일 또 🙏' });
+      if (!(await acctLock(sPc.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
       try {
-      aHL = (await getAcct(sHL.name)) || aHL;
-      if (aHL.bal < amtH) return res.status(400).json({ error: '잔액 부족' });
-      var winH = Math.random() < 0.475;
-      aHL.bal += winH ? amtH : -amtH;
-      aHL = await busted(aHL);
-      await putAcct(aHL);
-      await ledger(aHL.name, winH ? '🃏 하이로우 승! ×2' : '🃏 하이로우 패…', winH ? amtH : -amtH, aHL.bal);
-      if (winH && amtH >= 5000) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aHL.name, t: 'hl', v: amtH, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); } // 🃏 하이로우 대박 속보
-      return res.status(200).json({ ok: true, win: winH, bal: aHL.bal, left: 20 - nHL });
-      } finally { await acctUnlock(sHL.name); }
+      aPc = (await getAcct(sPc.name)) || aPc;
+      if (aPc.bal < ENTRY) return res.status(400).json({ error: '잔액 부족' });
+      aPc.bal -= ENTRY;
+      await redis(['SET', 'arcade:pcnpot', '10000', 'NX']); // 잭팟 시드 10,000
+      await redis(['INCRBY', 'arcade:pcnpot', '400']); // 참가비 8% 적립
+      var winNum = 1 + Math.floor(Math.random() * 100);
+      var rank, prize, wonJp = 0;
+      if (pick === winNum) {
+        rank = 1;
+        wonJp = Number(await redis(['GET', 'arcade:pcnpot'])) || 10000;
+        prize = wonJp;
+        await redis(['SET', 'arcade:pcnpot', '10000']); // 다음 판으로 (시드 리셋)
+      } else {
+        rank = pickWeighted([[2, 1], [3, 3], [4, 6], [5, 10], [6, 15], [7, 19], [8, 19], [9, 15], [10, 12]]);
+        prize = { 2: 40000, 3: 15000, 4: 9000, 5: 6000, 6: 5000, 7: 3000, 8: 2000, 9: 1000, 10: 0 }[rank];
+      }
+      aPc.bal += prize;
+      aPc = await busted(aPc);
+      await putAcct(aPc);
+      await ledger(aPc.name, wonJp ? '🎰💥 빠칭코 1등!! 누적 잭팟' : ('🎰 빠칭코 ' + rank + '등'), prize - ENTRY, aPc.bal);
+      if (rank <= 3) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPc.name, t: (wonJp ? 'pcnjp' : 'pcn'), v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
+      var potNowPc = wonJp ? 10000 : (Number(await redis(['GET', 'arcade:pcnpot'])) || 10000);
+      return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, pot: potNowPc, bal: aPc.bal, left: 20 - nPc });
+      } finally { await acctUnlock(sPc.name); }
     }
     // 잭팟 풀·속보 조회
     if (req.method === 'GET' && action === 'arcade') {
-      var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 1000;
+      var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 5000;
+      var pcnp = Number(await redis(['GET', 'arcade:pcnpot'])) || 10000;
       var nw = ((await redis(['LRANGE', 'arcade:news', '0', '4'])) || []).map(function (x) { try { return JSON.parse(x) } catch (e) { return null } }).filter(Boolean);
-      return res.status(200).json({ jackpot: jp, news: nw });
+      return res.status(200).json({ jackpot: jp, pcnpot: pcnp, news: nw });
     }
     // 📋 주간 미션 — 전부 자동 체크 (행동 시 서버가 카운트)
     function weekIdOf() { var w = new Date(); return w.getUTCFullYear() + '-W' + Math.ceil(((w - new Date(Date.UTC(w.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7); }
