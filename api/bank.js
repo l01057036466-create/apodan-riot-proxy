@@ -1363,6 +1363,20 @@ module.exports = async function handler(req, res) {
       await redis(['RPUSH', 'cmt:' + cbB2, JSON.stringify(cbItem)]);
       await redis(['LTRIM', 'cmt:' + cbB2, '-800', '-1']);
       await redis(['EXPIRE', 'cmt:' + cbB2, SEC_CMT]);
+      if (cbParent) { // 답글 → 원댓 작성자에게 알림
+        try {
+          var pl = (await redis(['LRANGE', 'cmt:' + cbB2, '0', '799'])) || [];
+          for (var pi = 0; pi < pl.length; pi++) { var pc; try { pc = JSON.parse(pl[pi]); } catch (e) { continue; }
+            if (pc.id === cbParent) {
+              if (pc.uid && pc.uid !== cbUid && pc.uid !== 'dev') {
+                await redis(['LPUSH', 'cmtN:' + pc.uid, JSON.stringify({ type: 'reply', board: cbB2, pid: cbParent, ptext: String(pc.text || '').slice(0, 40), from: cbNick, text: cbText.slice(0, 40), ts: Date.now() })]);
+                await redis(['LTRIM', 'cmtN:' + pc.uid, '0', '49']);
+                await redis(['EXPIRE', 'cmtN:' + pc.uid, SEC_CMT]);
+              }
+              break;
+            } }
+        } catch (e) {}
+      }
       cbItem.like = 0;
       return res.status(200).json({ comment: cbItem });
     }
@@ -1375,6 +1389,23 @@ module.exports = async function handler(req, res) {
       if (!cbWho2) return res.status(401).json({ error: '로그인 후 추천할 수 있어요' });
       var cbNn = await redis(['HINCRBY', 'cmtL:' + cbB3, cbLid, '1']);
       await redis(['EXPIRE', 'cmtL:' + cbB3, SEC_CMT]);
+      try { // 좋아요 → 댓글 작성자 알림 (같은 사람의 반복 좋아요는 1회만)
+        var lkUid = cbWho2.name ? crypto.createHash('sha256').update('u|' + cbWho2.name).digest('hex').slice(0, 12) : 'dev';
+        var ll = (await redis(['LRANGE', 'cmt:' + cbB3, '0', '799'])) || [];
+        for (var li = 0; li < ll.length; li++) { var lc; try { lc = JSON.parse(ll[li]); } catch (e) { continue; }
+          if (lc.id === cbLid) {
+            if (lc.uid && lc.uid !== lkUid && lc.uid !== 'dev') {
+              var seen = await redis(['SADD', 'cmtNLseen:' + lc.uid, lkUid + ':' + cbLid]);
+              await redis(['EXPIRE', 'cmtNLseen:' + lc.uid, SEC_CMT]);
+              if (seen == 1) {
+                await redis(['LPUSH', 'cmtN:' + lc.uid, JSON.stringify({ type: 'like', board: cbB3, pid: cbLid, ptext: String(lc.text || '').slice(0, 40), from: cbWho2.name || '운영자', ts: Date.now() })]);
+                await redis(['LTRIM', 'cmtN:' + lc.uid, '0', '49']);
+                await redis(['EXPIRE', 'cmtN:' + lc.uid, SEC_CMT]);
+              }
+            }
+            break;
+          } }
+      } catch (e) {}
       return res.status(200).json({ id: cbLid, like: parseInt(cbNn, 10) || 0 });
     }
 
@@ -1392,6 +1423,27 @@ module.exports = async function handler(req, res) {
       if (cbMe.role !== 'dev' && cbMeUid !== cbTarget.c.uid) return res.status(403).json({ error: '본인 댓글만 지울 수 있어요' });
       await redis(['LREM', 'cmt:' + cbB4, '1', cbTarget.raw]);
       return res.status(200).json({ ok: true, id: cbDid });
+    }
+
+    if (req.method === 'GET' && action === 'cmtNotif') {
+      var nWho = await auth(q.token);
+      if (!nWho) return res.status(401).json({ error: '로그인이 필요해요' });
+      var nUid = nWho.name ? crypto.createHash('sha256').update('u|' + nWho.name).digest('hex').slice(0, 12) : 'dev';
+      var nRaw = (await redis(['LRANGE', 'cmtN:' + nUid, '0', '49'])) || [];
+      var nItems = [];
+      for (var ni = 0; ni < nRaw.length; ni++) { try { nItems.push(JSON.parse(nRaw[ni])); } catch (e) {} }
+      var nLast = parseInt(await redis(['GET', 'cmtNread:' + nUid]), 10) || 0;
+      var nUnread = 0; for (var nu = 0; nu < nItems.length; nu++) { if ((nItems[nu].ts || 0) > nLast) nUnread++; }
+      return res.status(200).json({ items: nItems, unread: nUnread, lastRead: nLast });
+    }
+
+    if (req.method === 'POST' && action === 'cmtNotifRead') {
+      var rWho = await auth(body.token);
+      if (!rWho) return res.status(401).json({ error: '로그인이 필요해요' });
+      var rUid = rWho.name ? crypto.createHash('sha256').update('u|' + rWho.name).digest('hex').slice(0, 12) : 'dev';
+      var rNow = Date.now();
+      await redis(['SET', 'cmtNread:' + rUid, String(rNow), 'EX', SEC_CMT]);
+      return res.status(200).json({ ok: true, lastRead: rNow });
     }
 
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
