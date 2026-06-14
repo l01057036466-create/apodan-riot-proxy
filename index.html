@@ -5120,29 +5120,30 @@ const CC_NPC_REPLY=['{nick}님 ㄹㅇ 인정','윗분 말이 맞음 ㅋㅋ','{ni
 // ═══════════ 🧠 아포단 밈 엔진 (톡방 분석 기반) — 댓글 단어/키워드로 맞춤 답글 ═══════════
 // 멤버 이름이 댓글에 나오면 그 사람 전용 밈으로 답글 ({nick}=댓글 작성자)
 const APO_MEMES={
-  '나깅':['똥나깅 또 시작이네 ㅋㅋ','대나깅 가나요 ㅋㅋ','나깅님 카이사 ㄷㄷ','나깅 착하지~','거제 나깅님 ㅋㅋ','{nick}님 나깅 얘기 ㅋㅋ','대대나깅 등장'],
-  '미르':['미르코인 가즈아 🚀','미륵님 강림 ㅋㅋ','미르튜렁 ㄱㄱ','미르 주주 모집중 ㅋㅋ','{nick}님 미르코인 사셈','미르 우승하면 서울 옴 ㅋㅋ'],
-  '물방울':['물방울 오늘은 잡고간다','물방울 또 티모냐 ㅋㅋ','지더라도 물방울은 잡고감','물방울 기죽지마 ㅋㅋ','{nick}님 물방울 조심','물방울 베이가 ㄷㄷ'],
-  '수아':['내 꿈은 대수아 ㅋㅋ','대수아 ㄷㄷ','수아님 갈리오 과외 ㄱㄱ','수아쿤 성불했네','수아언니 ㄷㄷ','{nick}님도 대수아행'],
-  '유메':['유메님 또 팰 준비 ㅋㅋ','정글 유메 ㄷㄷ','유메님 괴롭히기 ㄱㄱ','유메햄 혼나야됨 ㅋㅋ','{nick}님 유메한테 잡힘','유메 빌런 등장'],
-  '잭슨':['잭슨 2캠 안 먹는거 실화냐 ㅋㅋ','대잭슨 ㄷㄷ','잭슨님 사이트 또 업뎃?','잭슨 본진 2캠 목격담 ㄴㄴ','{nick}님 잭슨 정글 믿음? ㅋㅋ'],
-  '언지':['언지 같은 팀도 패는거 ㅋㅋ','고티언지 ㄷㄷ','언지야 억울해?','{nick}님 언지 조심 ㅋㅋ'],
-  '건이':['착한건이 ㅋㅋ','건이 또 불참? ㅋㅋ','건이의 집착 ㄷㄷ','건이 아프지마ㅜ','{nick}님 건이 챙겨'],
-  '서하':['서하 캐리각 ㄷㄷ','솔랭이면 서하 못 이김','서하하하하ㅏ','{nick}님 서하팀이면 개꿀','서하님 한정 T ㅋㅋ'],
-  '곱창':['곱창햄 라인전 디테일 ㄷㄷ','탑 곱창 클라스','곱창햄 팀장각','{nick}님 곱창햄한테 한 수 배움'],
-  '메비':['메비 정글마스터 ㄷㄷ','메비 렝가 개무섭 ㅋㅋ','메비햄 카밀 ㄷㄷ','{nick}님 메비 정글 ㄷㄷ'],
-  '도연':['도연 쉔 또 훔쳐감 ㅋㅋ','도연님 조합 ㄷㄷ','{nick}님 도연 조합 조심'],
-  '씽긋':['옵치캡틴 씽긋군 ㅋㅋ','씽긋 샤코 ㄷㄷ','덴우스 씽란 가즈아','{nick}님 씽긋군'],
-  '루덴':['루덴 메인 서폿 ㄷㄷ','{nick}님 루덴이랑 듀오 ㄱㄱ'],
-  '세혀니':['세혀니 서폿 ㄷㄷ','여썬세혀니 술각 ㅋㅋ','{nick}님 세혀니님'],
-  '여썬':['대여썬 ㄷㄷ','여썬 술 ㄱㄱ ㅋㅋ','{nick}님 여썬이랑 한잔'],
-  '덴지':['덴우스 ㄷㄷ','덴지 씽긋 듀오','{nick}님 덴지'],
-  '체인':['체인님 ㄱㄱ','{nick}님 체인'],
-  '이래':['이래 또 쉼? ㅋㅋ','{nick}님 이래'],
-  '구구':['구구 밤샘각 ㅋㅋ','{nick}님 구구'],
-  '우악':['우악 탑마스터 ㄷㄷ','{nick}님 우악'],
-  '자야':['자야 소라카 ㄷㄷ','자야나깅 봇듀오 ㄷㄷ'],
-  '도현':['{nick}님 도현'],
+  // g=잘할 때 / b=못할 때 / a=상시 (댓글 분위기로 자동 선택)
+  '나깅':{g:['나깅 캐리 ㄷㄷ','대나깅 가나요 ㅋㅋ'],b:['똥나깅 또 시작이네 ㅋㅋ','나깅 또 던졌누 ㅋㅋ'],a:['나깅님 카이사 ㄷㄷ','나깅 착하지~','거제 나깅님 ㅋㅋ','대대나깅 등장','{nick}님 나깅 얘기 ㅋㅋ']},
+  '미르':{g:['미르코인 떡상 🚀','대미르 ㄷㄷ'],b:['미르코인 떡락 ㅋㅋ','미르 또 던짐 ㅋㅋ'],a:['미륵님 강림 ㅋㅋ','미르튜렁 ㄱㄱ','미르 주주 모집중 ㅋㅋ','미르 우승하면 서울 옴 ㅋㅋ','{nick}님 미르코인 사셈']},
+  '물방울':{g:['대방울 ㄷㄷ','물방울 잘하네 ㄷㄷ'],b:['똥방울 ㅋㅋ','유밑물 ㅋㅋ','물방울 또 티모 던짐 ㅋㅋ'],a:['물방울 또 티모냐 ㅋㅋ','지더라도 물방울은 잡고감','물방울 베이가 ㄷㄷ','{nick}님 물방울 조심']},
+  '수아':{g:['대수아 ㄷㄷ','내 꿈은 대수아 ㅋㅋ'],b:['수아쿤 흔들리네 ㅋㅋ'],a:['수아님 갈리오 과외 ㄱㄱ','수아쿤 성불했네','수아언니 ㄷㄷ','{nick}님도 대수아행']},
+  '유메':{g:['유메 198cm 인증 ㄷㄷ','유메 폼 미쳤다'],b:['물밑유 ㅋㅋ','유메 170cm 인증 ㅋㅋ'],a:['정글 유메 ㄷㄷ','유메님 또 팰 준비 ㅋㅋ','유메 빌런 등장','유메님 괴롭히기 ㄱㄱ','{nick}님 유메한테 잡힘']},
+  '잭슨':{g:['대잭슨 ㄷㄷ','잭슨 캐리각 ㄷㄷ'],b:['잭슨 또 2캠 안 먹누 ㅋㅋ'],a:['잭슨 2캠 안 먹는거 실화냐 ㅋㅋ','잭슨님 사이트 또 업뎃?','잭슨 본진 2캠 목격담 ㄴㄴ','{nick}님 잭슨 정글 믿음? ㅋㅋ']},
+  '언지':{a:['언지 같은 팀도 패는거 ㅋㅋ','고티언지 ㄷㄷ','언징징 ㅋㅋ','언지야 억울해?','{nick}님 언지 조심 ㅋㅋ']},
+  '건이':{a:['착한건이 ㅋㅋ','건이 암베사 크산테 투툴 ㄷㄷ','건이 주식 개못함 ㅋㅋ','건이 또 불참? ㅋㅋ','건이의 집착 ㄷㄷ','{nick}님 건이 챙겨']},
+  '서하':{g:['대서하 캐리 ㄷㄷ','솔랭이면 서하 못 이김'],b:['서하 제드만 빼면 다이아 ㅋㅋ'],a:['서하 캐리각 ㄷㄷ','서하하하하ㅏ','서하님 한정 T ㅋㅋ','{nick}님 서하팀이면 개꿀']},
+  '곱창':{g:['대창 ㄷㄷ','곱창햄 라인전 디테일 ㄷㄷ'],a:['곱창햄 팀장각','탑 곱창 클라스','{nick}님 곱창햄한테 한 수 배움']},
+  '메비':{g:['메비 마피아 ㄷㄷ','메비 정글마스터 ㄷㄷ'],b:['메비 그냥시민 ㅋㅋ'],a:['메비 렝가 개무섭 ㅋㅋ','메비햄 카밀 ㄷㄷ','{nick}님 메비 정글 ㄷㄷ']},
+  '도연':{a:['도연 쉔 또 훔쳐감 ㅋㅋ','도연 멘헤라 ㅋㅋ','도연님 조합 ㄷㄷ','{nick}님 도연 조합 조심']},
+  '씽긋':{a:['옵치캡틴 씽긋군 ㅋㅋ','씽긋 샤코 ㄷㄷ','덴우스 씽란 가즈아','{nick}님 씽긋군']},
+  '루덴':{a:['루덴 메인 서폿 ㄷㄷ','{nick}님 루덴이랑 듀오 ㄱㄱ']},
+  '세혀니':{a:['세혀니 서폿 ㄷㄷ','여썬세혀니 술각 ㅋㅋ','{nick}님 세혀니님']},
+  '여썬':{a:['선주햄 ㄷㄷ','여썬 근육 ㄷㄷ','프로틴 괴물 여썬 ㅋㅋ','대여썬 ㄷㄷ','여썬 술 ㄱㄱ ㅋㅋ','{nick}님 여썬이랑 한잔']},
+  '덴지':{a:['덴우스 ㄷㄷ','덴지 씽긋 듀오','{nick}님 덴지']},
+  '체인':{a:['쨈미니 ㅋㅋ','체인님 ㄱㄱ','{nick}님 체인']},
+  '이래':{a:['이래통 ㅋㅋ','이래 또 쉼? ㅋㅋ','{nick}님 이래']},
+  '구구':{a:['구구 밤샘각 ㅋㅋ','{nick}님 구구']},
+  '우악':{g:['우악 탑마스터 ㄷㄷ'],b:['우악 또 18글자 닉변 ㅋㅋ'],a:['우악 탑 ㄷㄷ','{nick}님 우악']},
+  '라떼':{b:['지연아 조용 ㅋㅋ'],a:['라떼 ㄱㄱ','{nick}님 라떼']},
+  '자야':{a:['자야 소라카 ㄷㄷ','자야나깅 봇듀오 ㄷㄷ']},
 };
 // 상황/키워드 매칭 (이김/짐/던짐/캐리/자랭/내전/배팅/티어/챔피언 등)
 const APO_KW=[
@@ -5160,13 +5161,29 @@ const APO_KW=[
   {k:['서폿','서포터','유틸'], r:['서폿 차이 ㄷㄷ','{nick}님 서폿 고생','로밍 서폿 ㄷㄷ']},
   {k:['탑','탑신병자','텔포'], r:['탑신병자 ㅋㅋ','{nick}님 탑 ㄷㄷ','텔포 타이밍 ㄷㄷ']},
 ];
+// 댓글 분위기 감지 (잘함/못함) → 멤버 밈을 상황에 맞게
+function apoSentiment(text){
+  const t=String(text||'').toLowerCase();
+  const bad=['던졌','던짐','던지','트롤','터짐','터졌','졌','패배','똥','피딩','광탈','역전패','쳐발','feed','내전파괴','쓰로잉','버스탐'];
+  const good=['캐리','펜타','쿼드라','솔킬','이겼','이김','갓겜','지렸','오졌','하드캐리','미쳤','폼미쳤','클래스','갓'];
+  if(bad.some(k=>t.indexOf(k)>=0))return 'bad';
+  if(good.some(k=>t.indexOf(k)>=0))return 'good';
+  return '';
+}
+function _memeLines(name){ const e=APO_MEMES[name]; if(!e)return []; if(Array.isArray(e))return e.slice(); return [].concat(e.g||[],e.b||[],e.a||[]); }
 // 댓글 텍스트 → 키워드/밈 맞춤 답글 (없으면 일반 NPC 반응)
 function apoMemeReply(text,nick,rng){
   text=String(text||''); nick=nick||'윗분';
   const sub=s=>String(s).replace(/\{nick\}/g,nick);
   try{
     const names=Object.keys(APO_MEMES).filter(n=>text.indexOf(n)>=0);
-    if(names.length){ const n=names[Math.floor(rng()*names.length)]; return sub(_ccPick(APO_MEMES[n],rng)); }
+    if(names.length){
+      const n=names[Math.floor(rng()*names.length)], e=APO_MEMES[n];
+      let pool;
+      if(Array.isArray(e))pool=e;
+      else{ const s=apoSentiment(text); pool=(s==='good'?(e.g||[]):s==='bad'?(e.b||[]):[]).concat(e.a||[]); if(!pool.length)pool=_memeLines(n); }
+      if(pool.length)return sub(_ccPick(pool,rng));
+    }
     for(let g=0;g<APO_KW.length;g++){ if(APO_KW[g].k.some(kw=>text.toLowerCase().indexOf(kw.toLowerCase())>=0)) return sub(_ccPick(APO_KW[g].r,rng)); }
   }catch(e){}
   return sub(_ccPick(CC_NPC_REPLY,rng));
@@ -5179,8 +5196,8 @@ function apoMemeComments(names,rng,n){
   for(let i=0;i<n && cand.length;i++){
     let pick; let tries=0; do{ pick=cand[Math.floor(rng()*cand.length)]; tries++; }while(used[pick]&&tries<6);
     used[pick]=1;
-    const pool=APO_MEMES[pick].filter(s=>s.indexOf('{nick}')<0); // 단독 댓글엔 {nick} 줄 제외
-    const line=(pool.length?_ccPick(pool,rng):_ccPick(APO_MEMES[pick],rng).replace(/\{nick\}님?/g,'').trim());
+    const all=_memeLines(pick).filter(s=>s.indexOf('{nick}')<0); // 단독 댓글엔 {nick} 줄 제외
+    const line=(all.length?_ccPick(all,rng):_ccPick(_memeLines(pick),rng).replace(/\{nick\}님?/g,'').trim());
     if(line)out.push(line);
   }
   return out;
@@ -5472,10 +5489,28 @@ async function loadNotifs(force){
 
 /* 실제 댓글 → 렌더 객체 (아바타/배경은 id로 고정) */
 function ccAgoTs(ts){ if(!ts)return '방금'; const m=(Date.now()-ts)/60000; return m<0?'방금':ccAgo(m); }
+// 코스튬 아바타 (상점 art > badge > legend), 없으면 null → 랜덤 이모지로
+function _cmtDecoAva(deco){
+  if(!deco)return null;
+  if(deco.art&&SHOP_C.art&&SHOP_C.art[deco.art]){const a=SHOP_C.art[deco.art];return {html:`<img src="${a.img}" alt="" style="width:100%;height:100%;object-fit:cover;${a.px?'image-rendering:pixelated':''}">`,bg:'#0d1016'};}
+  if(deco.badge&&SHOP_C.badge&&SHOP_C.badge[deco.badge])return {html:SHOP_C.badge[deco.badge].e,bg:'#1a1f28'};
+  if(deco.legend&&SHOP_C.legend&&SHOP_C.legend[deco.legend])return {html:SHOP_C.legend[deco.legend].e,bg:'#1a1f28'};
+  return null;
+}
+// 댓글 이름: 코스튬 색·테두리 반영 (아바타/뱃지/칭호는 동그라미에 따로 표시하므로 제외)
+function _cmtNameHtml(nick,deco){
+  if(!deco||(!deco.color&&!deco.frame))return `<b style="font-size:12px;color:var(--mut)">${esc(nick)}</b>`;
+  return `<span style="font-size:12px;font-weight:700">${bankDeco(nick,{color:deco.color,frame:deco.frame},'')}</span>`;
+}
 function _realToObj(rc){
   const rr=_ccRng(_ccHash('rc|'+(rc.id||'')));
+  const B=bankSession();
+  const mine=B&&B.name&&rc.nick===B.name;          // 내 댓글은 현재 장착으로 실시간 반영
+  const deco=(mine&&B.equip)?B.equip:(rc.deco||null); // 남의 댓글은 작성 당시 스냅샷
+  const dav=_cmtDecoAva(deco);
   return { id:rc.id, nick:rc.nick||'익명', text:rc.text||'', ago:ccAgoTs(rc.ts), like:rc.like||0,
-    ava:_ccPick(CC_AVA,rr), bg:_ccPick(CC_AVA_BG,rr), real:true, best:false, parent:rc.parent||'', _ts:rc.ts||0 };
+    ava:dav?dav.html:_ccPick(CC_AVA,rr), bg:dav?dav.bg:_ccPick(CC_AVA_BG,rr),
+    deco:deco, real:true, best:false, parent:rc.parent||'', _ts:rc.ts||0 };
 }
 
 /* 댓글 한 줄 (top/답글 공용). 실제 댓글은 👍 클릭 가능 + LIVE 표식 */
@@ -5488,16 +5523,18 @@ function cmtRow(c,board,isReply){
   const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
   const likeCell=`<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
   const sz=isReply?26:30, fs=isReply?13:16;
+  let avaBorder='';
+  if(c.deco){ const cv=c.deco.color&&SHOP_C.color[c.deco.color]?SHOP_C.color[c.deco.color].v:''; const acc=(cv&&cv!=='rainbow'&&!(cv.startsWith&&cv.startsWith('grad:')))?cv:((cv||c.deco.frame)?'var(--gold)':''); if(acc)avaBorder=`border:2px solid ${acc};`; }
   let bg='';
   if(c._yeopo)bg='opacity:.62;background:rgba(214,77,77,.05)';
   else if(isReply)bg='margin-left:30px;background:rgba(255,255,255,.02)';
   else if(c.best)bg='background:rgba(242,184,75,.05)';
   return `<div style="display:flex;gap:9px;padding:8px 2px;border-top:1px solid var(--line);${bg}">
-    <div style="width:${sz}px;height:${sz}px;border-radius:50%;flex:none;background:${c.bg};display:grid;place-items:center;font-size:${fs}px">${c.ava}</div>
+    <div style="width:${sz}px;height:${sz}px;border-radius:50%;flex:none;overflow:hidden;background:${c.bg};display:grid;place-items:center;font-size:${fs}px;${avaBorder}">${c.ava}</div>
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         ${bestBadge}${liveBadge}${yeopoBadge}
-        <b style="font-size:12px;color:var(--mut)">${esc(c.nick)}</b>
+        ${_cmtNameHtml(c.nick,c.deco)}
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
         ${replyBtn}
       </div>
