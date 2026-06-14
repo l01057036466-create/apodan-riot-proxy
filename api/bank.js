@@ -1130,6 +1130,7 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', 'mcl:' + wkC + ':' + sMC.name, SEC90]);
       if (Number(firstC) !== 1) return res.status(409).json({ error: '이미 받았어요 (주 1회)' });
       var aMC = await getAcct(sMC.name);
+      if (!aMC) { await redis(['SREM', 'mcl:' + wkC + ':' + sMC.name, fld]); return res.status(500).json({ error: '계좌 조회 실패 — 다시 받기를 눌러주세요' }); } // 🐛 지급 실패 시 수령표시 롤백 (영구 잠김 방지)
       aMC.bal += MDEF[fld].pay;
       await putAcct(aMC);
       await ledger(aMC.name, '📋 주간 미션 보상 — ' + fld, MDEF[fld].pay, aMC.bal);
