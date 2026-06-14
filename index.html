@@ -5342,11 +5342,13 @@ const CMT_NICK_KEY='apodan_cmt_nick';
 function cmtNick(){ return lsGet(CMT_NICK_KEY)||''; }
 function cmtSetNick(v){ lsSet(CMT_NICK_KEY,String(v||'').slice(0,20)); }
 
-/* 댓글 API 호출 (bankCall 과 동일 베이스/방식) */
+/* 댓글 API 호출 — bank.js에 통합됨(/api/bank). bankCall과 동일 베이스/토큰 */
 async function commentCall(action,body,method){
   const api=voteApiBase();
   if(!api)throw new Error('서버 미연결 — 설정에서 투표 서버(같은 주소)를 먼저 연결해주세요');
-  const url=api+'/api/comments?action='+encodeURIComponent(action)+(method==='GET'&&body&&body.board?('&board='+encodeURIComponent(body.board)):'');
+  const map={list:'cmtList',add:'cmtAdd',like:'cmtLike',del:'cmtDel'};
+  const act=map[action]||action;
+  const url=api+'/api/bank?action='+encodeURIComponent(act)+(method==='GET'&&body&&body.board?('&board='+encodeURIComponent(body.board)):'');
   const opt=method==='GET'?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({token:bankToken()},body||{}))};
   const r=await fetch(url,opt);
   const j=await r.json().catch(()=>({}));
@@ -5534,7 +5536,7 @@ async function submitCmt(board,parent){
     if(typeof render==='function')render('force');
   }catch(e){
     let m=e.message||'등록 실패';
-    if(/\b404\b/.test(m))m='댓글 서버(api/comments.js)가 아직 배포 안 된 것 같아요. 저장소에 추가하고 배포해주세요.';
+    if(/알 수 없는 요청|\b404\b/.test(m))m='댓글 기능이 포함된 최신 bank.js로 배포해야 해요 (api/bank.js 갱신 후 재배포).';
     if(typeof toast==='function')toast(m,true);
   }
 }
