@@ -5477,8 +5477,9 @@ function ccRow(c,best){
       </div>
       <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${esc(c.text)}</p>
     </div>
-    <div style="flex:none;text-align:center;min-width:34px;align-self:center">
-      <div style="font-size:13px;font-weight:800;color:${likeCol};line-height:1">▲ ${ccLikeStr(c.like)}</div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:42px;align-self:center;gap:1px">
+      <div style="font-size:16px;line-height:1">👍</div>
+      <div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>
     </div>
   </div>`;
 }
@@ -5494,8 +5495,8 @@ function communityFeed(L){
   const aParts=(L.blue||[]).map(id=>bareName(nameOf(id))).filter(Boolean);
   const bParts=(L.red||[]).map(id=>bareName(nameOf(id))).filter(Boolean);
   const teams=['알파','베타'];
-  // 스레드 길이 — 화제성 있는 공지처럼 70~150개 (경기 전 풀 512개에서 시드 추출, 안 겹침)
-  const want=70+Math.floor(rng()*81);
+  // 스레드 길이 — 판당 6~10개만 (간결하게)
+  const want=6+Math.floor(rng()*5);
   const POOL=PRE_POOL, order=_ccShuffleIdx(POOL.length,rng);
   const N=Math.min(want,POOL.length);
   const rows=[];
@@ -5513,19 +5514,15 @@ function communityFeed(L){
   let acc=0;
   rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
   const best=byLike.slice(0,3), rest=rows.filter(r=>!bestSet.has(r._o));
-  const open=!!(window._cfOpen&&window._cfOpen[L.id]);
-  const headCount=N+Math.floor(rng()*40); // 표기 댓글수(스크롤로 펼치면 N개 노출)
-  const shownRest=open?rest:rest.slice(0,4);
-  const body=best.map(c=>ccRow(c,true)).join('')+shownRest.map(c=>ccRow(c,false)).join('');
-  const moreBtn=rest.length>4?`<button class="btn sm ghost" style="width:100%;margin-top:8px" onclick="ccToggle('${L.id}')">${open?'▲ 댓글 접기':`▼ 댓글 ${N}개 모두 보기`}</button>`:'';
+  const headCount=N;
+  const body=best.map(c=>ccRow(c,true)).join('')+rest.map(c=>ccRow(c,false)).join('');
   return `<div class="hr"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 2px">
     <p class="mini" style="margin:0;font-weight:800;color:var(--mut)">🗯 떡밥 게시판 <span class="pill" style="font-size:10px;padding:0 7px;font-weight:800">💬 ${headCount}</span></p>
     <span class="mini dim" style="font-size:10px">추천순 · 익명 댓글</span>
   </div>
   <p class="mini dim" style="margin:0 0 4px;font-size:10.5px">※ 멤버들의 관전평을 모은 자동 떡밥글이에요 (재미용)</p>
-  ${body}
-  ${moreBtn}`;
+  ${body}`;
 }
 function ccToggle(id){ window._cfOpen=window._cfOpen||{}; window._cfOpen[id]=!window._cfOpen[id]; if(typeof render==='function')render('force'); }
 
@@ -5565,7 +5562,7 @@ function resultFeed(m){
   const parts=rt.map(x=>nm(x)).filter(Boolean);
   const seed=_ccHash('rf|'+m.id+'|'+(m.playedAt||'')+'|'+(m.setNumber||''));
   const rng=_ccRng(seed);
-  const want=60+Math.floor(rng()*61); // 60~120개 (결과 풀 502개에서 시드 추출)
+  const want=6+Math.floor(rng()*5); // 판당 6~10개 (결과 풀 502개에서 시드 추출)
   const POOL=RES_POOL, order=_ccShuffleIdx(POOL.length,rng);
   const N=Math.min(want,POOL.length);
   const rows=[];
@@ -5581,19 +5578,15 @@ function resultFeed(m){
   let acc=0;
   rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
   const best=byLike.slice(0,3), rest=rows.filter(r=>!bestSet.has(r._o));
-  const open=!!(window._rfOpen&&window._rfOpen[m.id]);
-  const headCount=N+Math.floor(rng()*40);
-  const shownRest=open?rest:rest.slice(0,4);
-  const body=best.map(c=>ccRow(c,true)).join('')+shownRest.map(c=>ccRow(c,false)).join('');
-  const moreBtn=rest.length>4?`<button class="btn sm ghost" style="width:100%;margin-top:8px" onclick="rfToggle('${m.id}')">${open?'▲ 댓글 접기':`▼ 댓글 ${N}개 모두 보기`}</button>`:'';
+  const headCount=N; // 판당 10개 이하라 전부 노출 (표기수 = 실제수)
+  const body=best.map(c=>ccRow(c,true)).join('')+rest.map(c=>ccRow(c,false)).join('');
   return `<div class="hr"></div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 2px">
     <p class="mini" style="margin:0;font-weight:800;color:var(--mut)">🗯 경기 반응 <span class="pill" style="font-size:10px;padding:0 7px;font-weight:800">💬 ${headCount}</span></p>
     <span class="mini dim" style="font-size:10px">추천순 · 익명 댓글</span>
   </div>
   <p class="mini dim" style="margin:0 0 4px;font-size:10.5px">※ 경기 끝나고 멤버들이 남긴 반응을 모은 자동 떡밥글이에요 (재미용)</p>
-  ${body}
-  ${moreBtn}`;
+  ${body}`;
 }
 function rfToggle(id){ window._rfOpen=window._rfOpen||{}; window._rfOpen[id]=!window._rfOpen[id]; if(typeof render==='function')render('force'); }
 
