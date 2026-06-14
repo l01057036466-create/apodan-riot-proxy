@@ -5134,16 +5134,16 @@ const APO_MEMES={
   '메비':{g:['메비 마피아 ㄷㄷ','메비 정글마스터 ㄷㄷ'],b:['메비 그냥시민 ㅋㅋ'],a:['메비 렝가 개무섭 ㅋㅋ','메비햄 카밀 ㄷㄷ','{nick}님 메비 정글 ㄷㄷ']},
   '도연':{a:['도연 쉔 또 훔쳐감 ㅋㅋ','도연 멘헤라 ㅋㅋ','도연님 조합 ㄷㄷ','{nick}님 도연 조합 조심']},
   '씽긋':{a:['옵치캡틴 씽긋군 ㅋㅋ','씽긋 샤코 ㄷㄷ','덴우스 씽란 가즈아','{nick}님 씽긋군']},
-  '루덴':{a:['루덴 메인 서폿 ㄷㄷ','{nick}님 루덴이랑 듀오 ㄱㄱ']},
-  '세혀니':{a:['세혀니 서폿 ㄷㄷ','여썬세혀니 술각 ㅋㅋ','{nick}님 세혀니님']},
+  '루덴':{a:['루덴 메인 서폿 ㄷㄷ','루덴 서폿 갓벽 ㄷㄷ','루덴님 시야 ㄷㄷ','루덴 로밍 좋네 ㄷㄷ','루덴 폼 ㄷㄷ','{nick}님 루덴이랑 듀오 ㄱㄱ']},
+  '세혀니':{a:['세혀니 서폿 ㄷㄷ','여썬세혀니 술각 ㅋㅋ','세혀니 로밍 ㄷㄷ','세혀니님 시야 ㄷㄷ','{nick}님 세혀니님']},
   '여썬':{a:['선주햄 ㄷㄷ','여썬 근육 ㄷㄷ','프로틴 괴물 여썬 ㅋㅋ','대여썬 ㄷㄷ','여썬 술 ㄱㄱ ㅋㅋ','{nick}님 여썬이랑 한잔']},
-  '덴지':{a:['덴우스 ㄷㄷ','덴지 씽긋 듀오','{nick}님 덴지']},
-  '체인':{a:['쨈미니 ㅋㅋ','체인님 ㄱㄱ','{nick}님 체인']},
-  '이래':{a:['이래통 ㅋㅋ','이래 또 쉼? ㅋㅋ','{nick}님 이래']},
-  '구구':{a:['구구 밤샘각 ㅋㅋ','{nick}님 구구']},
+  '덴지':{a:['덴우스 ㄷㄷ','덴지 씽긋 듀오','덴지님 ㄱㄱ','덴지 폼 ㄷㄷ','{nick}님 덴지']},
+  '체인':{a:['쨈미니 ㅋㅋ','체인님 ㄱㄱ','체인 폼 ㄷㄷ','쨈미니 등장 ㅋㅋ','{nick}님 체인']},
+  '이래':{a:['이래통 ㅋㅋ','이래 또 쉼? ㅋㅋ','이래님 컴백 ㄷㄷ','이래통 등장 ㅋㅋ','{nick}님 이래']},
+  '구구':{a:['구구 밤샘각 ㅋㅋ','구구님 ㄱㄱ','구구 폼 ㄷㄷ','구구 밤에 ㄱㄱ ㅋㅋ','{nick}님 구구']},
   '우악':{g:['우악 탑마스터 ㄷㄷ'],b:['우악 또 18글자 닉변 ㅋㅋ'],a:['우악 탑 ㄷㄷ','{nick}님 우악']},
   '라떼':{b:['지연아 조용 ㅋㅋ'],a:['라떼 ㄱㄱ','{nick}님 라떼']},
-  '자야':{a:['자야 소라카 ㄷㄷ','자야나깅 봇듀오 ㄷㄷ']},
+  '자야':{a:['자야 소라카 ㄷㄷ','자야나깅 봇듀오 ㄷㄷ','자야님 힐 ㄷㄷ','자야 서폿 ㄷㄷ']},
 };
 // 상황/키워드 매칭 (이김/짐/던짐/캐리/자랭/내전/배팅/티어/챔피언 등)
 const APO_KW=[
@@ -5202,7 +5202,14 @@ function apoMemeComments(names,rng,n){
   }
   return out;
 }
-/* ── 시드 PRNG (공지/경기별 고정 — 폴링 리렌더에도 안 흔들림) ── */
+// 부모 댓글·형제 답글과 겹치지 않는 답글 (앵무새·중복 방지). 정 안 되면 일반 반응 풀로
+function apoReplyUniq(text,nick,rng,ptext,seen,fbPool){
+  ptext=String(ptext||'').trim(); nick=nick||'윗분';
+  let txt='';
+  for(let k=0;k<8;k++){ txt=apoMemeReply(text,nick,rng); if(txt&&txt!==ptext&&!seen[txt])return txt; }
+  for(let k=0;k<8;k++){ txt=String(_ccPick(fbPool||CC_NPC_REPLY,rng)).replace(/\{nick\}/g,nick); if(txt&&txt!==ptext&&!seen[txt])return txt; }
+  return txt;
+}
 function _ccHash(s){let h=2166136261>>>0;s=String(s||'');for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function _ccRng(seed){let a=(seed>>>0)||1;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function _ccPick(arr,rng){return arr[Math.floor(rng()*arr.length)%arr.length]}
@@ -5567,12 +5574,13 @@ function cmtComposer(board,parent){
 /* 보드 전체 렌더: 가짜 top + 가짜 답글 + 실제 댓글/답글 혼합 (실제는 최신이 위로) */
 function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   const repliesByParent={};
-  // 1) 가짜 답글 (45% 확률, 1~2개) — 티키타카
+  // 1) 가짜 답글 (45% 확률, 1~2개) — 티키타카 (부모/형제와 중복 안 되게)
   fakeTops.forEach(function(t){
     if(rng()<0.45){
-      const n=1+Math.floor(rng()*2), reps=[];
+      const n=1+Math.floor(rng()*2), reps=[], seen={}, ptext=String(t.text||'').trim();
       for(let i=0;i<n;i++){
-        reps.push({ id:t.id+'|fr'+i, nick:ccNick(rng,roster), text:apoMemeReply(t.text, t.nick, rng),
+        const txt=apoReplyUniq(t.text, t.nick, rng, ptext, seen, CC_REPLY); seen[txt]=1;
+        reps.push({ id:t.id+'|fr'+i, nick:ccNick(rng,roster), text:txt,
           ava:_ccPick(CC_AVA,rng), bg:_ccPick(CC_AVA_BG,rng),
           like:Math.floor(Math.pow(rng(),2.6)*45), ago:ccAgo(Math.floor(rng()*100)),
           real:false, best:false, parent:t.id, _ts:0 });
@@ -5593,13 +5601,13 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   // 2.5) NPC 자동 답글 — 내 댓글 단어/키워드에 맞춰 답글 (시드=댓글id → 동일), 시간은 내 댓글 시각 기준 ("방금"→흐름)
   realTops.forEach(function(rt){
     const rr=_ccRng(_ccHash('npc|'+rt.id));
-    const n=1+Math.floor(rr()*2), reps=[]; // 유저 댓글마다 항상 1~2개 반응
+    const n=1+Math.floor(rr()*2), reps=[], seen={}, ptext=String(rt.text||'').trim(); // 유저 댓글마다 항상 1~2개 반응
     const baseTs=rt._ts||Date.now();
     const off=8000+Math.floor(rr()*82000); // 답글 간격 8~90초 (내 댓글 직후 → "방금 전")
     for(let i=0;i<n;i++){
       const npcTs=baseTs+off*(i+1);
-      reps.push({ id:'npc|'+rt.id+'|'+i, nick:ccNick(rr,roster),
-        text:apoMemeReply(rt.text, rt.nick, rr), // 🧠 키워드/밈 맞춤 답글
+      const txt=apoReplyUniq(rt.text, rt.nick, rr, ptext, seen, CC_NPC_REPLY); seen[txt]=1; // 🧠 키워드/밈 맞춤 + 부모/형제 중복 방지
+      reps.push({ id:'npc|'+rt.id+'|'+i, nick:ccNick(rr,roster), text:txt,
         ava:_ccPick(CC_AVA,rr), bg:_ccPick(CC_AVA_BG,rr),
         like:Math.floor(Math.pow(rr(),2.6)*30), ago:ccAgoTs(npcTs), // ⏱ 내 댓글 시각 기준 — 시간 지나면 자동으로 흐름
         real:false, best:false, parent:rt.id, _ts:npcTs });
