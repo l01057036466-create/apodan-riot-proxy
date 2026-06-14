@@ -1328,6 +1328,72 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ holders: map });
     }
 
+    // ═══ 💬 댓글 게시판 (라인업/경기) — 별도 파일 없이 bank.js에 포함 ═══
+    function _cbBoard(b) { b = String(b || '').trim(); return /^[A-Za-z0-9:_\-]{1,80}$/.test(b) ? b : null; }
+    function _cbClip(s, n) { s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); return s.slice(0, n); }
+    function _cbId(s) { s = String(s || '').trim(); return /^[A-Za-z0-9:_\-|.]{1,80}$/.test(s) ? s : ''; }
+    var SEC_CMT = String(60 * 60 * 24 * 60); // 댓글 60일 보관
+
+    if (req.method === 'GET' && action === 'cmtList') {
+      var cbBoard = _cbBoard(q.board || (body && body.board));
+      if (!cbBoard) return res.status(400).json({ error: 'board 형식 오류' });
+      var cbRaw = (await redis(['LRANGE', 'cmt:' + cbBoard, '0', '799'])) || [];
+      var cbLikeArr = (await redis(['HGETALL', 'cmtL:' + cbBoard])) || [];
+      var cbLikes = {};
+      for (var ci = 0; ci + 1 < cbLikeArr.length; ci += 2) cbLikes[cbLikeArr[ci]] = parseInt(cbLikeArr[ci + 1], 10) || 0;
+      var cbOut = [];
+      for (var ck = 0; ck < cbRaw.length; ck++) { try { var cc0 = JSON.parse(cbRaw[ck]); cc0.like = cbLikes[cc0.id] || 0; cbOut.push(cc0); } catch (e) {} }
+      cbOut.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      return res.status(200).json({ comments: cbOut, likes: cbLikes });
+    }
+
+    if (req.method === 'POST' && action === 'cmtAdd') {
+      var cbB2 = _cbBoard(body.board);
+      if (!cbB2) return res.status(400).json({ error: 'board 형식 오류' });
+      var cbWho = await auth(body.token);
+      if (!cbWho) return res.status(401).json({ error: '로그인 후 댓글을 달 수 있어요' });
+      var cbText = _cbClip(body.text, 300);
+      var cbParent = _cbId(body.parent);
+      if (!cbText) return res.status(400).json({ error: '내용을 입력해주세요' });
+      var cbNick = cbWho.name || '운영자';
+      var cbUid = cbWho.name ? crypto.createHash('sha256').update('u|' + cbWho.name).digest('hex').slice(0, 12) : 'dev';
+      var cbCd = await redis(['SET', 'cmtcd:' + cbUid + ':' + cbB2, '1', 'NX', 'EX', '1']);
+      if (cbCd === null) return res.status(429).json({ error: '너무 빨라요 — 잠깐 뒤에 다시 ㅎㅎ' });
+      var cbItem = { id: 'u' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), nick: cbNick, text: cbText, ts: Date.now(), parent: cbParent, uid: cbUid };
+      await redis(['RPUSH', 'cmt:' + cbB2, JSON.stringify(cbItem)]);
+      await redis(['LTRIM', 'cmt:' + cbB2, '-800', '-1']);
+      await redis(['EXPIRE', 'cmt:' + cbB2, SEC_CMT]);
+      cbItem.like = 0;
+      return res.status(200).json({ comment: cbItem });
+    }
+
+    if (req.method === 'POST' && action === 'cmtLike') {
+      var cbB3 = _cbBoard(body.board);
+      var cbLid = _cbId(body.id);
+      if (!cbB3 || !cbLid) return res.status(400).json({ error: '요청 형식 오류' });
+      var cbWho2 = await auth(body.token);
+      if (!cbWho2) return res.status(401).json({ error: '로그인 후 추천할 수 있어요' });
+      var cbNn = await redis(['HINCRBY', 'cmtL:' + cbB3, cbLid, '1']);
+      await redis(['EXPIRE', 'cmtL:' + cbB3, SEC_CMT]);
+      return res.status(200).json({ id: cbLid, like: parseInt(cbNn, 10) || 0 });
+    }
+
+    if (req.method === 'POST' && action === 'cmtDel') {
+      var cbB4 = _cbBoard(body.board);
+      var cbDid = _cbId(body.id);
+      if (!cbB4 || !cbDid) return res.status(400).json({ error: '요청 형식 오류' });
+      var cbMe = await auth(body.token);
+      if (!cbMe) return res.status(401).json({ error: '로그인이 필요해요' });
+      var cbMeUid = cbMe.name ? crypto.createHash('sha256').update('u|' + cbMe.name).digest('hex').slice(0, 12) : 'dev';
+      var cbList = (await redis(['LRANGE', 'cmt:' + cbB4, '0', '799'])) || [];
+      var cbTarget = null;
+      for (var cj = 0; cj < cbList.length; cj++) { try { var ccx = JSON.parse(cbList[cj]); if (ccx.id === cbDid) { cbTarget = { raw: cbList[cj], c: ccx }; break; } } catch (e) {} }
+      if (!cbTarget) return res.status(404).json({ error: '댓글을 찾을 수 없어요' });
+      if (cbMe.role !== 'dev' && cbMeUid !== cbTarget.c.uid) return res.status(403).json({ error: '본인 댓글만 지울 수 있어요' });
+      await redis(['LREM', 'cmt:' + cbB4, '1', cbTarget.raw]);
+      return res.status(200).json({ ok: true, id: cbDid });
+    }
+
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
   } catch (e) {
     return res.status(500).json({ error: '서버 오류: ' + (e && e.message ? e.message : String(e)) });
