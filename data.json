@@ -408,7 +408,7 @@
     "수아",
     "04수아"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "실버",
    "flexTier": "브론즈",
@@ -13611,7 +13611,8 @@
       "damageToObjectives": 9550,
       "damageToTurrets": 7676,
       "healing": 16963,
-      "selfMitigatedDamage": 43908
+      "selfMitigatedDamage": 43908,
+      "soloKills": 0
      }
     },
     {
@@ -13638,7 +13639,8 @@
       "damageToObjectives": 21103,
       "damageToTurrets": 2393,
       "healing": 14880,
-      "selfMitigatedDamage": 22421
+      "selfMitigatedDamage": 22421,
+      "soloKills": 0
      }
     },
     {
@@ -13666,7 +13668,8 @@
       "damageToObjectives": 3640,
       "damageToTurrets": 880,
       "healing": 1825,
-      "selfMitigatedDamage": 12445
+      "selfMitigatedDamage": 12445,
+      "soloKills": 0
      }
     },
     {
@@ -13693,7 +13696,8 @@
       "damageToObjectives": 20504,
       "damageToTurrets": 16032,
       "healing": 4335,
-      "selfMitigatedDamage": 10341
+      "selfMitigatedDamage": 10341,
+      "soloKills": 0
      }
     },
     {
@@ -13721,7 +13725,8 @@
       "damageToObjectives": 2309,
       "damageToTurrets": 1481,
       "healing": 5924,
-      "selfMitigatedDamage": 5807
+      "selfMitigatedDamage": 5807,
+      "soloKills": 0
      }
     },
     {
@@ -13749,7 +13754,8 @@
       "damageToObjectives": 4540,
       "damageToTurrets": 3144,
       "healing": 3811,
-      "selfMitigatedDamage": 44342
+      "selfMitigatedDamage": 44342,
+      "soloKills": 0
      }
     },
     {
@@ -13777,7 +13783,8 @@
       "damageToObjectives": 28083,
       "damageToTurrets": 6289,
       "healing": 15336,
-      "selfMitigatedDamage": 21413
+      "selfMitigatedDamage": 21413,
+      "soloKills": 0
      }
     },
     {
@@ -13805,7 +13812,8 @@
       "damageToObjectives": 6390,
       "damageToTurrets": 1149,
       "healing": 5542,
-      "selfMitigatedDamage": 12159
+      "selfMitigatedDamage": 12159,
+      "soloKills": 0
      }
     },
     {
@@ -13833,7 +13841,8 @@
       "damageToObjectives": 17754,
       "damageToTurrets": 10796,
       "healing": 1918,
-      "selfMitigatedDamage": 9272
+      "selfMitigatedDamage": 9272,
+      "soloKills": 0
      }
     },
     {
@@ -13860,7 +13869,8 @@
       "crowdControlScore": 14,
       "damageToObjectives": 755,
       "healing": 3552,
-      "selfMitigatedDamage": 11238
+      "selfMitigatedDamage": 11238,
+      "soloKills": 0
      }
     }
    ],
@@ -13942,7 +13952,8 @@
       "damageToObjectives": 15679,
       "damageToTurrets": 14405,
       "healing": 10287,
-      "selfMitigatedDamage": 17884
+      "selfMitigatedDamage": 17884,
+      "soloKills": 0
      }
     },
     {
@@ -13970,7 +13981,8 @@
       "damageToObjectives": 52050,
       "damageToTurrets": 5983,
       "healing": 16628,
-      "selfMitigatedDamage": 20557
+      "selfMitigatedDamage": 20557,
+      "soloKills": 0
      }
     },
     {
@@ -13998,7 +14010,8 @@
       "damageToObjectives": 6505,
       "damageToTurrets": 5397,
       "healing": 3561,
-      "selfMitigatedDamage": 41981
+      "selfMitigatedDamage": 41981,
+      "soloKills": 0
      }
     },
     {
@@ -14025,7 +14038,8 @@
       "damageToObjectives": 31258,
       "damageToTurrets": 11705,
       "healing": 5079,
-      "selfMitigatedDamage": 10945
+      "selfMitigatedDamage": 10945,
+      "soloKills": 0
      }
     },
     {
@@ -14053,7 +14067,8 @@
       "damageToObjectives": 4451,
       "damageToTurrets": 2908,
       "healing": 4948,
-      "selfMitigatedDamage": 9338
+      "selfMitigatedDamage": 9338,
+      "soloKills": 0
      }
     },
     {
@@ -14081,7 +14096,8 @@
       "damageToObjectives": 1857,
       "damageToTurrets": 1115,
       "healing": 6071,
-      "selfMitigatedDamage": 49394
+      "selfMitigatedDamage": 49394,
+      "soloKills": 0
      }
     },
     {
@@ -14108,7 +14124,8 @@
       "damageToObjectives": 5367,
       "damageToTurrets": 5367,
       "healing": 10712,
-      "selfMitigatedDamage": 18042
+      "selfMitigatedDamage": 18042,
+      "soloKills": 0
      }
     },
     {
@@ -14136,7 +14153,8 @@
       "damageToObjectives": 1988,
       "damageToTurrets": 1988,
       "healing": 1200,
-      "selfMitigatedDamage": 6910
+      "selfMitigatedDamage": 6910,
+      "soloKills": 0
      }
     },
     {
@@ -14163,7 +14181,8 @@
       "damageToObjectives": 4354,
       "damageToTurrets": 4354,
       "healing": 2448,
-      "selfMitigatedDamage": 7335
+      "selfMitigatedDamage": 7335,
+      "soloKills": 0
      }
     },
     {
@@ -14191,7 +14210,8 @@
       "damageToObjectives": 269,
       "damageToTurrets": 269,
       "healing": 2039,
-      "selfMitigatedDamage": 6000
+      "selfMitigatedDamage": 6000,
+      "soloKills": 0
      }
     }
    ],
@@ -14274,7 +14294,8 @@
       "damageToObjectives": 33239,
       "damageToTurrets": 28917,
       "healing": 10506,
-      "selfMitigatedDamage": 21120
+      "selfMitigatedDamage": 21120,
+      "soloKills": 0
      }
     },
     {
@@ -14301,7 +14322,8 @@
       "damageToObjectives": 29752,
       "damageToTurrets": 2901,
       "healing": 15171,
-      "selfMitigatedDamage": 16807
+      "selfMitigatedDamage": 16807,
+      "soloKills": 0
      }
     },
     {
@@ -14329,7 +14351,8 @@
       "damageToObjectives": 6582,
       "damageToTurrets": 3728,
       "healing": 4363,
-      "selfMitigatedDamage": 7206
+      "selfMitigatedDamage": 7206,
+      "soloKills": 0
      }
     },
     {
@@ -14356,7 +14379,8 @@
       "damageToObjectives": 21558,
       "damageToTurrets": 9338,
       "healing": 7829,
-      "selfMitigatedDamage": 11555
+      "selfMitigatedDamage": 11555,
+      "soloKills": 0
      }
     },
     {
@@ -14384,7 +14408,8 @@
       "damageToObjectives": 3392,
       "damageToTurrets": 2757,
       "healing": 8581,
-      "selfMitigatedDamage": 3699
+      "selfMitigatedDamage": 3699,
+      "soloKills": 0
      }
     },
     {
@@ -14412,7 +14437,8 @@
       "damageToObjectives": 1148,
       "damageToTurrets": 1148,
       "healing": 11024,
-      "selfMitigatedDamage": 32037
+      "selfMitigatedDamage": 32037,
+      "soloKills": 0
      }
     },
     {
@@ -14440,7 +14466,8 @@
       "damageToObjectives": 26688,
       "damageToTurrets": 3243,
       "healing": 12578,
-      "selfMitigatedDamage": 16963
+      "selfMitigatedDamage": 16963,
+      "soloKills": 0
      }
     },
     {
@@ -14465,7 +14492,8 @@
       "wardsKilled": 3,
       "crowdControlScore": 45,
       "healing": 1737,
-      "selfMitigatedDamage": 10130
+      "selfMitigatedDamage": 10130,
+      "soloKills": 0
      }
     },
     {
@@ -14492,7 +14520,8 @@
       "damageToObjectives": 2696,
       "damageToTurrets": 2284,
       "healing": 2338,
-      "selfMitigatedDamage": 9860
+      "selfMitigatedDamage": 9860,
+      "soloKills": 0
      }
     },
     {
@@ -14520,7 +14549,8 @@
       "damageToObjectives": 558,
       "damageToTurrets": 45,
       "healing": 9753,
-      "selfMitigatedDamage": 16166
+      "selfMitigatedDamage": 16166,
+      "soloKills": 0
      }
     }
    ],
@@ -14587,7 +14617,8 @@
       "damageToObjectives": 8276,
       "damageToTurrets": 2634,
       "healing": 6518,
-      "selfMitigatedDamage": 11722
+      "selfMitigatedDamage": 11722,
+      "soloKills": 0
      }
     },
     {
@@ -14615,7 +14646,8 @@
       "damageToObjectives": 22349,
       "damageToTurrets": 3908,
       "healing": 11152,
-      "selfMitigatedDamage": 11413
+      "selfMitigatedDamage": 11413,
+      "soloKills": 0
      }
     },
     {
@@ -14643,7 +14675,8 @@
       "damageToObjectives": 4257,
       "damageToTurrets": 1100,
       "healing": 1677,
-      "selfMitigatedDamage": 15309
+      "selfMitigatedDamage": 15309,
+      "soloKills": 0
      }
     },
     {
@@ -14671,7 +14704,8 @@
       "damageToObjectives": 17029,
       "damageToTurrets": 14592,
       "healing": 4365,
-      "selfMitigatedDamage": 6381
+      "selfMitigatedDamage": 6381,
+      "soloKills": 0
      }
     },
     {
@@ -14699,7 +14733,8 @@
       "damageToObjectives": 4442,
       "damageToTurrets": 1921,
       "healing": 3981,
-      "selfMitigatedDamage": 3591
+      "selfMitigatedDamage": 3591,
+      "soloKills": 0
      }
     },
     {
@@ -14727,7 +14762,8 @@
       "damageToObjectives": 7925,
       "damageToTurrets": 7925,
       "healing": 1624,
-      "selfMitigatedDamage": 9791
+      "selfMitigatedDamage": 9791,
+      "soloKills": 0
      }
     },
     {
@@ -14755,7 +14791,8 @@
       "damageToObjectives": 10003,
       "damageToTurrets": 0,
       "healing": 5215,
-      "selfMitigatedDamage": 13964
+      "selfMitigatedDamage": 13964,
+      "soloKills": 0
      }
     },
     {
@@ -14783,7 +14820,8 @@
       "damageToObjectives": 2319,
       "damageToTurrets": 2319,
       "healing": 1951,
-      "selfMitigatedDamage": 6762
+      "selfMitigatedDamage": 6762,
+      "soloKills": 0
      }
     },
     {
@@ -14811,7 +14849,8 @@
       "damageToObjectives": 0,
       "damageToTurrets": 0,
       "healing": 2182,
-      "selfMitigatedDamage": 7070
+      "selfMitigatedDamage": 7070,
+      "soloKills": 0
      }
     },
     {
@@ -14839,7 +14878,8 @@
       "damageToObjectives": 0,
       "damageToTurrets": 0,
       "healing": 1092,
-      "selfMitigatedDamage": 13756
+      "selfMitigatedDamage": 13756,
+      "soloKills": 0
      }
     }
    ],
@@ -14922,7 +14962,8 @@
       "damageToObjectives": 10391,
       "damageToTurrets": 7674,
       "healing": 5115,
-      "selfMitigatedDamage": 46932
+      "selfMitigatedDamage": 46932,
+      "soloKills": 0
      }
     },
     {
@@ -14950,7 +14991,8 @@
       "damageToObjectives": 24498,
       "damageToTurrets": 0,
       "healing": 21275,
-      "selfMitigatedDamage": 28406
+      "selfMitigatedDamage": 28406,
+      "soloKills": 0
      }
     },
     {
@@ -14978,7 +15020,8 @@
       "damageToObjectives": 10222,
       "damageToTurrets": 5995,
       "healing": 2007,
-      "selfMitigatedDamage": 11797
+      "selfMitigatedDamage": 11797,
+      "soloKills": 0
      }
     },
     {
@@ -15006,7 +15049,8 @@
       "damageToObjectives": 29033,
       "damageToTurrets": 17275,
       "healing": 5957,
-      "selfMitigatedDamage": 10239
+      "selfMitigatedDamage": 10239,
+      "soloKills": 0
      }
     },
     {
@@ -15034,7 +15078,8 @@
       "damageToObjectives": 4445,
       "damageToTurrets": 1051,
       "healing": 2654,
-      "selfMitigatedDamage": 8873
+      "selfMitigatedDamage": 8873,
+      "soloKills": 0
      }
     },
     {
@@ -15062,7 +15107,8 @@
       "damageToObjectives": 9270,
       "damageToTurrets": 9270,
       "healing": 6424,
-      "selfMitigatedDamage": 16084
+      "selfMitigatedDamage": 16084,
+      "soloKills": 0
      }
     },
     {
@@ -15090,7 +15136,8 @@
       "damageToObjectives": 26848,
       "damageToTurrets": 881,
       "healing": 16572,
-      "selfMitigatedDamage": 30141
+      "selfMitigatedDamage": 30141,
+      "soloKills": 0
      }
     },
     {
@@ -15118,7 +15165,8 @@
       "damageToObjectives": 1928,
       "damageToTurrets": 0,
       "healing": 1387,
-      "selfMitigatedDamage": 6971
+      "selfMitigatedDamage": 6971,
+      "soloKills": 0
      }
     },
     {
@@ -15146,7 +15194,8 @@
       "damageToObjectives": 13880,
       "damageToTurrets": 11000,
       "healing": 4596,
-      "selfMitigatedDamage": 12420
+      "selfMitigatedDamage": 12420,
+      "soloKills": 0
      }
     },
     {
@@ -15174,7 +15223,8 @@
       "damageToObjectives": 74,
       "damageToTurrets": 74,
       "healing": 5928,
-      "selfMitigatedDamage": 4275
+      "selfMitigatedDamage": 4275,
+      "soloKills": 0
      }
     }
    ],
@@ -15253,7 +15303,8 @@
       "damageToObjectives": 23645,
       "damageToTurrets": 23645,
       "healing": 9012,
-      "selfMitigatedDamage": 31954
+      "selfMitigatedDamage": 31954,
+      "soloKills": 0
      }
     },
     {
@@ -15281,7 +15332,8 @@
       "damageToObjectives": 35013,
       "damageToTurrets": 2228,
       "healing": 13227,
-      "selfMitigatedDamage": 25504
+      "selfMitigatedDamage": 25504,
+      "soloKills": 0
      }
     },
     {
@@ -15309,7 +15361,8 @@
       "damageToObjectives": 6028,
       "damageToTurrets": 5427,
       "healing": 2107,
-      "selfMitigatedDamage": 17462
+      "selfMitigatedDamage": 17462,
+      "soloKills": 0
      }
     },
     {
@@ -15337,7 +15390,8 @@
       "damageToObjectives": 18603,
       "damageToTurrets": 10287,
       "healing": 1920,
-      "selfMitigatedDamage": 7549
+      "selfMitigatedDamage": 7549,
+      "soloKills": 0
      }
     },
     {
@@ -15365,7 +15419,8 @@
       "damageToObjectives": 3820,
       "damageToTurrets": 3287,
       "healing": 14779,
-      "selfMitigatedDamage": 45984
+      "selfMitigatedDamage": 45984,
+      "soloKills": 0
      }
     },
     {
@@ -15393,7 +15448,8 @@
       "damageToObjectives": 7954,
       "damageToTurrets": 5044,
       "healing": 8035,
-      "selfMitigatedDamage": 62701
+      "selfMitigatedDamage": 62701,
+      "soloKills": 0
      }
     },
     {
@@ -15421,7 +15477,8 @@
       "damageToObjectives": 17755,
       "damageToTurrets": 0,
       "healing": 12164,
-      "selfMitigatedDamage": 24097
+      "selfMitigatedDamage": 24097,
+      "soloKills": 0
      }
     },
     {
@@ -15449,7 +15506,8 @@
       "damageToObjectives": 4516,
       "damageToTurrets": 797,
       "healing": 1978,
-      "selfMitigatedDamage": 8327
+      "selfMitigatedDamage": 8327,
+      "soloKills": 0
      }
     },
     {
@@ -15477,7 +15535,8 @@
       "damageToObjectives": 9687,
       "damageToTurrets": 4724,
       "healing": 2974,
-      "selfMitigatedDamage": 10921
+      "selfMitigatedDamage": 10921,
+      "soloKills": 0
      }
     },
     {
@@ -15505,7 +15564,8 @@
       "damageToObjectives": 1072,
       "damageToTurrets": 0,
       "healing": 3779,
-      "selfMitigatedDamage": 21129
+      "selfMitigatedDamage": 21129,
+      "soloKills": 0
      }
     }
    ],
@@ -17614,7 +17674,8 @@
       "damageToObjectives": 32038,
       "damageToTurrets": 22578,
       "healing": 25487,
-      "selfMitigatedDamage": 52661
+      "selfMitigatedDamage": 52661,
+      "soloKills": 0
      }
     },
     {
@@ -17642,7 +17703,8 @@
       "damageToObjectives": 38539,
       "damageToTurrets": 3277,
       "healing": 15984,
-      "selfMitigatedDamage": 21755
+      "selfMitigatedDamage": 21755,
+      "soloKills": 0
      }
     },
     {
@@ -17670,7 +17732,8 @@
       "damageToObjectives": 11981,
       "damageToTurrets": 5919,
       "healing": 6544,
-      "selfMitigatedDamage": 13730
+      "selfMitigatedDamage": 13730,
+      "soloKills": 0
      }
     },
     {
@@ -17698,7 +17761,8 @@
       "damageToObjectives": 26197,
       "damageToTurrets": 10941,
       "healing": 11200,
-      "selfMitigatedDamage": 14905
+      "selfMitigatedDamage": 14905,
+      "soloKills": 0
      }
     },
     {
@@ -17726,7 +17790,8 @@
       "damageToObjectives": 2049,
       "damageToTurrets": 278,
       "healing": 4603,
-      "selfMitigatedDamage": 33128
+      "selfMitigatedDamage": 33128,
+      "soloKills": 0
      }
     },
     {
@@ -17754,7 +17819,8 @@
       "damageToObjectives": 3177,
       "damageToTurrets": 3177,
       "healing": 3081,
-      "selfMitigatedDamage": 31171
+      "selfMitigatedDamage": 31171,
+      "soloKills": 0
      }
     },
     {
@@ -17782,7 +17848,8 @@
       "damageToObjectives": 20593,
       "damageToTurrets": 0,
       "healing": 15050,
-      "selfMitigatedDamage": 23822
+      "selfMitigatedDamage": 23822,
+      "soloKills": 0
      }
     },
     {
@@ -17810,7 +17877,8 @@
       "damageToObjectives": 3216,
       "damageToTurrets": 3216,
       "healing": 9632,
-      "selfMitigatedDamage": 26384
+      "selfMitigatedDamage": 26384,
+      "soloKills": 0
      }
     },
     {
@@ -17838,7 +17906,8 @@
       "damageToObjectives": 8065,
       "damageToTurrets": 8065,
       "healing": 8501,
-      "selfMitigatedDamage": 19664
+      "selfMitigatedDamage": 19664,
+      "soloKills": 0
      }
     },
     {
@@ -17866,7 +17935,8 @@
       "damageToObjectives": 955,
       "damageToTurrets": 955,
       "healing": 6982,
-      "selfMitigatedDamage": 5078
+      "selfMitigatedDamage": 5078,
+      "soloKills": 0
      }
     }
    ],
@@ -17949,7 +18019,8 @@
       "damageToObjectives": 17459,
       "damageToTurrets": 11235,
       "healing": 8899,
-      "selfMitigatedDamage": 20063
+      "selfMitigatedDamage": 20063,
+      "soloKills": 0
      }
     },
     {
@@ -17977,7 +18048,8 @@
       "damageToObjectives": 14360,
       "damageToTurrets": 580,
       "healing": 11958,
-      "selfMitigatedDamage": 15416
+      "selfMitigatedDamage": 15416,
+      "soloKills": 0
      }
     },
     {
@@ -18005,7 +18077,8 @@
       "damageToObjectives": 19692,
       "damageToTurrets": 12394,
       "healing": 5774,
-      "selfMitigatedDamage": 9594
+      "selfMitigatedDamage": 9594,
+      "soloKills": 0
      }
     },
     {
@@ -18033,7 +18106,8 @@
       "damageToObjectives": 8752,
       "damageToTurrets": 2904,
       "healing": 3777,
-      "selfMitigatedDamage": 5530
+      "selfMitigatedDamage": 5530,
+      "soloKills": 0
      }
     },
     {
@@ -18061,7 +18135,8 @@
       "damageToObjectives": 1681,
       "damageToTurrets": 833,
       "healing": 7769,
-      "selfMitigatedDamage": 2909
+      "selfMitigatedDamage": 2909,
+      "soloKills": 0
      }
     },
     {
@@ -18089,7 +18164,8 @@
       "damageToObjectives": 4291,
       "damageToTurrets": 4291,
       "healing": 5276,
-      "selfMitigatedDamage": 37947
+      "selfMitigatedDamage": 37947,
+      "soloKills": 0
      }
     },
     {
@@ -18117,7 +18193,8 @@
       "damageToObjectives": 8661,
       "damageToTurrets": 0,
       "healing": 6275,
-      "selfMitigatedDamage": 15195
+      "selfMitigatedDamage": 15195,
+      "soloKills": 0
      }
     },
     {
@@ -18145,7 +18222,8 @@
       "damageToObjectives": 7553,
       "damageToTurrets": 4068,
       "healing": 12097,
-      "selfMitigatedDamage": 17350
+      "selfMitigatedDamage": 17350,
+      "soloKills": 0
      }
     },
     {
@@ -18173,7 +18251,8 @@
       "damageToObjectives": 12628,
       "damageToTurrets": 7057,
       "healing": 3197,
-      "selfMitigatedDamage": 5786
+      "selfMitigatedDamage": 5786,
+      "soloKills": 0
      }
     },
     {
@@ -18201,7 +18280,8 @@
       "damageToObjectives": 1133,
       "damageToTurrets": 230,
       "healing": 3094,
-      "selfMitigatedDamage": 3804
+      "selfMitigatedDamage": 3804,
+      "soloKills": 0
      }
     }
    ],
@@ -18284,7 +18364,8 @@
       "damageToObjectives": 7478,
       "damageToTurrets": 7229,
       "healing": 21597,
-      "selfMitigatedDamage": 162039
+      "selfMitigatedDamage": 162039,
+      "soloKills": 0
      }
     },
     {
@@ -18312,7 +18393,8 @@
       "damageToObjectives": 12517,
       "damageToTurrets": 421,
       "healing": 13332,
-      "selfMitigatedDamage": 77269
+      "selfMitigatedDamage": 77269,
+      "soloKills": 0
      }
     },
     {
@@ -18340,7 +18422,8 @@
       "damageToObjectives": 9662,
       "damageToTurrets": 7016,
       "healing": 1803,
-      "selfMitigatedDamage": 25092
+      "selfMitigatedDamage": 25092,
+      "soloKills": 0
      }
     },
     {
@@ -18368,7 +18451,8 @@
       "damageToObjectives": 8814,
       "damageToTurrets": 5371,
       "healing": 6371,
-      "selfMitigatedDamage": 14408
+      "selfMitigatedDamage": 14408,
+      "soloKills": 0
      }
     },
     {
@@ -18396,7 +18480,8 @@
       "damageToObjectives": 229,
       "damageToTurrets": 229,
       "healing": 6956,
-      "selfMitigatedDamage": 16121
+      "selfMitigatedDamage": 16121,
+      "soloKills": 0
      }
     },
     {
@@ -18424,7 +18509,8 @@
       "damageToObjectives": 32438,
       "damageToTurrets": 21681,
       "healing": 17998,
-      "selfMitigatedDamage": 69626
+      "selfMitigatedDamage": 69626,
+      "soloKills": 0
      }
     },
     {
@@ -18452,7 +18538,8 @@
       "damageToObjectives": 32110,
       "damageToTurrets": 2100,
       "healing": 17559,
-      "selfMitigatedDamage": 60103
+      "selfMitigatedDamage": 60103,
+      "soloKills": 0
      }
     },
     {
@@ -18480,7 +18567,8 @@
       "damageToObjectives": 5539,
       "damageToTurrets": 3939,
       "healing": 7435,
-      "selfMitigatedDamage": 66853
+      "selfMitigatedDamage": 66853,
+      "soloKills": 0
      }
     },
     {
@@ -18508,7 +18596,8 @@
       "damageToObjectives": 14427,
       "damageToTurrets": 6908,
       "healing": 3658,
-      "selfMitigatedDamage": 8177
+      "selfMitigatedDamage": 8177,
+      "soloKills": 0
      }
     },
     {
@@ -18536,7 +18625,8 @@
       "damageToObjectives": 7579,
       "damageToTurrets": 4059,
       "healing": 5649,
-      "selfMitigatedDamage": 8729
+      "selfMitigatedDamage": 8729,
+      "soloKills": 0
      }
     }
    ],
@@ -21144,7 +21234,7 @@
    "setNumber": 1,
    "winnerTeam": "RED",
    "memo": "클라이언트 추출 입력",
-   "mvpId": "p_wtiaq7m1_mq7nhxuq",
+   "mvpId": null,
    "gameId": "8257875687",
    "durationMin": 36,
    "createdAt": "2026-06-14T01:32:50.563Z",
@@ -22103,21 +22193,21 @@
    ]
   },
   {
-   "id": "m_mxjrfmrmqdt79s4",
+   "id": "m_m87x8f0mqdx148c",
+   "createdAt": "2026-06-14T15:04:50.604Z",
    "playedAt": "2026-06-14",
-   "setNumber": 5,
+   "setNumber": 4,
    "winnerTeam": "BLUE",
-   "memo": "클라이언트 추출 입력",
-   "mvpId": null,
    "gameId": "8259023645",
    "durationMin": 34,
-   "createdAt": "2026-06-14T13:17:39.268Z",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "playerId": "p_0g6qhb6e_mq7nhxuq",
      "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
      "championId": "오른",
      "kills": 1,
      "deaths": 4,
@@ -22145,8 +22235,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "playerId": "p_4siqelqmq7ub77p",
      "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
      "championId": "사일러스",
      "kills": 11,
      "deaths": 3,
@@ -22174,8 +22264,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "playerId": "p_gi86d5qmq7ub77o",
      "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
      "championId": "오리아나",
      "kills": 8,
      "deaths": 1,
@@ -22203,8 +22293,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "playerId": "p_ze5lbhymq7ub77p",
      "rawName": "Savege",
+     "playerId": "p_ze5lbhymq7ub77p",
      "championId": "바루스",
      "kills": 1,
      "deaths": 6,
@@ -22232,8 +22322,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_29ndxd5j_mq7nhxuq",
      "rawName": "Lucky Grasp",
+     "playerId": "p_29ndxd5j_mq7nhxuq",
      "championId": "레오나",
      "kills": 1,
      "deaths": 4,
@@ -22261,8 +22351,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "playerId": "p_j93ommzd_mq7nhxuq",
      "rawName": "물방울",
+     "playerId": "p_j93ommzd_mq7nhxuq",
      "championId": "문도 박사",
      "kills": 1,
      "deaths": 4,
@@ -22290,8 +22380,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "playerId": "p_h7k04k4c_mq7nhxuq",
      "rawName": "이서하",
+     "playerId": "p_h7k04k4c_mq7nhxuq",
      "championId": "리 신",
      "kills": 5,
      "deaths": 4,
@@ -22319,8 +22409,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "playerId": "p_jlc2q699_mq7nhxup",
      "rawName": "미르수리",
+     "playerId": "p_jlc2q699_mq7nhxup",
      "championId": "제라스",
      "kills": 9,
      "deaths": 5,
@@ -22348,8 +22438,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "playerId": "p_wtiaq7m1_mq7nhxuq",
      "rawName": "봄의꽃",
+     "playerId": "p_wtiaq7m1_mq7nhxuq",
      "championId": "케이틀린",
      "kills": 2,
      "deaths": 6,
@@ -22377,8 +22467,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_00q5dhm1_mq7nhxuq",
      "rawName": "댕댕이소탕강형욱",
+     "playerId": "p_00q5dhm1_mq7nhxuq",
      "championId": "밀리오",
      "kills": 1,
      "deaths": 3,
@@ -22448,21 +22538,21 @@
    ]
   },
   {
-   "id": "m_xzm40d5mqdt79sm",
+   "id": "m_uzt8q6mmqdx148n",
+   "createdAt": "2026-06-14T15:04:50.615Z",
    "playedAt": "2026-06-14",
-   "setNumber": 6,
+   "setNumber": 5,
    "winnerTeam": "RED",
-   "memo": "클라이언트 추출 입력",
-   "mvpId": null,
    "gameId": "8259097916",
    "durationMin": 31,
-   "createdAt": "2026-06-14T13:17:39.286Z",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "playerId": "p_j93ommzd_mq7nhxuq",
      "rawName": "물방울",
+     "playerId": "p_j93ommzd_mq7nhxuq",
      "championId": "사이온",
      "kills": 1,
      "deaths": 2,
@@ -22490,8 +22580,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "playerId": "p_h7k04k4c_mq7nhxuq",
      "rawName": "이서하",
+     "playerId": "p_h7k04k4c_mq7nhxuq",
      "championId": "비에고",
      "kills": 6,
      "deaths": 5,
@@ -22519,8 +22609,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "playerId": "p_jlc2q699_mq7nhxup",
      "rawName": "미르수리",
+     "playerId": "p_jlc2q699_mq7nhxup",
      "championId": "블라디미르",
      "kills": 4,
      "deaths": 6,
@@ -22548,8 +22638,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "playerId": "p_wtiaq7m1_mq7nhxuq",
      "rawName": "봄의꽃",
+     "playerId": "p_wtiaq7m1_mq7nhxuq",
      "championId": "코그모",
      "kills": 3,
      "deaths": 5,
@@ -22577,8 +22667,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "p_00q5dhm1_mq7nhxuq",
      "rawName": "댕댕이소탕강형욱",
+     "playerId": "p_00q5dhm1_mq7nhxuq",
      "championId": "룰루",
      "kills": 0,
      "deaths": 5,
@@ -22606,8 +22696,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "playerId": "p_0g6qhb6e_mq7nhxuq",
      "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
      "championId": "말파이트",
      "kills": 1,
      "deaths": 3,
@@ -22635,8 +22725,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "playerId": "p_4siqelqmq7ub77p",
      "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
      "championId": "케인",
      "kills": 12,
      "deaths": 2,
@@ -22664,8 +22754,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "playerId": "p_gi86d5qmq7ub77o",
      "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
      "championId": "말자하",
      "kills": 2,
      "deaths": 3,
@@ -22693,8 +22783,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "playerId": "p_ze5lbhymq7ub77p",
      "rawName": "Savege",
+     "playerId": "p_ze5lbhymq7ub77p",
      "championId": "시비르",
      "kills": 6,
      "deaths": 3,
@@ -22722,8 +22812,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "p_29ndxd5j_mq7nhxuq",
      "rawName": "Lucky Grasp",
+     "playerId": "p_29ndxd5j_mq7nhxuq",
      "championId": "쓰레쉬",
      "kills": 2,
      "deaths": 3,
@@ -22798,7 +22888,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-14T13:36:56.160Z",
+  "lastBackupAt": "2026-06-14T11:51:17.394Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -22872,15 +22962,34 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [],
- "rev": 262,
- "updatedAt": "2026-06-14T13:38:26.608Z",
+ "lineups": [
+  {
+   "id": "lu_5s1cahlmqdkg97f",
+   "date": "2026-06-14",
+   "round": "1차",
+   "note": "20시",
+   "blue": [
+    "p_j93ommzd_mq7nhxuq",
+    "p_h7k04k4c_mq7nhxuq",
+    "p_jlc2q699_mq7nhxup",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_00q5dhm1_mq7nhxuq"
+   ],
+   "red": [
+    "p_0g6qhb6e_mq7nhxuq",
+    "p_4siqelqmq7ub77p",
+    "p_gi86d5qmq7ub77o",
+    "p_ze5lbhymq7ub77p",
+    "p_29ndxd5j_mq7nhxuq"
+   ]
+  }
+ ],
+ "rev": 254,
+ "updatedAt": "2026-06-14T15:04:50.624Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
  ],
  "nameReqs": [],
- "mvpPaid": {
-  "2026-06-14": true
- }
+ "mvpPaid": {}
 }
