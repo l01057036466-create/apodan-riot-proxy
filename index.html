@@ -3334,7 +3334,7 @@ async function bankBet(team,luId,odds){
   if(B&&B.role==='dev'&&!B.name)return toast('🛠 개발자 유령 세션은 지갑이 없어요 — 베팅은 본인 멤버 계정으로!',true);
   if(!B||!B.name)return toast('💰 거래소 탭에서 먼저 로그인해주세요!',true);
   const only=myTeamIn(L);
-  if(only&&team!==only)return toast('본인 출전 경기예요 — 자기 팀 승리에만 베팅할 수 있어요 (승부조작 방지 🙅)',true);
+  if(only)return toast('본인 출전 경기예요 — 베팅할 수 없어요 (승부조작 방지 🙅)',true);
   odds=Number(odds)||0;
   if(odds<1.01)return toast('배당 계산 중이에요 — 잠시 후 다시 시도해주세요.',true);
   const amt=Math.round(Number($('betAmt_'+luId)?.value)||0);
@@ -3910,8 +3910,8 @@ async function castScore(date,pick){
   const B=bankSession();
   if(B&&B.role==='dev'&&!B.name)return toast('🛠 유령 세션은 예측 못 해요 — 멤버 계정으로!',true);
   if(!B||!B.name)return toast('💰 거래소 로그인 후 예측 가능!',true);
-  // 본인 출전 경기면 자기 팀이 이기는 스코어만 (승부조작 차단) — 매치 베팅과 동일 규칙
-  try{const _L=(typeof allLineups==='function')?allLineups().find(l=>voteKey(l)===date):null; if(_L){const _t=myTeamIn(_L); if(_t){const _aw=(+String(pick).split(':')[0])>(+String(pick).split(':')[1]); if((_t==='alpha'&&!_aw)||(_t==='beta'&&_aw))return toast('본인 출전 경기 — 자기 팀이 이기는 스코어만 예측할 수 있어요',true);}}}catch(e){}
+  // 본인 출전 경기면 스코어 예측 전면 차단 (승부조작 방지) — 매치 베팅과 동일 규칙
+  try{const _L=(typeof allLineups==='function')?allLineups().find(l=>voteKey(l)===date):null; if(_L&&myTeamIn(_L))return toast('본인 출전 경기예요 — 스코어 예측을 할 수 없어요 (승부조작 방지 🙅)',true);}catch(e){}
   const amt=Math.round(Number(prompt(`🎯 "${pick}" 스코어에 베팅할 금액? (최소 100 APO)\n정답자끼리 전체 풀을 나눠 가져요 (토토식)`,'500'))||0);
   if(amt<100)return amt&&toast('최소 100 APO',true);
   try{
@@ -7070,6 +7070,7 @@ function lineupCard(L){
       else if(!B)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">💰 <b>거래소 탭에서 로그인</b>하면 APO로 베팅할 수 있어요 (가입 시 10,000 APO)</p>`;
       else if(B.role==='dev'&&!B.name)actions='';
       else if(!oA||!oB)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">⏳ 배당 계산 중 — 라인업이 확정되면 베팅이 열려요</p>`;
+      else if(only)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🙅 본인 출전 경기 — 베팅할 수 없어요 (승부조작 방지). MVP 투표·응원은 가능!</p>`;
       else{
         const myOdds=M&&M.my?(M.my.odds||(M.my.team==='alpha'?oA:oB)):0;
         const maxAdd=Math.max(0,20000-(M&&M.my?M.my.amt:0));
@@ -7129,10 +7130,10 @@ function lineupCard(L){
             <p class="mini" style="margin:0 0 ${sProbs?'2px':'6px'};text-align:center;font-weight:900;letter-spacing:.1em;color:var(--win)">🎯 스코어 예측 · 토토 <span class="dim" style="font-weight:600;letter-spacing:0">${SC.win?`— 결과 ${SC.win} 확정`:lockedS?'— 마감':'— 정답자끼리 풀 분배'}</span></p>
             ${sProbs?`<p class="mini dim" style="text-align:center;margin:0 0 6px;font-size:10px">📊 데이터 배당 — 유력 <b style="color:var(--gold)">${opts[sFav]}</b> ${Math.round(sProbs[sFav]*100)}% <span style="opacity:.6">· 폼·승률 기반 예측</span></p>`:''}
             <div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">
-              ${opts.map((o,oi)=>{const v=(SC.tally||{})[o]||0;const isWin=SC.win===o;const mine=SC.my&&SC.my.startsWith(o);const pr=sProbs?Math.round(sProbs[oi]*100):null;const isFav=oi===sFav;const aWins=(+o.split(':')[0])>(+o.split(':')[1]);const blocked=(only==='alpha'&&!aWins)||(only==='beta'&&aWins); /* 본인 출전 — 자기 팀 지는 스코어 차단 */
-                return`<button class="btn sm ${isWin?'gold':''}" ${lockedS||SC.my||blocked?'disabled':''} ${blocked?'title="본인 출전 — 자기 팀이 이기는 스코어만 예측 가능"':''} onclick="castScore('${esc(key)}','${o}')" style="${mine?'border-color:var(--win);color:var(--win);font-weight:900':''}${blocked?';opacity:.4':''}">${isWin?'👑 ':''}${o}${pr!=null?` <span class="dim" style="font-size:9px;font-weight:800${isFav?';color:var(--gold)':''}">📊${pr}%</span>`:''}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
+              ${opts.map((o,oi)=>{const v=(SC.tally||{})[o]||0;const isWin=SC.win===o;const mine=SC.my&&SC.my.startsWith(o);const pr=sProbs?Math.round(sProbs[oi]*100):null;const isFav=oi===sFav;const aWins=(+o.split(':')[0])>(+o.split(':')[1]);const blocked=!!only; /* 본인 출전 — 자기 경기엔 스코어 예측 전면 차단 */
+                return`<button class="btn sm ${isWin?'gold':''}" ${lockedS||SC.my||blocked?'disabled':''} ${blocked?'title="본인 출전 경기 — 스코어 예측 불가 (승부조작 방지)"':''} onclick="castScore('${esc(key)}','${o}')" style="${mine?'border-color:var(--win);color:var(--win);font-weight:900':''}${blocked?';opacity:.4':''}">${isWin?'👑 ':''}${o}${pr!=null?` <span class="dim" style="font-size:9px;font-weight:800${isFav?';color:var(--gold)':''}">📊${pr}%</span>`:''}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
             </div>
-            <p class="mini dim" style="text-align:center;margin:6px 0 0">${BS&&BS.name?(SC.my?`내 예측: <b>${esc(SC.my.split('|')[0])}</b> (${fmtAPO(Number(SC.my.split('|')[1])||0)} APO)`:(only?`본인 출전 경기 — ${only==='alpha'?'🅰 알파':'🅱 베타'}(자기 팀)가 이기는 스코어만 예측 가능`:'정확한 세트 스코어를 맞히면 대박!')):'💰 로그인 후 예측'}
+            <p class="mini dim" style="text-align:center;margin:6px 0 0">${BS&&BS.name?(SC.my?`내 예측: <b>${esc(SC.my.split('|')[0])}</b> (${fmtAPO(Number(SC.my.split('|')[1])||0)} APO)`:(only?`🙅 본인 출전 경기 — 스코어 예측을 할 수 없어요 (승부조작 방지)`:'정확한 세트 스코어를 맞히면 대박!')):'💰 로그인 후 예측'}
             ${(BS&&(BS.role==='admin'||BS.role==='dev')&&!SC.win)?` · <button class="btn sm ${lockedS?'':'lose'}" onclick="scoreLock('${esc(key)}',${lockedS?'true':'false'})">${lockedS?'재개':'마감'}</button>${lockedS?opts.map(o=>`<button class="btn sm gold" onclick="scoreSettle('${esc(key)}','${o}')">${o}✓</button>`).join(''):''}`:''}</p>
           </div>`})()}
         ${(()=>{const bets=(window._mktBets||{})[key];
