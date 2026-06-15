@@ -2118,13 +2118,16 @@ async function backfillSoloKills(){
   if(needAdmin())return;
   if(!(state.settings.proxyUrl||'').trim())return toast('먼저 설정에서 중계 서버 주소를 입력해주세요.',true);
   if(window._backfilling)return;
-  const targets=state.matches.filter(m=>m.gameId&&(m.participants||[]).some(p=>!(p.stats&&'soloKills' in p.stats)));
-  if(!targets.length)return toast('보강할 경기가 없어요 (이미 솔로킬이 있거나 gameId가 없는 경기뿐).');
+  const setBox=h=>{ window._lastBackfill=h; if(typeof render==='function')render('force'); };
+  const withGid=state.matches.filter(m=>m.gameId);
+  const targets=withGid.filter(m=>(m.participants||[]).some(p=>!(p.stats&&'soloKills' in p.stats)));
+  if(!withGid.length)return setBox('⚠️ <b>보강 불가</b> — 저장된 경기 '+state.matches.length+'개 중 <b>라이엇 gameID가 있는 경기가 0개</b>예요. .ps1 추출 JSON에 gameId가 들어가야 백필돼요. (경기 목록에서 "ID 없음"으로 뜨는 경기들)');
+  if(!targets.length)return setBox('✅ gameID 있는 경기 '+withGid.length+'개가 <b>이미 전부 솔로킬을 갖고 있어요</b> — 새로 채울 게 없어요. (값이 0이면 그 경기에 실제로 솔로킬이 0이었던 것)');
   if(!confirm('라이엇 API로 솔로킬을 보강할게요.\n대상 '+targets.length+'경기 · 경기당 약 0.3초 걸려요. 진행할까요?'))return;
   window._backfilling=true;
   try{ if(typeof ddragonMap==='function')await ddragonMap(); }catch(e){} // 영문챔프→한글 매핑 보장
   let done=0,fail=0,filled=0,matchedRows=0,firstErr='',unmatched=[];
-  toast('솔로킬 보강 시작 — '+targets.length+'경기');
+  toast('솔로킬 보강 중 — '+targets.length+'경기…');
   for(let i=0;i<targets.length;i++){
     const m=targets[i];
     try{
@@ -2145,7 +2148,7 @@ async function backfillSoloKills(){
       });
       (m.participants||[]).forEach(function(p){
         const key=p.team+'|'+canonChamp(p.championId||''), hit=byKey[key];
-        if(!hit){ if(unmatched.length<10)unmatched.push(key+' (ID '+m.gameId+')'); return; }
+        if(!hit){ if(unmatched.length<8)unmatched.push(key.replace('|',' ')); return; }
         matchedRows++;
         p.stats=p.stats||{};
         if(hit.soloKills!=null&&!('soloKills' in p.stats)){ p.stats.soloKills=hit.soloKills; filled++; }
@@ -2159,15 +2162,16 @@ async function backfillSoloKills(){
     }catch(e){ fail++; if(!firstErr)firstErr=String(e&&e.message||e); if(String(e&&e.message||'').indexOf('429')>=0)await new Promise(r=>setTimeout(r,3000)); }
     await new Promise(r=>setTimeout(r,300)); // 레이트리밋 여유
   }
-  save(); if(typeof render==='function')render('force');
+  save();
   window._backfilling=false;
-  try{ console.log('[솔로킬 백필] 대상',targets.length,'· 성공',done,'· 실패',fail,'· 매칭된 선수칸',matchedRows,'· 새로 채운 솔로킬',filled, unmatched.length?('· 매칭 실패 예시: '+unmatched.join(' / ')):''); }catch(e){}
-  let msg, bad=false;
-  if(done===0){ msg='보강 실패 — 라이엇 호출이 다 막혔어요'+(firstErr?(' ('+firstErr+')'):'')+'. 키 만료/중계서버 주소를 확인하고 다시 시도해주세요.'; bad=true; }
-  else if(matchedRows===0){ msg='경기 '+done+'개는 불러왔는데 선수 매칭이 0명이에요. 챔피언 이름이 안 맞는 듯 — F12 콘솔 로그를 보여주시면 고칠게요.'; bad=true; }
-  else if(filled===0){ msg='경기 '+done+'개·선수 '+matchedRows+'칸 매칭됐는데 새로 채운 솔로킬은 0이에요 (이미 다 있거나 그 경기 솔로킬이 0). 다른 지표는 갱신했어요.'; }
-  else{ msg='솔로킬 보강 완료 — '+done+'경기 · 선수 '+filled+'명 채움'+(fail?(' / '+fail+'경기 실패'):'')+'. 화면에 안 보이면 게시(업로드)까지 해주세요.'; }
-  toast(msg, bad);
+  try{ console.log('[솔로킬 백필] 대상',targets.length,'· 성공',done,'· 실패',fail,'· 매칭칸',matchedRows,'· 채운 솔로킬',filled, unmatched.length?('· 매칭실패 예시: '+unmatched.join(' / ')):''); }catch(e){}
+  let box;
+  if(done===0) box='❌ <b>라이엇 호출 전부 실패</b>'+(firstErr?(' — '+esc(firstErr)):'')+'<br>키가 만료(개발키는 24h)됐거나 중계서버 주소가 틀렸을 수 있어요. 키 갱신 + Vercel 재배포 후 다시 눌러주세요.';
+  else if(matchedRows===0) box='⚠️ 경기 '+done+'개는 불러왔지만 <b>선수 매칭이 0칸</b>이에요.<br>사이트 챔피언 이름이 라이엇과 안 맞아요. 안 맞은 예: <b>'+esc(unmatched.join(' / '))+'</b><br>이 이름들 그대로 알려주시면 매칭을 고쳐드릴게요.';
+  else if(filled===0) box='ℹ️ 경기 '+done+'개·선수 '+matchedRows+'칸 매칭됐는데 <b>새로 채운 솔로킬은 0</b>이에요 (이미 있거나 그 경기 솔로킬이 0). 딜·시야 등 다른 지표는 갱신했어요.';
+  else box='✅ <b>솔로킬 '+filled+'개 채움!</b> ('+done+'경기 · 선수 '+matchedRows+'칸 확인'+(fail?(' / '+fail+'경기 실패'):'')+')<br>📍 솔로킬은 <b>선수 프로필의 탑·정글·미드 라인 칩</b>과 <b>선수 비교</b>에서 보여요.<br>🌐 라이브 사이트 반영은 <b>게시(업로드)</b>까지 해야 돼요!';
+  setBox(box);
+  toast(filled?('솔로킬 '+filled+'개 채움 — 아래 결과 확인'):'결과를 화면에 표시했어요', done===0);
 }
 async function riotImport(id){
   try{
@@ -7482,6 +7486,7 @@ function pgRecordInner(){
       <button class="btn ghost" onclick="backfillSoloKills()">🗡 기존 경기에 솔로킬 보강</button>
       <span class="mini dim">.ps1로 넣은 경기에 라이엇 공식 솔로킬·지표를 gameId로 채워요 (중계 서버 필요)</span>
     </div>
+    ${window._lastBackfill?`<div class="mini" style="margin-top:8px;padding:9px 11px;border:1px solid rgba(242,184,75,.4);border-radius:8px;background:rgba(242,184,75,.07);line-height:1.55">${window._lastBackfill}</div>`:''}
     <div id="riotList" style="margin-top:12px"></div>
   </div>
   <div class="card" style="margin-top:14px">
