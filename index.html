@@ -5444,7 +5444,7 @@ function cmtSetNick(v){ lsSet(CMT_NICK_KEY,String(v||'').slice(0,20)); }
 async function commentCall(action,body,method){
   const api=voteApiBase();
   if(!api)throw new Error('서버 미연결 — 설정에서 투표 서버(같은 주소)를 먼저 연결해주세요');
-  const map={list:'cmtList',add:'cmtAdd',like:'cmtLike',del:'cmtDel',notif:'cmtNotif',notifRead:'cmtNotifRead'};
+  const map={list:'cmtList',add:'cmtAdd',like:'cmtLike',del:'cmtDel',notif:'cmtNotif',notifRead:'cmtNotifRead',override:'cmtOverride'};
   const act=map[action]||action;
   const url=api+'/api/bank?action='+encodeURIComponent(act)
     +(method==='GET'&&body&&body.board?('&board='+encodeURIComponent(body.board)):'')
@@ -5475,6 +5475,8 @@ async function loadCmts(board,force){
     const j=await commentCall('list',{board},'GET');
     window._cmtCache[board]=Array.isArray(j.comments)?j.comments:[];
     window._cmtLikes=window._cmtLikes||{}; window._cmtLikes[board]=j.likes||{};
+    window._cmtHidden=window._cmtHidden||{}; window._cmtHidden[board]=Array.isArray(j.hidden)?j.hidden:[]; // 운영진이 숨긴 AI 댓글
+    window._cmtOverrides=window._cmtOverrides||{}; window._cmtOverrides[board]=j.overrides||{}; // 운영진이 편집한 AI 댓글
     window._cmtLoad[board]=Date.now();
     // 입력 중이면 화면을 건드리지 않음(softRender) — 작성 중인 글 보호
     if(typeof softRender==='function')softRender(); else if(typeof render==='function')render('force');
@@ -5527,6 +5529,11 @@ function cmtRow(c,board,isReply){
   const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
   const yeopoBadge=c._yeopo?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--lose);color:var(--lose)">🚫 신고 누적</span>':'';
   const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
+  const _Bm=bankSession(), _mod=!!(_Bm&&(_Bm.role==='admin'||_Bm.role==='dev')), _myName=_Bm&&_Bm.name;
+  const _canDel=_mod||(c.real&&_myName&&c.nick===_myName);
+  const delBtn=_canDel?`<button onclick="delCmt('${board}','${c.id}')" title="삭제" style="background:none;border:none;color:var(--lose);font-size:11px;cursor:pointer;padding:0;font-weight:700">🗑</button>`:'';
+  const editBtn=(_mod&&!c.real)?`<button onclick="editCmt('${board}','${c.id}','${encodeURIComponent(c.text||'')}')" title="AI 댓글 편집" style="background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;padding:0;font-weight:700">✏️</button>`:'';
+  const editedMark=c._edited?'<span class="mini dim" style="font-size:9px;opacity:.7">(편집됨)</span>':'';
   const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
   const likeCell=`<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
   const sz=isReply?26:30, fs=isReply?13:16;
@@ -5543,7 +5550,7 @@ function cmtRow(c,board,isReply){
         ${bestBadge}${liveBadge}${yeopoBadge}
         ${_cmtNameHtml(c.nick,c.deco)}
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
-        ${replyBtn}
+        ${editedMark}${replyBtn}${editBtn}${delBtn}
       </div>
       <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${esc(c.text)}</p>
     </div>
@@ -5564,8 +5571,12 @@ function cmtComposer(board,parent){
   const sid=_cmtSafeId(parent?(board+'|'+parent):board);
   const ph=parent?'답글 달기…':'댓글 남기기…';
   const onkey=`if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitCmt(this,'${board}','${parent||''}')}`;
+  const mod=!!(B&&(B.role==='admin'||B.role==='dev'));
+  const authorEl=mod
+    ? `<input id="cn_${sid}" maxlength="24" placeholder="${esc(B.name)}" title="운영진: 닉네임 바꿔서 달기 (비우면 본인 이름)" style="flex:none;width:82px;font-size:11px;padding:7px 7px;border-radius:9px;border:1px solid var(--gold);background:var(--card2,#161922);color:var(--gold);font-weight:700" />`
+    : `<span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>`;
   return `<div style="display:flex;gap:6px;align-items:center;${parent?'margin:4px 0 4px 30px':'margin:6px 0 8px'}">
-    <span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>
+    ${authorEl}
     <input id="ct_${sid}" maxlength="300" placeholder="${ph}" onkeydown="${onkey}" style="flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card2,#161922);color:var(--fg)" />
     <button class="btn sm" style="flex:none" onclick="submitCmt(this,'${board}','${parent||''}')">등록</button>
   </div>`;
@@ -5642,6 +5653,16 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   }
   tops.forEach(applyLike);
   Object.keys(repliesByParent).forEach(function(k){ repliesByParent[k].forEach(applyLike); });
+  // 3.7) 운영진 숨김/편집 적용 (가짜·AI 댓글만, 실제 댓글은 서버에서 이미 삭제됨)
+  const _hid=new Set((window._cmtHidden&&window._cmtHidden[board])||[]);
+  const _ov=(window._cmtOverrides&&window._cmtOverrides[board])||{};
+  function _applyMod(c){ const o=_ov[c.id]; if(o){ if(o.text)c.text=o.text; if(o.nick)c.nick=o.nick; c._edited=true; } return c; }
+  tops=tops.filter(function(c){ return c.real||!_hid.has(c.id); });
+  tops.forEach(function(c){ if(!c.real)_applyMod(c); });
+  Object.keys(repliesByParent).forEach(function(k){
+    repliesByParent[k]=repliesByParent[k].filter(function(c){ return c.real||!_hid.has(c.id); });
+    repliesByParent[k].forEach(function(c){ if(!c.real)_applyMod(c); });
+  });
   // 4) 렌더
   let body='';
   tops.forEach(function(t){
@@ -5670,16 +5691,23 @@ async function submitCmt(el,board,parent){
     const B=bankSession();
     if(!B||!B.name){ if(typeof toast==='function')toast('로그인 후 댓글을 달 수 있어요',true); if(typeof go==='function')go('bank'); return; }
     // 입력칸: 같은 작성칸 안에서 직접 찾기 (id 충돌·중복 렌더에도 안전), 실패 시 id로 폴백
+    const _sid=_cmtSafeId(parent?(board+'|'+parent):board);
     let tEl=null;
-    if(el&&el.parentNode&&el.parentNode.querySelector)tEl=el.parentNode.querySelector('input');
-    if(!tEl)tEl=(typeof $==='function'?$:byId)('ct_'+_cmtSafeId(parent?(board+'|'+parent):board));
+    if(el&&el.parentNode&&el.parentNode.querySelector)tEl=el.parentNode.querySelector('input[id^="ct_"]')||el.parentNode.querySelector('input');
+    if(!tEl)tEl=(typeof $==='function'?$:byId)('ct_'+_sid);
     const text=(tEl&&tEl.value||'').trim();
     if(!text){ if(typeof toast==='function')toast('내용을 입력해주세요',true); if(tEl&&tEl.focus)tEl.focus(); return; }
     if(!voteApiBase()){ if(typeof toast==='function')toast('서버가 연결돼야 댓글이 달려요 (설정 → 투표 서버)',true); return; }
-    const j=await commentCall('add',{board:board,text:text,parent:parent},'POST'); // 닉 안 보냄 → 서버가 로그인 계정명 사용
+    // 운영진 커스텀 닉 (비우면 본인 이름)
+    let nick='', nEl=null;
+    if(el&&el.parentNode&&el.parentNode.querySelector)nEl=el.parentNode.querySelector('input[id^="cn_"]');
+    if(!nEl)nEl=(typeof $==='function'?$:byId)('cn_'+_sid);
+    if(nEl&&nEl.value)nick=nEl.value.trim();
+    const _payload={board:board,text:text,parent:parent}; if(nick)_payload.nick=nick;
+    const j=await commentCall('add',_payload,'POST'); // 닉 미지정 → 서버가 로그인 계정명 사용 (운영진만 커스텀 닉 허용)
     window._cmtCache=window._cmtCache||{}; window._cmtCache[board]=window._cmtCache[board]||[];
     if(j&&j.comment)window._cmtCache[board].push(j.comment);
-    if(tEl)tEl.value='';
+    if(tEl)tEl.value=''; if(nEl)nEl.value='';
     if(parent){ window._cmtReplyOpen=window._cmtReplyOpen||{}; window._cmtReplyOpen[board+'|'+parent]=false; }
     window._ime=false; // 한글 조합 플래그 잔류로 렌더가 막히는 것 방지
     if(typeof render==='function')render('force');
@@ -5689,6 +5717,37 @@ async function submitCmt(el,board,parent){
     if(/알 수 없는 요청|\b404\b/.test(m))m='댓글 기능이 포함된 최신 bank.js로 배포해야 해요 (api/bank.js 갱신 후 재배포).';
     if(typeof toast==='function')toast(m,true);
   }
+}
+/* 🗑 댓글 삭제 (운영진=아무 댓글, 일반=본인 댓글). 가짜/AI는 서버 숨김 처리 */
+async function delCmt(board,id){
+  const B=bankSession(); if(!B||!B.name){ if(typeof toast==='function')toast('로그인이 필요해요',true); return; }
+  if(!confirm('이 댓글을 삭제할까요?'))return;
+  try{
+    await commentCall('del',{board,id},'POST');
+    if(window._cmtCache&&window._cmtCache[board])window._cmtCache[board]=window._cmtCache[board].filter(c=>c.id!==id);
+    window._cmtHidden=window._cmtHidden||{}; window._cmtHidden[board]=window._cmtHidden[board]||[]; if(window._cmtHidden[board].indexOf(id)<0)window._cmtHidden[board].push(id);
+    if(typeof toast==='function')toast('🗑 삭제했어요'); if(typeof render==='function')render('force');
+  }catch(e){ let m=(e&&e.message)||'삭제 실패'; if(/알 수 없는 요청|\b404\b/.test(m))m='최신 bank.js로 배포해야 해요'; if(typeof toast==='function')toast(m,true); }
+}
+/* ✏️ AI(가짜) 댓글 편집 — 운영진 전용 (내용 수정, 빈칸이면 원복) */
+async function editCmt(board,id,curEnc){
+  const B=bankSession(); if(!B||!(B.role==='admin'||B.role==='dev')){ if(typeof toast==='function')toast('운영진만 편집할 수 있어요',true); return; }
+  let cur=''; try{ cur=decodeURIComponent(curEnc||''); }catch(e){ cur=curEnc||''; }
+  const t=prompt('AI 댓글 편집 (비우고 확인하면 원래 자동 댓글로 복구)', cur);
+  if(t===null)return;
+  const nt=t.trim();
+  try{
+    if(!nt){ // 빈칸 → 오버라이드 제거(원복)
+      await commentCall('override',{board,id,remove:true},'POST');
+      if(window._cmtOverrides&&window._cmtOverrides[board])delete window._cmtOverrides[board][id];
+      if(typeof toast==='function')toast('↩️ 원래 댓글로 되돌렸어요');
+    }else{
+      await commentCall('override',{board,id,text:nt},'POST');
+      window._cmtOverrides=window._cmtOverrides||{}; window._cmtOverrides[board]=window._cmtOverrides[board]||{}; window._cmtOverrides[board][id]={text:nt};
+      if(typeof toast==='function')toast('✏️ 수정했어요');
+    }
+    if(typeof render==='function')render('force');
+  }catch(e){ let m=(e&&e.message)||'수정 실패'; if(/알 수 없는 요청|\b404\b/.test(m))m='최신 bank.js로 배포해야 해요'; if(typeof toast==='function')toast(m,true); }
 }
 /* 답글 작성칸 토글 (로그인 필수) */
 function cmtReply(board,cid){
