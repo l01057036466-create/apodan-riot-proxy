@@ -2113,6 +2113,54 @@ async function riotFetchList(){
   }
 }
 const RIOT_LANE={TOP:'TOP',JUNGLE:'JUNGLE',MIDDLE:'MID',BOTTOM:'ADC',UTILITY:'SUPPORT'};
+// 🗡 기존 경기에 솔로킬(+챌린지 지표) 보강 — 라이엇 공식 데이터(challenges)에서 gameId로 채움
+async function backfillSoloKills(){
+  if(needAdmin())return;
+  if(!(state.settings.proxyUrl||'').trim())return toast('먼저 설정에서 중계 서버 주소를 입력해주세요.',true);
+  if(window._backfilling)return;
+  const targets=state.matches.filter(m=>m.gameId&&(m.participants||[]).some(p=>!(p.stats&&'soloKills' in p.stats)));
+  if(!targets.length)return toast('보강할 경기가 없어요 (이미 솔로킬이 있거나 gameId가 없는 경기뿐).');
+  if(!confirm('라이엇 API로 솔로킬을 보강할게요.\n대상 '+targets.length+'경기 · 경기당 약 0.3초 걸려요. 진행할까요?'))return;
+  window._backfilling=true;
+  try{ if(typeof ddragonMap==='function')await ddragonMap(); }catch(e){} // 영문챔프→한글 매핑 보장
+  let done=0,fail=0,filled=0;
+  toast('솔로킬 보강 시작 — '+targets.length+'경기');
+  for(let i=0;i<targets.length;i++){
+    const m=targets[i];
+    try{
+      const mm=await riotApi({action:'match',id:m.gameId});
+      const rps=(mm.info&&mm.info.participants)||[];
+      const byKey={};
+      rps.forEach(function(x){
+        const team=x.teamId===200?'RED':'BLUE';
+        const ch=canonChamp(champKo(x.championName!=null?x.championName:x.championId));
+        if(!ch)return;
+        const c=x.challenges||{}, pc=v=>isFinite(+v)?Math.round(+v*1000)/10:null;
+        byKey[team+'|'+ch]={
+          soloKills:(typeof c.soloKills!=='undefined')?num(c.soloKills):null,
+          kpPct:pc(c.killParticipation), dmgShare:pc(c.teamDamagePercentage), tankShare:pc(c.damageTakenOnTeamPercentage),
+          csAdv10:isFinite(+c.maxCsAdvantageOnLaneOpponent)?Math.round(+c.maxCsAdvantageOnLaneOpponent):null,
+          lvlLead:isFinite(+c.maxLevelLeadLaneOpponent)?+c.maxLevelLeadLaneOpponent:null
+        };
+      });
+      (m.participants||[]).forEach(function(p){
+        const hit=byKey[p.team+'|'+canonChamp(p.championId||'')]; if(!hit)return;
+        p.stats=p.stats||{};
+        if(hit.soloKills!=null&&!('soloKills' in p.stats)){ p.stats.soloKills=hit.soloKills; filled++; }
+        if(hit.kpPct!=null&&p.stats.kpPct==null)p.stats.kpPct=hit.kpPct;
+        if(hit.dmgShare!=null&&p.stats.dmgShare==null)p.stats.dmgShare=hit.dmgShare;
+        if(hit.tankShare!=null&&p.stats.tankShare==null)p.stats.tankShare=hit.tankShare;
+        if(hit.csAdv10!=null&&p.stats.csAdv10==null)p.stats.csAdv10=hit.csAdv10;
+        if(hit.lvlLead!=null&&p.stats.lvlLead==null)p.stats.lvlLead=hit.lvlLead;
+      });
+      done++;
+    }catch(e){ fail++; if(String(e&&e.message||'').indexOf('429')>=0)await new Promise(r=>setTimeout(r,3000)); }
+    await new Promise(r=>setTimeout(r,300)); // 레이트리밋 여유
+  }
+  save(); if(typeof render==='function')render('force');
+  window._backfilling=false;
+  toast('솔로킬 보강 완료 — '+done+'경기 성공'+(fail?(', '+fail+'경기 실패'):'')+' · 선수 '+filled+'명 채움'+(fail?' (실패는 키 만료/429면 잠시 후 다시)':''));
+}
 async function riotImport(id){
   try{
     const m=window._riotCache?.[id]||await riotApi({action:'match',id});
@@ -5225,14 +5273,7 @@ function apoMemeReply(text,nick,rng){
   text=String(text||''); nick=nick||'윗분';
   const sub=s=>String(s).replace(/\{nick\}/g,nick);
   try{
-    const names=Object.keys(APO_MEMES).filter(n=>text.indexOf(n)>=0);
-    if(names.length){
-      const n=names[Math.floor(rng()*names.length)], e=APO_MEMES[n];
-      let pool;
-      if(Array.isArray(e))pool=e;
-      else{ const s=apoSentiment(text); pool=(s==='good'?(e.g||[]):s==='bad'?(e.b||[]):[]).concat(e.a||[]); if(!pool.length)pool=_memeLines(n); }
-      if(pool.length)return sub(_ccPick(pool,rng));
-    }
+    // 멤버 전용 밈(APO_MEMES) 답글 — 사용자 요청으로 비활성화. 일반 키워드 반응만 사용.
     for(let g=0;g<APO_KW.length;g++){ if(APO_KW[g].k.some(kw=>text.toLowerCase().indexOf(kw.toLowerCase())>=0)) return sub(_ccPick(APO_KW[g].r,rng)); }
   }catch(e){}
   return sub(_ccPick(CC_NPC_REPLY,rng));
@@ -7428,6 +7469,10 @@ function pgRecordInner(){
       <div class="f"><label>중계 서버 주소 (Vercel)</label><input id="proxyUrl" placeholder="https://apodan-riot-proxy.vercel.app" value="${esc(state.settings.proxyUrl||'')}" onchange="saveProxyUrl()"></div>
       <div class="f"><label>기준 멤버 (이 사람 전적에서 검색)</label><select id="riotAnchor" onchange="saveAnchor()">${anchors.map(p=>`<option value="${p.id}"${p.id===anchorSel?' selected':''}>${esc(p.displayName)} · ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}</option>`).join('')}</select></div>
       <div class="f" style="align-self:end"><button class="btn gold" onclick="riotFetchList()">최근 내전 목록 불러오기</button></div>
+    </div>
+    <div class="row" style="margin-top:10px;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn ghost" onclick="backfillSoloKills()">🗡 기존 경기에 솔로킬 보강</button>
+      <span class="mini dim">.ps1로 넣은 경기에 라이엇 공식 솔로킬·지표를 gameId로 채워요 (중계 서버 필요)</span>
     </div>
     <div id="riotList" style="margin-top:12px"></div>
   </div>
