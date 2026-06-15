@@ -5382,8 +5382,7 @@ function communityFeed(L){
     if(rng()<0.12)like+=Math.floor(rng()*180); // 가끔 폭발하는 댓글
     rows.push({text,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like,_o:i});
   }
-  // 🧠 출전 멤버 밈 댓글 (톡방 밈) — 라인업에 있는 사람으로
-  apoMemeComments(parts,rng,1).forEach(function(mc){ rows.push({text:mc,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like:Math.floor(Math.pow(rng(),2.2)*90),_o:rows.length}); });
+  // 🧠 출전 멤버 밈 단독 주입 — 사용자 요청으로 비활성화 (밈은 댓글 답글로만 유지)
   // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 신고 누적으로 항상 맨 밑에 깔림
   let yi=-1;
   if(rows.length){
@@ -5466,9 +5465,7 @@ function resultFeed(m){
     if(rng()<0.12)like+=Math.floor(rng()*180);
     rows.push({text,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like,_o:i});
   }
-  // 🧠 출전 멤버 밈 댓글 (톡방 밈) — 출전 챔프 맥락 반영 (챔프 밈은 그 챔프 했을 때만)
-  const _champMap={}; rt.forEach(function(x){ const _nm=bareName(nameOf(x.p.playerId)); const _ch=(typeof canonChamp==='function'?canonChamp(x.p.championId||''):x.p.championId||''); if(_nm&&_ch)_champMap[_nm]=_ch; });
-  apoMemeComments(parts,rng,1,_champMap).forEach(function(mc){ rows.push({text:mc,nick:ccNick(rng,parts),ava:_ccPick(CC_AVA,rng),bg:_ccPick(CC_AVA_BG,rng),stars:0,like:Math.floor(Math.pow(rng(),2.2)*90),_o:rows.length}); });
+  // 🧠 출전 멤버 밈 단독 주입 — 사용자 요청으로 비활성화 (밈은 댓글 답글로만 유지)
   // 🔥 방구석여포 무조건 1명 (슈퍼 매운맛) — 신고 누적으로 항상 맨 밑에 깔림
   let yi=-1;
   if(rows.length){
