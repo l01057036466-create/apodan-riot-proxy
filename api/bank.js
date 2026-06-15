@@ -369,12 +369,18 @@ module.exports = async function handler(req, res) {
       var prevRaw = await redis(['GET', 'bet:' + mk2 + ':' + aB.name]);
       var prev = prevRaw ? JSON.parse(prevRaw) : null;
       if (prev && prev.team !== team2) return res.status(409).json({ error: '이미 ' + (prev.team === 'alpha' ? '알파' : '베타') + '에 베팅했어요 — 팀 변경 불가, 추가 베팅만 가능' });
+      var BET_CAP = 20000; // 🔒 1경기 1인 베팅 상한 — 고정배당 변동성 차단
+      var curStake = prev ? prev.amt : 0;
+      if (curStake + amt2 > BET_CAP) return res.status(400).json({ error: '1경기 베팅 상한은 ' + BET_CAP + ' APO예요 — 현재 ' + curStake + ' APO 베팅 중 (추가 ' + Math.max(0, BET_CAP - curStake) + ' 가능)' });
+      var betOdds = Number(body.odds) || 0;
+      betOdds = Math.max(1.01, Math.min(10, Math.round(betOdds * 100) / 100)); // 배당 클램프 (조작 방지)
+      var lockedOdds = (prev && prev.odds) ? prev.odds : betOdds; // 🔒 배당은 첫 베팅 순간에 고정 (추가 베팅도 같은 배당)
       aB.bal -= amt2;
       var allin = aB.bal === 0;
       await putAcct(aB);
       await ledger(aB.name, (allin ? '🚨 올인! ' : '🎰 ') + '베팅: ' + (team2 === 'alpha' ? '알파' : '베타') + ' 승리', -amt2, aB.bal);
       await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sB.name, 'bet', '1']);
-      var newBet = { team: team2, amt: (prev ? prev.amt : 0) + amt2, t: new Date().toISOString(), allin: allin || (prev && prev.allin) || false };
+      var newBet = { team: team2, amt: curStake + amt2, t: new Date().toISOString(), allin: allin || (prev && prev.allin) || false, odds: lockedOdds };
       await redis(['SET', 'bet:' + mk2 + ':' + aB.name, JSON.stringify(newBet), 'EX', SEC90]);
       await redis(['SADD', 'mkt:' + mk2 + ':bettors', aB.name]);
       await redis(['INCRBY', 'mkt:' + mk2 + ':pool:' + team2, String(amt2)]);
@@ -407,10 +413,7 @@ module.exports = async function handler(req, res) {
       if (win !== 'alpha' && win !== 'beta') return res.status(400).json({ error: 'winner는 alpha/beta' });
       var cur2 = (await redis(['GET', 'mkt:' + mk4 + ':status'])) || 'open';
       if (cur2.indexOf('settled') === 0) return res.status(400).json({ error: '이미 정산됐어요' });
-      var WP = Number(await redis(['GET', 'mkt:' + mk4 + ':pool:' + win])) || 0;
       var lose = win === 'alpha' ? 'beta' : 'alpha';
-      var LP = Number(await redis(['GET', 'mkt:' + mk4 + ':pool:' + lose])) || 0;
-      var prize = Math.floor(LP * 0.97); // 3% 수수료 싱크
       var names3 = (await redis(['SMEMBERS', 'mkt:' + mk4 + ':bettors'])) || [];
       var paid = 0, winners = 0;
       for (var w = 0; w < names3.length; w++) {
@@ -420,16 +423,17 @@ module.exports = async function handler(req, res) {
         var acc = await getAcct(names3[w]);
         if (!acc) continue;
         if (bb.team === win) {
-          var share = WP > 0 ? Math.floor(bb.amt + (bb.amt / WP) * prize) : bb.amt;
-          acc.bal += share; winners++; paid += share;
+          var odW = Number(bb.odds) || 1.95; // 구버전(배당 미저장) 안전 기본값
+          var payout = Math.floor(bb.amt * odW); // 🎰 고정배당: 베팅액 × 배당 (데이터 배당)
+          acc.bal += payout; winners++; paid += payout;
           await putAcct(acc);
-          await ledger(acc.name, '🎉 예측 적중! (' + (win === 'alpha' ? '알파' : '베타') + ' 승)', share, acc.bal);
+          await ledger(acc.name, '🎉 예측 적중! (' + (win === 'alpha' ? '알파' : '베타') + ' 승 · x' + odW + ')', payout, acc.bal);
         } else {
           await ledger(acc.name, '😭 예측 빗나감 (' + (win === 'alpha' ? '알파' : '베타') + ' 승)', 0, acc.bal);
         }
       }
       await redis(['SET', 'mkt:' + mk4 + ':status', 'settled:' + win, 'EX', SEC90]);
-      return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid, fee: LP - prize });
+      return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid });
     }
 
     // ── 👀 베팅·지급 내역 조회 (운영진 — 이중 지급 추적용) ──
@@ -449,7 +453,8 @@ module.exports = async function handler(req, res) {
         var bR = await redis(['GET', 'bet:' + mkMd + ':' + nmd[di]]);
         if (!bR) continue;
         var bD = JSON.parse(bR);
-        var shareD = winMd && bD.team === winMd ? (WPd > 0 ? Math.floor(bD.amt + (bD.amt / WPd) * przd) : bD.amt) : 0;
+        var odD = Number(bD.odds) || 1.95;
+        var shareD = (winMd && bD.team === winMd) ? Math.floor(bD.amt * odD) : 0;
         rows.push({ name: nmd[di], team: bD.team, amt: bD.amt, share: shareD });
       }
       return res.status(200).json({ ok: true, status: stMd, winner: winMd, rows: rows });
@@ -490,7 +495,8 @@ module.exports = async function handler(req, res) {
         if (bU.team !== winU) continue;
         var accU = await getAcct(namesU[u]);
         if (!accU) continue;
-        var shareU = WPu > 0 ? Math.floor(bU.amt + (bU.amt / WPu) * prizeU) : bU.amt; // 정산과 동일 공식 = 정확히 그만큼 회수
+        var odU = Number(bU.odds) || 1.95;
+        var shareU = Math.floor(bU.amt * odU); // 고정배당 지급액 = 정확히 그만큼 회수
         var cut = Math.min(accU.bal, shareU);
         if (cut < shareU) short++;
         accU.bal -= cut; taken += cut; revs++;
