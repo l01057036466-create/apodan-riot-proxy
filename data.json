@@ -22967,7 +22967,9 @@
    "id": "lu_0iqwusfmqelyotr",
    "date": "2026-06-15",
    "round": "1차",
+   "series": "3판 2선승",
    "note": "20시",
+   "event": false,
    "blue": [
     "p_3v5tiwk3_mq7nhxuq",
     "p_imjto1qf_mq7nhxuq",
@@ -22987,7 +22989,9 @@
    "id": "lu_rxfljljmqeujptj",
    "date": "2026-06-15",
    "round": "2차",
+   "series": "3판 2선승",
    "note": "22시10분",
+   "event": false,
    "blue": [
     "p_37h5qp33_mq7nhxuq",
     "p_4siqelqmq7ub77p",
@@ -23004,12 +23008,14 @@
    ]
   }
  ],
- "rev": 259,
- "updatedAt": "2026-06-15T06:43:12.940Z",
+ "rev": 261,
+ "updatedAt": "2026-06-15T12:15:14.900Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
  ],
  "nameReqs": [],
- "mvpPaid": {}
+ "mvpPaid": {
+  "2026-06-15": true
+ }
 }
