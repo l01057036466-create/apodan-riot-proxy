@@ -1038,21 +1038,21 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', spKSc, '93600']);
       if (spentSc > 30000) { await redis(['INCRBY', spKSc, '-500']); return res.status(429).json({ error: '오늘 게임 한도(30,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
       aSc.bal -= 500;
-      await redis(['SET', 'arcade:jackpot', '5000', 'NX']); // 시드 5,000 보장
-      await redis(['INCRBY', 'arcade:jackpot', '450']); // 판매액 90% 풀 적립
-      var pz = pickWeighted([['JP', 2], [1000, 8], [0, 90]]);
+      await redis(['SET', 'arcade:jackpot', '2000', 'NX']); // 시드 2,000
+      await redis(['INCRBY', 'arcade:jackpot', '100']); // 참가비 20% 풀 적립 (재분배 → 인플레 0)
+      var pz = pickWeighted([['JP', 2], [2000, 1], [800, 5], [500, 20], [300, 30], [200, 42]]); // 꽝(0) 없음 — 최저 200 환급
       var wonJp = 0;
       if (pz === 'JP') {
-        wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 5000;
-        await redis(['SET', 'arcade:jackpot', '5000']); // 시드 리셋
+        wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 2000;
+        await redis(['SET', 'arcade:jackpot', '2000']); // 시드 리셋
         pz = wonJp;
         await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aSc.name, t: 'jp', v: wonJp, ts: new Date().toISOString() })]);
         await redis(['LTRIM', 'arcade:news', '0', '9']);
       }
       if (pz > 0) aSc.bal += pz;
       await putAcct(aSc);
-      await ledger(aSc.name, wonJp ? '🎫💥 복권 누적 잭팟!! 풀 전액' : (pz > 0 ? '🎫 복권 위로상' : '🎫 복권 꽝'), pz - 500, aSc.bal);
-      var potNowSc = wonJp ? 5000 : (Number(await redis(['GET', 'arcade:jackpot'])) || 5000);
+      await ledger(aSc.name, wonJp ? '🎫💥 복권 누적 잭팟!! 풀 전액' : (pz >= 500 ? '🎫 복권 당첨' : '🎫 복권 소액 환급'), pz - 500, aSc.bal);
+      var potNowSc = wonJp ? 2000 : (Number(await redis(['GET', 'arcade:jackpot'])) || 2000);
       return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, pot: potNowSc, bal: aSc.bal, capLeft: Math.max(0, 30000 - spentSc) });
     }
     // 🎰 빠칭코 넘버 (5,000 APO, 1~100 픽 · 1등=번호 일치→누적 잭팟 전액+롤오버 · 2~10등 이치방쿠지식)
@@ -1075,34 +1075,43 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', spKPc, '93600']);
       if (spentPc > 30000) { await redis(['INCRBY', spKPc, String(-ENTRY)]); return res.status(429).json({ error: '오늘 게임 한도(30,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
       aPc.bal -= ENTRY;
-      await redis(['SET', 'arcade:pcnpot', '10000', 'NX']); // 잭팟 시드 10,000
-      await redis(['INCRBY', 'arcade:pcnpot', '400']); // 참가비 8% 적립
+      await redis(['SET', 'arcade:pcnpot', '30000', 'NX']); // 잭팟 최소 보장 30,000 (초반에도 한 방 큼)
+      await redis(['INCRBY', 'arcade:pcnpot', '200']); // 참가비 4% 적립 (재분배 → 인플레 0)
       var winNum = 1 + Math.floor(Math.random() * 100);
-      var rank, prize, wonJp = 0;
+      var rank, prize, wonJp = 0, guard = false;
+      var stK = 'pcnstreak:' + aPc.name;
+      var streak = Number(await redis(['GET', stK])) || 0;
       if (pick === winNum) {
         rank = 1;
-        wonJp = Number(await redis(['GET', 'arcade:pcnpot'])) || 10000;
+        wonJp = Number(await redis(['GET', 'arcade:pcnpot'])) || 30000;
         prize = wonJp;
-        await redis(['SET', 'arcade:pcnpot', '10000']); // 다음 판으로 (시드 리셋)
+        await redis(['SET', 'arcade:pcnpot', '30000']); // 다음 판으로 (최소 보장 리셋)
+        await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0;
       } else {
-        rank = pickWeighted([[2, 1], [3, 3], [4, 6], [5, 10], [6, 15], [7, 19], [8, 19], [9, 15], [10, 12]]);
-        prize = { 2: 40000, 3: 15000, 4: 9000, 5: 6000, 6: 5000, 7: 3000, 8: 2000, 9: 1000, 10: 0 }[rank];
+        rank = pickWeighted([[2, 1], [3, 3], [4, 7], [5, 12], [6, 17], [7, 22], [8, 22], [9, 16]]); // 꽝(0) 없음 — 최저도 1,500 환급
+        prize = { 2: 30000, 3: 12000, 4: 8000, 5: 6000, 6: 5000, 7: 3500, 8: 2500, 9: 1500 }[rank];
+        if (prize < ENTRY) { // 🛡 꽝방지 게이지 — 5판 연속 본전 미만이면 다음 판 본전 보장
+          if (streak >= 5) { prize = ENTRY; rank = 6; guard = true; await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
+          else { streak = streak + 1; await redis(['SET', stK, String(streak), 'EX', SEC30]); }
+        } else { await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
       }
       aPc.bal += prize;
       aPc = await busted(aPc);
       await putAcct(aPc);
-      await ledger(aPc.name, wonJp ? '🎰💥 빠칭코 1등!! 누적 잭팟' : ('🎰 빠칭코 ' + rank + '등'), prize - ENTRY, aPc.bal);
-      if (rank <= 3) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPc.name, t: (wonJp ? 'pcnjp' : 'pcn'), v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
-      var potNowPc = wonJp ? 10000 : (Number(await redis(['GET', 'arcade:pcnpot'])) || 10000);
-      return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, pot: potNowPc, bal: aPc.bal, capLeft: Math.max(0, 30000 - spentPc) });
+      await ledger(aPc.name, wonJp ? '🎰💥 빠칭코 1등!! 누적 잭팟' : (guard ? '🎰🛡 빠칭코 꽝방지 보장(본전)' : '🎰 빠칭코 ' + rank + '등'), prize - ENTRY, aPc.bal);
+      if (rank <= 3 && !guard) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPc.name, t: (wonJp ? 'pcnjp' : 'pcn'), v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
+      var potNowPc = wonJp ? 30000 : (Number(await redis(['GET', 'arcade:pcnpot'])) || 30000);
+      return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, guard: guard, streak: streak, pot: potNowPc, bal: aPc.bal, capLeft: Math.max(0, 30000 - spentPc) });
       } finally { await acctUnlock(sPc.name); }
     }
     // 잭팟 풀·속보 조회
     if (req.method === 'GET' && action === 'arcade') {
-      var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 5000;
-      var pcnp = Number(await redis(['GET', 'arcade:pcnpot'])) || 10000;
+      var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 2000;
+      var pcnp = Number(await redis(['GET', 'arcade:pcnpot'])) || 30000;
       var nw = ((await redis(['LRANGE', 'arcade:news', '0', '4'])) || []).map(function (x) { try { return JSON.parse(x) } catch (e) { return null } }).filter(Boolean);
-      return res.status(200).json({ jackpot: jp, pcnpot: pcnp, news: nw });
+      var pcnStreak = 0;
+      try { var sArc = await auth(q.token); if (sArc && sArc.name) pcnStreak = Number(await redis(['GET', 'pcnstreak:' + sArc.name])) || 0; } catch (e) {}
+      return res.status(200).json({ jackpot: jp, pcnpot: pcnp, news: nw, pcnStreak: pcnStreak });
     }
     // 📋 주간 미션 — 전부 자동 체크 (행동 시 서버가 카운트)
     function weekIdOf() { var w = new Date(); return w.getUTCFullYear() + '-W' + Math.ceil(((w - new Date(Date.UTC(w.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7); }
