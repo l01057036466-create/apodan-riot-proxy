@@ -1696,7 +1696,7 @@ const STAT_ALIAS={cs:['cs','minionsKilled','미니언','씨에스'],goldEarned:[
  damageToTurrets:['damageToTurrets','포탑피해','포탑피해량'],healing:['healing','heal','회복량'],
  selfMitigatedDamage:['selfMitigatedDamage','mitigated','피해감소','피해감소량'],soloKills:['soloKills','solokill','솔로킬','솔킬']};
 function pickStats(src){
-  const flat={...(src||{}),...(src?.stats||{})},out={};
+  const flat={...(src||{}),...(src?.stats||{}),...(src?.challenges||{})},out={}; // 🐛fix: challenges도 펼쳐서 soloKills 등 라이엇 지표를 흡수 (raw 클라이언트 JSON 대응)
   for(const[key,names]of Object.entries(STAT_ALIAS))
     for(const n of names){const hit=Object.keys(flat).find(k=>norm(k)===norm(n));if(hit&&flat[hit]!==''&&flat[hit]!=null){out[key]=num(flat[hit]);break}}
   return out;
