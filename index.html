@@ -4361,8 +4361,8 @@ async function loadChampMap(){ // 챔피언 한글명 → ddragon 키(이미지)
     DDRAGON_VER=vers[0];
     const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VER}/data/ko_KR/champion.json`).then(r=>r.json());
     Object.values(data.data).forEach(x=>{CHAMP_KEY[x.name]=x.id});
-    if(typeof render==='function'&&typeof tab!=='undefined'&&tab==='result')render('force');
-  }catch(e){ DDRAGON_VER=null; }
+    if(typeof render==='function')render('force'); // 🐛fix: 맵 로드 후 현재 페이지 무조건 재렌더 (예전엔 result 탭만 갱신돼 티어표 얼굴이 안 떴음)
+  }catch(e){ DDRAGON_VER=null; _champMapTried=false; } // 🐛fix: 일시 실패 시 재시도 허용 (한 번 실패하면 영영 약자만 뜨던 문제)
 }
 function champFace(ko,size){ // 챔프 얼굴(이미지 or 색상 토큰)
   size=size||44; const nm=(typeof canonChamp==='function'?canonChamp(ko):ko)||ko||'';
@@ -8735,6 +8735,7 @@ render();
 loadShared(false); // 호스팅된 링크에서 열렸으면 공유 data.json 자동 확인
 bankSync(true); // 등급칩·온라인·잭팟 속보
 champImgInit(); // 챔피언 초상화 매핑
+if(typeof loadChampMap==='function')loadChampMap(); // 🐛fix: 챔프 얼굴(티어·분석 등 모든 페이지) 매핑을 전역 1회 — 예전엔 내전 페이지에서만 로드돼 티어표는 약자만 떴음
 setInterval(()=>bankSync(),240000); // 💾 Upstash 절약: 4분 주기 + 백그라운드 탭 정지
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)bankSync(true)}); // 탭으로 돌아오면 즉시 새로고침
 setInterval(()=>{ // 투표 남은 시간 갱신 (입력 중엔 건너뜀)
