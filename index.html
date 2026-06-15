@@ -5533,7 +5533,7 @@ function cmtRow(c,board,isReply){
   const _canDel=_mod||(c.real&&_myName&&c.nick===_myName);
   const delBtn=_canDel?`<button onclick="delCmt('${board}','${c.id}')" title="삭제" style="background:none;border:none;color:var(--lose);font-size:11px;cursor:pointer;padding:0;font-weight:700">🗑</button>`:'';
   const editBtn=(_mod&&!c.real)?`<button onclick="editCmt('${board}','${c.id}','${encodeURIComponent(c.text||'')}')" title="AI 댓글 편집" style="background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;padding:0;font-weight:700">✏️</button>`:'';
-  const editedMark=c._edited?'<span class="mini dim" style="font-size:9px;opacity:.7">(편집됨)</span>':'';
+  const editedMark=(c._edited&&_mod)?'<span class="mini dim" style="font-size:9px;opacity:.7">(편집됨)</span>':''; // 운영진에게만 표시 — 일반 멤버에겐 자연스러운 댓글로
   const likeInner=`<div style="font-size:15px;line-height:1">👍</div><div style="font-size:12px;font-weight:800;color:${likeCol};line-height:1">${ccLikeStr(c.like)}</div>`;
   const likeCell=`<div onclick="likeCmt('${board}','${c.id}')" title="추천" style="cursor:pointer;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:40px;align-self:center;gap:1px">${likeInner}</div>`;
   const sz=isReply?26:30, fs=isReply?13:16;
