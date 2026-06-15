@@ -2329,9 +2329,9 @@
      "kills": 9,
      "deaths": 2,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2329,
+     "csd15": 46,
+     "xpd15": 4087,
      "stats": {
       "cs": 151,
       "goldEarned": 9619,
@@ -2344,7 +2344,8 @@
       "damageToObjectives": 5298,
       "damageToTurrets": 5298,
       "healing": 4642,
-      "selfMitigatedDamage": 23738
+      "selfMitigatedDamage": 23738,
+      "soloKills": 6
      }
     },
     {
@@ -2356,9 +2357,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 125,
+     "csd15": -3,
+     "xpd15": -1135,
      "stats": {
       "cs": 104,
       "goldEarned": 7446,
@@ -2372,7 +2373,8 @@
       "damageToObjectives": 1340,
       "damageToTurrets": 1340,
       "healing": 3060,
-      "selfMitigatedDamage": 17880
+      "selfMitigatedDamage": 17880,
+      "soloKills": 0
      }
     },
     {
@@ -2384,9 +2386,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 129,
+     "csd15": -2,
+     "xpd15": -88,
      "stats": {
       "cs": 160,
       "goldEarned": 7306,
@@ -2400,7 +2402,8 @@
       "damageToObjectives": 3255,
       "damageToTurrets": 3255,
       "healing": 3061,
-      "selfMitigatedDamage": 28597
+      "selfMitigatedDamage": 28597,
+      "soloKills": 1
      }
     },
     {
@@ -2412,9 +2415,9 @@
      "kills": 4,
      "deaths": 1,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -633,
+     "csd15": -4,
+     "xpd15": 177,
      "stats": {
       "cs": 166,
       "goldEarned": 8994,
@@ -2427,7 +2430,8 @@
       "damageToObjectives": 4414,
       "damageToTurrets": 4187,
       "healing": 1048,
-      "selfMitigatedDamage": 3090
+      "selfMitigatedDamage": 3090,
+      "soloKills": 0
      }
     },
     {
@@ -2439,9 +2443,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 979,
+     "csd15": -4,
+     "xpd15": -470,
      "stats": {
       "cs": 31,
       "goldEarned": 7448,
@@ -2455,7 +2459,8 @@
       "damageToObjectives": 3534,
       "damageToTurrets": 2805,
       "healing": 8078,
-      "selfMitigatedDamage": 3915
+      "selfMitigatedDamage": 3915,
+      "soloKills": 0
      }
     },
     {
@@ -2467,9 +2472,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2329,
+     "csd15": -46,
+     "xpd15": -4087,
      "stats": {
       "cs": 101,
       "goldEarned": 6252,
@@ -2481,7 +2486,8 @@
       "damageToObjectives": 791,
       "damageToTurrets": 791,
       "healing": 1824,
-      "selfMitigatedDamage": 13286
+      "selfMitigatedDamage": 13286,
+      "soloKills": 2
      }
     },
     {
@@ -2493,9 +2499,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2013,
+     "csd15": -33,
+     "xpd15": -4660,
      "stats": {
       "cs": 100,
       "goldEarned": 6476,
@@ -2508,7 +2514,8 @@
       "damageToObjectives": 25374,
       "damageToTurrets": 4686,
       "healing": 8840,
-      "selfMitigatedDamage": 9712
+      "selfMitigatedDamage": 9712,
+      "soloKills": 0
      }
     },
     {
@@ -2520,9 +2527,9 @@
      "kills": 1,
      "deaths": 2,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -129,
+     "csd15": 2,
+     "xpd15": 88,
      "stats": {
       "cs": 161,
       "goldEarned": 7275,
@@ -2535,7 +2542,8 @@
       "damageToObjectives": 7436,
       "damageToTurrets": 6709,
       "healing": 2016,
-      "selfMitigatedDamage": 14814
+      "selfMitigatedDamage": 14814,
+      "soloKills": 0
      }
     },
     {
@@ -2547,9 +2555,9 @@
      "kills": 5,
      "deaths": 5,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 633,
+     "csd15": 4,
+     "xpd15": -177,
      "stats": {
       "cs": 160,
       "goldEarned": 9688,
@@ -2562,7 +2570,8 @@
       "damageToObjectives": 2316,
       "damageToTurrets": 2316,
       "healing": 2110,
-      "selfMitigatedDamage": 4912
+      "selfMitigatedDamage": 4912,
+      "soloKills": 0
      }
     },
     {
@@ -2574,9 +2583,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -979,
+     "csd15": 4,
+     "xpd15": 470,
      "stats": {
       "cs": 36,
       "goldEarned": 6099,
@@ -2588,7 +2597,8 @@
       "controlWardsBought": 9,
       "crowdControlScore": 17,
       "healing": 2831,
-      "selfMitigatedDamage": 13104
+      "selfMitigatedDamage": 13104,
+      "soloKills": 0
      }
     }
    ],
@@ -2655,9 +2665,9 @@
      "kills": 7,
      "deaths": 3,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1768,
+     "csd15": 34,
+     "xpd15": 3957,
      "stats": {
       "cs": 157,
       "goldEarned": 10619,
@@ -2670,7 +2680,8 @@
       "damageToObjectives": 16249,
       "damageToTurrets": 13306,
       "healing": 8787,
-      "selfMitigatedDamage": 12794
+      "selfMitigatedDamage": 12794,
+      "soloKills": 4
      }
     },
     {
@@ -2682,9 +2693,9 @@
      "kills": 7,
      "deaths": 3,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1302,
+     "csd15": 29,
+     "xpd15": 1237,
      "stats": {
       "cs": 154,
       "goldEarned": 9969,
@@ -2698,7 +2709,8 @@
       "damageToObjectives": 41949,
       "damageToTurrets": 4311,
       "healing": 12834,
-      "selfMitigatedDamage": 13876
+      "selfMitigatedDamage": 13876,
+      "soloKills": 2
      }
     },
     {
@@ -2710,9 +2722,9 @@
      "kills": 5,
      "deaths": 0,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 475,
+     "csd15": 15,
+     "xpd15": 654,
      "stats": {
       "cs": 162,
       "goldEarned": 9378,
@@ -2725,7 +2737,8 @@
       "damageToObjectives": 10648,
       "damageToTurrets": 7040,
       "healing": 23807,
-      "selfMitigatedDamage": 12409
+      "selfMitigatedDamage": 12409,
+      "soloKills": 2
      }
     },
     {
@@ -2737,9 +2750,9 @@
      "kills": 10,
      "deaths": 3,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1124,
+     "csd15": -8,
+     "xpd15": 314,
      "stats": {
       "cs": 152,
       "goldEarned": 12477,
@@ -2753,7 +2766,8 @@
       "damageToObjectives": 22954,
       "damageToTurrets": 12064,
       "healing": 6761,
-      "selfMitigatedDamage": 6579
+      "selfMitigatedDamage": 6579,
+      "soloKills": 2
      }
     },
     {
@@ -2765,9 +2779,9 @@
      "kills": 6,
      "deaths": 2,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1571,
+     "csd15": 5,
+     "xpd15": 1223,
      "stats": {
       "cs": 35,
       "goldEarned": 8941,
@@ -2781,7 +2795,8 @@
       "damageToObjectives": 5481,
       "damageToTurrets": 2766,
       "healing": 5547,
-      "selfMitigatedDamage": 9938
+      "selfMitigatedDamage": 9938,
+      "soloKills": 1
      }
     },
     {
@@ -2793,9 +2808,9 @@
      "kills": 5,
      "deaths": 8,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1055,
+     "csd15": 1,
+     "xpd15": -251,
      "stats": {
       "cs": 133,
       "goldEarned": 8805,
@@ -2809,7 +2824,8 @@
       "damageToObjectives": 4648,
       "damageToTurrets": 4648,
       "healing": 2509,
-      "selfMitigatedDamage": 41119
+      "selfMitigatedDamage": 41119,
+      "soloKills": 3
      }
     },
     {
@@ -2821,9 +2837,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1768,
+     "csd15": -34,
+     "xpd15": -3957,
      "stats": {
       "cs": 117,
       "goldEarned": 7406,
@@ -2836,7 +2852,8 @@
       "crowdControlScore": 31,
       "damageToObjectives": 796,
       "healing": 21735,
-      "selfMitigatedDamage": 12744
+      "selfMitigatedDamage": 12744,
+      "soloKills": 0
      }
     },
     {
@@ -2848,9 +2865,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -475,
+     "csd15": -15,
+     "xpd15": -654,
      "stats": {
       "cs": 157,
       "goldEarned": 7284,
@@ -2864,7 +2881,8 @@
       "damageToObjectives": 2048,
       "damageToTurrets": 1416,
       "healing": 2370,
-      "selfMitigatedDamage": 11054
+      "selfMitigatedDamage": 11054,
+      "soloKills": 0
      }
     },
     {
@@ -2876,9 +2894,9 @@
      "kills": 1,
      "deaths": 8,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1124,
+     "csd15": 8,
+     "xpd15": -314,
      "stats": {
       "cs": 154,
       "goldEarned": 7499,
@@ -2889,7 +2907,8 @@
       "damageToObjectives": 1838,
       "damageToTurrets": 1838,
       "healing": 1408,
-      "selfMitigatedDamage": 7452
+      "selfMitigatedDamage": 7452,
+      "soloKills": 0
      }
     },
     {
@@ -2901,9 +2920,9 @@
      "kills": 1,
      "deaths": 10,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1571,
+     "csd15": -5,
+     "xpd15": -1223,
      "stats": {
       "cs": 29,
       "goldEarned": 6074,
@@ -2916,7 +2935,8 @@
       "damageToObjectives": 814,
       "damageToTurrets": 215,
       "healing": 1930,
-      "selfMitigatedDamage": 6324
+      "selfMitigatedDamage": 6324,
+      "soloKills": 0
      }
     }
    ],
@@ -2983,9 +3003,9 @@
      "kills": 7,
      "deaths": 2,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -489,
+     "csd15": 12,
+     "xpd15": 2719,
      "stats": {
       "cs": 204,
       "goldEarned": 12829,
@@ -2999,7 +3019,8 @@
       "damageToObjectives": 9349,
       "damageToTurrets": 7028,
       "healing": 17904,
-      "selfMitigatedDamage": 28531
+      "selfMitigatedDamage": 28531,
+      "soloKills": 1
      }
     },
     {
@@ -3011,9 +3032,9 @@
      "kills": 13,
      "deaths": 0,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 842,
+     "csd15": 18,
+     "xpd15": 1384,
      "stats": {
       "cs": 219,
       "goldEarned": 15451,
@@ -3027,7 +3048,8 @@
       "damageToObjectives": 49539,
       "damageToTurrets": 2410,
       "healing": 11214,
-      "selfMitigatedDamage": 10279
+      "selfMitigatedDamage": 10279,
+      "soloKills": 1
      }
     },
     {
@@ -3039,9 +3061,9 @@
      "kills": 4,
      "deaths": 1,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -819,
+     "csd15": -13,
+     "xpd15": -139,
      "stats": {
       "cs": 254,
       "goldEarned": 14016,
@@ -3055,7 +3077,8 @@
       "damageToObjectives": 21699,
       "damageToTurrets": 19233,
       "healing": 3412,
-      "selfMitigatedDamage": 62658
+      "selfMitigatedDamage": 62658,
+      "soloKills": 0
      }
     },
     {
@@ -3067,9 +3090,9 @@
      "kills": 3,
      "deaths": 6,
      "assists": 16,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1877,
+     "csd15": -27,
+     "xpd15": -1430,
      "stats": {
       "cs": 172,
       "goldEarned": 11518,
@@ -3081,7 +3104,8 @@
       "damageToObjectives": 11615,
       "damageToTurrets": 2264,
       "healing": 2085,
-      "selfMitigatedDamage": 6626
+      "selfMitigatedDamage": 6626,
+      "soloKills": 0
      }
     },
     {
@@ -3093,9 +3117,9 @@
      "kills": 10,
      "deaths": 3,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 753,
+     "csd15": 0,
+     "xpd15": -191,
      "stats": {
       "cs": 39,
       "goldEarned": 10934,
@@ -3109,7 +3133,8 @@
       "damageToObjectives": 7340,
       "damageToTurrets": 2040,
       "healing": 3602,
-      "selfMitigatedDamage": 5758
+      "selfMitigatedDamage": 5758,
+      "soloKills": 0
      }
     },
     {
@@ -3121,9 +3146,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -275,
+     "csd15": -18,
+     "xpd15": -299,
      "stats": {
       "cs": 166,
       "goldEarned": 8006,
@@ -3136,7 +3161,8 @@
       "damageToObjectives": 5431,
       "damageToTurrets": 5431,
       "healing": 2653,
-      "selfMitigatedDamage": 41409
+      "selfMitigatedDamage": 41409,
+      "soloKills": 0
      }
     },
     {
@@ -3148,9 +3174,9 @@
      "kills": 5,
      "deaths": 7,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 489,
+     "csd15": -12,
+     "xpd15": -2719,
      "stats": {
       "cs": 146,
       "goldEarned": 10063,
@@ -3164,7 +3190,8 @@
       "damageToObjectives": 9011,
       "damageToTurrets": 27,
       "healing": 9951,
-      "selfMitigatedDamage": 18305
+      "selfMitigatedDamage": 18305,
+      "soloKills": 0
      }
     },
     {
@@ -3176,9 +3203,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 819,
+     "csd15": 13,
+     "xpd15": 139,
      "stats": {
       "cs": 255,
       "goldEarned": 11099,
@@ -3191,7 +3218,8 @@
       "damageToObjectives": 5069,
       "damageToTurrets": 5069,
       "healing": 3970,
-      "selfMitigatedDamage": 13122
+      "selfMitigatedDamage": 13122,
+      "soloKills": 0
      }
     },
     {
@@ -3203,9 +3231,9 @@
      "kills": 5,
      "deaths": 9,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1877,
+     "csd15": 27,
+     "xpd15": 1430,
      "stats": {
       "cs": 204,
       "goldEarned": 13526,
@@ -3219,7 +3247,8 @@
       "damageToObjectives": 6596,
       "damageToTurrets": 6596,
       "healing": 6861,
-      "selfMitigatedDamage": 12900
+      "selfMitigatedDamage": 12900,
+      "soloKills": 1
      }
     },
     {
@@ -3231,9 +3260,9 @@
      "kills": 0,
      "deaths": 8,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -753,
+     "csd15": 0,
+     "xpd15": 191,
      "stats": {
       "cs": 39,
       "goldEarned": 7424,
@@ -3247,7 +3276,8 @@
       "damageToObjectives": 687,
       "damageToTurrets": 614,
       "healing": 2835,
-      "selfMitigatedDamage": 7146
+      "selfMitigatedDamage": 7146,
+      "soloKills": 0
      }
     }
    ],
@@ -3314,9 +3344,9 @@
      "kills": 3,
      "deaths": 4,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -833,
+     "csd15": -15,
+     "xpd15": -2122,
      "stats": {
       "cs": 171,
       "goldEarned": 8236,
@@ -3343,9 +3373,9 @@
      "kills": 12,
      "deaths": 2,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1252,
+     "csd15": -14,
+     "xpd15": -3001,
      "stats": {
       "cs": 170,
       "goldEarned": 13884,
@@ -3372,9 +3402,9 @@
      "kills": 2,
      "deaths": 5,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 291,
+     "csd15": -6,
+     "xpd15": -414,
      "stats": {
       "cs": 138,
       "goldEarned": 7632,
@@ -3401,9 +3431,9 @@
      "kills": 7,
      "deaths": 0,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 3278,
+     "csd15": 33,
+     "xpd15": 1845,
      "stats": {
       "cs": 219,
       "goldEarned": 14461,
@@ -3430,9 +3460,9 @@
      "kills": 1,
      "deaths": 0,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 560,
+     "csd15": -7,
+     "xpd15": 28,
      "stats": {
       "cs": 17,
       "goldEarned": 6997,
@@ -3459,9 +3489,9 @@
      "kills": 4,
      "deaths": 4,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 833,
+     "csd15": 15,
+     "xpd15": 2122,
      "stats": {
       "cs": 168,
       "goldEarned": 8402,
@@ -3488,9 +3518,9 @@
      "kills": 4,
      "deaths": 5,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 974,
+     "csd15": -11,
+     "xpd15": -1354,
      "stats": {
       "cs": 126,
       "goldEarned": 8464,
@@ -3517,9 +3547,9 @@
      "kills": 1,
      "deaths": 6,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -291,
+     "csd15": 6,
+     "xpd15": 414,
      "stats": {
       "cs": 146,
       "goldEarned": 7036,
@@ -3546,9 +3576,9 @@
      "kills": 2,
      "deaths": 4,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3278,
+     "csd15": -33,
+     "xpd15": -1845,
      "stats": {
       "cs": 194,
       "goldEarned": 8281,
@@ -3575,9 +3605,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -560,
+     "csd15": 7,
+     "xpd15": -28,
      "stats": {
       "cs": 20,
       "goldEarned": 5347,
@@ -3659,9 +3689,9 @@
      "kills": 2,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3685,
+     "csd15": -60,
+     "xpd15": -528,
      "stats": {
       "cs": 144,
       "goldEarned": 7560,
@@ -3688,9 +3718,9 @@
      "kills": 2,
      "deaths": 11,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3496,
+     "csd15": -62,
+     "xpd15": -3818,
      "stats": {
       "cs": 127,
       "goldEarned": 7582,
@@ -3717,9 +3747,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -281,
+     "csd15": -9,
+     "xpd15": -121,
      "stats": {
       "cs": 140,
       "goldEarned": 7120,
@@ -3746,9 +3776,9 @@
      "kills": 6,
      "deaths": 5,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 755,
+     "csd15": 92,
+     "xpd15": 2293,
      "stats": {
       "cs": 206,
       "goldEarned": 11365,
@@ -3775,9 +3805,9 @@
      "kills": 6,
      "deaths": 5,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 276,
+     "csd15": 3,
+     "xpd15": 1653,
      "stats": {
       "cs": 38,
       "goldEarned": 8100,
@@ -3804,9 +3834,9 @@
      "kills": 5,
      "deaths": 1,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1757,
+     "csd15": 65,
+     "xpd15": 1205,
      "stats": {
       "cs": 226,
       "goldEarned": 12599,
@@ -3833,9 +3863,9 @@
      "kills": 16,
      "deaths": 0,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 3685,
+     "csd15": 60,
+     "xpd15": 528,
      "stats": {
       "cs": 227,
       "goldEarned": 15169,
@@ -3862,9 +3892,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 281,
+     "csd15": 9,
+     "xpd15": 121,
      "stats": {
       "cs": 150,
       "goldEarned": 8933,
@@ -3891,9 +3921,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1027,
+     "csd15": 4,
+     "xpd15": -1235,
      "stats": {
       "cs": 188,
       "goldEarned": 12443,
@@ -3920,9 +3950,9 @@
      "kills": 6,
      "deaths": 5,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -755,
+     "csd15": -92,
+     "xpd15": -2293,
      "stats": {
       "cs": 48,
       "goldEarned": 9966,
@@ -4004,9 +4034,9 @@
      "kills": 5,
      "deaths": 5,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 302,
+     "csd15": -17,
+     "xpd15": 195,
      "stats": {
       "cs": 179,
       "goldEarned": 9304,
@@ -4033,9 +4063,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -760,
+     "csd15": -19,
+     "xpd15": -2606,
      "stats": {
       "cs": 131,
       "goldEarned": 7388,
@@ -4062,9 +4092,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1232,
+     "csd15": -22,
+     "xpd15": -588,
      "stats": {
       "cs": 125,
       "goldEarned": 5933,
@@ -4091,9 +4121,9 @@
      "kills": 2,
      "deaths": 8,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -958,
+     "csd15": -13,
+     "xpd15": -1141,
      "stats": {
       "cs": 182,
       "goldEarned": 9918,
@@ -4120,9 +4150,9 @@
      "kills": 3,
      "deaths": 6,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -245,
+     "csd15": 8,
+     "xpd15": -476,
      "stats": {
       "cs": 26,
       "goldEarned": 6347,
@@ -4149,9 +4179,9 @@
      "kills": 5,
      "deaths": 4,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -302,
+     "csd15": 17,
+     "xpd15": -195,
      "stats": {
       "cs": 188,
       "goldEarned": 9935,
@@ -4178,9 +4208,9 @@
      "kills": 16,
      "deaths": 1,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1872,
+     "csd15": 6,
+     "xpd15": -1543,
      "stats": {
       "cs": 176,
       "goldEarned": 13873,
@@ -4207,9 +4237,9 @@
      "kills": 4,
      "deaths": 0,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1232,
+     "csd15": 22,
+     "xpd15": 588,
      "stats": {
       "cs": 153,
       "goldEarned": 9893,
@@ -4236,9 +4266,9 @@
      "kills": 3,
      "deaths": 4,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 958,
+     "csd15": 13,
+     "xpd15": 1141,
      "stats": {
       "cs": 168,
       "goldEarned": 11432,
@@ -4265,9 +4295,9 @@
      "kills": 2,
      "deaths": 1,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 245,
+     "csd15": -8,
+     "xpd15": 476,
      "stats": {
       "cs": 12,
       "goldEarned": 7309,
@@ -4349,9 +4379,9 @@
      "kills": 10,
      "deaths": 3,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -265,
+     "csd15": 14,
+     "xpd15": 2888,
      "stats": {
       "cs": 132,
       "goldEarned": 10218,
@@ -4378,9 +4408,9 @@
      "kills": 10,
      "deaths": 5,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1295,
+     "csd15": 12,
+     "xpd15": 899,
      "stats": {
       "cs": 129,
       "goldEarned": 10733,
@@ -4407,9 +4437,9 @@
      "kills": 3,
      "deaths": 3,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1596,
+     "csd15": 55,
+     "xpd15": 129,
      "stats": {
       "cs": 175,
       "goldEarned": 9867,
@@ -4436,9 +4466,9 @@
      "kills": 10,
      "deaths": 2,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -247,
+     "csd15": -4,
+     "xpd15": 318,
      "stats": {
       "cs": 154,
       "goldEarned": 10862,
@@ -4465,9 +4495,9 @@
      "kills": 2,
      "deaths": 0,
      "assists": 24,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 758,
+     "csd15": -4,
+     "xpd15": 221,
      "stats": {
       "cs": 20,
       "goldEarned": 7251,
@@ -4494,9 +4524,9 @@
      "kills": 1,
      "deaths": 7,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1052,
+     "csd15": -15,
+     "xpd15": -463,
      "stats": {
       "cs": 112,
       "goldEarned": 6069,
@@ -4523,9 +4553,9 @@
      "kills": 7,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 265,
+     "csd15": -14,
+     "xpd15": -2888,
      "stats": {
       "cs": 111,
       "goldEarned": 8930,
@@ -4552,9 +4582,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1596,
+     "csd15": -55,
+     "xpd15": -129,
      "stats": {
       "cs": 93,
       "goldEarned": 5306,
@@ -4581,9 +4611,9 @@
      "kills": 5,
      "deaths": 8,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 247,
+     "csd15": 4,
+     "xpd15": -318,
      "stats": {
       "cs": 155,
       "goldEarned": 11399,
@@ -4610,9 +4640,9 @@
      "kills": 0,
      "deaths": 7,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -758,
+     "csd15": 4,
+     "xpd15": -221,
      "stats": {
       "cs": 21,
       "goldEarned": 4998,
@@ -4694,9 +4724,9 @@
      "kills": 8,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 509,
+     "csd15": 21,
+     "xpd15": 2623,
      "stats": {
       "cs": 227,
       "goldEarned": 13590,
@@ -4723,9 +4753,9 @@
      "kills": 8,
      "deaths": 1,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 892,
+     "csd15": 12,
+     "xpd15": 265,
      "stats": {
       "cs": 212,
       "goldEarned": 13701,
@@ -4752,9 +4782,9 @@
      "kills": 8,
      "deaths": 5,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1711,
+     "csd15": -25,
+     "xpd15": -2039,
      "stats": {
       "cs": 188,
       "goldEarned": 12009,
@@ -4781,9 +4811,9 @@
      "kills": 6,
      "deaths": 2,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1368,
+     "csd15": 12,
+     "xpd15": 160,
      "stats": {
       "cs": 247,
       "goldEarned": 14773,
@@ -4810,9 +4840,9 @@
      "kills": 0,
      "deaths": 1,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 282,
+     "csd15": 4,
+     "xpd15": 1300,
      "stats": {
       "cs": 28,
       "goldEarned": 8130,
@@ -4839,9 +4869,9 @@
      "kills": 1,
      "deaths": 3,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -846,
+     "csd15": -13,
+     "xpd15": -90,
      "stats": {
       "cs": 193,
       "goldEarned": 8845,
@@ -4868,9 +4898,9 @@
      "kills": 4,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -509,
+     "csd15": -21,
+     "xpd15": -2623,
      "stats": {
       "cs": 153,
       "goldEarned": 11907,
@@ -4897,9 +4927,9 @@
      "kills": 6,
      "deaths": 4,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1711,
+     "csd15": 25,
+     "xpd15": 2039,
      "stats": {
       "cs": 210,
       "goldEarned": 11833,
@@ -4926,9 +4956,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1368,
+     "csd15": -12,
+     "xpd15": -160,
      "stats": {
       "cs": 231,
       "goldEarned": 10703,
@@ -4955,9 +4985,9 @@
      "kills": 1,
      "deaths": 10,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -282,
+     "csd15": -4,
+     "xpd15": -1300,
      "stats": {
       "cs": 29,
       "goldEarned": 7224,
@@ -5039,9 +5069,9 @@
      "kills": 9,
      "deaths": 5,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -886,
+     "csd15": 32,
+     "xpd15": 3390,
      "stats": {
       "cs": 179,
       "goldEarned": 12240,
@@ -5068,9 +5098,9 @@
      "kills": 11,
      "deaths": 2,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 810,
+     "csd15": -6,
+     "xpd15": 1146,
      "stats": {
       "cs": 181,
       "goldEarned": 14326,
@@ -5097,9 +5127,9 @@
      "kills": 11,
      "deaths": 8,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 279,
+     "csd15": 30,
+     "xpd15": 482,
      "stats": {
       "cs": 236,
       "goldEarned": 14209,
@@ -5126,9 +5156,9 @@
      "kills": 4,
      "deaths": 3,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -76,
+     "csd15": -2,
+     "xpd15": 74,
      "stats": {
       "cs": 209,
       "goldEarned": 12019,
@@ -5155,9 +5185,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -357,
+     "csd15": 0,
+     "xpd15": -318,
      "stats": {
       "cs": 23,
       "goldEarned": 7686,
@@ -5184,9 +5214,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -783,
+     "csd15": -28,
+     "xpd15": -1003,
      "stats": {
       "cs": 164,
       "goldEarned": 8522,
@@ -5213,9 +5243,9 @@
      "kills": 6,
      "deaths": 7,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 886,
+     "csd15": -32,
+     "xpd15": -3390,
      "stats": {
       "cs": 153,
       "goldEarned": 9857,
@@ -5242,9 +5272,9 @@
      "kills": 10,
      "deaths": 9,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -279,
+     "csd15": -30,
+     "xpd15": -482,
      "stats": {
       "cs": 152,
       "goldEarned": 12120,
@@ -5271,9 +5301,9 @@
      "kills": 3,
      "deaths": 6,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 76,
+     "csd15": 2,
+     "xpd15": -74,
      "stats": {
       "cs": 203,
       "goldEarned": 10909,
@@ -5300,9 +5330,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 357,
+     "csd15": 0,
+     "xpd15": 318,
      "stats": {
       "cs": 23,
       "goldEarned": 7099,
@@ -5384,9 +5414,9 @@
      "kills": 8,
      "deaths": 4,
      "assists": 19,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2025,
+     "csd15": 25,
+     "xpd15": 1365,
      "stats": {
       "cs": 184,
       "goldEarned": 13959,
@@ -5413,9 +5443,9 @@
      "kills": 6,
      "deaths": 4,
      "assists": 20,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1474,
+     "csd15": 29,
+     "xpd15": -1151,
      "stats": {
       "cs": 185,
       "goldEarned": 13331,
@@ -5442,9 +5472,9 @@
      "kills": 22,
      "deaths": 5,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 919,
+     "csd15": -34,
+     "xpd15": 1429,
      "stats": {
       "cs": 149,
       "goldEarned": 15501,
@@ -5471,9 +5501,9 @@
      "kills": 11,
      "deaths": 5,
      "assists": 16,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1094,
+     "csd15": 8,
+     "xpd15": 197,
      "stats": {
       "cs": 209,
       "goldEarned": 15167,
@@ -5500,9 +5530,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 18,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -352,
+     "csd15": -4,
+     "xpd15": -62,
      "stats": {
       "cs": 24,
       "goldEarned": 8424,
@@ -5529,9 +5559,9 @@
      "kills": 4,
      "deaths": 10,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2025,
+     "csd15": -25,
+     "xpd15": -1365,
      "stats": {
       "cs": 143,
       "goldEarned": 9784,
@@ -5558,9 +5588,9 @@
      "kills": 3,
      "deaths": 11,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1935,
+     "csd15": -17,
+     "xpd15": -3489,
      "stats": {
       "cs": 172,
       "goldEarned": 11053,
@@ -5587,9 +5617,9 @@
      "kills": 6,
      "deaths": 9,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -919,
+     "csd15": 34,
+     "xpd15": -1429,
      "stats": {
       "cs": 235,
       "goldEarned": 14411,
@@ -5616,9 +5646,9 @@
      "kills": 6,
      "deaths": 10,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1094,
+     "csd15": -8,
+     "xpd15": -197,
      "stats": {
       "cs": 173,
       "goldEarned": 12954,
@@ -5645,9 +5675,9 @@
      "kills": 3,
      "deaths": 8,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 352,
+     "csd15": 4,
+     "xpd15": 62,
      "stats": {
       "cs": 36,
       "goldEarned": 9052,
@@ -5729,9 +5759,9 @@
      "kills": 2,
      "deaths": 4,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1046,
+     "csd15": -21,
+     "xpd15": -1448,
      "stats": {
       "cs": 176,
       "goldEarned": 8388,
@@ -5743,7 +5773,8 @@
       "damageToObjectives": 6402,
       "damageToTurrets": 5746,
       "healing": 6317,
-      "selfMitigatedDamage": 18006
+      "selfMitigatedDamage": 18006,
+      "soloKills": 1
      }
     },
     {
@@ -5755,9 +5786,9 @@
      "kills": 1,
      "deaths": 3,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -269,
+     "csd15": -11,
+     "xpd15": -3052,
      "stats": {
       "cs": 182,
       "goldEarned": 8757,
@@ -5769,7 +5800,8 @@
       "crowdControlScore": 9,
       "damageToObjectives": 23224,
       "healing": 14588,
-      "selfMitigatedDamage": 18396
+      "selfMitigatedDamage": 18396,
+      "soloKills": 1
      }
     },
     {
@@ -5781,9 +5813,9 @@
      "kills": 4,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 853,
+     "csd15": 12,
+     "xpd15": 639,
      "stats": {
       "cs": 210,
       "goldEarned": 9893,
@@ -5797,7 +5829,8 @@
       "damageToObjectives": 6851,
       "damageToTurrets": 6851,
       "healing": 4481,
-      "selfMitigatedDamage": 12710
+      "selfMitigatedDamage": 12710,
+      "soloKills": 3
      }
     },
     {
@@ -5809,9 +5842,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -702,
+     "csd15": -2,
+     "xpd15": -780,
      "stats": {
       "cs": 231,
       "goldEarned": 10222,
@@ -5824,7 +5857,8 @@
       "damageToObjectives": 7589,
       "damageToTurrets": 6131,
       "healing": 5260,
-      "selfMitigatedDamage": 9804
+      "selfMitigatedDamage": 9804,
+      "soloKills": 0
      }
     },
     {
@@ -5836,9 +5870,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -431,
+     "csd15": 21,
+     "xpd15": -452,
      "stats": {
       "cs": 38,
       "goldEarned": 5715,
@@ -5851,7 +5885,8 @@
       "crowdControlScore": 11,
       "damageToObjectives": 854,
       "healing": 3030,
-      "selfMitigatedDamage": 6211
+      "selfMitigatedDamage": 6211,
+      "soloKills": 0
      }
     },
     {
@@ -5863,9 +5898,9 @@
      "kills": 4,
      "deaths": 1,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1046,
+     "csd15": 21,
+     "xpd15": 1448,
      "stats": {
       "cs": 183,
       "goldEarned": 10048,
@@ -5879,7 +5914,8 @@
       "damageToObjectives": 8706,
       "damageToTurrets": 8414,
       "healing": 6917,
-      "selfMitigatedDamage": 34407
+      "selfMitigatedDamage": 34407,
+      "soloKills": 2
      }
     },
     {
@@ -5891,9 +5927,9 @@
      "kills": 5,
      "deaths": 3,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 874,
+     "csd15": 2,
+     "xpd15": -1756,
      "stats": {
       "cs": 178,
       "goldEarned": 11157,
@@ -5905,7 +5941,8 @@
       "damageToObjectives": 23048,
       "damageToTurrets": 6405,
       "healing": 16441,
-      "selfMitigatedDamage": 20966
+      "selfMitigatedDamage": 20966,
+      "soloKills": 0
      }
     },
     {
@@ -5917,9 +5954,9 @@
      "kills": 5,
      "deaths": 3,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -853,
+     "csd15": -12,
+     "xpd15": -639,
      "stats": {
       "cs": 208,
       "goldEarned": 10153,
@@ -5933,7 +5970,8 @@
       "damageToObjectives": 4576,
       "damageToTurrets": 4477,
       "healing": 4954,
-      "selfMitigatedDamage": 7925
+      "selfMitigatedDamage": 7925,
+      "soloKills": 0
      }
     },
     {
@@ -5945,9 +5983,9 @@
      "kills": 10,
      "deaths": 0,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 702,
+     "csd15": 2,
+     "xpd15": 780,
      "stats": {
       "cs": 246,
       "goldEarned": 14990,
@@ -5961,7 +5999,8 @@
       "damageToObjectives": 20194,
       "damageToTurrets": 17530,
       "healing": 6968,
-      "selfMitigatedDamage": 14543
+      "selfMitigatedDamage": 14543,
+      "soloKills": 0
      }
     },
     {
@@ -5973,9 +6012,9 @@
      "kills": 0,
      "deaths": 1,
      "assists": 18,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 431,
+     "csd15": -21,
+     "xpd15": 452,
      "stats": {
       "cs": 12,
       "goldEarned": 7541,
@@ -5988,7 +6027,8 @@
       "damageToObjectives": 2148,
       "damageToTurrets": 1981,
       "healing": 8761,
-      "selfMitigatedDamage": 1938
+      "selfMitigatedDamage": 1938,
+      "soloKills": 0
      }
     }
    ],
@@ -6055,9 +6095,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -255,
+     "csd15": -18,
+     "xpd15": 3123,
      "stats": {
       "cs": 141,
       "goldEarned": 9391,
@@ -6071,7 +6111,8 @@
       "damageToObjectives": 5300,
       "damageToTurrets": 4885,
       "healing": 4253,
-      "selfMitigatedDamage": 50431
+      "selfMitigatedDamage": 50431,
+      "soloKills": 0
      }
     },
     {
@@ -6083,9 +6124,9 @@
      "kills": 7,
      "deaths": 8,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 857,
+     "csd15": -5,
+     "xpd15": 516,
      "stats": {
       "cs": 171,
       "goldEarned": 13219,
@@ -6098,7 +6139,8 @@
       "damageToObjectives": 42892,
       "damageToTurrets": 8168,
       "healing": 16044,
-      "selfMitigatedDamage": 59257
+      "selfMitigatedDamage": 59257,
+      "soloKills": 1
      }
     },
     {
@@ -6110,9 +6152,9 @@
      "kills": 8,
      "deaths": 5,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1039,
+     "csd15": -7,
+     "xpd15": 1756,
      "stats": {
       "cs": 206,
       "goldEarned": 11923,
@@ -6126,7 +6168,8 @@
       "damageToObjectives": 4833,
       "damageToTurrets": 4833,
       "healing": 5768,
-      "selfMitigatedDamage": 18641
+      "selfMitigatedDamage": 18641,
+      "soloKills": 1
      }
     },
     {
@@ -6138,9 +6181,9 @@
      "kills": 5,
      "deaths": 9,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -549,
+     "csd15": -15,
+     "xpd15": 345,
      "stats": {
       "cs": 234,
       "goldEarned": 12325,
@@ -6153,7 +6196,8 @@
       "damageToObjectives": 6629,
       "damageToTurrets": 5341,
       "healing": 2908,
-      "selfMitigatedDamage": 13877
+      "selfMitigatedDamage": 13877,
+      "soloKills": 0
      }
     },
     {
@@ -6165,9 +6209,9 @@
      "kills": 1,
      "deaths": 6,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 171,
+     "csd15": 0,
+     "xpd15": -87,
      "stats": {
       "cs": 30,
       "goldEarned": 8856,
@@ -6181,7 +6225,8 @@
       "damageToObjectives": 700,
       "damageToTurrets": 382,
       "healing": 8130,
-      "selfMitigatedDamage": 35219
+      "selfMitigatedDamage": 35219,
+      "soloKills": 0
      }
     },
     {
@@ -6193,9 +6238,9 @@
      "kills": 13,
      "deaths": 2,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 311,
+     "csd15": 39,
+     "xpd15": 58,
      "stats": {
       "cs": 191,
       "goldEarned": 15092,
@@ -6208,7 +6253,8 @@
       "damageToObjectives": 14067,
       "damageToTurrets": 9703,
       "healing": 24696,
-      "selfMitigatedDamage": 41113
+      "selfMitigatedDamage": 41113,
+      "soloKills": 3
      }
     },
     {
@@ -6220,9 +6266,9 @@
      "kills": 7,
      "deaths": 5,
      "assists": 17,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 255,
+     "csd15": 18,
+     "xpd15": -3123,
      "stats": {
       "cs": 189,
       "goldEarned": 13306,
@@ -6235,7 +6281,8 @@
       "damageToObjectives": 13639,
       "damageToTurrets": 2684,
       "healing": 14489,
-      "selfMitigatedDamage": 41355
+      "selfMitigatedDamage": 41355,
+      "soloKills": 1
      }
     },
     {
@@ -6247,9 +6294,9 @@
      "kills": 7,
      "deaths": 6,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1039,
+     "csd15": 7,
+     "xpd15": -1756,
      "stats": {
       "cs": 210,
       "goldEarned": 11597,
@@ -6263,7 +6310,8 @@
       "damageToObjectives": 5470,
       "damageToTurrets": 4777,
       "healing": 2315,
-      "selfMitigatedDamage": 25842
+      "selfMitigatedDamage": 25842,
+      "soloKills": 0
      }
     },
     {
@@ -6275,9 +6323,9 @@
      "kills": 5,
      "deaths": 7,
      "assists": 18,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 549,
+     "csd15": 15,
+     "xpd15": -345,
      "stats": {
       "cs": 257,
       "goldEarned": 16023,
@@ -6290,7 +6338,8 @@
       "damageToObjectives": 16927,
       "damageToTurrets": 8409,
       "healing": 4258,
-      "selfMitigatedDamage": 17036
+      "selfMitigatedDamage": 17036,
+      "soloKills": 0
      }
     },
     {
@@ -6302,9 +6351,9 @@
      "kills": 1,
      "deaths": 2,
      "assists": 28,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -171,
+     "csd15": 0,
+     "xpd15": 87,
      "stats": {
       "cs": 29,
       "goldEarned": 9868,
@@ -6318,7 +6367,8 @@
       "damageToObjectives": 1194,
       "damageToTurrets": 693,
       "healing": 17917,
-      "selfMitigatedDamage": 8099
+      "selfMitigatedDamage": 8099,
+      "soloKills": 0
      }
     }
    ],
@@ -6385,9 +6435,9 @@
      "kills": 0,
      "deaths": 0,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 597,
+     "csd15": 2,
+     "xpd15": 329,
      "stats": {
       "cs": 169,
       "goldEarned": 7119,
@@ -6400,7 +6450,8 @@
       "damageToObjectives": 3512,
       "damageToTurrets": 3512,
       "healing": 5646,
-      "selfMitigatedDamage": 18036
+      "selfMitigatedDamage": 18036,
+      "soloKills": 0
      }
     },
     {
@@ -6412,9 +6463,9 @@
      "kills": 7,
      "deaths": 0,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1489,
+     "csd15": 10,
+     "xpd15": 949,
      "stats": {
       "cs": 161,
       "goldEarned": 9211,
@@ -6427,7 +6478,8 @@
       "damageToObjectives": 26363,
       "damageToTurrets": 757,
       "healing": 12173,
-      "selfMitigatedDamage": 11651
+      "selfMitigatedDamage": 11651,
+      "soloKills": 2
      }
     },
     {
@@ -6439,9 +6491,9 @@
      "kills": 15,
      "deaths": 1,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2947,
+     "csd15": 29,
+     "xpd15": 2185,
      "stats": {
       "cs": 182,
       "goldEarned": 12335,
@@ -6455,7 +6507,8 @@
       "damageToObjectives": 8051,
       "damageToTurrets": 8051,
       "healing": 10613,
-      "selfMitigatedDamage": 17427
+      "selfMitigatedDamage": 17427,
+      "soloKills": 9
      }
     },
     {
@@ -6467,9 +6520,9 @@
      "kills": 2,
      "deaths": 1,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1008,
+     "csd15": 23,
+     "xpd15": 1098,
      "stats": {
       "cs": 166,
       "goldEarned": 8453,
@@ -6482,7 +6535,8 @@
       "damageToObjectives": 5700,
       "damageToTurrets": 5700,
       "healing": 424,
-      "selfMitigatedDamage": 4141
+      "selfMitigatedDamage": 4141,
+      "soloKills": 0
      }
     },
     {
@@ -6494,9 +6548,9 @@
      "kills": 0,
      "deaths": 0,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 687,
+     "csd15": 2,
+     "xpd15": 1046,
      "stats": {
       "cs": 22,
       "goldEarned": 5536,
@@ -6510,7 +6564,8 @@
       "damageToObjectives": 843,
       "damageToTurrets": 530,
       "healing": 14293,
-      "selfMitigatedDamage": 2045
+      "selfMitigatedDamage": 2045,
+      "soloKills": 0
      }
     },
     {
@@ -6522,9 +6577,9 @@
      "kills": 0,
      "deaths": 3,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -597,
+     "csd15": -2,
+     "xpd15": -329,
      "stats": {
       "cs": 140,
       "goldEarned": 5459,
@@ -6535,7 +6590,8 @@
       "controlWardsBought": 2,
       "crowdControlScore": 10,
       "healing": 2954,
-      "selfMitigatedDamage": 19875
+      "selfMitigatedDamage": 19875,
+      "soloKills": 0
      }
     },
     {
@@ -6547,9 +6603,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1489,
+     "csd15": -10,
+     "xpd15": -949,
      "stats": {
       "cs": 106,
       "goldEarned": 6167,
@@ -6561,7 +6617,8 @@
       "crowdControlScore": 6,
       "damageToObjectives": 10734,
       "healing": 3046,
-      "selfMitigatedDamage": 8846
+      "selfMitigatedDamage": 8846,
+      "soloKills": 0
      }
     },
     {
@@ -6573,9 +6630,9 @@
      "kills": 0,
      "deaths": 7,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2947,
+     "csd15": -29,
+     "xpd15": -2185,
      "stats": {
       "cs": 121,
       "goldEarned": 5245,
@@ -6588,7 +6645,8 @@
       "damageToObjectives": 64,
       "damageToTurrets": 64,
       "healing": 903,
-      "selfMitigatedDamage": 8479
+      "selfMitigatedDamage": 8479,
+      "soloKills": 0
      }
     },
     {
@@ -6600,9 +6658,9 @@
      "kills": 0,
      "deaths": 3,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1008,
+     "csd15": -23,
+     "xpd15": -1098,
      "stats": {
       "cs": 136,
       "goldEarned": 6032,
@@ -6615,7 +6673,8 @@
       "damageToObjectives": 943,
       "damageToTurrets": 943,
       "healing": 4085,
-      "selfMitigatedDamage": 8190
+      "selfMitigatedDamage": 8190,
+      "soloKills": 0
      }
     },
     {
@@ -6627,9 +6686,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -687,
+     "csd15": -2,
+     "xpd15": -1046,
      "stats": {
       "cs": 23,
       "goldEarned": 4270,
@@ -6641,7 +6700,8 @@
       "controlWardsBought": 8,
       "crowdControlScore": 24,
       "healing": 1565,
-      "selfMitigatedDamage": 6283
+      "selfMitigatedDamage": 6283,
+      "soloKills": 0
      }
     }
    ],
@@ -22902,9 +22962,9 @@
      "kills": 3,
      "deaths": 5,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1284,
+     "csd15": -42,
+     "xpd15": -889,
      "stats": {
       "cs": 100,
       "goldEarned": 5547,
@@ -22918,7 +22978,8 @@
       "damageToObjectives": 2111,
       "damageToTurrets": 1878,
       "healing": 1088,
-      "selfMitigatedDamage": 10035
+      "selfMitigatedDamage": 10035,
+      "soloKills": 3
      }
     },
     {
@@ -22930,9 +22991,9 @@
      "kills": 3,
      "deaths": 8,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1121,
+     "csd15": 20,
+     "xpd15": 593,
      "stats": {
       "cs": 94,
       "goldEarned": 6199,
@@ -22946,7 +23007,8 @@
       "damageToObjectives": 4513,
       "damageToTurrets": 0,
       "healing": 6718,
-      "selfMitigatedDamage": 8992
+      "selfMitigatedDamage": 8992,
+      "soloKills": 2
      }
     },
     {
@@ -22958,9 +23020,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1009,
+     "csd15": 1,
+     "xpd15": -1618,
      "stats": {
       "cs": 129,
       "goldEarned": 5613,
@@ -22974,7 +23036,8 @@
       "damageToObjectives": 1539,
       "damageToTurrets": 1539,
       "healing": 247,
-      "selfMitigatedDamage": 4792
+      "selfMitigatedDamage": 4792,
+      "soloKills": 0
      }
     },
     {
@@ -22986,9 +23049,9 @@
      "kills": 0,
      "deaths": 4,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3712,
+     "csd15": -33,
+     "xpd15": -1755,
      "stats": {
       "cs": 119,
       "goldEarned": 5987,
@@ -23002,7 +23065,8 @@
       "damageToObjectives": 802,
       "damageToTurrets": 802,
       "healing": 738,
-      "selfMitigatedDamage": 5071
+      "selfMitigatedDamage": 5071,
+      "soloKills": 0
      }
     },
     {
@@ -23014,9 +23078,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1093,
+     "csd15": -1,
+     "xpd15": -1125,
      "stats": {
       "cs": 23,
       "goldEarned": 3523,
@@ -23030,7 +23094,8 @@
       "damageToObjectives": 109,
       "damageToTurrets": 0,
       "healing": 349,
-      "selfMitigatedDamage": 6714
+      "selfMitigatedDamage": 6714,
+      "soloKills": 0
      }
     },
     {
@@ -23042,9 +23107,9 @@
      "kills": 3,
      "deaths": 3,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1284,
+     "csd15": 42,
+     "xpd15": 889,
      "stats": {
       "cs": 144,
       "goldEarned": 6916,
@@ -23058,7 +23123,8 @@
       "damageToObjectives": 5075,
       "damageToTurrets": 4934,
       "healing": 5473,
-      "selfMitigatedDamage": 10199
+      "selfMitigatedDamage": 10199,
+      "soloKills": 2
      }
     },
     {
@@ -23070,9 +23136,9 @@
      "kills": 7,
      "deaths": 3,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1121,
+     "csd15": -20,
+     "xpd15": -593,
      "stats": {
       "cs": 73,
       "goldEarned": 7517,
@@ -23086,7 +23152,8 @@
       "damageToObjectives": 21429,
       "damageToTurrets": 0,
       "healing": 3789,
-      "selfMitigatedDamage": 11623
+      "selfMitigatedDamage": 11623,
+      "soloKills": 1
      }
     },
     {
@@ -23098,9 +23165,9 @@
      "kills": 5,
      "deaths": 1,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1009,
+     "csd15": -1,
+     "xpd15": 1618,
      "stats": {
       "cs": 142,
       "goldEarned": 6986,
@@ -23114,7 +23181,8 @@
       "damageToObjectives": 2733,
       "damageToTurrets": 1337,
       "healing": 1153,
-      "selfMitigatedDamage": 2918
+      "selfMitigatedDamage": 2918,
+      "soloKills": 0
      }
     },
     {
@@ -23126,9 +23194,9 @@
      "kills": 11,
      "deaths": 0,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 3712,
+     "csd15": 33,
+     "xpd15": 1755,
      "stats": {
       "cs": 142,
       "goldEarned": 9911,
@@ -23142,7 +23210,8 @@
       "damageToObjectives": 4517,
       "damageToTurrets": 3337,
       "healing": 2182,
-      "selfMitigatedDamage": 2137
+      "selfMitigatedDamage": 2137,
+      "soloKills": 2
      }
     },
     {
@@ -23154,9 +23223,9 @@
      "kills": 0,
      "deaths": 0,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1093,
+     "csd15": 1,
+     "xpd15": 1125,
      "stats": {
       "cs": 26,
       "goldEarned": 4785,
@@ -23170,7 +23239,8 @@
       "damageToObjectives": 719,
       "damageToTurrets": 0,
       "healing": 2623,
-      "selfMitigatedDamage": 1401
+      "selfMitigatedDamage": 1401,
+      "soloKills": 0
      }
     }
    ],
@@ -23237,9 +23307,9 @@
      "kills": 7,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1562,
+     "csd15": 42,
+     "xpd15": 5668,
      "stats": {
       "cs": 246,
       "goldEarned": 13502,
@@ -23253,7 +23323,8 @@
       "damageToObjectives": 29355,
       "damageToTurrets": 15496,
       "healing": 13146,
-      "selfMitigatedDamage": 35940
+      "selfMitigatedDamage": 35940,
+      "soloKills": 6
      }
     },
     {
@@ -23265,9 +23336,9 @@
      "kills": 11,
      "deaths": 8,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 808,
+     "csd15": -23,
+     "xpd15": 135,
      "stats": {
       "cs": 149,
       "goldEarned": 12312,
@@ -23281,7 +23352,8 @@
       "damageToObjectives": 20945,
       "damageToTurrets": 3934,
       "healing": 14659,
-      "selfMitigatedDamage": 35830
+      "selfMitigatedDamage": 35830,
+      "soloKills": 2
      }
     },
     {
@@ -23293,9 +23365,9 @@
      "kills": 11,
      "deaths": 3,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 551,
+     "csd15": -2,
+     "xpd15": -665,
      "stats": {
       "cs": 171,
       "goldEarned": 12114,
@@ -23309,7 +23381,8 @@
       "damageToObjectives": 6189,
       "damageToTurrets": 2770,
       "healing": 5174,
-      "selfMitigatedDamage": 7429
+      "selfMitigatedDamage": 7429,
+      "soloKills": 3
      }
     },
     {
@@ -23321,9 +23394,9 @@
      "kills": 10,
      "deaths": 2,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2662,
+     "csd15": 43,
+     "xpd15": 1686,
      "stats": {
       "cs": 204,
       "goldEarned": 14972,
@@ -23337,7 +23410,8 @@
       "damageToObjectives": 26172,
       "damageToTurrets": 13679,
       "healing": 6935,
-      "selfMitigatedDamage": 9746
+      "selfMitigatedDamage": 9746,
+      "soloKills": 1
      }
     },
     {
@@ -23349,9 +23423,9 @@
      "kills": 1,
      "deaths": 3,
      "assists": 23,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 507,
+     "csd15": 5,
+     "xpd15": 1284,
      "stats": {
       "cs": 28,
       "goldEarned": 8839,
@@ -23365,7 +23439,8 @@
       "damageToObjectives": 6987,
       "damageToTurrets": 2962,
       "healing": 10813,
-      "selfMitigatedDamage": 5559
+      "selfMitigatedDamage": 5559,
+      "soloKills": 0
      }
     },
     {
@@ -23377,9 +23452,9 @@
      "kills": 7,
      "deaths": 10,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -551,
+     "csd15": 2,
+     "xpd15": 665,
      "stats": {
       "cs": 195,
       "goldEarned": 11775,
@@ -23393,7 +23468,8 @@
       "damageToObjectives": 5578,
       "damageToTurrets": 5578,
       "healing": 6064,
-      "selfMitigatedDamage": 42821
+      "selfMitigatedDamage": 42821,
+      "soloKills": 3
      }
     },
     {
@@ -23405,9 +23481,9 @@
      "kills": 7,
      "deaths": 7,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1562,
+     "csd15": -42,
+     "xpd15": -5668,
      "stats": {
       "cs": 170,
       "goldEarned": 12967,
@@ -23421,7 +23497,8 @@
       "damageToObjectives": 12748,
       "damageToTurrets": 0,
       "healing": 13124,
-      "selfMitigatedDamage": 41670
+      "selfMitigatedDamage": 41670,
+      "soloKills": 0
      }
     },
     {
@@ -23433,9 +23510,9 @@
      "kills": 4,
      "deaths": 7,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -50,
+     "csd15": -4,
+     "xpd15": 547,
      "stats": {
       "cs": 184,
       "goldEarned": 9868,
@@ -23449,7 +23526,8 @@
       "damageToObjectives": 59,
       "damageToTurrets": 0,
       "healing": 859,
-      "selfMitigatedDamage": 37820
+      "selfMitigatedDamage": 37820,
+      "soloKills": 2
      }
     },
     {
@@ -23461,9 +23539,9 @@
      "kills": 2,
      "deaths": 8,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2662,
+     "csd15": -43,
+     "xpd15": -1686,
      "stats": {
       "cs": 178,
       "goldEarned": 10509,
@@ -23477,7 +23555,8 @@
       "damageToObjectives": 5443,
       "damageToTurrets": 5237,
       "healing": 3165,
-      "selfMitigatedDamage": 12759
+      "selfMitigatedDamage": 12759,
+      "soloKills": 0
      }
     },
     {
@@ -23489,9 +23568,9 @@
      "kills": 1,
      "deaths": 8,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -507,
+     "csd15": -5,
+     "xpd15": -1284,
      "stats": {
       "cs": 21,
       "goldEarned": 7632,
@@ -23505,7 +23584,8 @@
       "damageToObjectives": 446,
       "damageToTurrets": 0,
       "healing": 2450,
-      "selfMitigatedDamage": 38942
+      "selfMitigatedDamage": 38942,
+      "soloKills": 1
      }
     }
    ],
@@ -23572,9 +23652,9 @@
      "kills": 2,
      "deaths": 8,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -175,
+     "csd15": -10,
+     "xpd15": -1162,
      "stats": {
       "cs": 243,
       "goldEarned": 12562,
@@ -23588,7 +23668,8 @@
       "damageToObjectives": 3802,
       "damageToTurrets": 1105,
       "healing": 22048,
-      "selfMitigatedDamage": 51589
+      "selfMitigatedDamage": 51589,
+      "soloKills": 1
      }
     },
     {
@@ -23600,9 +23681,9 @@
      "kills": 4,
      "deaths": 10,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 275,
+     "csd15": -32,
+     "xpd15": -3344,
      "stats": {
       "cs": 220,
       "goldEarned": 14225,
@@ -23616,7 +23697,8 @@
       "damageToObjectives": 45538,
       "damageToTurrets": 1721,
       "healing": 13385,
-      "selfMitigatedDamage": 99262
+      "selfMitigatedDamage": 99262,
+      "soloKills": 0
      }
     },
     {
@@ -23628,9 +23710,9 @@
      "kills": 15,
      "deaths": 5,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 453,
+     "csd15": 45,
+     "xpd15": 902,
      "stats": {
       "cs": 365,
       "goldEarned": 20973,
@@ -23644,7 +23726,8 @@
       "damageToObjectives": 23393,
       "damageToTurrets": 11114,
       "healing": 4685,
-      "selfMitigatedDamage": 53815
+      "selfMitigatedDamage": 53815,
+      "soloKills": 2
      }
     },
     {
@@ -23656,9 +23739,9 @@
      "kills": 7,
      "deaths": 5,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -20,
+     "csd15": -4,
+     "xpd15": -807,
      "stats": {
       "cs": 334,
       "goldEarned": 19524,
@@ -23672,7 +23755,8 @@
       "damageToObjectives": 30936,
       "damageToTurrets": 7515,
       "healing": 12956,
-      "selfMitigatedDamage": 21156
+      "selfMitigatedDamage": 21156,
+      "soloKills": 0
      }
     },
     {
@@ -23684,9 +23768,9 @@
      "kills": 0,
      "deaths": 7,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -594,
+     "csd15": -7,
+     "xpd15": 936,
      "stats": {
       "cs": 25,
       "goldEarned": 9499,
@@ -23700,7 +23784,8 @@
       "damageToObjectives": 1148,
       "damageToTurrets": 303,
       "healing": 14143,
-      "selfMitigatedDamage": 12662
+      "selfMitigatedDamage": 12662,
+      "soloKills": 0
      }
     },
     {
@@ -23712,9 +23797,9 @@
      "kills": 4,
      "deaths": 5,
      "assists": 21,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 175,
+     "csd15": 10,
+     "xpd15": 1162,
      "stats": {
       "cs": 258,
       "goldEarned": 16339,
@@ -23728,7 +23813,8 @@
       "damageToObjectives": 11096,
       "damageToTurrets": 10831,
       "healing": 17834,
-      "selfMitigatedDamage": 178910
+      "selfMitigatedDamage": 178910,
+      "soloKills": 0
      }
     },
     {
@@ -23740,9 +23826,9 @@
      "kills": 9,
      "deaths": 7,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1105,
+     "csd15": -5,
+     "xpd15": -1575,
      "stats": {
       "cs": 294,
       "goldEarned": 17427,
@@ -23756,7 +23842,8 @@
       "damageToObjectives": 22887,
       "damageToTurrets": 1125,
       "healing": 26562,
-      "selfMitigatedDamage": 46907
+      "selfMitigatedDamage": 46907,
+      "soloKills": 0
      }
     },
     {
@@ -23768,9 +23855,9 @@
      "kills": 9,
      "deaths": 6,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -453,
+     "csd15": -45,
+     "xpd15": -902,
      "stats": {
       "cs": 256,
       "goldEarned": 16382,
@@ -23784,7 +23871,8 @@
       "damageToObjectives": 9494,
       "damageToTurrets": 7709,
       "healing": 3501,
-      "selfMitigatedDamage": 12778
+      "selfMitigatedDamage": 12778,
+      "soloKills": 1
      }
     },
     {
@@ -23796,9 +23884,9 @@
      "kills": 11,
      "deaths": 3,
      "assists": 18,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 20,
+     "csd15": 4,
+     "xpd15": 807,
      "stats": {
       "cs": 418,
       "goldEarned": 24738,
@@ -23812,7 +23900,8 @@
       "damageToObjectives": 12764,
       "damageToTurrets": 11379,
       "healing": 8969,
-      "selfMitigatedDamage": 14333
+      "selfMitigatedDamage": 14333,
+      "soloKills": 0
      }
     },
     {
@@ -23824,9 +23913,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 26,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 594,
+     "csd15": 7,
+     "xpd15": -936,
      "stats": {
       "cs": 44,
       "goldEarned": 11468,
@@ -23840,7 +23929,8 @@
       "damageToObjectives": 2056,
       "damageToTurrets": 1819,
       "healing": 4046,
-      "selfMitigatedDamage": 60942
+      "selfMitigatedDamage": 60942,
+      "soloKills": 0
      }
     }
    ],
@@ -23907,9 +23997,9 @@
      "kills": 3,
      "deaths": 5,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 107,
+     "csd15": 37,
+     "xpd15": 3014,
      "stats": {
       "cs": 165,
       "goldEarned": 8546,
@@ -23923,7 +24013,8 @@
       "damageToObjectives": 2522,
       "damageToTurrets": 2115,
       "healing": 9486,
-      "selfMitigatedDamage": 23595
+      "selfMitigatedDamage": 23595,
+      "soloKills": 0
      }
     },
     {
@@ -23935,9 +24026,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 769,
+     "csd15": 45,
+     "xpd15": 1986,
      "stats": {
       "cs": 185,
       "goldEarned": 8270,
@@ -23951,7 +24042,8 @@
       "damageToObjectives": 12145,
       "damageToTurrets": 0,
       "healing": 10001,
-      "selfMitigatedDamage": 15510
+      "selfMitigatedDamage": 15510,
+      "soloKills": 0
      }
     },
     {
@@ -23963,9 +24055,9 @@
      "kills": 2,
      "deaths": 1,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1791,
+     "csd15": -41,
+     "xpd15": -535,
      "stats": {
       "cs": 188,
       "goldEarned": 8623,
@@ -23979,7 +24071,8 @@
       "damageToObjectives": 2116,
       "damageToTurrets": 1037,
       "healing": 993,
-      "selfMitigatedDamage": 5852
+      "selfMitigatedDamage": 5852,
+      "soloKills": 0
      }
     },
     {
@@ -23991,9 +24084,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 227,
+     "csd15": 15,
+     "xpd15": 332,
      "stats": {
       "cs": 202,
       "goldEarned": 9418,
@@ -24007,7 +24100,8 @@
       "damageToObjectives": 6818,
       "damageToTurrets": 5711,
       "healing": 2046,
-      "selfMitigatedDamage": 5142
+      "selfMitigatedDamage": 5142,
+      "soloKills": 0
      }
     },
     {
@@ -24019,9 +24113,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -385,
+     "csd15": -3,
+     "xpd15": -769,
      "stats": {
       "cs": 35,
       "goldEarned": 5924,
@@ -24035,7 +24129,8 @@
       "damageToObjectives": 1485,
       "damageToTurrets": 1485,
       "healing": 6670,
-      "selfMitigatedDamage": 27092
+      "selfMitigatedDamage": 27092,
+      "soloKills": 0
      }
     },
     {
@@ -24047,9 +24142,9 @@
      "kills": 1,
      "deaths": 1,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 407,
+     "csd15": 17,
+     "xpd15": 473,
      "stats": {
       "cs": 204,
       "goldEarned": 9199,
@@ -24063,7 +24158,8 @@
       "damageToObjectives": 12057,
       "damageToTurrets": 10941,
       "healing": 6533,
-      "selfMitigatedDamage": 25370
+      "selfMitigatedDamage": 25370,
+      "soloKills": 0
      }
     },
     {
@@ -24075,9 +24171,9 @@
      "kills": 2,
      "deaths": 1,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -107,
+     "csd15": -37,
+     "xpd15": -3014,
      "stats": {
       "cs": 152,
       "goldEarned": 8861,
@@ -24091,7 +24187,8 @@
       "damageToObjectives": 30979,
       "damageToTurrets": 499,
       "healing": 6833,
-      "selfMitigatedDamage": 40604
+      "selfMitigatedDamage": 40604,
+      "soloKills": 0
      }
     },
     {
@@ -24103,9 +24200,9 @@
      "kills": 14,
      "deaths": 1,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1791,
+     "csd15": 41,
+     "xpd15": 535,
      "stats": {
       "cs": 235,
       "goldEarned": 12886,
@@ -24119,7 +24216,8 @@
       "damageToObjectives": 4467,
       "damageToTurrets": 2800,
       "healing": 6346,
-      "selfMitigatedDamage": 12479
+      "selfMitigatedDamage": 12479,
+      "soloKills": 3
      }
     },
     {
@@ -24131,9 +24229,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -227,
+     "csd15": -15,
+     "xpd15": -332,
      "stats": {
       "cs": 185,
       "goldEarned": 10901,
@@ -24147,7 +24245,8 @@
       "damageToObjectives": 3834,
       "damageToTurrets": 808,
       "healing": 11179,
-      "selfMitigatedDamage": 9756
+      "selfMitigatedDamage": 9756,
+      "soloKills": 0
      }
     },
     {
@@ -24159,9 +24258,9 @@
      "kills": 1,
      "deaths": 1,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 385,
+     "csd15": 3,
+     "xpd15": 769,
      "stats": {
       "cs": 33,
       "goldEarned": 6362,
@@ -24175,7 +24274,8 @@
       "damageToObjectives": 632,
       "damageToTurrets": 53,
       "healing": 3346,
-      "selfMitigatedDamage": 18410
+      "selfMitigatedDamage": 18410,
+      "soloKills": 0
      }
     }
    ],
@@ -24242,9 +24342,9 @@
      "kills": 5,
      "deaths": 7,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1397,
+     "csd15": -5,
+     "xpd15": 1778,
      "stats": {
       "cs": 179,
       "goldEarned": 10734,
@@ -24258,7 +24358,8 @@
       "damageToObjectives": 7118,
       "damageToTurrets": 6063,
       "healing": 894,
-      "selfMitigatedDamage": 27997
+      "selfMitigatedDamage": 27997,
+      "soloKills": 2
      }
     },
     {
@@ -24270,9 +24371,9 @@
      "kills": 7,
      "deaths": 5,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -327,
+     "csd15": -15,
+     "xpd15": -301,
      "stats": {
       "cs": 187,
       "goldEarned": 13205,
@@ -24286,7 +24387,8 @@
       "damageToObjectives": 36001,
       "damageToTurrets": 3778,
       "healing": 9294,
-      "selfMitigatedDamage": 34403
+      "selfMitigatedDamage": 34403,
+      "soloKills": 1
      }
     },
     {
@@ -24298,9 +24400,9 @@
      "kills": 16,
      "deaths": 1,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2112,
+     "csd15": 36,
+     "xpd15": 1445,
      "stats": {
       "cs": 319,
       "goldEarned": 17979,
@@ -24314,7 +24416,8 @@
       "damageToObjectives": 20900,
       "damageToTurrets": 17504,
       "healing": 12758,
-      "selfMitigatedDamage": 13083
+      "selfMitigatedDamage": 13083,
+      "soloKills": 1
      }
     },
     {
@@ -24326,9 +24429,9 @@
      "kills": 4,
      "deaths": 5,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -870,
+     "csd15": -6,
+     "xpd15": -1158,
      "stats": {
       "cs": 205,
       "goldEarned": 12392,
@@ -24342,7 +24445,8 @@
       "damageToObjectives": 15902,
       "damageToTurrets": 5439,
       "healing": 3387,
-      "selfMitigatedDamage": 9770
+      "selfMitigatedDamage": 9770,
+      "soloKills": 0
      }
     },
     {
@@ -24354,9 +24458,9 @@
      "kills": 1,
      "deaths": 3,
      "assists": 19,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -164,
+     "csd15": 9,
+     "xpd15": 894,
      "stats": {
       "cs": 32,
       "goldEarned": 8249,
@@ -24370,7 +24474,8 @@
       "damageToObjectives": 2085,
       "damageToTurrets": 1441,
       "healing": 6565,
-      "selfMitigatedDamage": 18759
+      "selfMitigatedDamage": 18759,
+      "soloKills": 0
      }
     },
     {
@@ -24382,9 +24487,9 @@
      "kills": 3,
      "deaths": 4,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 286,
+     "csd15": 9,
+     "xpd15": 1029,
      "stats": {
       "cs": 194,
       "goldEarned": 9979,
@@ -24398,7 +24503,8 @@
       "damageToObjectives": 3299,
       "damageToTurrets": 2003,
       "healing": 5200,
-      "selfMitigatedDamage": 52217
+      "selfMitigatedDamage": 52217,
+      "soloKills": 0
      }
     },
     {
@@ -24410,9 +24516,9 @@
      "kills": 7,
      "deaths": 7,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1397,
+     "csd15": 5,
+     "xpd15": -1778,
      "stats": {
       "cs": 232,
       "goldEarned": 14231,
@@ -24426,7 +24532,8 @@
       "damageToObjectives": 18102,
       "damageToTurrets": 0,
       "healing": 6012,
-      "selfMitigatedDamage": 15521
+      "selfMitigatedDamage": 15521,
+      "soloKills": 1
      }
     },
     {
@@ -24438,9 +24545,9 @@
      "kills": 1,
      "deaths": 8,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2112,
+     "csd15": -36,
+     "xpd15": -1445,
      "stats": {
       "cs": 190,
       "goldEarned": 8536,
@@ -24454,7 +24561,8 @@
       "damageToObjectives": 1259,
       "damageToTurrets": 0,
       "healing": 932,
-      "selfMitigatedDamage": 8741
+      "selfMitigatedDamage": 8741,
+      "soloKills": 0
      }
     },
     {
@@ -24466,9 +24574,9 @@
      "kills": 6,
      "deaths": 3,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 870,
+     "csd15": 6,
+     "xpd15": 1158,
      "stats": {
       "cs": 254,
       "goldEarned": 14784,
@@ -24482,7 +24590,8 @@
       "damageToObjectives": 11417,
       "damageToTurrets": 6391,
       "healing": 850,
-      "selfMitigatedDamage": 7344
+      "selfMitigatedDamage": 7344,
+      "soloKills": 2
      }
     },
     {
@@ -24494,9 +24603,9 @@
      "kills": 4,
      "deaths": 11,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 164,
+     "csd15": -9,
+     "xpd15": -894,
      "stats": {
       "cs": 31,
       "goldEarned": 8710,
@@ -24510,7 +24619,8 @@
       "damageToObjectives": 268,
       "damageToTurrets": 0,
       "healing": 3498,
-      "selfMitigatedDamage": 12440
+      "selfMitigatedDamage": 12440,
+      "soloKills": 0
      }
     }
    ],
@@ -24563,7 +24673,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-15T17:50:43.302Z",
+  "lastBackupAt": "2026-06-15T17:51:47.907Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -24638,8 +24748,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 285,
- "updatedAt": "2026-06-15T17:51:41.034Z",
+ "rev": 287,
+ "updatedAt": "2026-06-15T18:17:20.906Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
