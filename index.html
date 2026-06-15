@@ -3328,23 +3328,29 @@ async function fetchMarkets(force){
   clearTimeout(window._mktPoll);
   window._mktPoll=setTimeout(()=>fetchMarkets(true),30000);
 }
-async function bankBet(team,luId){
+async function bankBet(team,luId,odds){
   const L=lineupOf(luId);if(!L)return;
   const B=bankSession();
   if(B&&B.role==='dev'&&!B.name)return toast('🛠 개발자 유령 세션은 지갑이 없어요 — 베팅은 본인 멤버 계정으로!',true);
   if(!B||!B.name)return toast('💰 거래소 탭에서 먼저 로그인해주세요!',true);
   const only=myTeamIn(L);
   if(only&&team!==only)return toast('본인 출전 경기예요 — 자기 팀 승리에만 베팅할 수 있어요 (승부조작 방지 🙅)',true);
+  odds=Number(odds)||0;
+  if(odds<1.01)return toast('배당 계산 중이에요 — 잠시 후 다시 시도해주세요.',true);
   const amt=Math.round(Number($('betAmt_'+luId)?.value)||0);
   if(amt<100)return toast('최소 베팅은 100 APO예요.',true);
+  const CAP=20000,M=(window._mkts||{})[voteKey(L)];
+  const cur=M&&M.my&&M.my.team===team?M.my.amt:0;
+  if(cur+amt>CAP)return toast(`1경기 베팅 상한은 ${fmtAPO(CAP)} APO예요 — 현재 ${fmtAPO(cur)} 베팅 중 (추가 ${fmtAPO(Math.max(0,CAP-cur))} 가능)`,true);
   const allin=B.bal!==null&&amt>=B.bal;
   if(allin&&!confirm(`🚨 전 재산 ${fmtAPO(amt)} APO 올인입니다.\n빗나가면 파산 → 새출발 지원금 1,000 APO + 파산 횟수 박제 💀\n정말 가시나요?`))return;
   if(window._betBusy)return toast('처리 중이에요 — 잠시만요!',true);
   window._betBusy=true; // 🐛fix: 더블클릭 이중 베팅 방지
   try{
-    const j=await bankCall('bet',{market:voteKey(L),team,amount:amt});
+    const j=await bankCall('bet',{market:voteKey(L),team,amount:amt,odds});
     window._bank&&(window._bank.bal=j.bal);
-    toast(j.allin?`🚨 올인 접수!! ${team==='alpha'?'알파':'베타'}에 전부 걸었습니다. 행운을 빕니다`:`🎰 ${fmtAPO(amt)} APO → ${team==='alpha'?'알파':'베타'} 베팅 완료!`);
+    const pay=Math.floor(amt*odds);
+    toast(j.allin?`🚨 올인 접수!! ${team==='alpha'?'알파':'베타'}에 전부 걸었습니다 (x${odds}) — 적중 시 ${fmtAPO(pay)} APO!`:`🎰 ${fmtAPO(amt)} APO → ${team==='alpha'?'알파':'베타'} 베팅 (x${odds})! 적중 시 ${fmtAPO(pay)} APO`);
     await fetchMarkets(true);await bankRefresh(true);
   }catch(e){toast('베팅 실패: '+e.message,true)}
   finally{window._betBusy=false}
@@ -6419,6 +6425,7 @@ function announceNewWin(top){ // 피드 맨 위가 새 당첨이면 모두에게
   if(!top||!top.ts)return;
   if(window._lastWinTs===undefined){window._lastWinTs=top.ts;return} // 첫 로드는 스킵
   if(top.ts===window._lastWinTs)return; window._lastWinTs=top.ts;
+  if(typeof canViewFinance==='function'&&!canViewFinance())return; // 비로그인 외부인에겐 도박 배너 안 띄움
   const me=(typeof bankSession==='function'&&bankSession())?bankSession().name:'';
   if(top.n===me)return; // 본인은 이미 봤으니 스킵
   const T={jp:'🎫 복권 잭팟',pcnjp:'🎰 빠칭코 1등 잭팟',pcn:'🎰 빠칭코 입상',scr:'🎫 복권 1등'};
@@ -6798,7 +6805,13 @@ const PAGE_LABEL=Object.fromEntries(PAGES);
 function groupOf(page){return(NAV_GROUPS.find(([,,ps])=>ps.includes(page))||NAV_GROUPS[0])[0]}
 function go(id){tab=id;render();window.scrollTo({top:0})}
 const ADMIN_ONLY_PAGES=new Set(['record','notice']);
-function visiblePages(){return isAdmin()?PAGES:PAGES.filter(([id])=>!ADMIN_ONLY_PAGES.has(id))}
+const FINANCE_PAGES=new Set(['bank','form','games','shop']); // 💰 도박·주식·상점 — 외부인(비로그인) 노출 차단
+function canViewFinance(){const B=bankSession();return !!(B&&(B.name||B.role==='dev'))||isAdmin()} // 로그인 멤버·개발자·운영자만
+function visiblePages(){
+  let ps=isAdmin()?PAGES:PAGES.filter(([id])=>!ADMIN_ONLY_PAGES.has(id));
+  if(!canViewFinance())ps=ps.filter(([id])=>!FINANCE_PAGES.has(id)); // 비로그인 외부인에겐 도박·주식 숨김
+  return ps;
+}
 function renderNav(){
   const dirty=isAdmin()&&lsGet('apodan_dirty')==='1'
     ?`<button title="저장된 변경이 아직 게시 전이에요 — 설정에서 🚀 게시" onclick="go('settings')" style="border-color:rgba(255,92,122,.55);color:var(--lose);font-weight:800">📤 게시 필요</button>`:'';
@@ -6826,12 +6839,12 @@ function renderTicker(){
   if(LU0){
     const O=lineupOdds(LU0);
     const more=allLineups().length>1?` 외 ${allLineups().length-1}개 회차`:'';
-    items.push(`🏟 <b>${esc(LU0.date)} ${esc(LU0.round)} 내전 라인업 공지!</b>${more} · 대시보드에서 확인${O?` · 알파팀 승률 예측 <b>${O.probBlue}%</b>`:''}`);
+    items.push(`🏟 <b>${esc(LU0.date)} ${esc(LU0.round)} 내전 라인업 공지!</b>${more} · 대시보드에서 확인${O&&canViewFinance()?` · 알파팀 승률 예측 <b>${O.probBlue}%</b>`:''}`);
     const pts=lineupPoints(LU0);
     if(pts[0])items.push(`${pts[0].e} ${esc(pts[0].h)}`);
   }
-  // 1.5) 🎰 잭팟·대박 속보 (오락실 — 모두에게 송출!)
-  (window._bankFeed||[]).slice(0,3).forEach(f=>{
+  // 1.5) 🎰 잭팟·대박 속보 (오락실) — 로그인 멤버에게만 (외부인 노출 차단)
+  if(canViewFinance())(window._bankFeed||[]).slice(0,3).forEach(f=>{
     const big=Number(f.v)>=10000;
     const kind=f.t==='jp'?'🎫 복권 잭팟':f.t==='scr'?'🎫 복권 1등':'🎰 룰렛 잭팟';
     items.push(`<b class="${big?'tk-jack':'tk-up'}">${kind}${big?' 💥':''}</b> <b>${esc(f.n)}</b>${josa(f.n,'이','가')} +${fmtAPO(f.v)} APO 획득!${big?' 축하합니다!!':''}`);
@@ -7028,45 +7041,48 @@ function lineupCard(L){
       <div class="mini" style="letter-spacing:.3em;color:var(--gold);font-weight:900">MATCH DAY</div>
       <h3 style="margin:2px 0;font-size:19px">🏟 ${esc(L.date)} <span class="pill gold" style="font-size:12px;vertical-align:middle">${esc(L.round||'1차')}${L.series&&L.series!=='단판'?` · ${esc(L.series)}`:''}</span> 내전${L.note?` <span class="dim" style="font-size:13px;font-weight:600">· ${esc(L.note)}</span>`:''}</h3>
     </div>
-    ${pBar}
-    ${(()=>{ // 🎰 APO 베팅 창구
+    ${canViewFinance()?pBar:''}
+    ${(()=>{ // 🎰 APO 베팅 창구 (데이터 배당·유저 배당·스코어 토토 — 외부인 노출 차단)
+      if(!canViewFinance())return''; // 비로그인 외부인에겐 배당/베팅/토토 전부 숨김
       if(!voteApiBase())return'';
       fetchMarkets(false);
       const key=voteKey(L);
       const M=(window._mkts||{})[key];
       const B=bankSession();
       const a=M?M.alpha:0,b=M?M.beta:0,tot=a+b;
-      const od=mktOdds(a,b);
+      const oA=O?O.oddsBlue:0, oB=O?O.oddsRed:0; // 데이터 배당 = 고정배당 지급 배수
       const status=M?M.status:'open';
       const settled=String(status).startsWith('settled');
       const refunded=String(status)==='refunded';
       const winSide=settled?status.split(':')[1]:null;
       const only=B&&B.name?myTeamIn(L):null;
-      const pools=tot?`
-        <div class="row" style="justify-content:space-between;font-weight:800;font-size:13px;margin-top:6px">
-          <span style="color:var(--gold)">🅰 ${fmtAPO(a)} APO ${od.alpha?`<span class="pill sm">x${od.alpha}</span>`:''}</span>
-          <span class="mini dim">판돈 ${fmtAPO(tot)} · ${M.bettors||0}명 참전</span>
-          <span style="color:var(--win)">${od.beta?`<span class="pill sm">x${od.beta}</span>`:''} ${fmtAPO(b)} APO 🅱</span>
+      const pools=`
+        <div class="row" style="justify-content:space-between;align-items:center;font-weight:800;font-size:14px;margin-top:8px">
+          <span style="color:var(--gold)">🅰 알파 ${oA?`<span class="pill sm" style="font-size:13px">x${oA}</span>`:''}</span>
+          <span class="mini dim">${tot?`🅰 ${fmtAPO(a)} · 🅱 ${fmtAPO(b)} 참전 · ${M.bettors||0}명`:'첫 베팅의 주인공이 되어보세요'}</span>
+          <span style="color:var(--win)">${oB?`<span class="pill sm" style="font-size:13px">x${oB}</span>`:''} 베타 🅱</span>
         </div>
-        <div style="height:7px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line);margin-top:3px">
-          <i style="width:${tot?Math.round(a/tot*100):50}%;background:rgba(242,184,75,.5)"></i>
-          <i style="flex:1;background:rgba(63,217,197,.5)"></i>
-        </div>`:`<p class="mini dim" style="margin:6px 0 0;text-align:center">아직 베팅이 없어요 — 첫 판돈의 주인공이 되어보세요</p>`;
+        ${tot?`<div style="height:7px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line);margin-top:4px"><i style="width:${Math.round(a/tot*100)}%;background:rgba(242,184,75,.5)"></i><i style="flex:1;background:rgba(63,217,197,.5)"></i></div>`:''}`;
       let actions='';
       if(refunded)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🚫 취소된 판 — 베팅 전액 환불 완료 (빵꾸/대타). 새 판은 다른 회차로 공지해주세요!</p>`;
       else if(settled)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--gold)">💸 정산 완료 — ${winSide==='alpha'?'🅰 알파':'🅱 베타'} 승리. 적중자들 지갑을 확인하세요!</p>${B&&(B.role==='admin'||B.role==='dev')?`<p class="mini" style="text-align:center;margin:6px 0 0"><button class="btn sm ghost" style="border-color:rgba(255,92,122,.4);color:var(--lose)" onclick="bankUnsettle('${L.id}')">↩️ 정산 되돌리기 (실수로 눌렀을 때)</button></p>`:''}`;
       else if(status==='locked')actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--lose)">⛔ 베팅 마감 — 경기 결과를 기다리는 중</p>`;
       else if(!B)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">💰 <b>거래소 탭에서 로그인</b>하면 APO로 베팅할 수 있어요 (가입 시 10,000 APO)</p>`;
       else if(B.role==='dev'&&!B.name)actions='';
-      else actions=`
-        ${M&&M.my?`<p class="mini" style="text-align:center;margin:8px 0 4px;font-weight:800">내 베팅: ${M.my.team==='alpha'?'🅰 알파':'🅱 베타'} ${fmtAPO(M.my.amt)} APO ${M.my.allin?'🚨':''} <span class="dim" style="font-weight:600">— 같은 팀 추가 베팅만 가능</span></p>`:''}
+      else if(!oA||!oB)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">⏳ 배당 계산 중 — 라인업이 확정되면 베팅이 열려요</p>`;
+      else{
+        const myOdds=M&&M.my?(M.my.odds||(M.my.team==='alpha'?oA:oB)):0;
+        const maxAdd=Math.max(0,20000-(M&&M.my?M.my.amt:0));
+        actions=`
+        ${M&&M.my?`<p class="mini" style="text-align:center;margin:8px 0 4px;font-weight:800">내 베팅: ${M.my.team==='alpha'?'🅰 알파':'🅱 베타'} ${fmtAPO(M.my.amt)} APO @ x${myOdds} → 적중 시 <b style="color:var(--gold)">${fmtAPO(Math.floor(M.my.amt*myOdds))} APO</b> ${M.my.allin?'🚨':''} <span class="dim" style="font-weight:600">(추가 ${fmtAPO(maxAdd)} 가능)</span></p>`:''}
         <div class="row" style="justify-content:center;gap:6px;margin-top:8px;flex-wrap:wrap">
-          <input id="betAmt_${L.id}" type="number" min="100" step="100" placeholder="베팅액" style="width:110px;background:var(--inset);border:1px solid var(--line);border-radius:9px;padding:7px 9px">
-          <button class="btn sm ghost" onclick="$('betAmt_${L.id}').value=${B.bal||0}" title="전 재산">🚨 올인</button>
-          <button class="btn sm" style="border-color:rgba(242,184,75,.5);color:var(--gold);font-weight:800" ${only==='beta'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('alpha','${L.id}')">🅰 알파 베팅</button>
-          <button class="btn sm" style="border-color:rgba(63,217,197,.5);color:var(--win);font-weight:800" ${only==='alpha'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('beta','${L.id}')">🅱 베타 베팅</button>
+          <input id="betAmt_${L.id}" type="number" min="100" max="20000" step="100" placeholder="베팅액" style="width:108px;background:var(--inset);border:1px solid var(--line);border-radius:9px;padding:7px 9px">
+          <button class="btn sm ghost" onclick="$('betAmt_${L.id}').value=Math.min(${B.bal||0},20000)" title="최대 (상한 2만)">🔝 최대</button>
+          <button class="btn sm" style="border-color:rgba(242,184,75,.5);color:var(--gold);font-weight:800" ${only==='beta'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('alpha','${L.id}',${oA})">🅰 알파 x${oA}</button>
+          <button class="btn sm" style="border-color:rgba(63,217,197,.5);color:var(--win);font-weight:800" ${only==='alpha'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('beta','${L.id}',${oB})">🅱 베타 x${oB}</button>
         </div>
-        ${only?`<p class="mini dim" style="text-align:center;margin:4px 0 0">본인 출전 경기 — ${only==='alpha'?'🅰 알파':'🅱 베타'}(자기 팀)에만 베팅 가능</p>`:''}`;
+        <p class="mini dim" style="text-align:center;margin:5px 0 0">데이터 배당으로 지급 · 1경기 최대 20,000 APO · 배당은 베팅 순간 고정${only?` · 본인 출전 → ${only==='alpha'?'🅰 알파':'🅱 베타'}(자기 팀)만`:''}</p>`;
+      }
       const adminRow=(B&&(B.role==='admin'||B.role==='dev')&&!settled)?`
         <div class="row" style="justify-content:center;gap:6px;margin-top:8px">
           ${status==='open'?`<button class="btn sm" onclick="bankLock('${L.id}',false)">⛔ 베팅 마감</button>`:`<button class="btn sm" onclick="bankLock('${L.id}',true)">베팅 재개</button>`}
@@ -7076,11 +7092,9 @@ function lineupCard(L){
           ${status==='locked'?`<details style="display:inline-block"><summary class="mini dim" style="cursor:pointer">🛠 백섭</summary><span class="row" style="gap:5px;margin-top:4px"><button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')">👀 지급 내역</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','alpha')">지급 없이 🅰 확정</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','beta')">지급 없이 🅱 확정</button></span></details>`:`<button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')" title="누가 얼마 베팅·수령했는지">👀 내역</button>`}
           <button class="btn sm ghost" onclick="bankResetBets('${L.id}')">↩ 베팅 초기화</button>
         </div>`:'';
-      const hasBet=tot>0; // 🔧 신규 경기는 유저 배당(APO 베팅) 숨김 — 이미 베팅된 경기(판돈>0)만 그대로 노출. MVP·스코어 토토는 항상 표시
       return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
-        ${hasBet?`<p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🗳 유저 배당 · 🎰 APO 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 포인트를 거는 게 곧 투표! 패자 판돈은 승자 몫</span></p>
-        <p class="mini" style="text-align:center;margin:4px 0 0;font-weight:800">민심: <span style="color:var(--gold)">🅰 ${Math.round(a/tot*100)}%</span> vs <span style="color:var(--win)">${Math.round(b/tot*100)}% 🅱</span></p>
-        ${pools}${actions}${adminRow}`:''}
+        <p class="mini" style="margin:0;text-align:center;letter-spacing:.12em;font-weight:900;color:var(--gold)">🎰 고정 배당 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 데이터 배당으로 지급 · 맞히면 배수, 빗나가면 잃음</span></p>
+        ${pools}${actions}${adminRow}
         ${(()=>{ // 🏅 이 경기 MVP 투표 (회차별)
           if(!window._mvp||window._mvp[key]===undefined){window._mvp=window._mvp||{};window._mvp[key]=null;fetchMvp(key).then(()=>softRender())}
           const MV=window._mvp[key]||{tally:{},status:'open',my:null};
@@ -7144,7 +7158,7 @@ function lineupCard(L){
     ${(()=>{const subs=lineupSubPoints(L);if(!subs.length)return'';
       return`<p class="mini" style="margin:12px 0 5px;font-weight:800;color:var(--mut)">📌 서브 포인트 — 나머지 출전 멤버 체크</p>
       <div style="display:grid;gap:3px">${subs.map(s=>`<p class="mini" style="margin:0;line-height:1.55">${s.tag} ${s.lane?`<span class="dim">${esc(s.lane)}</span> `:''}<b>${esc(s.name)}</b> — ${esc(s.txt)}</p>`).join('')}</div>`})()}
-    ${O?(()=>{const _m=(window._mkts||{})[voteKey(L)];const _hb=!!(_m&&((_m.alpha||0)+(_m.beta||0))>0);return`<p class="mini dim" style="margin:10px 0 0">${_hb?'두 배당 모두 재미용 — 데이터 배당은 폼·승률 계산, 유저 배당은 관전자 베팅(기기당 1표).':'데이터 배당은 폼·통산 승률 기반 예측이에요 — 재미용!'} 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`})():''}
+    ${O&&canViewFinance()?`<p class="mini dim" style="margin:10px 0 0">데이터 배당은 폼·통산 승률 기반 예측이에요 — 이 배당에 APO를 걸면 맞힐 때 배수로 받아요. 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`:''}
     ${communityFeed(L)}
   </div>`;
 }
