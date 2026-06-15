@@ -83,7 +83,7 @@
     "대수",
     "00대수"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "골드",
    "flexTier": "실버",
@@ -24563,7 +24563,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-15T15:16:05.564Z",
+  "lastBackupAt": "2026-06-15T15:24:50.712Z",
   "autoPublish": true,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -24638,8 +24638,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 273,
- "updatedAt": "2026-06-15T15:16:05.564Z",
+ "rev": 275,
+ "updatedAt": "2026-06-15T15:26:36.781Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
