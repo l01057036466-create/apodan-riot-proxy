@@ -446,6 +446,12 @@ const num=v=>{if(v==null||v==='')return 0;const n=Number(String(v).replace(/[,\s
 const fmt=n=>Number(n||0).toLocaleString('ko-KR');
 const pct=(a,b)=>b?Math.round(a/b*1000)/10:0;
 const sortKey=m=>String(m.playedAt||'')+String(m.setNumber||0).padStart(3,'0')+String(m.createdAt||'');
+function weekStartKST(){ // 이번 주 월요일 날짜 (KST) — 주간 칭호 초기화 기준
+  const k=new Date(Date.now()+9*3600*1000);
+  const dow=(k.getUTCDay()+6)%7; // 월=0 … 일=6
+  k.setUTCDate(k.getUTCDate()-dow);
+  return k.toISOString().slice(0,10);
+}
 
 function lev(a,b){ // 편집 거리 (퍼지 매칭용)
   a=norm(a);b=norm(b);
@@ -576,7 +582,7 @@ function fixState(s){
   Object.keys(s.liveBoards).forEach(d=>{
     s.liveBoards[d]=(Array.isArray(s.liveBoards[d])?s.liveBoards[d]:[]).map(x=>({id:x.id||uid('lv'),champ:String(x.champ||''),type:x.type==='ban'?'ban':'pick'}));
   });
-  const fixLU=l=>({id:l.id||uid('lu'),date:l.date||'',round:l.round||'1차',note:l.note||'',
+  const fixLU=l=>({id:l.id||uid('lu'),date:l.date||'',round:l.round||'1차',series:l.series||'3판 2선승',note:l.note||'',event:!!l.event,
     blue:Array.isArray(l.blue)?l.blue.filter(Boolean):[],
     red:Array.isArray(l.red)?l.red.filter(Boolean):[]});
   s.lineups=(Array.isArray(s.lineups)?s.lineups:[]).filter(l=>l&&typeof l==='object').map(fixLU);
@@ -888,7 +894,7 @@ function gamePerf(m,p){ // 0~1 체급 퍼포먼스 — 지표별 게임 내 순�
   return sum/wsum;
 }
 function formSeries(id){ // 폼 주가: 승패+연승+MVP+체급 퍼포먼스+역배+라이벌 격파 — 변동 사유(reasons) 동봉
-  const ck=state.matches.length+'|'+(state.matches[state.matches.length-1]?.id||'');
+  const ck=state.matches.length+'|'+(state.matches[state.matches.length-1]?.id||'')+'|'+allLineups().filter(l=>l.event).map(l=>l.id).join(',');
   if(_fsCache.key!==ck){_fsCache.key=ck;_fsCache.map=new Map()}
   if(_fsCache.map.has(id))return _fsCache.map.get(id);
   const _b0=stockBase(id); let v=_b0,streak=0; const arr=[_b0],wl=[],reasons=[];
@@ -904,31 +910,33 @@ function formSeries(id){ // 폼 주가: 승패+연승+MVP+체급 퍼포먼스+�
     const p=m.participants.find(x=>x.playerId===id);
     const win=p.team===m.winnerTeam;
     const R=[];
+    const ev=isEventMatch(m), mult=ev?2:1; // 🎉 이벤트 내전 = 폼 변동 2배
+    if(ev)R.push('🎉 이벤트 2배');
     streak=win?Math.max(1,streak+1):Math.min(-1,streak-1);
     const kda=(p.kills+p.assists)/Math.max(1,p.deaths);
     const perf=Math.max(.5,Math.min(1.5,.5+gamePerf(m,p))); // 체급 퍼포먼스(0~1)→활약 계수(0.5~1.5): 캐리 급등 / 던짐 급락 / 잘하고 진 날 완충
     if(win){
-      const d=Math.round(14*perf);v+=d;
+      const d=Math.round(14*perf*mult);v+=d;
       R.push((perf>=1.4?'⭐ 캐리 승':perf>=1.15?'활약 승':perf<=0.6?'🚌 버스 승':perf<=0.8?'팀 덕 승':'승리')+' +'+d);
     }else{
       const lossF=Math.max(0.6,Math.min(1.4,2-perf)); // 잘하고도 진 억까는 완충, 던지고 진 건 가중
-      const d=Math.round(13*lossF);v-=d;
+      const d=Math.round(13*lossF*mult);v-=d;
       R.push((perf>=1.15?'🛡 억까 패':lossF>=1.4?'🤯 던진 판 패':'패배')+' −'+d);
     }
-    if(Math.abs(streak)>=2){v+=win?5:-5;R.push(win?streak+'연승 +5':Math.abs(streak)+'연패 −5')}
-    if(mvpOf(m)===id){v+=10;R.push('MVP +10')}
-    if(aceOf(m)===id){v+=4;R.push('패배팀 ACE +4')} // 졌어도 제일 잘하면 소량 가산
+    if(Math.abs(streak)>=2){v+=(win?5:-5)*mult;R.push((win?streak+'연승 +':Math.abs(streak)+'연패 −')+5*mult)}
+    if(mvpOf(m)===id){v+=10*mult;R.push('MVP +'+10*mult)}
+    if(aceOf(m)===id){v+=4*mult;R.push('패배팀 ACE +'+4*mult)} // 졌어도 제일 잘하면 소량 가산
     if(win){
       const myT=m.participants.filter(x=>x.playerId&&x.team===p.team);
       const opT=m.participants.filter(x=>x.playerId&&x.team!==p.team);
       if(myT.length&&opT.length){
         const myWr=myT.reduce((a,x)=>a+_winRateBefore(runStats,x.playerId),0)/myT.length;
         const opWr=opT.reduce((a,x)=>a+_winRateBefore(runStats,x.playerId),0)/opT.length;
-        if(opWr-myWr>=0.15){v+=7;R.push('🎲 역배 +7')}
+        if(opWr-myWr>=0.15){v+=7*mult;R.push('🎲 역배 +'+7*mult)}
       }
-      if(rv&&m.participants.some(x=>x.playerId===rv.id&&x.team!==p.team)){v+=5;R.push('🔥 라이벌 격파 +5')}
+      if(rv&&m.participants.some(x=>x.playerId===rv.id&&x.team!==p.team)){v+=5*mult;R.push('🔥 라이벌 격파 +'+5*mult)}
     }else{
-      if(rv&&m.participants.some(x=>x.playerId===rv.id&&x.team!==p.team)){v-=4;R.push('🔥 라이벌에 패배 −4')}
+      if(rv&&m.participants.some(x=>x.playerId===rv.id&&x.team!==p.team)){v-=4*mult;R.push('🔥 라이벌에 패배 −'+4*mult)}
     }
     m.participants.forEach(x=>{if(!x.playerId)return;runStats[x.playerId]=runStats[x.playerId]||{g:0,w:0};runStats[x.playerId].g++;if(x.team===m.winnerTeam)runStats[x.playerId].w++});
     v=Math.max(20,Math.round(v)); arr.push(v); wl.push(win); reasons.push({date:m.playedAt,delta:R,price:v});
@@ -1087,9 +1095,10 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
 const RATE_GET={dpm:r=>r.dpm,kda:r=>r.kda,surv:r=>-r.deathsPg,cspm:r=>r.cspm,objpm:r=>r.objpm,
  vspm:r=>r.vspm,kp:r=>r.kp,dpg:r=>r.dpg,demolpm:r=>r.demolpm,ccpm:r=>r.ccpm,utilpm:r=>r.utilpm,tankpm:r=>r.tankpm};
 function playerHex(id,laneSel){
-  const myLane=laneSel||playerMainLane(id);
-  const rates=ratesMap(myLane||undefined); // 그 라인에서 뛴 기록끼리만 비교
-  const mine=rates.get(id);
+  let myLane=laneSel||playerMainLane(id);
+  let rates=ratesMap(myLane||undefined); // 그 라인에서 뛴 기록끼리만 비교
+  let mine=rates.get(id);
+  if(!mine){ myLane=null; rates=ratesMap(); mine=rates.get(id); } // 🐛fix: 그 라인 표본이 비면 전체 기준으로 폴백 (null 반환→비교 페이지 크래시 방지)
   if(!mine)return null;
   const axes=LANE_AXES[myLane]||GENERIC_AXES;
   let poolIds=[...rates.keys()];
@@ -1476,11 +1485,15 @@ function makeAwards(){
     });
     if(bw)push('연승 제조기',bw.name,`최다 ${bw.n}연승 · 불장의 주역`);
     if(bl)push('멘탈 클리닉 VIP',bl.name,`최다 ${bl.n}연패 · 그래도 출석은 한다`);
-    // 퍼펙트 게임
-    outer:for(const m of [...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))){
+    // 퍼펙트 게임 — 0데스 + 5킬↑ + 승리. 🗓 매주 초기화 (이번 주 경기만), 달성자 전원 (1인 1회)
+    const wkStart=weekStartKST();
+    const perfectSeen=new Set();
+    for(const m of [...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))){
+      if(String(m.playedAt||'')<wkStart)continue; // 이번 주 경기만 인정
       for(const p of m.participants){
-        if(p.playerId&&p.deaths===0&&p.kills>=5&&p.team===m.winnerTeam){
-          push('퍼펙트 게임',nameOf(p.playerId),`${p.kills}/0/${p.assists} (${m.playedAt}) · 무결점 경기`);break outer;
+        if(p.playerId&&num(p.deaths)===0&&num(p.kills)>=5&&p.team===m.winnerTeam&&!perfectSeen.has(p.playerId)){
+          perfectSeen.add(p.playerId);
+          push('퍼펙트 게임',nameOf(p.playerId),`${num(p.kills)}/0/${num(p.assists)} · 이번 주 무결점 경기`);
         }
       }
     }
@@ -2341,7 +2354,7 @@ function saveLineup(){
   state.lineups=allLineups().filter(l=>true);state.lineup=null;
   const dup=state.lineups.find(l=>l.date===date&&l.round===round&&l.id!==window._luEdit);
   if(dup)return toast(`${date} ${round} 공지가 이미 있어요. 그 공지를 수정하거나 다른 회차를 골라주세요.`,true);
-  const obj={id:window._luEdit||uid('lu'),date,round,series,note:($('luNote')?.value||'').trim(),blue,red};
+  const obj={id:window._luEdit||uid('lu'),date,round,series,note:($('luNote')?.value||'').trim(),event:!!$('luEvent')?.checked,blue,red};
   const idx=state.lineups.findIndex(l=>l.id===obj.id);
   if(idx>=0)state.lineups[idx]=obj;else state.lineups.push(obj);
   state.lineups.sort((a,b)=>a.date.localeCompare(b.date)||ROUNDS.indexOf(a.round)-ROUNDS.indexOf(b.round));
@@ -3113,6 +3126,16 @@ function allLineups(){
   return state.lineup?[Object.assign({id:'legacy',round:'1차'},state.lineup)]:[];
 }
 function lineupOf(id){return allLineups().find(l=>l.id===id)||allLineups()[0]||null}
+function isEventMatch(m){ // 🎉 이 경기가 이벤트 라인업의 경기인지 (날짜 + 로스터 60%↑ 일치)
+  if(!m||!m.playedAt)return false;
+  const ps=(m.participants||[]).filter(p=>p.playerId);
+  if(!ps.length)return false;
+  return allLineups().some(L=>{
+    if(!L.event||L.date!==m.playedAt)return false;
+    const roster=new Set([...(L.blue||[]),...(L.red||[])]);
+    return ps.filter(p=>roster.has(p.playerId)).length>=Math.ceil(ps.length*0.6);
+  });
+}
 function voteKey(L){
   L=L||{};
   let d=String(L.date||'').trim();
@@ -3445,7 +3468,8 @@ async function pushPrices(force){ // 폼 주가 → 거래소 시세 송출. for
   window._pxLast=Date.now();
   const prices={};
   state.players.filter(p=>p.active).forEach(p=>{prices[p.displayName]=marketPrice(p)});
-  try{await bankCall('setPrices',{prices})}catch(e){}
+  const halted=state.players.filter(p=>!p.active).map(p=>p.displayName); // 🚫 휴면·탈퇴 = 거래정지
+  try{await bankCall('setPrices',{prices,halted})}catch(e){}
 }
 function stockPx(name){ // 화면 시세 = 체결 시세. 미상장은 폼 주가(=상장될 가격)
   const sv=window._srvPx||{};
@@ -3573,6 +3597,23 @@ function quickTrade(name,side,qty){ // 보유 주식 행에서 바로 매수/매
   const qy=$('stQty');if(qy&&qty)qy.value=qty;
   window._stockSel=name;loadPxHist(name);
   stockTrade(side);
+}
+async function stockLiquidate(name){ // 🏷 휴면·탈퇴 멤버 주식 최하한가(10) 전량 정리
+  const B=bankSession();
+  if(!B||!B.name)return toast('💰 거래소 로그인 후 가능!',true);
+  const h=B.holdings&&B.holdings[name];
+  if(!h||!h.q)return toast('보유분이 없어요.',true);
+  const recover=10*h.q, lossP=Math.round((10-h.avg)/(h.avg||1)*1000)/10;
+  if(!confirm(`🏷 ${name} — 최하한가 정리\n\n휴면·탈퇴 멤버라 거래가 정지된 종목이에요.\n보유 ${h.q}주를 최하한가 10 APO에 전량 정리합니다.\n──────────\n평단 @${h.avg} → 정리가 @10 (${lossP>=0?'+':''}${lossP}%)\n회수: ${fmtAPO(recover)} APO\n\n계속할까요?`))return;
+  if(window._liqBusy)return toast('처리 중이에요 — 잠시만요!',true);
+  window._liqBusy=true;
+  try{
+    const j=await bankCall('stockLiquidate',{target:name});
+    window._bank&&(window._bank.bal=j.bal);
+    toast(`🏷 ${name} ${j.qty||h.q}주 정리 완료 — ${fmtAPO(j.recovered||recover)} APO 회수`);
+    await bankRefresh(true);
+  }catch(e){toast('정리 실패: '+e.message,true)}
+  finally{window._liqBusy=false}
 }
 
 
@@ -7050,18 +7091,16 @@ function lineupCard(L){
       const M=(window._mkts||{})[key];
       const B=bankSession();
       const a=M?M.alpha:0,b=M?M.beta:0,tot=a+b;
-      const oA=O?O.oddsBlue:0, oB=O?O.oddsRed:0; // 데이터 배당 = 고정배당 지급 배수
+      let oA=O?O.oddsBlue:0, oB=O?O.oddsRed:0; // 데이터 배당 = 고정배당 지급 배수
+      const ev=!!L.event; // 🎉 판돈 2배 이벤트 내전 — 배당 2배
+      if(ev){ oA=oA?Math.min(10,Math.round(oA*200)/100):0; oB=oB?Math.min(10,Math.round(oB*200)/100):0; }
       const status=M?M.status:'open';
       const settled=String(status).startsWith('settled');
       const refunded=String(status)==='refunded';
       const winSide=settled?status.split(':')[1]:null;
       const only=B&&B.name?myTeamIn(L):null;
       const pools=`
-        <div class="row" style="justify-content:space-between;align-items:center;font-weight:800;font-size:14px;margin-top:8px">
-          <span style="color:var(--gold)">🅰 알파 ${oA?`<span class="pill sm" style="font-size:13px">x${oA}</span>`:''}</span>
-          <span class="mini dim">${tot?`🅰 ${fmtAPO(a)} · 🅱 ${fmtAPO(b)} 참전 · ${M.bettors||0}명`:'첫 베팅의 주인공이 되어보세요'}</span>
-          <span style="color:var(--win)">${oB?`<span class="pill sm" style="font-size:13px">x${oB}</span>`:''} 베타 🅱</span>
-        </div>
+        <p class="mini dim" style="text-align:center;margin:8px 0 0">${tot?`참전 <span style="color:var(--gold)">🅰 ${fmtAPO(a)}</span> · <span style="color:var(--win)">🅱 ${fmtAPO(b)}</span> APO · ${M.bettors||0}명`:'첫 베팅의 주인공이 되어보세요'}</p>
         ${tot?`<div style="height:7px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line);margin-top:4px"><i style="width:${Math.round(a/tot*100)}%;background:rgba(242,184,75,.5)"></i><i style="flex:1;background:rgba(63,217,197,.5)"></i></div>`:''}`;
       let actions='';
       if(refunded)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🚫 취소된 판 — 베팅 전액 환불 완료 (빵꾸/대타). 새 판은 다른 회차로 공지해주세요!</p>`;
@@ -7093,8 +7132,9 @@ function lineupCard(L){
           ${status==='locked'?`<details style="display:inline-block"><summary class="mini dim" style="cursor:pointer">🛠 백섭</summary><span class="row" style="gap:5px;margin-top:4px"><button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')">👀 지급 내역</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','alpha')">지급 없이 🅰 확정</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','beta')">지급 없이 🅱 확정</button></span></details>`:`<button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')" title="누가 얼마 베팅·수령했는지">👀 내역</button>`}
           <button class="btn sm ghost" onclick="bankResetBets('${L.id}')">↩ 베팅 초기화</button>
         </div>`:'';
-      return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
-        <p class="mini" style="margin:0;text-align:center;letter-spacing:.12em;font-weight:900;color:var(--gold)">🎰 고정 배당 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 데이터 배당으로 지급 · 맞히면 배수, 빗나가면 잃음</span></p>
+      return`<div style="border:1px solid ${ev?'rgba(242,184,75,.7)':'rgba(242,184,75,.35)'};border-radius:12px;padding:10px 12px;margin:12px 0;background:${ev?'linear-gradient(135deg,rgba(242,184,75,.14),rgba(0,0,0,.2))':'rgba(0,0,0,.15)'}">
+        ${ev?`<p class="mini" style="margin:0 0 6px;text-align:center;letter-spacing:.06em;font-weight:900;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(242,184,75,.5);border-radius:8px;padding:5px 4px">🎉 판돈 2배 이벤트 내전 — 배당·주식 변동 모두 2배!</p>`:''}
+        <p class="mini" style="margin:0;text-align:center;letter-spacing:.12em;font-weight:900;color:var(--gold)">🎰 ${ev?'이벤트 ':''}고정 배당 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 데이터 배당으로 지급 · 맞히면 배수, 빗나가면 잃음</span></p>
         ${pools}${actions}${adminRow}
         ${(()=>{ // 🏅 이 경기 MVP 투표 (회차별)
           if(!window._mvp||window._mvp[key]===undefined){window._mvp=window._mvp||{};window._mvp[key]=null;fetchMvp(key).then(()=>softRender())}
@@ -7307,6 +7347,7 @@ function lineupEditor(){
       <div class="f"><label>승부 방식 <span class="tag">다전제면 🎯 스코어 토토 자동 개장</span></label>
       <select id="luSeries" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${['단판','3판 2선승','5판 3선승'].map(s=>`<option${(L.series||'3판 2선승')===s?' selected':''}>${s}</option>`).join('')}</select>
     </div>
+    <label style="display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;cursor:pointer;font-weight:800;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(242,184,75,.4);border-radius:10px;padding:8px 12px"><input type="checkbox" id="luEvent" ${L.event?'checked':''} style="width:17px;height:17px;accent-color:var(--gold)"> 🎉 판돈 2배 이벤트 내전 <span class="mini dim" style="font-weight:600">— 배당·주식 변동 모두 2배</span></label>
     <div class="grid c2">
       <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--gold)">🅰 알파팀</p><div class="grid c2">${[1,2,3,4,5].map(row).join('')}</div></div>
       <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--win)">🅱 베타팀</p><div class="grid c2">${[6,7,8,9,10].map(row).join('')}</div></div>
@@ -7826,7 +7867,9 @@ function pgCompare(){
       <div class="f"><label style="color:var(--win)">🟢 선수 B</label>${sel('B',B.id)}${laneSel('B',lanesB,laneB)}</div>
     </div>
     <div class="grid c2" style="align-items:center">
-      <div style="text-align:center">${hA.labels.join()===hB.labels.join()
+      <div style="text-align:center">${(!hA||!hB)
+        ?`<p class="mini dim" style="padding:26px 10px">두 선수 중 한 명은 아직 육각형을 그릴 표본이 부족해요 — 표는 아래에서 볼 수 있어요.</p>`
+        :hA.labels.join()===hB.labels.join()
         ?radarSvg2(hA.vals,hB.vals,hA.labels)
         :`<div class="grid c2">
             <div>${radarSvg(hA.vals,hA.labels,250)}<p class="mini" style="margin:2px 0 0;color:var(--gold)">${esc(A.name)}</p></div>
@@ -8497,10 +8540,16 @@ function pgBank(){
     <p class="mini dim" style="margin:0 0 10px">친구의 폼에 투자하세요! 승리·MVP·연승이면 주가 상승, 패배면 하락. <b>💸 매수액의 2%는 초상권료로 그 멤버 지갑에 입금</b> — 인기 종목일수록 본인이 돈을 법니다 (셀프 매수엔 초상권료 없음). 시세는 운영진 접속 시 자동 갱신.</p>
     ${(()=>{const H=B.holdings||{};const ks=Object.keys(H);if(!ks.length)return'<p class="mini dim">보유 종목이 없어요 — 첫 매수로 포트폴리오를 시작하세요.</p>';
       let tot=0,cost=0;
-      const rows=ks.map(k=>{const h=H[k];const px=stockPx(k)||h.avg;const val=px*h.q;tot+=val;cost+=h.avg*h.q;
+      const rows=ks.map(k=>{const h=H[k];
+        const dormant=!state.players.some(p=>p.active&&p.displayName===k); // 휴면·탈퇴 멤버 주식 = 거래정지
+        const px=dormant?10:(stockPx(k)||h.avg);const val=px*h.q;tot+=val;cost+=h.avg*h.q;
         const pl=val-h.avg*h.q;const plPct=h.avg?Math.round(pl/(h.avg*h.q)*1000)/10:0;
-        return`<tr style="cursor:pointer" onclick="pickStock('${esc(k)}')" title="클릭하면 종목이 선택돼요"><td><b>${esc(k)}</b></td><td class="num">${h.q}주</td><td class="num">@${h.avg}</td><td class="num">@${px}</td><td class="num" style="font-weight:800;color:${pl>=0?'var(--win)':'var(--lose)'}">${pl>=0?'+':''}${fmtAPO(pl)} (${plPct>=0?'+':''}${plPct}%)</td>
-        <td><span class="row" style="gap:4px"><button class="btn sm ghost" onclick="event.stopPropagation();quickTrade('${esc(k)}','buy',1)">➕ 추가</button><button class="btn sm" onclick="event.stopPropagation();quickTrade('${esc(k)}','sell',${h.q})">➖ 매도</button></span></td></tr>`}).join('');
+        const pxCell=dormant?`<span style="color:var(--lose);font-weight:800">🚫 정지</span>`:`@${px}`;
+        const actCell=dormant
+          ?`<button class="btn sm" style="border-color:rgba(255,92,122,.5);color:var(--lose);font-weight:800" onclick="event.stopPropagation();stockLiquidate('${esc(k)}')" title="휴면·탈퇴 멤버 — 최하한가 10 APO로 전량 정리">🏷 최하한가 정리</button>`
+          :`<span class="row" style="gap:4px"><button class="btn sm ghost" onclick="event.stopPropagation();quickTrade('${esc(k)}','buy',1)">➕ 추가</button><button class="btn sm" onclick="event.stopPropagation();quickTrade('${esc(k)}','sell',${h.q})">➖ 매도</button></span>`;
+        return`<tr style="cursor:${dormant?'default':'pointer'}" ${dormant?'':`onclick="pickStock('${esc(k)}')"`} title="${dormant?'휴면·탈퇴 멤버 — 거래정지 (최하한가 정리만 가능)':'클릭하면 종목이 선택돼요'}"><td><b>${esc(k)}</b>${dormant?' <span class="pill sm" style="color:var(--mut)">휴면</span>':''}</td><td class="num">${h.q}주</td><td class="num">@${h.avg}</td><td class="num">${pxCell}</td><td class="num" style="font-weight:800;color:${pl>=0?'var(--win)':'var(--lose)'}">${pl>=0?'+':''}${fmtAPO(pl)} (${plPct>=0?'+':''}${plPct}%)</td>
+        <td>${actCell}</td></tr>`}).join('');
       return`<div class="scrollx"><table class="tbl" style="min-width:460px"><thead><tr><th>종목</th><th class="num">보유</th><th class="num">평단</th><th class="num">현재가</th><th class="num">평가손익</th><th>바로 거래</th></tr></thead><tbody>${rows}</tbody></table></div>
       <p class="mini" style="margin:8px 0 0;font-weight:800">💼 평가액 합계 ${fmtAPO(tot)} APO <span class="dim" style="font-weight:600">(투자원금 ${fmtAPO(cost)} · 총자산 ${fmtAPO((B.bal||0)+tot)})</span></p>`})()}
   </div>
