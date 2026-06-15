@@ -2123,7 +2123,7 @@ async function backfillSoloKills(){
   if(!confirm('라이엇 API로 솔로킬을 보강할게요.\n대상 '+targets.length+'경기 · 경기당 약 0.3초 걸려요. 진행할까요?'))return;
   window._backfilling=true;
   try{ if(typeof ddragonMap==='function')await ddragonMap(); }catch(e){} // 영문챔프→한글 매핑 보장
-  let done=0,fail=0,filled=0;
+  let done=0,fail=0,filled=0,matchedRows=0,firstErr='',unmatched=[];
   toast('솔로킬 보강 시작 — '+targets.length+'경기');
   for(let i=0;i<targets.length;i++){
     const m=targets[i];
@@ -2144,7 +2144,9 @@ async function backfillSoloKills(){
         };
       });
       (m.participants||[]).forEach(function(p){
-        const hit=byKey[p.team+'|'+canonChamp(p.championId||'')]; if(!hit)return;
+        const key=p.team+'|'+canonChamp(p.championId||''), hit=byKey[key];
+        if(!hit){ if(unmatched.length<10)unmatched.push(key+' (ID '+m.gameId+')'); return; }
+        matchedRows++;
         p.stats=p.stats||{};
         if(hit.soloKills!=null&&!('soloKills' in p.stats)){ p.stats.soloKills=hit.soloKills; filled++; }
         if(hit.kpPct!=null&&p.stats.kpPct==null)p.stats.kpPct=hit.kpPct;
@@ -2154,12 +2156,18 @@ async function backfillSoloKills(){
         if(hit.lvlLead!=null&&p.stats.lvlLead==null)p.stats.lvlLead=hit.lvlLead;
       });
       done++;
-    }catch(e){ fail++; if(String(e&&e.message||'').indexOf('429')>=0)await new Promise(r=>setTimeout(r,3000)); }
+    }catch(e){ fail++; if(!firstErr)firstErr=String(e&&e.message||e); if(String(e&&e.message||'').indexOf('429')>=0)await new Promise(r=>setTimeout(r,3000)); }
     await new Promise(r=>setTimeout(r,300)); // 레이트리밋 여유
   }
   save(); if(typeof render==='function')render('force');
   window._backfilling=false;
-  toast('솔로킬 보강 완료 — '+done+'경기 성공'+(fail?(', '+fail+'경기 실패'):'')+' · 선수 '+filled+'명 채움'+(fail?' (실패는 키 만료/429면 잠시 후 다시)':''));
+  try{ console.log('[솔로킬 백필] 대상',targets.length,'· 성공',done,'· 실패',fail,'· 매칭된 선수칸',matchedRows,'· 새로 채운 솔로킬',filled, unmatched.length?('· 매칭 실패 예시: '+unmatched.join(' / ')):''); }catch(e){}
+  let msg, bad=false;
+  if(done===0){ msg='보강 실패 — 라이엇 호출이 다 막혔어요'+(firstErr?(' ('+firstErr+')'):'')+'. 키 만료/중계서버 주소를 확인하고 다시 시도해주세요.'; bad=true; }
+  else if(matchedRows===0){ msg='경기 '+done+'개는 불러왔는데 선수 매칭이 0명이에요. 챔피언 이름이 안 맞는 듯 — F12 콘솔 로그를 보여주시면 고칠게요.'; bad=true; }
+  else if(filled===0){ msg='경기 '+done+'개·선수 '+matchedRows+'칸 매칭됐는데 새로 채운 솔로킬은 0이에요 (이미 다 있거나 그 경기 솔로킬이 0). 다른 지표는 갱신했어요.'; }
+  else{ msg='솔로킬 보강 완료 — '+done+'경기 · 선수 '+filled+'명 채움'+(fail?(' / '+fail+'경기 실패'):'')+'. 화면에 안 보이면 게시(업로드)까지 해주세요.'; }
+  toast(msg, bad);
 }
 async function riotImport(id){
   try{
