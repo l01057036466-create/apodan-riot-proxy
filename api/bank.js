@@ -1344,7 +1344,11 @@ module.exports = async function handler(req, res) {
       var cbOut = [];
       for (var ck = 0; ck < cbRaw.length; ck++) { try { var cc0 = JSON.parse(cbRaw[ck]); cc0.like = cbLikes[cc0.id] || 0; cbOut.push(cc0); } catch (e) {} }
       cbOut.sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
-      return res.status(200).json({ comments: cbOut, likes: cbLikes });
+      var cbHidden = (await redis(['SMEMBERS', 'cmtHide:' + cbBoard])) || [];
+      var cbOvArr = (await redis(['HGETALL', 'cmtOv:' + cbBoard])) || [];
+      var cbOv = {};
+      for (var oi = 0; oi + 1 < cbOvArr.length; oi += 2) { try { cbOv[cbOvArr[oi]] = JSON.parse(cbOvArr[oi + 1]); } catch (e) {} }
+      return res.status(200).json({ comments: cbOut, likes: cbLikes, hidden: cbHidden, overrides: cbOv });
     }
 
     if (req.method === 'POST' && action === 'cmtAdd') {
@@ -1356,6 +1360,7 @@ module.exports = async function handler(req, res) {
       var cbParent = _cbId(body.parent);
       if (!cbText) return res.status(400).json({ error: '내용을 입력해주세요' });
       var cbNick = cbWho.name || '운영자';
+      if ((cbWho.role === 'admin' || cbWho.role === 'dev') && body.nick) { var cbCN = String(body.nick).slice(0, 24).trim(); if (cbCN) cbNick = cbCN; } // 운영진은 닉네임 바꿔서 달 수 있음
       var cbUid = cbWho.name ? crypto.createHash('sha256').update('u|' + cbWho.name).digest('hex').slice(0, 12) : 'dev';
       var cbCd = await redis(['SET', 'cmtcd:' + cbUid + ':' + cbB2, '1', 'NX', 'EX', '1']);
       if (cbCd === null) return res.status(429).json({ error: '너무 빨라요 — 잠깐 뒤에 다시 ㅎㅎ' });
@@ -1419,13 +1424,37 @@ module.exports = async function handler(req, res) {
       var cbMe = await auth(body.token);
       if (!cbMe) return res.status(401).json({ error: '로그인이 필요해요' });
       var cbMeUid = cbMe.name ? crypto.createHash('sha256').update('u|' + cbMe.name).digest('hex').slice(0, 12) : 'dev';
+      var cbMod = (cbMe.role === 'dev' || cbMe.role === 'admin');
       var cbList = (await redis(['LRANGE', 'cmt:' + cbB4, '0', '799'])) || [];
       var cbTarget = null;
       for (var cj = 0; cj < cbList.length; cj++) { try { var ccx = JSON.parse(cbList[cj]); if (ccx.id === cbDid) { cbTarget = { raw: cbList[cj], c: ccx }; break; } } catch (e) {} }
-      if (!cbTarget) return res.status(404).json({ error: '댓글을 찾을 수 없어요' });
-      if (cbMe.role !== 'dev' && cbMeUid !== cbTarget.c.uid) return res.status(403).json({ error: '본인 댓글만 지울 수 있어요' });
-      await redis(['LREM', 'cmt:' + cbB4, '1', cbTarget.raw]);
-      return res.status(200).json({ ok: true, id: cbDid });
+      if (cbTarget) {
+        if (!cbMod && cbMeUid !== cbTarget.c.uid) return res.status(403).json({ error: '본인 댓글만 지울 수 있어요' });
+        await redis(['LREM', 'cmt:' + cbB4, '1', cbTarget.raw]);
+        return res.status(200).json({ ok: true, id: cbDid });
+      }
+      // 실제 댓글이 아니면 = 자동/AI 댓글 → 운영진만 숨김 처리
+      if (!cbMod) return res.status(404).json({ error: '댓글을 찾을 수 없어요' });
+      await redis(['SADD', 'cmtHide:' + cbB4, cbDid]);
+      await redis(['EXPIRE', 'cmtHide:' + cbB4, SEC_CMT]);
+      return res.status(200).json({ ok: true, id: cbDid, hidden: true });
+    }
+
+    if (req.method === 'POST' && action === 'cmtOverride') {
+      var ovB = _cbBoard(body.board);
+      var ovId = _cbId(body.id);
+      if (!ovB || !ovId) return res.status(400).json({ error: '요청 형식 오류' });
+      var ovWho = await auth(body.token);
+      if (!ovWho) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(ovWho.role === 'admin' || ovWho.role === 'dev')) return res.status(403).json({ error: '운영진만 편집할 수 있어요' });
+      if (body.remove) { await redis(['HDEL', 'cmtOv:' + ovB, ovId]); return res.status(200).json({ ok: true, id: ovId, removed: true }); }
+      var ovText = _cbClip(body.text, 280);
+      if (!ovText) return res.status(400).json({ error: '내용을 입력해주세요' });
+      var ovObj = { text: ovText };
+      if (body.nick) { var ovN = String(body.nick).slice(0, 24).trim(); if (ovN) ovObj.nick = ovN; }
+      await redis(['HSET', 'cmtOv:' + ovB, ovId, JSON.stringify(ovObj)]);
+      await redis(['EXPIRE', 'cmtOv:' + ovB, SEC_CMT]);
+      return res.status(200).json({ ok: true, id: ovId, override: ovObj });
     }
 
     if (req.method === 'GET' && action === 'cmtNotif') {
