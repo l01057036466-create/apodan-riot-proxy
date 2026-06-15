@@ -22884,20 +22884,20 @@
   },
   {
    "id": "m_sf0tos5mqf6s0ri",
-   "createdAt": "2026-06-15T12:25:28.542Z",
    "playedAt": "2026-06-15",
    "setNumber": 1,
    "winnerTeam": "RED",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "p_wqf3x0omq7ub77q",
    "gameId": "8260248887",
    "durationMin": 16,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-15T12:25:28.542Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "이서하",
      "playerId": "p_h7k04k4c_mq7nhxuq",
+     "rawName": "이서하",
      "championId": "나르",
      "kills": 3,
      "deaths": 5,
@@ -22924,8 +22924,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "MEVIUS 01",
      "playerId": "p_4siqelqmq7ub77p",
+     "rawName": "MEVIUS 01",
      "championId": "렝가",
      "kills": 3,
      "deaths": 8,
@@ -22952,8 +22952,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "차연서",
      "playerId": "p_ybyb79mg_mq7nhxup",
+     "rawName": "차연서",
      "championId": "오리아나",
      "kills": 1,
      "deaths": 4,
@@ -22980,8 +22980,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "시비르",
      "kills": 0,
      "deaths": 4,
@@ -23008,8 +23008,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "건뭉이",
      "playerId": "p_bqvhy1r3_mq7nhxuq",
+     "rawName": "건뭉이",
      "championId": "쓰레쉬",
      "kills": 0,
      "deaths": 5,
@@ -23036,8 +23036,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "세계최강초절정미소녀혜지공쥬등장",
      "playerId": "p_3v5tiwk3_mq7nhxuq",
+     "rawName": "세계최강초절정미소녀혜지공쥬등장",
      "championId": "이렐리아",
      "kills": 3,
      "deaths": 3,
@@ -23064,8 +23064,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "잭 슨",
      "playerId": "p_imjto1qf_mq7nhxuq",
+     "rawName": "잭 슨",
      "championId": "뽀삐",
      "kills": 7,
      "deaths": 3,
@@ -23092,8 +23092,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "팀원죽이기",
      "playerId": "p_07v55ab9_mq7nhxuq",
+     "rawName": "팀원죽이기",
      "championId": "라이즈",
      "kills": 5,
      "deaths": 1,
@@ -23120,8 +23120,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "루시안",
      "kills": 11,
      "deaths": 0,
@@ -23148,8 +23148,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "자야놀자야",
      "playerId": "p_so05ompmq7ub77q",
+     "rawName": "자야놀자야",
      "championId": "밀리오",
      "kills": 0,
      "deaths": 0,
@@ -23219,20 +23219,20 @@
   },
   {
    "id": "m_alimz9emqf6s0rt",
-   "createdAt": "2026-06-15T12:25:28.553Z",
    "playedAt": "2026-06-15",
    "setNumber": 2,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8260294601",
    "durationMin": 28,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-15T12:25:28.553Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "세계최강초절정미소녀혜지공쥬등장",
      "playerId": "p_3v5tiwk3_mq7nhxuq",
+     "rawName": "세계최강초절정미소녀혜지공쥬등장",
      "championId": "일라오이",
      "kills": 7,
      "deaths": 5,
@@ -23259,8 +23259,8 @@
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "잭 슨",
      "playerId": "p_imjto1qf_mq7nhxuq",
+     "rawName": "잭 슨",
      "championId": "판테온",
      "kills": 11,
      "deaths": 8,
@@ -23287,8 +23287,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "팀원죽이기",
      "playerId": "p_07v55ab9_mq7nhxuq",
+     "rawName": "팀원죽이기",
      "championId": "아리",
      "kills": 11,
      "deaths": 3,
@@ -23315,8 +23315,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "진",
      "kills": 10,
      "deaths": 2,
@@ -23343,8 +23343,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "자야놀자야",
      "playerId": "p_so05ompmq7ub77q",
+     "rawName": "자야놀자야",
      "championId": "세라핀",
      "kills": 1,
      "deaths": 3,
@@ -23371,8 +23371,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "이서하",
      "playerId": "p_h7k04k4c_mq7nhxuq",
+     "rawName": "이서하",
      "championId": "다리우스",
      "kills": 7,
      "deaths": 10,
@@ -23399,8 +23399,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "MEVIUS 01",
      "playerId": "p_4siqelqmq7ub77p",
+     "rawName": "MEVIUS 01",
      "championId": "우디르",
      "kills": 7,
      "deaths": 7,
@@ -23427,8 +23427,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "차연서",
      "playerId": "p_ybyb79mg_mq7nhxup",
+     "rawName": "차연서",
      "championId": "말파이트",
      "kills": 4,
      "deaths": 7,
@@ -23455,8 +23455,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "징크스",
      "kills": 2,
      "deaths": 8,
@@ -23483,8 +23483,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "건뭉이",
      "playerId": "p_bqvhy1r3_mq7nhxuq",
+     "rawName": "건뭉이",
      "championId": "노틸러스",
      "kills": 1,
      "deaths": 8,
@@ -23656,14 +23656,15 @@
    ]
   }
  ],
- "rev": 265,
- "updatedAt": "2026-06-15T12:29:12.434Z",
+ "rev": 267,
+ "updatedAt": "2026-06-15T15:11:56.711Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
  ],
  "nameReqs": [],
  "mvpPaid": {
-  "2026-06-15": true
+  "2026-06-15": true,
+  "2026-06-15#2": true
  }
 }
