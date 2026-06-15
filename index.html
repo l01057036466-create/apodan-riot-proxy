@@ -6341,8 +6341,7 @@ function scratchFx(prize,jackpot,pot){ // 🎫 누적 복권: 긁기 1.1초 → 
           setTimeout(()=>{el.remove();done()},2500);
         } else {
           if(sn){
-            if(prize>0){sn.textContent='+'+fmt(prize)+' APO';sn.style.color='var(--win)';if(sb)sb.textContent='위로상 당첨! 🎉'}
-            else{sn.textContent='꽝…';sn.style.color='var(--lose)';if(sb)sb.innerHTML=`풀에 적립됐어요 · 현재 풀 <b style="color:var(--gold)">${fmtAPO(pot||0)}</b>`}
+            sn.textContent='+'+fmt(prize)+' APO';sn.style.color='var(--win)';if(sb)sb.innerHTML=`당첨! 🎉 <span class="dim">풀 ${fmtAPO(pot||0)}</span>`;
             sn.style.transition='.18s';sn.style.transform='scale(1.16)';
           }
           setTimeout(()=>{el.remove();done()},prize>0?1400:1300);
@@ -6355,7 +6354,7 @@ async function arcadeScratch(){
   if(window._scrBusy)return;window._scrBusy=true;
   try{const j=await bankCall('scratch',{});if(window._bank)window._bank.bal=j.bal;
     await scratchFx(j.prize,!!j.jackpot,j.pot);
-    toast(j.jackpot?`🎫💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:j.prize>0?`🎫 위로상 +${fmtAPO(j.prize)} APO! (오늘 한도 ${fmtAPO(j.capLeft)} 남음)`:`🎫 꽝… 풀 ${fmtAPO(j.pot)} (오늘 한도 ${fmtAPO(j.capLeft)} 남음)`,j.prize===0&&!j.jackpot);
+    toast(j.jackpot?`🎫💥 잭팟!! 누적 풀 ${fmtAPO(j.prize)} APO 독식!!`:`🎫 +${fmtAPO(j.prize)} APO 당첨! (오늘 한도 ${fmtAPO(j.capLeft)} 남음)`);
     fetchArcade();bankSync(true);render()}
   catch(e){toast(e.message,true)}
   finally{window._scrBusy=false}
@@ -6380,10 +6379,12 @@ function pachinkoFx(res){ // 🎰 빠칭코: 번호 릴 → 추첨번호 공개 
         const e=document.getElementById('pcNum');if(e){e.textContent=res.winNum;e.style.transition='.2s';e.style.transform='scale(1.14)'}
         setTimeout(()=>{
           const rk=document.getElementById('pcRank'),card=document.getElementById('pcCard');
-          const col=res.rank<=2?'var(--gold)':res.rank===3?'var(--win)':res.rank<=6?'var(--win)':res.rank>=10?'var(--lose)':'var(--text)';
-          const LB=['','🥇 1등 — 잭팟 적중!!','🥈 2등','🥉 3등','4등','5등','6등 (본전)','7등','8등','9등','10등 (꽝)'];
-          const money=res.prize>0?`+${fmt(res.prize)} APO`:'+0';
-          if(rk)rk.innerHTML=`<div style="font-size:21px;font-weight:900;color:${col};margin-top:4px">${LB[res.rank]}</div><div style="font-size:16px;font-weight:900;color:${col}">${money}</div>${res.rank===1?'<div class="mini" style="color:var(--gold);margin-top:1px">누적 잭팟 전액 + 다음 판으로!</div>':''}`;
+          const col=res.guard?'#3fd9c5':res.rank<=2?'var(--gold)':res.rank<=5?'var(--win)':'var(--text)';
+          const LB=['','🥇 1등 — 잭팟 적중!!','🥈 2등','🥉 3등','4등','5등','6등 (본전)','7등','8등','9등'];
+          const label=res.guard?'🛡 꽝방지 보장!':LB[res.rank];
+          const money=`+${fmt(res.prize)} APO`;
+          const sub=res.rank===1?'<div class="mini" style="color:var(--gold);margin-top:1px">누적 잭팟 전액 + 다음 판으로!</div>':res.guard?'<div class="mini" style="color:#3fd9c5;margin-top:1px">5판 연속 아쉬워서 본전 돌려드림 🛡</div>':(typeof res.streak==='number'&&res.streak>0?`<div class="mini dim" style="margin-top:1px">🛡 보장까지 ${5-res.streak}판</div>`:'');
+          if(rk)rk.innerHTML=`<div style="font-size:21px;font-weight:900;color:${col};margin-top:4px">${label}</div><div style="font-size:16px;font-weight:900;color:${col}">${money}</div>${sub}`;
           if(e)e.style.color=col;
           if(big&&card)card.style.boxShadow=`0 0 60px ${col}, 0 18px 60px rgba(0,0,0,.55)`;
           setTimeout(()=>{el.remove();done()},big?2400:1300);
@@ -6399,8 +6400,9 @@ async function arcadePachinko(){
   window._pcBusy=true;
   try{const j=await bankCall('pachinko',{pick});if(window._bank)window._bank.bal=j.bal;
     await pachinkoFx(j);
-    const msg=j.rank===1?`🎰💥 1등 잭팟!! +${fmtAPO(j.prize)} APO!!`:j.prize>=5000?`🎰 ${j.rank}등! +${fmtAPO(j.prize)} APO (한도 ${fmtAPO(j.capLeft)} 남음)`:j.prize>0?`🎰 ${j.rank}등 +${fmtAPO(j.prize)} (한도 ${fmtAPO(j.capLeft)} 남음)`:`🎰 ${j.rank}등 꽝… (한도 ${fmtAPO(j.capLeft)} 남음)`;
-    toast(msg,j.prize===0);
+    if(window._arcade)window._arcade.pcnStreak=j.streak;
+    const msg=j.rank===1?`🎰💥 1등 잭팟!! +${fmtAPO(j.prize)} APO!!`:j.guard?`🛡 꽝방지 보장! 본전 +${fmtAPO(j.prize)} APO`:`🎰 ${j.rank}등 +${fmtAPO(j.prize)} APO (한도 ${fmtAPO(j.capLeft)} 남음)`;
+    toast(msg);
     fetchArcade();bankSync(true);render()}
   catch(e){toast('🎰 '+e.message,true)}
   finally{window._pcBusy=false}
@@ -6486,7 +6488,7 @@ function moneyRain(name){ // 💸 돈다발 이펙트 (3.5초)
 }
 async function fetchArcade(){
   if(!voteApiBase())return;
-  try{const r=await fetch(voteApiBase()+'/api/bank?action=arcade');const j=await r.json().catch(()=>({}));if(r.ok)window._arcade=j}catch(e){}
+  try{const r=await fetch(voteApiBase()+'/api/bank?action=arcade'+(bankToken()?'&token='+encodeURIComponent(bankToken()):''));const j=await r.json().catch(()=>({}));if(r.ok)window._arcade=j}catch(e){}
 }
 async function fetchMissions(){
   if(!voteApiBase()||!bankToken())return;
@@ -6541,16 +6543,17 @@ function arcadeHtml(B){
   return`<div class="card" style="margin-top:14px">
     <div style="border:1px solid rgba(242,184,75,.45);border-radius:14px;padding:12px;text-align:center;background:linear-gradient(150deg,rgba(242,184,75,.1),transparent);margin-bottom:12px">
       <div class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:900">🎰 빠칭코 잭팟</div>
-      <div style="font-size:30px;font-weight:900;color:var(--gold)">${fmtAPO(A.pcnpot||10000)} <span style="font-size:13px">APO</span></div>
-      <div class="mini dim" style="margin-top:1px">🎫 복권 누적 풀 <b style="color:var(--gold)">${fmtAPO(A.jackpot||5000)}</b> APO</div>
+      <div style="font-size:30px;font-weight:900;color:var(--gold)">${fmtAPO(A.pcnpot||30000)} <span style="font-size:13px">APO</span></div>
+      <div class="mini dim" style="margin-top:1px">🎫 복권 누적 풀 <b style="color:var(--gold)">${fmtAPO(A.jackpot||2000)}</b> APO</div>
       ${A.news&&A.news[0]?`<div class="mini dim" style="margin-top:2px">최근 당첨: <b>${esc(A.news[0].n)}</b> +${fmtAPO(A.news[0].v)} APO 🎉</div>`:''}
+      ${typeof A.pcnStreak==='number'&&A.pcnStreak>0?`<div class="mini" style="margin-top:3px;color:#3fd9c5;font-weight:800">🛡 빠칭코 꽝방지: 보장까지 ${5-A.pcnStreak}판 (5판 연속 손해 시 본전 보장)</div>`:''}
     </div>
     <div class="grid c3" style="gap:10px">
       ${game('🎴','데일리 이치방쿠지','매일 무료 1회 · 7일 연속 출석 시 2회 · 꽝 없는 등급뽑기',`<button class="btn gold" style="width:100%;font-size:14px" onclick="arcadeSpin()">무료로 뽑기</button>`)}
-      ${game('🎫','누적 복권','한 장 500 APO · 당첨까지 풀이 계속 쌓여요 · 하루 한도 3만(통합)',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">500 APO로 긁기</button>`)}
-      ${game('🎰','빠칭코 넘버','참가비 5,000 · 1~100 적중 시 잭팟! · 하루 한도 3만(통합)',`<div class="row" style="gap:4px;justify-content:center"><input id="pcPick" type="number" min="1" max="100" placeholder="1~100" style="width:70px;text-align:center;font-weight:900;font-size:15px;color:var(--text);background:var(--inset);border:1px solid var(--gold)"><button class="btn ghost" style="padding:6px 9px" onclick="pcRandom()">🎲</button><button class="btn lose" style="font-weight:900" onclick="arcadePachinko()">베팅!</button></div>`)}
+      ${game('🎫','누적 복권','한 장 500 APO · 꽝 없음(최저 200 환급) · 2% 풀 전액 잭팟 · 하루 한도 3만',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">500 APO로 긁기</button>`)}
+      ${game('🎰','빠칭코 넘버','참가비 5,000 · 꽝 없음 · 🛡 5연속 손해 시 본전 보장 · 적중 시 잭팟(최소 3만)',`<div class="row" style="gap:4px;justify-content:center"><input id="pcPick" type="number" min="1" max="100" placeholder="1~100" style="width:70px;text-align:center;font-weight:900;font-size:15px;color:var(--text);background:var(--inset);border:1px solid var(--gold)"><button class="btn ghost" style="padding:6px 9px" onclick="pcRandom()">🎲</button><button class="btn lose" style="font-weight:900" onclick="arcadePachinko()">베팅!</button></div>`)}
     </div>
-    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(A~E상, 꽝 없음·소소) · 🎫 누적 복권: 한 장 500, 90%가 풀에 쌓이고 2% 확률로 풀 전액 독식(당첨까지 계속 누적) · 🎰 빠칭코: 5,000 참가, 내 번호(1~100)가 추첨번호와 맞으면 1등=누적 잭팟, 아니면 2~10등 차등(환급률 ~85%). 💰 복권·빠칭코는 하루 합쳐 <b>30,000 APO</b>까지만 쓸 수 있어요(통합 한도 — 멘붕 방지). 오래 하면 은행이 이깁니다 — 복구는 내전 수당으로! 🏦</p></details>
+    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(꽝 없음) · 🎫 누적 복권: 한 장 500, <b>꽝 없이 최저 200 환급</b>, 2% 확률로 풀 전액 독식(환급률 ~95%) · 🎰 빠칭코: 5,000 참가, <b>꽝 없음</b>(최저 1,500 환급), 내 번호(1~100) 적중 시 1등=잭팟(최소 3만 보장), 아니면 2~9등 차등. 🛡 <b>꽝방지 게이지</b> — 5판 연속 본전(5,000) 미만이면 다음 판 본전 보장(연속 손해 차단). 환급률 ~95~97%라 천천히 즐기는 용이에요. 💰 복권·빠칭코는 하루 합쳐 <b>30,000 APO</b>까지(통합 한도 — 멘붕 방지). 큰 한 방은 잭팟! 거래소·배당이 메인이고 게임은 양념입니다 🏦</p></details>
     <p class="mini" style="margin:12px 0 4px;font-weight:800">📋 주간 미션 <span class="tag">자동 집계 · 달성 후 '받기' 눌러 수령</span></p>
     ${Object.entries(MD).map(([k,d])=>{const c=M.count[k]||0,done=c>=d[2],got=(M.claimed||[]).includes(k);
       return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${Math.min(c,d[2])}/${d[2]}</b></span>
