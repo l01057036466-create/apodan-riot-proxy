@@ -5339,9 +5339,9 @@ function communityFeed(L){
   // 베스트 3 = 추천 최상위 (작성시각도 좀 더 이르게), 나머지는 최신순(섞인 순서)
   const byLike=rows.slice().sort((a,b)=>b.like-a.like);
   const bestSet=new Set(byLike.slice(0,3).map(r=>r._o));
-  byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r.ago=ccAgo(40+i*25+rng()*120)});
+  byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r._agoMin=40+i*25+rng()*120;r.ago=ccAgo(r._agoMin)});
   let acc=0;
-  rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
+  rows.forEach(r=>{ if(!bestSet.has(r._o)){ r._agoMin=acc; r.ago=ccAgo(acc); acc+=1+rng()*18; } });
   const board=_cmtBoard(L.id);
   maybeLoadCmts(board);
   rows.forEach(r=>{ r.id='f|'+board+'|'+r._o; r.best=bestSet.has(r._o); });
@@ -5422,9 +5422,9 @@ function resultFeed(m){
   }
   const byLike=rows.slice().sort((a,b)=>b.like-a.like);
   const bestSet=new Set(byLike.slice(0,3).map(r=>r._o));
-  byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r.ago=ccAgo(40+i*25+rng()*120)});
+  byLike.slice(0,3).forEach((r,i)=>{r.like=Math.max(r.like,90+Math.floor(rng()*260));r._agoMin=40+i*25+rng()*120;r.ago=ccAgo(r._agoMin)});
   let acc=0;
-  rows.forEach(r=>{ if(!bestSet.has(r._o)){ r.ago=ccAgo(acc); acc+=1+rng()*18; } });
+  rows.forEach(r=>{ if(!bestSet.has(r._o)){ r._agoMin=acc; r.ago=ccAgo(acc); acc+=1+rng()*18; } });
   const board=_cmtBoard('m:'+m.id);
   maybeLoadCmts(board);
   rows.forEach(r=>{ r.id='f|'+board+'|'+r._o; r.best=bestSet.has(r._o); });
@@ -5574,21 +5574,8 @@ function cmtComposer(board,parent){
 /* 보드 전체 렌더: 가짜 top + 가짜 답글 + 실제 댓글/답글 혼합 (실제는 최신이 위로) */
 function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
   const repliesByParent={};
-  // 1) 가짜 답글 (45% 확률, 1~2개) — 티키타카 (부모/형제와 중복 안 되게)
-  fakeTops.forEach(function(t){
-    if(rng()<0.45){
-      const n=1+Math.floor(rng()*2), reps=[], seen={}, ptext=String(t.text||'').trim();
-      for(let i=0;i<n;i++){
-        const txt=apoReplyUniq(t.text, t.nick, rng, ptext, seen, CC_REPLY); seen[txt]=1;
-        reps.push({ id:t.id+'|fr'+i, nick:ccNick(rng,roster), text:txt,
-          ava:_ccPick(CC_AVA,rng), bg:_ccPick(CC_AVA_BG,rng),
-          like:Math.floor(Math.pow(rng(),2.6)*45), ago:ccAgo(Math.floor(rng()*100)),
-          real:false, best:false, parent:t.id, _ts:0 });
-      }
-      repliesByParent[t.id]=reps;
-    }
-  });
-  // 2) 실제 댓글 병합
+  const _now=Date.now();
+  // 1) 실제 댓글 병합 (먼저 — 가짜 댓글 시간 보정에 필요)
   const real=(window._cmtCache&&window._cmtCache[board])||[];
   const realTops=[];
   real.forEach(function(rc){
@@ -5598,22 +5585,45 @@ function cmtBoardHTML(board,fakeTops,rng,roster,title,note){
     else realTops.push(o);
   });
   realTops.sort(function(a,b){ return (b._ts||0)-(a._ts||0); }); // 실제 최신이 위
-  // 2.5) NPC 자동 답글 — 내 댓글 단어/키워드에 맞춰 답글 (시드=댓글id → 동일), 시간은 내 댓글 시각 기준 ("방금"→흐름)
+  // 2) NPC 자동 답글 — 내 댓글 시각 기준 (항상 부모보다 새로움), 단어/키워드 맞춤 + 중복 방지
   realTops.forEach(function(rt){
     const rr=_ccRng(_ccHash('npc|'+rt.id));
-    const n=1+Math.floor(rr()*2), reps=[], seen={}, ptext=String(rt.text||'').trim(); // 유저 댓글마다 항상 1~2개 반응
-    const baseTs=rt._ts||Date.now();
-    const off=8000+Math.floor(rr()*82000); // 답글 간격 8~90초 (내 댓글 직후 → "방금 전")
+    const n=1+Math.floor(rr()*2), reps=[], seen={}, ptext=String(rt.text||'').trim();
+    const baseTs=rt._ts||_now;
+    const off=8000+Math.floor(rr()*82000); // 8~90초 후
     for(let i=0;i<n;i++){
       const npcTs=baseTs+off*(i+1);
       const txt=apoReplyUniq(rt.text, rt.nick, rr, ptext, seen, CC_NPC_REPLY); seen[txt]=1; // 🧠 키워드/밈 맞춤 + 부모/형제 중복 방지
       reps.push({ id:'npc|'+rt.id+'|'+i, nick:ccNick(rr,roster), text:txt,
         ava:_ccPick(CC_AVA,rr), bg:_ccPick(CC_AVA_BG,rr),
-        like:Math.floor(Math.pow(rr(),2.6)*30), ago:ccAgoTs(npcTs), // ⏱ 내 댓글 시각 기준 — 시간 지나면 자동으로 흐름
+        like:Math.floor(Math.pow(rr(),2.6)*30), ago:ccAgoTs(npcTs), // ⏱ 내 댓글 시각 기준 — 시간 지나면 자동 흐름
         real:false, best:false, parent:rt.id, _ts:npcTs });
     }
     repliesByParent[rt.id]=reps.concat(repliesByParent[rt.id]||[]);
   });
+  // 3) 가짜 top 시간 보정: 실제 답글이 달린 가짜 댓글은 그 답글보다 더 오래되게 (부모가 답글보다 새로 보이는 문제 방지)
+  fakeTops.forEach(function(t){
+    if(t._agoMin==null)t._agoMin=0;
+    let mx=0; (repliesByParent[t.id]||[]).forEach(function(rp){ const m=(_now-(rp._ts||_now))/60000; if(m>mx)mx=m; });
+    if(mx>0 && t._agoMin<mx+1){ t._agoMin=mx+1+rng()*8; t.ago=ccAgo(t._agoMin); }
+    t._ts=_now-(t._agoMin||0)*60000;
+  });
+  // 4) 가짜 답글 (45% 확률, 1~2개) — 항상 부모보다 새롭게 + 부모/형제 중복 방지
+  fakeTops.forEach(function(t){
+    if(rng()<0.45){
+      const pRound=Math.max(0,Math.round(t._agoMin||0)), n=1+Math.floor(rng()*2), seen={}, ptext=String(t.text||'').trim(), nreps=[];
+      for(let i=0;i<n;i++){
+        const txt=apoReplyUniq(t.text, t.nick, rng, ptext, seen, CC_REPLY); seen[txt]=1;
+        const repMin=pRound<=0?0:pRound*(0.1+rng()*0.85); // 부모(반올림) 나이의 10~95% → 표시상 절대 부모보다 늙지 않음
+        nreps.push({ id:t.id+'|fr'+i, nick:ccNick(rng,roster), text:txt,
+          ava:_ccPick(CC_AVA,rng), bg:_ccPick(CC_AVA_BG,rng),
+          like:Math.floor(Math.pow(rng(),2.6)*45), ago:ccAgo(repMin),
+          real:false, best:false, parent:t.id, _ts:_now-repMin*60000 });
+      }
+      repliesByParent[t.id]=nreps.concat(repliesByParent[t.id]||[]);
+    }
+  });
+  // 5) 답글 시간순 정렬 (오래된 → 최신)
   Object.keys(repliesByParent).forEach(function(k){ repliesByParent[k].sort(function(a,b){ return (a._ts||0)-(b._ts||0); }); });
   // 3) top 순서: 실제(최신) → 가짜(BEST 먼저)
   let tops=realTops.concat(fakeTops);
