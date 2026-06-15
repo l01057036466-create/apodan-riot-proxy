@@ -619,6 +619,10 @@ module.exports = async function handler(req, res) {
         }
       }
       await savePx(SP);
+      if (Array.isArray(body.halted)) { // 🚫 휴면·탈퇴 멤버 = 거래정지 목록 (운영진 시세 동기화 시 갱신)
+        var haltArr = body.halted.filter(function (x) { return nameOk(x); }).slice(0, 800);
+        await redis(['SET', 'stock:halt', JSON.stringify(haltArr)]);
+      }
       return res.status(200).json({ ok: true, updated: nP });
     }
 
@@ -629,6 +633,11 @@ module.exports = async function handler(req, res) {
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
+      var haltL = JSON.parse((await redis(['GET', 'stock:halt'])) || '[]'); // 🚫 휴면·탈퇴 멤버 = 거래정지
+      if (haltL.indexOf(tgt) >= 0) {
+        if (action === 'stockBuy') return res.status(403).json({ error: '🚫 거래 정지 종목 (휴면·탈퇴 멤버) — 매수할 수 없어요' });
+        return res.status(403).json({ error: '🚫 거래 정지 종목 — 포트폴리오에서 [🏷 최하한가 정리]로만 처분할 수 있어요' });
+      }
       if (!(await acctLock(sT.name))) return res.status(429).json({ error: '주문 처리 중 — 잠시 후 다시 시도해주세요' });
       try {
       var aPre = await getAcct(sT.name);
@@ -729,6 +738,32 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, bal: aT.bal, price: execS, newPrice: execS, base: SX.base[tgt] || 100, prem: SX.prem[tgt] || 0 });
       }
       } finally { await acctUnlock(sT.name); }
+    }
+
+    // ═══ 🏷 최하한가 정리 (휴면·탈퇴 멤버 주식을 보유한 사람의 강제 처분 — 거래정지 종목 탈출구) ═══
+    if (req.method === 'POST' && action === 'stockLiquidate') {
+      var sLq = await auth(body.token);
+      if (!sLq || !sLq.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var tgtLq = nameOk(body.target);
+      if (!tgtLq) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
+      if (!(await acctLock(sLq.name))) return res.status(429).json({ error: '주문 처리 중 — 잠시 후 다시 시도해주세요' });
+      try {
+        var aLq = (await getAcct(sLq.name)) || sLq.acct;
+        var hLqRaw = await redis(['GET', 'hold:' + aLq.name]);
+        var hLq = hLqRaw ? JSON.parse(hLqRaw) : {};
+        var posLq = hLq[tgtLq];
+        if (!posLq || posLq.q < 1) return res.status(400).json({ error: '"' + tgtLq + '" 보유분이 없어요' });
+        var qLq = posLq.q, FLOOR = 10;
+        var recover = FLOOR * qLq; // 최하한가 전량 정리 (수수료 없음 — 강제 정리라 배려)
+        aLq.pnl = (Number(aLq.pnl) || 0) + (recover - posLq.avg * qLq); // 실현손익(대부분 손실 확정)
+        aLq.bal += recover;
+        delete hLq[tgtLq];
+        await redis(['SET', 'hold:' + aLq.name, JSON.stringify(hLq)]);
+        await putAcct(aLq);
+        await ledger(aLq.name, '🏷 최하한가 정리 ' + tgtLq + ' ' + qLq + '주 @' + FLOOR + ' (휴면·탈퇴 종목)', recover, aLq.bal);
+        aLq = await busted(aLq);
+        return res.status(200).json({ ok: true, bal: aLq.bal, recovered: recover, qty: qLq });
+      } finally { await acctUnlock(sLq.name); }
     }
 
     // ═══ 🌅 시즌 전체 초기화 (개발자 전용): 모두 기본 자본 10,000부터 ═══
@@ -1498,6 +1533,110 @@ module.exports = async function handler(req, res) {
       var rNow = Date.now();
       await redis(['SET', 'cmtNread:' + rUid, String(rNow), 'EX', SEC_CMT]);
       return res.status(200).json({ ok: true, lastRead: rNow });
+    }
+
+    // ═══ 🎨 캐릭터 (메이플식 꾸미기 — 부위별 착장 + 슬롯 + 상점) ═══
+    // 가격은 서버가 진실: 새 아이템 추가 시 여기 가격 + index.html 비주얼 둘 다 넣기 (id로 연결)
+    var CHAR_DEFAULT_EQ = { skin: 'sk_a', face: 'fc_smile', hair: 'hr_short', hat: 'ht_none', top: 'tp_tee', bottom: 'bt_jean', shoes: 'sh_sneak' };
+    var CHAR_FREE = ['sk_a', 'sk_b', 'sk_c', 'fc_smile', 'hr_short', 'ht_none', 'tp_tee', 'bt_jean', 'sh_sneak']; // 기본 제공 (전원 보유)
+    var CHAR_PRICE = { fc_cool: 5000, fc_wink: 5000, hr_long: 10000, hr_curl: 15000, ht_cap: 14000, ht_beanie: 12000, ht_crown: 80000, tp_hood: 18000, tp_base: 35000, tp_lol: 40000, bt_short: 7000, bt_skirt: 12000, sh_dress: 11000 };
+    var CHAR_PRESETS = {
+      ps_base: { price: 60000, eq: { skin: 'sk_a', bottom: 'bt_short', top: 'tp_base', shoes: 'sh_sneak', face: 'fc_cool', hair: 'hr_short', hat: 'ht_cap' } },
+      ps_lol: { price: 70000, eq: { skin: 'sk_b', bottom: 'bt_jean', top: 'tp_lol', shoes: 'sh_sneak', face: 'fc_wink', hair: 'hr_curl', hat: 'ht_none' } },
+      ps_royal: { price: 120000, eq: { skin: 'sk_a', bottom: 'bt_skirt', top: 'tp_hood', shoes: 'sh_dress', face: 'fc_smile', hair: 'hr_long', hat: 'ht_crown' } }
+    };
+    var CHAR_SLOT_PRICE = 100000, CHAR_SLOT_MAX = 5;
+    function charInit(a) {
+      if (!a.char || typeof a.char !== 'object') a.char = {};
+      if (!Array.isArray(a.char.slots) || !a.char.slots.length) a.char.slots = [{ eq: Object.assign({}, CHAR_DEFAULT_EQ) }];
+      a.char.slots = a.char.slots.slice(0, CHAR_SLOT_MAX).map(function (s) { return { eq: Object.assign({}, CHAR_DEFAULT_EQ, (s && s.eq) || {}) }; });
+      if (typeof a.char.active !== 'number' || a.char.active < 0 || a.char.active >= a.char.slots.length) a.char.active = 0;
+      if (!Array.isArray(a.char.owned)) a.char.owned = [];
+      return a.char;
+    }
+    function charOwns(c, id) { return !id || CHAR_FREE.indexOf(id) >= 0 || c.owned.indexOf(id) >= 0; }
+
+    if (req.method === 'GET' && action === 'char') {
+      var who = String(q.name || '').trim();
+      if (who) { // 남의 캐릭터 (프로필 보기) — 공개, owned는 숨김
+        var aoC = await getAcct(who);
+        if (!aoC) return res.status(404).json({ error: '없는 멤버' });
+        var coC = charInit(aoC);
+        return res.status(200).json({ name: aoC.name, char: { slots: coC.slots, active: coC.active } });
+      }
+      var sC = await auth(q.token);
+      if (!sC || !sC.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aC = await getAcct(sC.name); var cC = charInit(aC);
+      await putAcct(aC);
+      return res.status(200).json({ name: aC.name, bal: aC.bal, char: cC });
+    }
+    if (req.method === 'POST' && action === 'charEquip') {
+      var sCE = await auth(body.token);
+      if (!sCE || !sCE.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aCE = await getAcct(sCE.name); var cCE = charInit(aCE);
+      var eqIn = body.eq && typeof body.eq === 'object' ? body.eq : {};
+      var newEq = Object.assign({}, cCE.slots[cCE.active].eq);
+      for (var k in eqIn) { var iid = String(eqIn[k] || ''); if (!charOwns(cCE, iid)) return res.status(403).json({ error: '보유하지 않은 아이템: ' + iid }); newEq[k] = iid; }
+      cCE.slots[cCE.active].eq = newEq;
+      await putAcct(aCE);
+      return res.status(200).json({ ok: true, char: cCE });
+    }
+    if (req.method === 'POST' && action === 'charBuy') {
+      var sCB = await auth(body.token);
+      if (!sCB || !sCB.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var bid = String(body.item || ''); var bp = CHAR_PRICE[bid];
+      if (bp == null) return res.status(400).json({ error: '없는 아이템' });
+      if (!(await acctLock(sCB.name))) return res.status(429).json({ error: '잠시 후 다시 시도해주세요' });
+      try {
+        var aCB = await getAcct(sCB.name); var cCB = charInit(aCB);
+        if (charOwns(cCB, bid)) return res.status(409).json({ error: '이미 보유 중이에요' });
+        if (aCB.bal < bp) return res.status(400).json({ error: 'APO 부족 (' + bp + ' 필요)' });
+        aCB.bal -= bp; cCB.owned.push(bid);
+        if (body.equip && body.slot) cCB.slots[cCB.active].eq[String(body.slot)] = bid;
+        await putAcct(aCB);
+        await ledger(aCB.name, '🎨 꾸미기 아이템 — ' + bid, -bp, aCB.bal);
+        return res.status(200).json({ ok: true, bal: aCB.bal, char: cCB });
+      } finally { await acctUnlock(sCB.name); }
+    }
+    if (req.method === 'POST' && action === 'charPreset') {
+      var sCP = await auth(body.token);
+      if (!sCP || !sCP.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var pid = String(body.preset || ''); var ps = CHAR_PRESETS[pid];
+      if (!ps) return res.status(400).json({ error: '없는 세트' });
+      if (!(await acctLock(sCP.name))) return res.status(429).json({ error: '잠시 후 다시 시도해주세요' });
+      try {
+        var aCP = await getAcct(sCP.name); var cCP = charInit(aCP);
+        if (aCP.bal < ps.price) return res.status(400).json({ error: 'APO 부족 (' + ps.price + ' 필요)' });
+        aCP.bal -= ps.price;
+        for (var sk in ps.eq) { var sid = ps.eq[sk]; if (!charOwns(cCP, sid)) cCP.owned.push(sid); }
+        cCP.slots[cCP.active].eq = Object.assign({}, CHAR_DEFAULT_EQ, ps.eq);
+        await putAcct(aCP);
+        await ledger(aCP.name, '🛍 완성 캐릭터 세트 — ' + pid, -ps.price, aCP.bal);
+        return res.status(200).json({ ok: true, bal: aCP.bal, char: cCP });
+      } finally { await acctUnlock(sCP.name); }
+    }
+    if (req.method === 'POST' && action === 'charSlot') {
+      var sCS = await auth(body.token);
+      if (!sCS || !sCS.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sCS.name))) return res.status(429).json({ error: '잠시 후 다시 시도해주세요' });
+      try {
+        var aCS = await getAcct(sCS.name); var cCS = charInit(aCS);
+        if (cCS.slots.length >= CHAR_SLOT_MAX) return res.status(400).json({ error: '슬롯이 가득 찼어요 (최대 ' + CHAR_SLOT_MAX + '개)' });
+        if (aCS.bal < CHAR_SLOT_PRICE) return res.status(400).json({ error: 'APO 부족 (' + CHAR_SLOT_PRICE + ' 필요)' });
+        aCS.bal -= CHAR_SLOT_PRICE; cCS.slots.push({ eq: Object.assign({}, CHAR_DEFAULT_EQ) }); cCS.active = cCS.slots.length - 1;
+        await putAcct(aCS);
+        await ledger(aCS.name, '➕ 캐릭터 슬롯 추가', -CHAR_SLOT_PRICE, aCS.bal);
+        return res.status(200).json({ ok: true, bal: aCS.bal, char: cCS });
+      } finally { await acctUnlock(sCS.name); }
+    }
+    if (req.method === 'POST' && action === 'charSwitch') {
+      var sCW = await auth(body.token);
+      if (!sCW || !sCW.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aCW = await getAcct(sCW.name); var cCW = charInit(aCW);
+      var si = parseInt(body.slot, 10);
+      if (!(si >= 0 && si < cCW.slots.length)) return res.status(400).json({ error: '없는 슬롯' });
+      cCW.active = si; await putAcct(aCW);
+      return res.status(200).json({ ok: true, char: cCW });
     }
 
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
