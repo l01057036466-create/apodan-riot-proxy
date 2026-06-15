@@ -2336,7 +2336,7 @@ function saveLineup(){
   const all=[...blue,...red];
   if(new Set(all).size!==all.length)return toast('같은 사람이 두 자리에 들어가 있어요. 한 자리만 남겨주세요.',true);
   const round=$('luRound')?.value||'1차';
-  const series=$('luSeries')?.value||'단판';
+  const series=$('luSeries')?.value||'3판 2선승';
   const date=$('luDate')?.value||sessionDay();
   state.lineups=allLineups().filter(l=>true);state.lineup=null;
   const dup=state.lineups.find(l=>l.date===date&&l.round===round&&l.id!==window._luEdit);
@@ -7060,10 +7060,11 @@ function lineupCard(L){
           ${status==='locked'?`<details style="display:inline-block"><summary class="mini dim" style="cursor:pointer">🛠 백섭</summary><span class="row" style="gap:5px;margin-top:4px"><button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')">👀 지급 내역</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','alpha')">지급 없이 🅰 확정</button><button class="btn sm ghost" onclick="bankMarkSettled('${L.id}','beta')">지급 없이 🅱 확정</button></span></details>`:`<button class="btn sm ghost" onclick="bankPayoutInfo('${L.id}')" title="누가 얼마 베팅·수령했는지">👀 내역</button>`}
           <button class="btn sm ghost" onclick="bankResetBets('${L.id}')">↩ 베팅 초기화</button>
         </div>`:'';
+      const hasBet=tot>0; // 🔧 신규 경기는 유저 배당(APO 베팅) 숨김 — 이미 베팅된 경기(판돈>0)만 그대로 노출. MVP·스코어 토토는 항상 표시
       return`<div style="border:1px solid rgba(242,184,75,.35);border-radius:12px;padding:10px 12px;margin:12px 0;background:rgba(0,0,0,.15)">
-        <p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🗳 유저 배당 · 🎰 APO 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 포인트를 거는 게 곧 투표! 패자 판돈은 승자 몫</span></p>
-        ${tot?`<p class="mini" style="text-align:center;margin:4px 0 0;font-weight:800">민심: <span style="color:var(--gold)">🅰 ${Math.round(a/tot*100)}%</span> vs <span style="color:var(--win)">${Math.round(b/tot*100)}% 🅱</span></p>`:''}
-        ${pools}${actions}${adminRow}
+        ${hasBet?`<p class="mini" style="margin:0;text-align:center;letter-spacing:.15em;font-weight:900;color:var(--gold)">🗳 유저 배당 · 🎰 APO 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 포인트를 거는 게 곧 투표! 패자 판돈은 승자 몫</span></p>
+        <p class="mini" style="text-align:center;margin:4px 0 0;font-weight:800">민심: <span style="color:var(--gold)">🅰 ${Math.round(a/tot*100)}%</span> vs <span style="color:var(--win)">${Math.round(b/tot*100)}% 🅱</span></p>
+        ${pools}${actions}${adminRow}`:''}
         ${(()=>{ // 🏅 이 경기 MVP 투표 (회차별)
           if(!window._mvp||window._mvp[key]===undefined){window._mvp=window._mvp||{};window._mvp[key]=null;fetchMvp(key).then(()=>softRender())}
           const MV=window._mvp[key]||{tally:{},status:'open',my:null};
@@ -7122,7 +7123,7 @@ function lineupCard(L){
     ${(()=>{const subs=lineupSubPoints(L);if(!subs.length)return'';
       return`<p class="mini" style="margin:12px 0 5px;font-weight:800;color:var(--mut)">📌 서브 포인트 — 나머지 출전 멤버 체크</p>
       <div style="display:grid;gap:3px">${subs.map(s=>`<p class="mini" style="margin:0;line-height:1.55">${s.tag} ${s.lane?`<span class="dim">${esc(s.lane)}</span> `:''}<b>${esc(s.name)}</b> — ${esc(s.txt)}</p>`).join('')}</div>`})()}
-    ${O?`<p class="mini dim" style="margin:10px 0 0">두 배당 모두 재미용 — 데이터 배당은 폼·승률 계산, 유저 배당은 관전자 투표(기기당 1표). 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`:''}
+    ${O?(()=>{const _m=(window._mkts||{})[voteKey(L)];const _hb=!!(_m&&((_m.alpha||0)+(_m.beta||0))>0);return`<p class="mini dim" style="margin:10px 0 0">${_hb?'두 배당 모두 재미용 — 데이터 배당은 폼·승률 계산, 유저 배당은 관전자 베팅(기기당 1표).':'데이터 배당은 폼·통산 승률 기반 예측이에요 — 재미용!'} 블루/레드 진영은 당일 가위바위보! 💰 진짜 돈은 안 됩니다</p>`})():''}
     ${communityFeed(L)}
   </div>`;
 }
@@ -7268,7 +7269,7 @@ function lineupEditor(){
     <div class="f" style="margin-bottom:10px;max-width:240px"><label>회차 ${window._luEdit?'<span class="tag">수정 중</span>':''}</label>
       <select id="luRound" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${ROUNDS.map(r=>`<option${(L.round||'1차')===r?' selected':''}>${r}</option>`).join('')}</select></div>
       <div class="f"><label>승부 방식 <span class="tag">다전제면 🎯 스코어 토토 자동 개장</span></label>
-      <select id="luSeries" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${['단판','3판 2선승','5판 3선승'].map(s=>`<option${(L.series||'단판')===s?' selected':''}>${s}</option>`).join('')}</select>
+      <select id="luSeries" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${['단판','3판 2선승','5판 3선승'].map(s=>`<option${(L.series||'3판 2선승')===s?' selected':''}>${s}</option>`).join('')}</select>
     </div>
     <div class="grid c2">
       <div><p class="mini" style="font-weight:800;margin:0 0 6px;color:var(--gold)">🅰 알파팀</p><div class="grid c2">${[1,2,3,4,5].map(row).join('')}</div></div>
