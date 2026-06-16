@@ -6706,7 +6706,7 @@ function pgachaHtml(){
     <div style="display:flex;flex-direction:column;gap:5px">${rows}</div>
     <p class="mini" style="margin:9px 0 8px;text-align:center;color:var(--mut)">남은 경품 <b style="color:var(--gold)">${totalLeft}</b>장${P.lanePass>0?` · 내 보장권 <b style="color:var(--gold)">${P.lanePass}장</b> 🧪`:''}</p>
     <button class="btn gold" style="width:100%;font-size:15px;font-weight:900${canDraw?'':';opacity:.55'}" onclick="pgachaDraw()">🎴 ${fmtAPO(P.cost)} APO로 뽑기!</button>
-    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">※ 🧪 테스트 운영 — 보장권은 사용처 준비 중이에요. 평균 환급은 100% 미만(하우스 엣지)이라, 큰 한 방·보장권 노리는 재미용! 거래소·배당이 메인입니다 🏦</p>
+    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">※ 🧪 테스트 운영 — 보장권은 사용처 준비 중이에요. 잃는 돈(하우스 엣지)은 🎫 <b style="color:var(--gold)">누적 복권 잭팟(로또)</b>으로 전액 적립돼요 — 복권 긁어서 먹는 구조! 거래소·배당이 메인 🏦</p>
   </div>`;
 }
 function pgachaFx(tier,kind,apo){
@@ -6765,7 +6765,7 @@ function pcnBoardHtml(){
       <span class="mini dim" style="flex:1">${P.done?'🎉 올 클리어! 새 게임판 ㄱㄱ':'어디에 뭐가 있을진 까봐야 알아요 🎲'}</span>
       <button class="btn sm" onclick="pcnReset()" style="border-color:var(--gold);color:var(--gold);white-space:nowrap">♻ 새 게임판</button>
     </div>
-    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">※ 🧪 테스트 — 내 개인 게임판. 평균 환급 100% 미만(하우스 엣지)이라 큰 한 방 노리는 재미용! 거래소·배당이 메인입니다 🏦</p>
+    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">※ 🧪 테스트 — 내 개인 게임판. 잃는 돈(하우스 엣지)은 🎫 <b style="color:var(--gold)">누적 복권 잭팟(로또)</b>으로 전액 적립돼요 — 복권으로 먹는 로또! 거래소·배당이 메인 🏦</p>
   </div>`;
 }
 function pcnPickFx(grade,apo,bonus){
