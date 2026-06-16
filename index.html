@@ -3825,20 +3825,42 @@ async function bankResetMarket(){
     await bankRefresh(true);
   }catch(e){toast('실패: '+e.message,true)}
 }
+async function bankRescueClose(){document.querySelectorAll('[data-rescue]').forEach(x=>x.remove())}
 async function bankStockRescue(){
-  const pre=($('devName')?.value||'').trim();
-  const nm=pre||prompt('💰 종목 구제\n보유자 전원에게 매수원가(평단)를 환불하고, 정상가로 재상장합니다.\n환불은 산 만큼 정확히 돌려주는 거라 인플레가 0이에요.\n\n구제할 종목(멤버 닉네임)을 입력하세요:');
-  if(!nm)return;
-  const p=fuzzyPlayer(nm.trim());
-  if(!p){toast('"'+nm+'" 멤버를 못 찾았어요',true);return}
+  const list=(state.players||[]).filter(p=>p&&p.displayName);
+  window._rescueList=list;
+  const ov=document.createElement('div');
+  ov.setAttribute('data-rescue','1');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.onclick=e=>{if(e.target===ov)bankRescueClose()};
+  ov.innerHTML='<div onclick="event.stopPropagation()" style="background:var(--card,#181a20);border:1px solid var(--line,#2a2d36);border-radius:14px;max-width:440px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden"><div style="padding:14px 16px;border-bottom:1px solid var(--line,#2a2d36)"><b>💰 종목 구제 — 멤버 선택</b><div class="mini dim" style="margin-top:2px">보유자 전원 매수원가 환불 + 정상가 재상장 (인플레 0)</div></div><input id="rescueSearch" placeholder="🔍 닉네임 검색..." autocomplete="off" style="margin:10px 16px 8px;padding:10px 12px;border-radius:8px;border:1px solid var(--line,#2a2d36);background:var(--bg,#0e0f13);color:inherit;font-size:15px"><div id="rescueList" style="overflow-y:auto;padding:0 8px 4px;flex:1"></div><div style="padding:10px 16px;border-top:1px solid var(--line,#2a2d36);text-align:right"><button class="btn sm ghost" onclick="bankRescueClose()">닫기</button></div></div>';
+  document.body.appendChild(ov);
+  const draw=q=>{
+    const ql=(q||'').toLowerCase().trim();
+    const rows=list.map((p,i)=>{
+      if(ql&&!(p.displayName||'').toLowerCase().includes(ql))return'';
+      const form=marketPrice(p),d=displayPx(p.displayName);
+      return '<div onclick="bankRescuePick('+i+')" style="padding:10px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-weight:700">'+esc(p.displayName)+'</span><span class="mini dim">현재 '+d.px+' \u00b7 폼 '+form+'</span></div>';
+    }).join('');
+    document.getElementById('rescueList').innerHTML=rows||'<div class="mini dim" style="padding:14px">검색 결과가 없어요</div>';
+  };
+  draw('');
+  const si=document.getElementById('rescueSearch');
+  si.oninput=e=>draw(e.target.value);
+  setTimeout(()=>si.focus(),60);
+}
+async function bankRescuePick(i){
+  const p=(window._rescueList||[])[i];
+  bankRescueClose();
+  if(!p||!p.displayName)return;
   const form=marketPrice(p);
-  const relistStr=prompt('재상장 가격(정상가)을 입력하세요.\n폼 기준가 추천: '+form+' APO\n\n빈칸/0 = 환불만 하고 시세는 그대로 (붕괴 정지 유지, 나중에 동기화)', String(form));
+  const relistStr=prompt('💰 '+p.displayName+' 재상장 가격(정상가)을 입력하세요.\n폼 기준가 추천: '+form+' APO\n\n빈칸/0 = 환불만 하고 시세는 그대로 (붕괴 정지 유지)', String(form||100));
   if(relistStr===null)return;
   const relistAt=Math.round(Number(relistStr)||0);
-  if(!confirm('💰 '+p.displayName+' 종목 구제\n• 보유자 전원에게 매수원가 환불 (인플레 0)\n• 모든 보유 물량 소멸\n'+(relistAt?('• '+relistAt+' APO로 재상장 (다시 매수 가능)'):'• 시세 변경 안 함 (붕괴 정지 유지)')+'\n\n계속할까요?'))return;
+  if(!confirm('💰 '+p.displayName+' 종목 구제\n\u2022 보유자 전원에게 매수원가 환불 (인플레 0)\n\u2022 모든 보유 물량 소멸\n'+(relistAt?('\u2022 '+relistAt+' APO로 재상장 (다시 매수 가능)'):'\u2022 시세 변경 안 함 (붕괴 정지 유지)')+'\n\n계속할까요?'))return;
   try{
     const j=await bankCall('stockRescue',{target:p.displayName,relistAt});
-    toast('💰 '+p.displayName+' 구제 완료 — '+j.holders+'명에게 '+fmtAPO(j.refunded)+' APO 환불 ('+j.shares+'주 소멸)'+(j.relistAt?(' · '+j.relistAt+' APO 재상장'):''));
+    toast('💰 '+p.displayName+' 구제 완료 — '+j.holders+'명에게 '+fmtAPO(j.refunded)+' APO 환불 ('+j.shares+'주 소멸)'+(j.relistAt?(' \u00b7 '+j.relistAt+' APO 재상장'):''));
     window._srvPx={};window._srvBase={};window._srvPrem={};window._pxHist={};window._stockHolders={};window._stockSel=null;
     await bankRefresh(true);
   }catch(e){toast('실패: '+e.message,true)}
