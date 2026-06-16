@@ -45,6 +45,15 @@ module.exports = async function handler(req, res) {
       return raw ? JSON.parse(raw) : null;
     }
     async function putAcct(a) { await redis(['SET', 'acct:' + a.name, JSON.stringify(a)]); }
+    async function suspGuard(name, res) { // 💀 파산 5회+ : 도박 외 모든 활동 24h 정지
+      var ax = await getAcct(name);
+      if (ax && Number(ax.suspendUntil) > Date.now()) {
+        var h = Math.ceil((Number(ax.suspendUntil) - Date.now()) / 3600000);
+        res.status(403).json({ error: '💀 파산 ' + (ax.bust || 0) + '회 누적 — 도박 외 모든 활동이 약 ' + h + '시간 정지예요 (배당·주식·상점·미션 ✕ / 아케이드·뽑기는 가능)' });
+        return true;
+      }
+      return false;
+    }
     async function ledger(name, d, v, bal) {
       var e = JSON.stringify({ t: new Date().toISOString(), d: d, v: v, bal: bal });
       await redis(['LPUSH', 'ledger:' + name, e]);
@@ -143,7 +152,7 @@ module.exports = async function handler(req, res) {
       var led = (await redis(['LRANGE', 'ledger:' + a3.name, '0', '29'])) || [];
       var hRawMe = await redis(['GET', 'hold:' + a3.name]);
       var pxRawMe = await redis(['GET', 'stock:px']);
-      return res.status(200).json({ name: a3.name, role: a3.role, bal: a3.bal, bust: a3.bust || 0,
+      return res.status(200).json({ name: a3.name, role: a3.role, bal: a3.bal, bust: a3.bust || 0, suspendUntil: a3.suspendUntil || 0,
         items: a3.items || {}, equip: a3.equip || {}, // 🐛fix: 새로고침하면 보유·장착 정보를 잃어 "장착" 버튼이 사라지던 버그
         holdings: hRawMe ? JSON.parse(hRawMe) : {}, prices: pxRawMe ? JSON.parse(pxRawMe) : {},
         ledger: led.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean) });
@@ -318,6 +327,7 @@ module.exports = async function handler(req, res) {
       for (var hk in hObj) shares += Number(hObj[hk] && hObj[hk].q) || 0;
       if (shares > 0) { await putAcct(a); return a; } // 💼 주식 보유 = 자산가, 파산 면제
       a.bust = (a.bust || 0) + 1;
+      if (a.bust >= 5) a.suspendUntil = Date.now() + 24 * 3600 * 1000; // 💀 상습 파산 5회+ → 도박 외 24시간 정지
       a.lastBustAt = new Date().toISOString();
       a.bustUntil = Date.now() + 6 * 3600 * 1000; // ⛓ 파산 정리 기간: 6시간 주식 거래 금지
       var today = kstDate();
@@ -355,6 +365,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'bet') {
       var sB = await auth(body.token);
       if (!sB || !sB.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await suspGuard(sB.name, res)) return;
       var mk2 = String(body.market || ''), team2 = body.team;
       var amt2 = Math.round(Number(body.amount) || 0);
       if (!mktOk(mk2)) return res.status(400).json({ error: 'market 형식 오류' });
@@ -543,7 +554,10 @@ module.exports = async function handler(req, res) {
       if (!gAcc || gAcc.status !== 'active') return res.status(404).json({ error: '계좌가 없거나 비활성' });
       gAcc.bal += gA;
       await putAcct(gAcc);
-      await ledger(gAcc.name, '🎁 상품권' + (gM ? ' — ' + gM : '') + ' (from ' + (sG.name || '운영진') + ')', gA, gAcc.bal);
+      var giftLabel = (sG.role === 'dev')
+        ? '💼 시스템 지급 주급' + (gM ? ' — ' + gM : '')
+        : '🎁 상품권' + (gM ? ' — ' + gM : '') + ' (from ' + (sG.name || '운영진') + ')';
+      await ledger(gAcc.name, giftLabel, gA, gAcc.bal);
       return res.status(200).json({ ok: true, name: gN, amount: gA, bal: gAcc.bal });
     }
 
@@ -576,7 +590,7 @@ module.exports = async function handler(req, res) {
     }
 
     // ═══ 멤버 주식: 시세 (운영진 클라이언트가 자동 갱신 — 조작 불가) ═══
-    function clampPx(v) { return Math.max(10, Math.min(999, Math.round(v))); }
+    function clampPx(v) { return Math.max(1, Math.min(9999, Math.round(v))); }
     async function loadPx() { // base(폼 기준가) + prem(수급 프리미엄) → 합산 시세
       var b = JSON.parse((await redis(['GET', 'stock:base'])) || (await redis(['GET', 'stock:px'])) || '{}'); // 구버전 px는 base로 승계
       var p = JSON.parse((await redis(['GET', 'stock:prem'])) || '{}');
@@ -611,7 +625,7 @@ module.exports = async function handler(req, res) {
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
-        if (nameOk(kP) && vP >= 10 && vP <= 999) {
+        if (nameOk(kP) && vP >= 1 && vP <= 9999) {
           var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
           SP.base[kP] = vP; nP++;
           var newC = clampPx(vP + (Number(SP.prem[kP]) || 0));
@@ -630,6 +644,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && (action === 'stockBuy' || action === 'stockSell')) {
       var sT = await auth(body.token);
       if (!sT || !sT.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await suspGuard(sT.name, res)) return;
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
@@ -662,7 +677,7 @@ module.exports = async function handler(req, res) {
         await pushHist(tgt, price, 'list');
       } else { // 🩺 자가 치유: 거래자의 폼 힌트 쪽으로 기준가 자동 수렴 (운영진 접속 불필요)
         // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
-        var hintB = Math.max(10, Math.min(999, Math.round(Number(body.hint) || 0)));
+        var hintB = Math.max(1, Math.min(9999, Math.round(Number(body.hint) || 0)));
         if (hintB && (hintB > SX.base[tgt] * 2 + 50 || hintB < SX.base[tgt] / 2 - 50)) hintB = 0; // 🚧 비정상 힌트(조작 시도) 무시
         var dayK = 'sdrift:' + tgt + ':' + new Date().toISOString().slice(0, 10);
         var drift0 = Number(await redis(['GET', dayK])) || 0;
@@ -671,7 +686,7 @@ module.exports = async function handler(req, res) {
           stepB = Math.max(-40 - drift0, Math.min(40 - drift0, stepB)); // 🚧 일일 기준가 변동 한도 ±40 (조작 봉쇄)
           if (!stepB) stepB = 0;
           var beforeC = price;
-          SX.base[tgt] = Math.max(10, Math.min(999, SX.base[tgt] + stepB));
+          SX.base[tgt] = Math.max(1, Math.min(9999, SX.base[tgt] + stepB));
           if (stepB) { await redis(['INCRBY', dayK, String(stepB)]); await redis(['EXPIRE', dayK, '90000']); }
           price = clampPx(SX.base[tgt] + premCap(SX.base[tgt], SX.prem[tgt]));
           if (Math.abs(price - beforeC) >= 2) await pushHist(tgt, price, 'form');
@@ -744,6 +759,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'stockLiquidate') {
       var sLq = await auth(body.token);
       if (!sLq || !sLq.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await suspGuard(sLq.name, res)) return;
       var tgtLq = nameOk(body.target);
       if (!tgtLq) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
       if (!(await acctLock(sLq.name))) return res.status(429).json({ error: '주문 처리 중 — 잠시 후 다시 시도해주세요' });
@@ -883,6 +899,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'scorePredict') {
       var sSP = await auth(body.token);
       if (!sSP || !sSP.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await suspGuard(sSP.name, res)) return;
       var dSP = String(body.date || ''), pickS = String(body.pick || '');
       if (!mktOk(dSP)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!/^[0-9]:[0-9]$/.test(pickS)) return res.status(400).json({ error: '스코어 형식: 2:0, 2:1 등' });
@@ -1019,6 +1036,7 @@ module.exports = async function handler(req, res) {
       if (!sSh || !sSh.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var aSh = await getAcct(sSh.name);
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+      if (action === 'buyItem' && await suspGuard(sSh.name, res)) return;
       var cat = String(body.cat || ''), itemId = String(body.item || '');
       var item = SHOP[cat] && SHOP[cat][itemId];
       var COS_RE_S = /^([mf])-c-([2-9]|[1-5][0-9]|6[0-4])$/;
@@ -1167,6 +1185,45 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock(sPc.name); }
     }
     // 잭팟 풀·속보 조회
+    // ═══ 🎴 프리미엄 이치방쿠지 (포인트 · 한정 경품 박스 — 소진형 / 가차는 도박이라 파산정지와 무관) ═══
+    var PG_COST = 3000;
+    var PG_BOX = [['A', 1, 'pass', '원하는 라인 1회 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3500], ['E', 12, 'apo', 1800], ['F', 13, 'apo', 1000]];
+    function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
+    function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
+    if (req.method === 'GET' && action === 'pgacha') {
+      var pgRawG = await redis(['GET', 'pgacha:box']);
+      var pgBoxG = pgRawG ? JSON.parse(pgRawG) : pgFullBox();
+      var sPgG = await auth(q.token);
+      var myPassG = (sPgG && sPgG.acct) ? Number(sPgG.acct.lanePass) || 0 : 0;
+      return res.status(200).json({ cost: PG_COST, box: pgBoxG, def: PG_BOX, lanePass: myPassG });
+    }
+    if (req.method === 'POST' && action === 'pgacha') {
+      var sPg = await auth(body.token);
+      if (!sPg || !sPg.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock('pgacha'))) return res.status(429).json({ error: '다른 사람이 뽑는 중 — 잠시 후 다시!' });
+      try {
+        var aPg = await getAcct(sPg.name);
+        if (!aPg || aPg.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+        if (aPg.bal < PG_COST) return res.status(400).json({ error: '프리미엄 뽑기는 ' + PG_COST + ' APO예요 (보유 ' + aPg.bal + ')' });
+        var pgRawP = await redis(['GET', 'pgacha:box']);
+        var box = pgRawP ? JSON.parse(pgRawP) : pgFullBox();
+        var total = 0, bk; for (bk in box) total += Number(box[bk]) || 0;
+        var fresh = false;
+        if (total <= 0) { box = pgFullBox(); total = 0; for (bk in box) total += box[bk]; fresh = true; }
+        var rnd = Math.floor(Math.random() * total), acc = 0, drawn = null;
+        for (var di = 0; di < PG_BOX.length; di++) { acc += Number(box[PG_BOX[di][0]]) || 0; if (rnd < acc) { drawn = PG_BOX[di][0]; break; } }
+        if (!drawn) drawn = PG_BOX[PG_BOX.length - 1][0];
+        box[drawn] = (Number(box[drawn]) || 0) - 1;
+        aPg.bal -= PG_COST;
+        var meta = pgMeta(drawn), gotApo = 0, gotPass = false;
+        if (meta.kind === 'apo') { gotApo = meta.val; aPg.bal += gotApo; }
+        else { aPg.lanePass = (Number(aPg.lanePass) || 0) + 1; gotPass = true; }
+        await putAcct(aPg);
+        await redis(['SET', 'pgacha:box', JSON.stringify(box)]);
+        await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🧪 라인 보장권(테스트)' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
+        return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, lanePass: Number(aPg.lanePass) || 0 });
+      } finally { await acctUnlock('pgacha'); }
+    }
     if (req.method === 'GET' && action === 'arcade') {
       var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 2000;
       var pcnp = Number(await redis(['GET', 'arcade:pcnpot'])) || 30000;
@@ -1189,6 +1246,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'missionClaim') {
       var sMC = await auth(body.token);
       if (!sMC || !sMC.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await suspGuard(sMC.name, res)) return;
       var MDEF = { play: { need: 1, pay: 500 }, bet: { need: 2, pay: 200 }, trade: { need: 1, pay: 200 }, vote: { need: 1, pay: 100 }, all: { need: 0, pay: 1000 } };
       var fld = String(body.field || '');
       if (!MDEF[fld]) return res.status(400).json({ error: '없는 미션' });
@@ -1360,7 +1418,7 @@ module.exports = async function handler(req, res) {
         await redis(['SREM', 'acct:_all', aC.name]);
         return res.status(200).json({ ok: true, purged: aC.name });
       }
-      aC.bust = 0; aC.lastBustAt = ''; aC.lastBustDay = '';
+      aC.bust = 0; aC.lastBustAt = ''; aC.lastBustDay = ''; aC.suspendUntil = 0;
       await putAcct(aC);
       return res.status(200).json({ ok: true, name: aC.name });
     }
