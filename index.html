@@ -3856,13 +3856,15 @@ async function bankRescuePick(i){
   const form=marketPrice(p);
   const relistStr=prompt('💰 '+p.displayName+' 재상장 가격(정상가)을 입력하세요.\n폼 기준가 추천: '+form+' APO\n\n빈칸/0 = 환불만 하고 시세는 그대로 (붕괴 정지 유지)', String(form||100));
   if(relistStr===null)return;
-  const relistAt=Math.round(Number(relistStr)||0);
+  const relistAt=(relistStr.trim()==='')?Math.round(form||100):Math.round(Number(relistStr)||0);
   if(!confirm('💰 '+p.displayName+' 종목 구제\n\u2022 보유자 전원에게 매수원가 환불 (인플레 0)\n\u2022 모든 보유 물량 소멸\n'+(relistAt?('\u2022 '+relistAt+' APO로 재상장 (다시 매수 가능)'):'\u2022 시세 변경 안 함 (붕괴 정지 유지)')+'\n\n계속할까요?'))return;
   try{
     const j=await bankCall('stockRescue',{target:p.displayName,relistAt});
     toast('💰 '+p.displayName+' 구제 완료 — '+j.holders+'명에게 '+fmtAPO(j.refunded)+' APO 환불 ('+j.shares+'주 소멸)'+(j.relistAt?(' \u00b7 '+j.relistAt+' APO 재상장'):''));
-    window._srvPx={};window._srvBase={};window._srvPrem={};window._pxHist={};window._stockHolders={};window._stockSel=null;
+    try{const _pp=await bankCall('prices',null,'GET');window._srvPx=_pp.prices||{};window._srvBase=_pp.base||{};window._srvPrem=_pp.prem||{}}catch(e){}
+    window._pxHist={};window._stockHolders={};window._stockSel=null;
     await bankRefresh(true);
+    if(typeof render==='function')render();
   }catch(e){toast('실패: '+e.message,true)}
 }
 async function bankResetBets(luId){
