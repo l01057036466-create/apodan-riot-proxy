@@ -597,7 +597,7 @@ module.exports = async function handler(req, res) {
       return { base: b, prem: p };
     }
     function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±45%
-      var cap = Math.max(3, Math.round((base || 100) * 0.45));
+      var cap = Math.round((base || 100) * 0.45); // 🔻 캡 바닥 제거: 기준가 1짜리는 프리미엄 0 → 화면도 진짜 1 APO (4 아님)
       return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
     }
     function combinePx(S) {
@@ -678,7 +678,7 @@ module.exports = async function handler(req, res) {
       } else { // 🩺 자가 치유: 거래자의 폼 힌트 쪽으로 기준가 자동 수렴 (운영진 접속 불필요)
         // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
         var hintB = Math.max(1, Math.min(9999, Math.round(Number(body.hint) || 0)));
-        if (hintB && (hintB > SX.base[tgt] * 2 + 50 || hintB < SX.base[tgt] / 2 - 50)) hintB = 0; // 🚧 비정상 힌트(조작 시도) 무시
+        if (hintB && (hintB > SX.base[tgt] * 10 + 200 || hintB < SX.base[tgt] / 10 - 20)) hintB = 0; // 🚧 터무니없는 힌트만 차단 — 바닥(1)까지 떨어진 기준가도 폼으로 다시 회복 (일일 ±40 한도가 조작은 별도 차단)
         var dayK = 'sdrift:' + tgt + ':' + new Date().toISOString().slice(0, 10);
         var drift0 = Number(await redis(['GET', dayK])) || 0;
         if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
