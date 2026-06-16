@@ -6290,7 +6290,7 @@ function avatarEqOf(name){
   return r?(r.equip||{}):null;
 }
 function acctOf(name){ return (window._bankRoster||[]).find(x=>bareName(x.name)===bareName(name||''))||null; } // 선수 displayName → 계정(전체: bio·madMovie 포함)
-function isMyProfile(p){ const b=bankSession&&bankSession(); if(!b||!b.name||!p)return false; const me=bareName(b.name); return bareName(p.displayName)===me||(p.aliases||[]).some(a=>bareName(a)===me)||isAdmin(); }
+function isMyProfile(p){ const b=bankSession&&bankSession(); if(!b||!b.name||!p)return false; const me=bareName(b.name); return bareName(p.displayName)===me||(p.aliases||[]).some(a=>bareName(a)===me); } // 🔒 로그인한 본인만 (소개·매드무비 셀프 편집)
 function ytId(u){ const m=String(u||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/); return m?m[1]:''; }
 function ytEmbed(u){ const id=ytId(u); if(!id)return '<p class="mini dim" style="margin:0">유튜브 링크를 인식하지 못했어요.</p>'; return `<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;border:1px solid var(--line)"><iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;inset:0;width:100%;height:100%" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`; }
 async function _saveProfile(patch){ const B=bankSession&&bankSession(); if(!B||!B.name)return toast('로그인이 필요해요',true); try{ await bankCall('profile',patch); const r=acctOf(B.name); if(r)Object.assign(r,patch); toast('✅ 저장됐어요!'); render('force'); }catch(e){ toast(e.message||'저장 실패',true); } }
