@@ -5426,7 +5426,7 @@ function ccRow(c,best){
         <b style="font-size:12px;color:var(--mut)">${esc(c.nick)}</b>
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
       </div>
-      <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${esc(c.text)}</p>
+      <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${cmtHighlight(c.text)}</p>
     </div>
     <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:42px;align-self:center;gap:1px">
       <div style="font-size:16px;line-height:1">👍</div>
@@ -5588,7 +5588,7 @@ function cmtSetNick(v){ lsSet(CMT_NICK_KEY,String(v||'').slice(0,20)); }
 async function commentCall(action,body,method){
   const api=voteApiBase();
   if(!api)throw new Error('서버 미연결 — 설정에서 투표 서버(같은 주소)를 먼저 연결해주세요');
-  const map={list:'cmtList',add:'cmtAdd',like:'cmtLike',del:'cmtDel',notif:'cmtNotif',notifRead:'cmtNotifRead',override:'cmtOverride'};
+  const map={list:'cmtList',add:'cmtAdd',like:'cmtLike',del:'cmtDel',notif:'cmtNotif',notifRead:'cmtNotifRead',notifDel:'cmtNotifDel',notifClear:'cmtNotifClear',override:'cmtOverride'};
   const act=map[action]||action;
   const url=api+'/api/bank?action='+encodeURIComponent(act)
     +(method==='GET'&&body&&body.board?('&board='+encodeURIComponent(body.board)):'')
@@ -5638,6 +5638,37 @@ async function loadNotifs(force){
     window._notif={ items:Array.isArray(j.items)?j.items:[], unread:j.unread||0, lastRead:j.lastRead||0 };
     try{ if(typeof renderNav==='function')renderNav(); }catch(e){}
   }catch(e){}
+}
+// 🔔 알림 삭제 (1개 / 전체) — 낙관적 갱신 후 서버 반영
+async function notifDel(ts){
+  try{ if(window._notif&&window._notif.items)window._notif.items=window._notif.items.filter(n=>(Number(n.ts)||0)!==ts);
+    if(typeof render==='function')render('force');
+    await commentCall('notifDel',{ts},'POST'); }catch(e){}
+}
+async function notifClear(){
+  try{ if(window._notif)window._notif.items=[];
+    if(typeof render==='function')render('force');
+    await commentCall('notifClear',{},'POST');
+    if(typeof toast==='function')toast('🔔 알림을 모두 지웠어요'); }catch(e){}
+}
+// @멘션 — 제출 텍스트에서 알려진 멤버 닉네임 추출 (full 이름 반환: 서버 검증용)
+function parseMentions(text){
+  const r=window._bankRoster||[]; if(!r.length||String(text||'').indexOf('@')<0)return [];
+  const list=r.map(x=>({full:x.name||x.n||'',bare:bareName(x.name||x.n||'')})).filter(x=>x.bare);
+  list.sort((a,b)=>b.bare.length-a.bare.length);
+  const out=[],seen={};
+  list.forEach(o=>{ if(seen[o.full])return;
+    const re=new RegExp('@'+o.bare.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![\\w가-힣])');
+    if(re.test(text)){ out.push(o.full); seen[o.full]=1; } });
+  return out.slice(0,10);
+}
+// @닉네임 강조 (알려진 멤버만, @ 없으면 스킵)
+function cmtHighlight(text){
+  let str=esc(text||''); if(str.indexOf('@')<0)return str;
+  const r=window._bankRoster||[]; const bares=r.map(x=>bareName(x.name||x.n||'')).filter(Boolean).sort((a,b)=>b.length-a.length);
+  bares.forEach(nm=>{ const e=nm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    str=str.replace(new RegExp('@'+e+'(?![\\w가-힣])','g'),'<b style="color:var(--gold)">@'+esc(nm)+'</b>'); });
+  return str;
 }
 
 /* 실제 댓글 → 렌더 객체 (아바타/배경은 id로 고정) */
@@ -5696,7 +5727,7 @@ function cmtRow(c,board,isReply){
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
         ${editedMark}${replyBtn}${editBtn}${delBtn}
       </div>
-      <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${esc(c.text)}</p>
+      <p style="margin:3px 0 0;font-size:13.5px;line-height:1.5;word-break:break-word">${cmtHighlight(c.text)}</p>
     </div>
     ${likeCell}
   </div>`;
@@ -5847,7 +5878,8 @@ async function submitCmt(el,board,parent){
     if(el&&el.parentNode&&el.parentNode.querySelector)nEl=el.parentNode.querySelector('input[id^="cn_"]');
     if(!nEl)nEl=(typeof $==='function'?$:byId)('cn_'+_sid);
     if(nEl&&nEl.value)nick=nEl.value.trim();
-    const _payload={board:board,text:text,parent:parent}; if(nick)_payload.nick=nick;
+    const _mentions=parseMentions(text);
+    const _payload={board:board,text:text,parent:parent}; if(nick)_payload.nick=nick; if(_mentions.length)_payload.mentions=_mentions;
     const j=await commentCall('add',_payload,'POST'); // 닉 미지정 → 서버가 로그인 계정명 사용 (운영진만 커스텀 닉 허용)
     window._cmtCache=window._cmtCache||{}; window._cmtCache[board]=window._cmtCache[board]||[];
     if(j&&j.comment)window._cmtCache[board].push(j.comment);
@@ -6986,20 +7018,24 @@ function pgMe(){
   const avatar=artIt?`<img src="${artIt.img}" alt="" style="${artIt.px?'image-rendering:pixelated':''}">`:`<span style="font-size:34px">${eq.badge&&SHOP_C.badge[eq.badge]?SHOP_C.badge[eq.badge].e:eq.legend&&SHOP_C.legend[eq.legend]?SHOP_C.legend[eq.legend].e:'🧑‍🚀'}</span>`;
   const shelf=Object.keys(items).map(k=>{const[c,id]=k.split(':');const it=SHOP_C[c]&&SHOP_C[c][id];if(!it)return'';
     return`<span class="meShelf" title="${esc(it.n)}">${it.img?`<img src="${it.img}" style="height:20px;border-radius:5px;vertical-align:middle">`:it.e||'✨'}</span>`}).join('');
-  // 🔔 알림 (답글·좋아요) — 내 정보를 보면 자동으로 읽음 처리
+  // 🔔 알림 — 내 정보를 보면 자동 읽음 처리(읽은 알림은 다음에 사라짐) + 직접 삭제 가능
   const _notif=window._notif||{items:[]};
   if(_notif.unread>0&&!window._notifReading){ window._notifReading=1; setTimeout(()=>{ commentCall('notifRead',{},'POST').then(()=>{ if(window._notif)window._notif.unread=0; }).catch(()=>{}).finally(()=>{ window._notifReading=0; try{renderNav()}catch(e){} }); },400); }
+  const _nHas=_notif.items&&_notif.items.length;
   const notifCard=`<div class="card" style="margin:14px auto 0;max-width:1100px">
-    <h3 style="margin:0 0 6px">🔔 알림${_notif.items&&_notif.items.length?` <span class="tag">${_notif.items.length}</span>`:''}</h3>
-    ${(_notif.items&&_notif.items.length)?_notif.items.slice(0,30).map(n=>{
-      const icon=n.type==='like'?'👍':'💬';
-      const what=n.type==='like'?'님이 내 댓글을 추천했어요':'님이 내 댓글에 답글을 남겼어요';
-      const sub=n.type==='reply'&&n.text?`<div class="mini" style="margin-top:2px">"${esc(n.text)}"</div>`:'';
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px">
+      <h3 style="margin:0">🔔 알림${_nHas?` <span class="tag">${_notif.items.length}</span>`:''}</h3>
+      ${_nHas?`<button class="btn sm ghost" onclick="notifClear()" style="white-space:nowrap">모두 지우기</button>`:''}
+    </div>
+    ${_nHas?_notif.items.slice(0,30).map(n=>{
+      const icon=n.type==='like'?'👍':n.type==='mention'?'📣':'💬';
+      const what=n.type==='like'?'님이 내 댓글을 추천했어요':n.type==='mention'?'님이 회원님을 언급했어요':'님이 내 댓글에 답글을 남겼어요';
+      const sub=(n.type==='reply'||n.type==='mention')&&n.text?`<div class="mini" style="margin-top:2px">"${esc(n.text)}"</div>`:'';
       const ctx=n.ptext?`<div class="mini dim" style="margin-top:1px">내 댓글: "${esc(n.ptext)}"</div>`:'';
-      return `<div style="display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><div style="font-size:18px">${icon}</div><div style="flex:1;min-width:0"><div style="font-size:13px"><b>${esc(n.from||'누군가')}</b>${what}</div>${sub}${ctx}<div class="mini dim" style="margin-top:2px">${ccAgoTs(n.ts)}</div></div></div>`;
-    }).join(''):`<p class="mini dim" style="margin:0">아직 알림이 없어요 — 내 댓글에 답글이나 추천이 달리면 여기 떠요.</p>`}
+      return `<div style="display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--line)"><div style="font-size:18px">${icon}</div><div style="flex:1;min-width:0"><div style="font-size:13px"><b>${esc(n.from||'누군가')}</b>${what}</div>${sub}${ctx}<div class="mini dim" style="margin-top:2px">${ccAgoTs(n.ts)}</div></div><button onclick="notifDel(${Number(n.ts)||0})" title="삭제" style="background:none;border:none;color:var(--dim);font-size:16px;line-height:1;cursor:pointer;padding:0 2px;align-self:flex-start">×</button></div>`;
+    }).join(''):`<p class="mini dim" style="margin:0">아직 알림이 없어요 — 답글·추천·@언급이 달리면 여기 떠요.</p>`}
   </div>`;
-  return head('내 정보','등급은 모든 멤버에게 공개돼요 — 포인트는 명예다!')+notifCard+`
+    return head('내 정보','등급은 모든 멤버에게 공개돼요 — 포인트는 명예다!')+notifCard+`
   <div class="grid c2" style="align-items:start">
     <div class="card" style="padding:0;overflow:hidden">
       <div class="meBanner" style="background:linear-gradient(135deg,${colorV||'var(--gold)'}33,rgba(63,217,197,.12) 60%,transparent)"></div>
