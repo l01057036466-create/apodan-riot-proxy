@@ -871,6 +871,47 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, holders: holdersN, refunded: refunded });
     }
 
+    // ═══ 💰 종목 구제: 한 종목 보유자 전원에게 매수원가(평단) 환불 + 정상가 재상장 (붕괴 종목 인플레 차단, net-zero) ═══
+    if (req.method === 'POST' && action === 'stockRescue') {
+      var sSR = await auth(body.token);
+      if (!sSR || (sSR.role !== 'admin' && sSR.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var tgtSR = nameOk(body.target);
+      if (!tgtSR) return res.status(400).json({ error: '종목 이름 확인' });
+      var relistSR = Math.round(Number(body.relistAt) || 0); // 0이면 시세 안 건드림(환불만) → 붕괴 정지 유지
+      if (relistSR && (relistSR < 1 || relistSR > 9999)) return res.status(400).json({ error: '재상장가는 1~9999' });
+      var allSR = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+      var refundedSR = 0, holdersSR = 0, sharesSR = 0;
+      for (var sr = 0; sr < allSR.length; sr++) {
+        var hSR = await redis(['GET', 'hold:' + allSR[sr]]);
+        if (!hSR) continue;
+        var hmSR = JSON.parse(hSR);
+        if (!hmSR[tgtSR] || !(hmSR[tgtSR].q > 0)) continue;
+        var aSR = await getAcct(allSR[sr]);
+        if (!aSR) continue;
+        var qSR = hmSR[tgtSR].q;
+        var avgSR = Math.round(Number(hmSR[tgtSR].avg) || 0);
+        var costSR = avgSR * qSR; // 매수원가 전액 = 산 걸 되돌림 (net-zero, 인플 없음)
+        delete hmSR[tgtSR];
+        await redis(['SET', 'hold:' + allSR[sr], JSON.stringify(hmSR)]);
+        if (costSR > 0) {
+          aSR.bal += costSR;
+          await putAcct(aSR);
+          await ledger(aSR.name, '💰 ' + tgtSR + ' 거래중지 — 매수금 환불 (' + qSR + '주 @평단 ' + avgSR + ')', costSR, aSR.bal);
+          refundedSR += costSR;
+        }
+        holdersSR++; sharesSR += qSR;
+      }
+      if (relistSR) { // 정상가로 재상장 + 붕괴/폭주 상태 해제
+        var SSR = await loadPx();
+        SSR.base[tgtSR] = relistSR; SSR.prem[tgtSR] = 0;
+        await savePx(SSR);
+        await redis(['DEL', 'vhalt:' + tgtSR]);
+        await redis(['DEL', 'sdrift:' + tgtSR + ':' + new Date().toISOString().slice(0, 10)]);
+        await pushHist(tgtSR, relistSR, 'rescue');
+      }
+      return res.status(200).json({ ok: true, target: tgtSR, holders: holdersSR, refunded: refundedSR, shares: sharesSR, relistAt: relistSR || null });
+    }
+
     // ═══ ↩ 베팅 초기화: 해당 판 전원 환불 (정산 전만 가능) ═══
     if (req.method === 'POST' && action === 'resetBets') {
       var sRB = await auth(body.token);
