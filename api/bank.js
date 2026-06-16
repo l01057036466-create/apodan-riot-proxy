@@ -1220,6 +1220,8 @@ module.exports = async function handler(req, res) {
         else { aPg.lanePass = (Number(aPg.lanePass) || 0) + 1; gotPass = true; }
         await putAcct(aPg);
         await redis(['SET', 'pgacha:box', JSON.stringify(box)]);
+        await redis(['SET', 'arcade:jackpot', '2000', 'NX']);
+        await redis(['INCRBY', 'arcade:jackpot', '300']); // 🎫 손해분(하우스 엣지) → 로또(누적 복권 잭팟) 적립 — 재분배(인플 ≈ 0)
         await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🧪 라인 보장권(테스트)' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
         return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, lanePass: Number(aPg.lanePass) || 0 });
       } finally { await acctUnlock('pgacha'); }
@@ -1268,6 +1270,8 @@ module.exports = async function handler(req, res) {
         if (done) { bonus = PCN_CLEAR; aPk.bal += bonus; }
         await putAcct(aPk);
         await redis(['SET', 'pcn:board:' + aPk.name, JSON.stringify(bd)]);
+        await redis(['SET', 'arcade:jackpot', '2000', 'NX']);
+        await redis(['INCRBY', 'arcade:jackpot', '400']); // 🎫 손해분(하우스 엣지) → 로또(누적 복권 잭팟) 적립 — 재분배(인플 ≈ 0)
         await ledger(aPk.name, '🎰 프리미엄 빠칭코 ' + g + ' — +' + apo + ' APO (−' + PCN_COST + ')' + (done ? ' · 🎉올클리어 +' + bonus : ''), apo - PCN_COST + bonus, aPk.bal);
         var pv2 = pcnView(bd);
         return res.status(200).json({ ok: true, idx: idx, grade: g, apo: apo, bonus: bonus, done: done, bal: aPk.bal, remain: pv2.remain });
