@@ -78,7 +78,7 @@ module.exports = async function handler(req, res) {
       var raws = names.length ? (await redis(['MGET'].concat(names.map(function (n) { return 'acct:' + n; })))) || [] : []; // 🐛fix: N+1 → MGET (서버 렉 해소)
       for (var i = 0; i < names.length; i++) {
         var a = raws[i] ? JSON.parse(raws[i]) : null;
-        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {} });
+        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {}, bio: a.bio || '', madMovie: a.madMovie || '' });
       }
       out.sort(function (x, y) { return y.bal - x.bal; });
       var onRaws = out.length ? (await redis(['MGET'].concat(out.map(function (r) { return 'online:' + r.name; })))) || [] : [];
@@ -999,6 +999,20 @@ module.exports = async function handler(req, res) {
       crown: { x1:{e:'🏆',n:'제1회 멸망전 우승 탑',p:0,only:'여썬'}, x2:{e:'🏆',n:'제1회 멸망전 우승 정글',p:0,only:'혀농'}, x3:{e:'🏆',n:'제1회 멸망전 우승 미드',p:0,only:'세혀닝'}, x4:{e:'🏆',n:'제1회 멸망전 우승 원딜',p:0,only:'미르'}, x5:{e:'🏆',n:'제1회 멸망전 우승 서폿',p:0,only:'이래'}, x6:{e:'🏆',n:'제1회 멸망전 우승 팀장',p:0,only:'미르'} }
     };
     if (req.method === 'GET' && action === 'shop') return res.status(200).json({ shop: SHOP });
+    if (req.method === 'POST' && action === 'profile') { // 📝 본인 프로필 셀프 등록 (bio · 매드무비)
+      var sPr = await auth(body.token);
+      if (!sPr || !sPr.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aPr = await getAcct(sPr.name);
+      if (!aPr || aPr.status !== 'active') return res.status(403).json({ error: '계좌 상태를 확인해주세요' });
+      if (body.bio !== undefined) aPr.bio = String(body.bio || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (body.madMovie !== undefined) {
+        var mv = String(body.madMovie || '').trim();
+        if (mv && !/^https?:\/\/(www\.)?(youtube\.com\/|youtu\.be\/)/.test(mv)) return res.status(400).json({ error: '유튜브 링크만 등록할 수 있어요' });
+        aPr.madMovie = mv.slice(0, 200);
+      }
+      await putAcct(aPr);
+      return res.status(200).json({ ok: true, bio: aPr.bio || '', madMovie: aPr.madMovie || '' });
+    }
     if (req.method === 'POST' && (action === 'buyItem' || action === 'equipItem')) {
       if (action === 'buyItem' && (String(body.cat) === 'cos' || String(body.cat) === 'avG')) return res.status(400).json({ error: '코스튬은 🎲 뽑기로만 얻을 수 있어요' });
       var sSh = await auth(body.token);
