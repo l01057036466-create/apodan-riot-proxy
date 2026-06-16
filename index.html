@@ -8019,9 +8019,10 @@ function balPerms(a){ // 5개 순열
 }
 const BAL_LANES=['TOP','JUNGLE','MID','ADC','SUPPORT'];
 const EX_PEN=1e6; // 제외 라인 = 사실상 금지
-function balPen(pf,lane){ // 신청 페널티: 주0 · 부8 · 그외30 · 제외 금지
+function balPen(pf,lane){ // 신청 페널티: 주0 · 부8 · 그외30 · 제외/고정 금지
   if(!pf||pf.m==='any')return 0;
   if(pf.m==='ex')return pf.lane===lane?EX_PEN:0;
+  if(pf.m==='lock')return pf.lane===lane?0:EX_PEN; // 🔒 고정 — 그 라인 아니면 절대 불가 (밸런스 무시)
   if(lane===pf.lane)return 0;
   if(pf.sub==='any')return 8;            // 부 상관없음 → 주 빼고 다 차순위
   if(pf.sub&&lane===pf.sub)return 8;     // 특정 부라인
@@ -8083,10 +8084,11 @@ function balToggle(pid){
   }
   window._balRes=null;render();
 }
-function balPref(pid,v){ // 주라인 / 상관없음 / 제외
+function balPref(pid,v){ // 주라인 / 상관없음 / 제외 / 고정
   const s=window._balSel;
   if(v==='any')s[pid]={m:'any'};
   else if(v[0]==='x')s[pid]={m:'ex',lane:v.slice(2)};
+  else if(v[0]==='k')s[pid]={m:'lock',lane:v.slice(2)};
   else{const lane=v.slice(2),old=s[pid]||{};s[pid]={m:'main',lane,sub:(old.sub&&old.sub!==lane)?old.sub:null};}
   window._balRes=null;render();
 }
@@ -8109,7 +8111,7 @@ function balRun(){
   const res=balCompute(sel,window._balSel,window._balPins);
   window._balRes=res;
   render();
-  toast(res.length?'⚖️ 빅데이터가 팀을 짰어요!':'⚠ 제외 조건이 너무 빡빡해서 5:5를 못 짰어요 — 제외를 줄여보세요.',!res.length);
+  toast(res.length?'⚖️ 빅데이터가 팀을 짰어요!':'⚠ 제외·고정 조건이 빡빡해서 5:5를 못 짰어요 — 제외/고정을 줄여보세요.',!res.length);
 }
 function balCopy(i){
   const o=window._balRes[i];
@@ -8136,11 +8138,11 @@ function pgBalance(){
     </div>
     ${selN?`<div class="hr"></div>
     <h3 style="margin:0 0 4px">2️⃣ 신청 라인 (주 / 부 / 제외)</h3>
-    <p class="mini dim" style="margin:0 0 6px">주라인=0순위, 부라인=차순위로 배치. "OO 제외"는 그 라인에 절대 안 넣어요. "상관없음"은 데이터가 알아서 최적 라인. <b>밸런스(5:5)가 최우선</b>이라, 라인이 겹치면 부라인/조정으로 가장 팽팽한 팀을 만들어요.</p>
+    <p class="mini dim" style="margin:0 0 6px">주=0순위·부=차순위. <b style="color:var(--gold)">🔒 고정</b>은 밸런스를 무시하고 그 라인에 무조건 박아요. "OO 제외"는 그 라인엔 절대 안 넣고요. 안 겹치는 사람들끼리는 <b>밸런스(5:5)를 최우선</b>으로 가장 팽팽하게 배치돼요.</p>
     <div class="row" style="gap:8px;flex-wrap:wrap">
       ${Object.keys(sel).map(pid=>{const pf=sel[pid]||{m:'any'};
-        const pv=pf.m==='ex'?('x:'+pf.lane):pf.m==='main'?('m:'+pf.lane):'any';
-        const prim=`<option value="any"${pv==='any'?' selected':''}>상관없음</option>`+BAL_LANES.map(l=>`<option value="m:${l}"${pv==='m:'+l?' selected':''}>주 ${laneKo[l]}</option>`).join('')+BAL_LANES.map(l=>`<option value="x:${l}"${pv==='x:'+l?' selected':''}>${laneKo[l]} 제외</option>`).join('');
+        const pv=pf.m==='ex'?('x:'+pf.lane):pf.m==='lock'?('k:'+pf.lane):pf.m==='main'?('m:'+pf.lane):'any';
+        const prim=`<option value="any"${pv==='any'?' selected':''}>상관없음</option>`+BAL_LANES.map(l=>`<option value="m:${l}"${pv==='m:'+l?' selected':''}>주 ${laneKo[l]}</option>`).join('')+BAL_LANES.map(l=>`<option value="k:${l}"${pv==='k:'+l?' selected':''}>🔒 ${laneKo[l]} 고정</option>`).join('')+BAL_LANES.map(l=>`<option value="x:${l}"${pv==='x:'+l?' selected':''}>${laneKo[l]} 제외</option>`).join('');
         const sv=(pf.m==='main'&&pf.sub)?(pf.sub==='any'?'s:any':('s:'+pf.sub)):'none';
         const sub=pf.m==='main'?`<select onchange="balSub('${pid}',this.value)" style="font-size:11px;padding:2px 4px"><option value="none"${sv==='none'?' selected':''}>부 없음</option><option value="s:any"${sv==='s:any'?' selected':''}>부 상관없음</option>${BAL_LANES.filter(l=>l!==pf.lane).map(l=>`<option value="s:${l}"${sv==='s:'+l?' selected':''}>부 ${laneKo[l]}</option>`).join('')}</select>`:'';
         return `<span class="pill" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px">${esc(nameOf(pid))}<select onchange="balPref('${pid}',this.value)" style="font-size:11px;padding:2px 4px">${prim}</select>${sub}</span>`;}).join('')}
@@ -8169,7 +8171,7 @@ function pgBalance(){
     <div class="grid c2" style="gap:10px;margin-top:8px">
       ${[['🅰 알파',o.A],['🅱 베타',o.B]].map(([t,a])=>`<div style="border:1px solid var(--line);border-radius:12px;padding:9px 12px">
         <p class="mini" style="margin:0 0 5px;font-weight:900">${t}</p>
-        ${a.perm.map((pid,j)=>{const lane=BAL_LANES[j];const pinned=(window._balPins||[]).some(pn=>pn.a===pid||pn.b===pid);const pn=balPen(window._balSel[pid],lane);const fl=pinned?' <span style="color:var(--gold)">📌</span>':pn===8?' <span style="color:var(--gold)">🔸부</span>':(pn>0&&pn<EX_PEN)?' <span style="color:var(--lose)">⚠ 조정</span>':'';return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span><b>${laneKo[lane]}</b> ${esc(nameOf(pid))}${fl}</span><span class="dim">${Math.round(balRating(pid,lane))}점</span></p>`;}).join('')}
+        ${a.perm.map((pid,j)=>{const lane=BAL_LANES[j];const pinned=(window._balPins||[]).some(pn=>pn.a===pid||pn.b===pid);const _pf=window._balSel[pid];const pn=balPen(_pf,lane);const fl=pinned?' <span style="color:var(--gold)">📌</span>':(_pf&&_pf.m==='lock')?' <span style="color:var(--gold)">🔒</span>':pn===8?' <span style="color:var(--gold)">🔸부</span>':(pn>0&&pn<EX_PEN)?' <span style="color:var(--lose)">⚠ 조정</span>':'';return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span><b>${laneKo[lane]}</b> ${esc(nameOf(pid))}${fl}</span><span class="dim">${Math.round(balRating(pid,lane))}점</span></p>`;}).join('')}
       </div>`).join('')}
     </div>
   </div>`}).join(''):''}
