@@ -1056,6 +1056,7 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
     m.participants.forEach(p=>{if(!p.playerId)return;const st=p.stats||{};tk[p.team]+=num(p.kills);td[p.team]+=num(st.damageToChampions);tg[p.team]+=num(st.goldEarned);ttk[p.team]+=num(st.damageTaken)});
     m.participants.forEach(p=>{
       if(!p.playerId)return;
+      if(!isActive(p.playerId))return; // 휴면 기록 말살 — 단, 팀 합산(td/tk/tg/ttk)엔 이미 반영돼서 동료·상대 점유율은 그대로 유지
       if(laneKo&&LANE_KO[p.lane]!==laneKo)return;
       if(!agg.has(p.playerId))agg.set(p.playerId,{g:0,w:0,min:0,dmg:0,cs:0,vis:0,obj:0,tur:0,gold:0,cc:0,heal:0,taken:0,mitig:0,d:0,k:0,a:0,kpSum:0,kpG:0,solo:0,soloN:0,rich:0,dsh:0,dshN:0,tsh:0,tshN:0,gsh:0,gshN:0,gd:0,gdN:0,csd:0,csdN:0,xpd:0,xpdN:0});
       const s=agg.get(p.playerId),st=p.stats||{};
@@ -1085,7 +1086,7 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
     dpg:s.gold>0?s.dmg/(s.gold/1000):0, gpm:s.min?s.gold/s.min:0,
     deathsPg:s.g?s.d/s.g:0, kda:s.d?(s.k+s.a)/s.d:(s.k+s.a),
     kp:s.kpG?Math.round(s.kpSum/s.kpG*1000)/10:0, solo:s.solo,
-    wins:s.w, richN:s.rich, soloPg:s.g?s.solo/s.g:0, hasSolo:s.soloN>0,
+    wins:s.w, richN:s.rich, soloPg:s.soloN?s.solo/s.soloN:0, hasSolo:s.soloN>0, soloN:s.soloN,
     dmgShare:s.dshN?Math.round(s.dsh/s.dshN*10)/10:null, tankShare:s.tshN?Math.round(s.tsh/s.tshN*10)/10:null, goldShare:s.gshN?Math.round(s.gsh/s.gshN*10)/10:null,
     gd15:s.gdN?Math.round(s.gd/s.gdN):null, csd15:s.csdN?Math.round(s.csd/s.csdN):null, xpd15:s.xpdN?Math.round(s.xpd/s.xpdN):null,
     avgDmg:s.g?Math.round(s.dmg/s.g):0
@@ -1422,7 +1423,7 @@ function makeAwards(){
     const att=top(P,'games',5);
     if(att)push('출석왕',att.name,`${att.games}판 출석 · 내전이 본업, 회사가 부업`);
     // 😱 불명예 칭호 — 들으면 "헐"
-    const ghost=P.filter(p=>p.games>=3&&p.avgDmg>0).sort((a,b)=>a.avgDmg-b.avgDmg)[0];
+    const ghost=P.filter(p=>p.games>=3&&p.avgDmg>0&&playerMainLane(p.id)!=='서폿').sort((a,b)=>a.avgDmg-b.avgDmg)[0];
     if(ghost)push('👻 유령 용병',ghost.name,`평균 딜 ${fmt(ghost.avgDmg)} · 분명 같이 게임했는데 흔적이 없음`);
     const scrooge=P.filter(p=>p.games>=3).sort((a,b)=>per(a,'assists')-per(b,'assists'))[0];
     if(scrooge&&per(scrooge,'assists')<5)push('🧊 어시 구두쇠',scrooge.name,`경기당 어시 ${per(scrooge,'assists').toFixed(1)} · 도움은 유료입니다`);
@@ -1468,7 +1469,7 @@ function makeAwards(){
     const dmgs=P.filter(p=>p.games>=3).map(p=>p.avgDmg).sort((a,b)=>a-b);
     if(dmgs.length>=3){
       const median=dmgs[Math.floor(dmgs.length/2)];
-      const spoon=P.filter(p=>p.games>=3&&p.avgDmg>0&&p.avgDmg<median).sort((a,b)=>per(b,'kills')-per(a,'kills'))[0];
+      const spoon=P.filter(p=>p.games>=3&&p.avgDmg>0&&p.avgDmg<median&&playerMainLane(p.id)!=='서폿').sort((a,b)=>per(b,'kills')-per(a,'kills'))[0];
       if(spoon&&per(spoon,'kills')>=3)push('숟가락 장인',spoon.name,`경기당 ${per(spoon,'kills').toFixed(1)}킬, 평균 딜 ${fmt(spoon.avgDmg)} · 막타 강탈 전문`);
     }
     // 연승/연패 + 폼 주가
@@ -1511,6 +1512,17 @@ function makeAwards(){
      ['CC 제조기','crowdControlScore',v=>`군중 제어 ${fmt(v)} · 상대 키보드 압수`],
      ['솔로킬 머신','soloKills',v=>`솔로킬 ${fmt(v)}회 · 1:1은 거절하지 않는다`]
     ].forEach(([t,k,d])=>{const w=top(P,k);if(w)push(t,w.name,d(w[k]))});
+    // 솔로킬 경기당 — 누적(솔로킬 머신)과 별개 칭호. 솔로킬 데이터 있는 판 기준, 최소 2판
+    const _rmSolo=ratesMap();
+    P.forEach(pl=>{const r=_rmSolo.get(pl.id);pl._soloPg=(r&&r.hasSolo&&r.soloN>=2)?r.soloPg:0;});
+    const spgW=P.filter(pl=>pl._soloPg>0&&pl.games>=3).sort((a,b)=>b._soloPg-a._soloPg)[0];
+    if(spgW)push('라인전 폭군',spgW.name,`경기당 솔로킬 ${spgW._soloPg.toFixed(1)}회 · 라인에 서면 1:1은 그쪽이 운 없는 것`);
+    // 라인별 화력왕 — 같은 라인 동료끼리 평균 딜 비교 (서폿은 서폿끼리 → 공정)
+    ['탑','정글','미드','원딜','서폿'].forEach(lane=>{
+      const rmL=ratesMap(lane); let bestL=null;
+      P.forEach(pl=>{const r=rmL.get(pl.id); if(r&&r.games>=2&&r.avgDmg>0&&(!bestL||r.avgDmg>bestL.d))bestL={name:pl.name,d:r.avgDmg,g:r.games};});
+      if(bestL)push(`${lane} 화력왕`,bestL.name,`${lane} 평균 딜 ${fmt(bestL.d)} (${bestL.g}판) · 라인 동료 중 최고 화력`);
+    });
     // 진영 특화
     const sided=SDp.filter(x=>x.bG>=2&&x.rG>=2);
     const blueSon=sided.filter(x=>x.bRate-x.rRate>=25).sort((a,b)=>(b.bRate-b.rRate)-(a.bRate-a.rRate))[0];
@@ -2169,7 +2181,7 @@ async function backfillSoloKills(){
   try{ console.log('[솔로킬 백필] 대상',targets.length,'· 성공',done,'· 실패',fail,'· 매칭칸',matchedRows,'· 채운 솔로킬',filled, unmatched.length?('· 매칭실패 예시: '+unmatched.join(' / ')):''); }catch(e){}
   let box;
   if(done===0){
-    if(/404/.test(firstErr)) box='⚠️ <b>경기를 라이엇에서 못 찾음 (404)</b> — 키 문제 아니에요(키는 정상 인증됨). 저장된 경기 ID를 match-v5 형식(KR_숫자)으로 바꿔서 시도했는데도 못 찾았어요. 시도한 ID 예: <b>'+esc(firstTriedId)+'</b>. 경기 목록에 표시되는 ID를 알려주시면 형식을 맞출게요.';
+    if(/404/.test(firstErr)) box='⚠️ <b>경기를 라이엇 공개 API에서 못 찾음 (404)</b> — 키는 정상이에요(키 문제면 401/403). <b>내전(커스텀 게임)은 라이엇 match-v5 API에 저장되지 않습니다</b> — 라이엇 공식 제약이라, ID 형식(KR_숫자)을 맞춰도 404가 나요. 그래서 이 버튼(공개 API)으로는 내전 솔로킬을 못 가져와요. 내전 지표는 .ps1 추출기(로컬 클라이언트)에서만 나옵니다. (시도한 ID: '+esc(firstTriedId)+')';
     else if(/401|403|만료|잘못된/.test(firstErr)) box='❌ <b>키 인증 실패</b> ('+esc(firstErr)+') — Vercel의 RIOT_API_KEY가 만료/오타거나 재배포가 안 됐어요.';
     else box='❌ 라이엇 호출 전부 실패 — '+esc(firstErr||'알 수 없는 오류');
   }
@@ -6204,7 +6216,7 @@ async function bankGift(){
   const amt=Math.round(Number($('gfAmt')?.value)||0);
   const memo=($('gfMemo')?.value||'').trim();
   if(!name)return toast('받는 멤버를 골라주세요.',true);
-  if(amt<50||amt>5000)return toast('상품권은 50~5,000 APO',true);
+  if(amt<1000||amt>30000||amt%1000!==0)return toast('상품권은 1,000~30,000 APO (1,000 단위)',true);
   if(!confirm(`🎁 ${name}에게 ${fmtAPO(amt)} APO 상품권${memo?` (${memo})`:''} 지급할까요?`))return;
   try{
     const j=await bankCall('gift',{name,amount:amt,memo});
@@ -7624,7 +7636,8 @@ $('modal').addEventListener('click',e=>{if(e.target.id==='modal'){$('modal').cla
 let selPlayer=null;
 function playerListItems(){
   const q=norm(window._pq||'');
-  return [...state.players].sort((a,b)=>(b.active-a.active)||a.displayName.localeCompare(b.displayName,'ko'))
+  return [...state.players].filter(p=>isAdmin()||p.active!==false) // 휴면은 운영자에게만 보임 (일반 유저는 숨김)
+    .sort((a,b)=>(b.active-a.active)||a.displayName.localeCompare(b.displayName,'ko'))
     .filter(p=>!q||labelsOf(p).some(x=>norm(x).includes(q)));
 }
 function playerListHtml(list){
@@ -7641,7 +7654,8 @@ function filterPlayerList(){ // 한글 조립을 깨지 않도록, 목록만 부
 }
 function pgPlayers(){
   const list=playerListItems();
-  if(!selPlayer||!byId(selPlayer))selPlayer=list[0]?.id||state.players[0]?.id||null;
+  const _sel=byId(selPlayer);
+  if(!selPlayer||!_sel||(!isAdmin()&&_sel.active===false))selPlayer=list[0]?.id||state.players.find(x=>x.active)?.id||null;
   const p=byId(selPlayer);
   const e=editingPlayer?byId(editingPlayer):null;
   return head('플레이어 관리','통계는 이름 글자가 아니라 고유 ID로 묶여서, 닉네임이 바뀌어도 같은 사람으로 유지돼요.')+`
@@ -7672,6 +7686,11 @@ function pgPlayers(){
 function afterPlayers(){}
 function playerDetail(p){
   const S=statPlayers().find(s=>s.id===p.id);
+  const lanes=playerLanes(p.id);
+  const laneSel=(window._pLane==='전체')?null:((window._pLane&&lanes.some(l=>l.lane===window._pLane))?window._pLane:(lanes[0]?.lane||null));
+  const LR=laneSel?ratesMap(laneSel).get(p.id):null; // 그 라인 집계 (없으면 전체 S)
+  const kG=LR?LR.games:(S?.games||0), kW=LR?LR.wins:(S?.wins||0);
+  const kKda=LR?(Math.round(LR.kda*100)/100):(S?.kda||0), kDmg=LR?Math.round(LR.avgDmg):(S?.avgDmg||0);
   const syn=statDuos(1).filter(d=>d.ids.includes(p.id)).slice(0,6);
   const riv=statRivals(1).filter(r=>r.ids.includes(p.id)).slice(0,6);
   const{arr,wl}=formSeries(p.id);
@@ -7690,21 +7709,20 @@ function playerDetail(p){
       </span>`:''}
     </div>
     <div class="hr"></div>
-    ${S?`<div class="grid c4">
-      <div class="kpi"><div class="n">${S.wins}<span class="dim" style="font-size:16px">승</span> ${S.losses}<span class="dim" style="font-size:16px">패</span></div><div class="l">전적 · 승률 ${S.winRate}%</div></div>
-      <div class="kpi"><div class="n">${S.kda}</div><div class="l">평균 KDA</div></div>
-      <div class="kpi"><div class="n">${S.avgDmg?fmt(S.avgDmg):'-'}</div><div class="l">평균 딜량</div></div>
+    ${S?`${lanes.length?`<p class="mini dim" style="margin:0 0 8px">📊 지표 기준: <b style="color:var(--gold)">${laneSel?esc(laneSel)+' 라인 '+kG+'판':'전체'}</b> <span style="opacity:.7">— 아래 탭으로 라인별 전환</span></p>`:''}<div class="grid c4">
+      <div class="kpi"><div class="n">${kW}<span class="dim" style="font-size:16px">승</span> ${kG-kW}<span class="dim" style="font-size:16px">패</span></div><div class="l">전적 · 승률 ${kG?Math.round(kW/kG*100):0}%</div></div>
+      <div class="kpi"><div class="n">${kKda}</div><div class="l">${laneSel?'KDA':'평균 KDA'}</div></div>
+      <div class="kpi"><div class="n">${kDmg?fmt(kDmg):'-'}</div><div class="l">${laneSel?'딜량':'평균 딜량'}</div></div>
       <div class="kpi gold"><div class="n">${S.mvp}</div><div class="l">MVP 횟수</div></div>
     </div>
     ${(()=>{const sd=statPlayerSides(1).find(x=>x.id===p.id);return sd?`<p class="mini" style="margin:12px 0 0">진영별: <b class="tBlue">블루 ${sd.bW}승 ${sd.bG-sd.bW}패${sd.bG?` (${sd.bRate}%)`:''}</b> · <b class="tRed">레드 ${sd.rW}승 ${sd.rG-sd.rW}패${sd.rG?` (${sd.rRate}%)`:''}</b></p>`:''})()}
     ${(()=>{
-      const lanes=playerLanes(p.id);
-      const activeLane=(window._pLane&&lanes.some(l=>l.lane===window._pLane))?window._pLane:(lanes[0]?.lane||null);
-      const hex=playerHex(p.id,activeLane); if(!hex)return'';
-      const pro=matchPro(hex,activeLane,p.id);
+      const activeLane=laneSel;
+      const hex=playerHex(p.id,activeLane||playerMainLane(p.id)); if(!hex)return'';
+      const pro=matchPro(hex,activeLane||hex.lane,p.id);
       const rep=styleReport(hex);
-      const laneTabs=lanes.length>1?`<div class="row" style="justify-content:center;gap:6px;margin-bottom:8px">${lanes.map(l=>
-        `<button class="btn sm ${l.lane===activeLane?'gold':''}" onclick="window._pLane='${l.lane}';render()">${esc(l.lane)} ${l.games}판</button>`).join('')}</div>`
+      const laneTabs=lanes.length>1?`<div class="row" style="justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap"><button class="btn sm ${!laneSel?'gold':''}" onclick="window._pLane='전체';render()">전체</button>${lanes.map(l=>
+        `<button class="btn sm ${l.lane===laneSel?'gold':''}" onclick="window._pLane='${l.lane}';render()">${esc(l.lane)} ${l.games}판</button>`).join('')}</div>`
         :(lanes.length===1?`<p class="mini dim" style="text-align:center;margin:0 0 6px">${esc(lanes[0].lane)} ${lanes[0].games}판 기준</p>`:'');
       const mine=makeAwards().filter(a=>a.target===p.displayName||(a.target.includes(p.displayName)&&(a.target.includes('+')||a.target.includes('vs')))).slice(0,12);
       return`<div class="grid c2" style="margin-top:16px;align-items:center">
@@ -7717,7 +7735,7 @@ function playerDetail(p){
           <h3 style="font-size:14px;margin:0 0 6px">스카우팅 리포트 <span class="dim" style="font-weight:600;font-size:12px">— 아포단 내 상대평가 100점 만점</span></h3>
           ${rep.str.map(x=>`<p class="mini" style="margin:0 0 5px">💪 <b style="color:var(--win)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].hi)}</p>`).join('')}
           ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
-          ${hex.rates&&hex.rates.solo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 누적 ${hex.rates.solo}회</b> · 1:1에서 증명된 손맛</p>`:''}
+          ${hex.rates&&hex.rates.hasSolo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 경기당 ${hex.rates.soloPg.toFixed(1)}회</b> · 1:1에서 증명된 손맛</p>`:''}
           ${(()=>{const mm=memberMatch(p.id);if(!mm)return'';
             if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) — ${esc(mm.similar.why)}</p>`;
             return`<p class="mini" style="margin:6px 0 0;line-height:1.6">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)<br><span class="dim">${esc(mm.similar.why)}</span></p>
@@ -8652,11 +8670,11 @@ function pgBank(){
     <h3 style="margin:0 0 6px">🎁 상품권 <span class="tag">소소한 보상 — 이벤트·고생수당</span></h3>
     <div class="grid c3" style="gap:8px">
       <div class="f"><label>받는 멤버</label><select id="gfName" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:8px;width:100%">${(window._bankRoster||[]).map(r=>`<option>${esc(r.name)}</option>`).join('')}</select></div>
-      <div class="f"><label>금액 (50~5,000)</label><input id="gfAmt" type="number" value="300" min="50" max="5000"></div>
+      <div class="f"><label>금액 (1,000~30,000)</label><input id="gfAmt" type="number" value="5000" min="1000" max="30000" step="1000"></div>
       <div class="f"><label>사유 (장부에 표시)</label><input id="gfMemo" placeholder="예: 밴픽 진행 고생수당" maxlength="40"></div>
     </div>
     <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
-      ${[100,300,500,1000].map(v=>`<button class="btn sm ghost" onclick="$('gfAmt').value=${v}">${v}</button>`).join('')}
+      ${[1000,5000,10000,30000].map(v=>`<button class="btn sm ghost" onclick="$('gfAmt').value=${v}">${v.toLocaleString()}</button>`).join('')}
       <button class="btn gold sm" onclick="bankGift()">🎁 지급</button>
     </div>
   </div>`:''}
