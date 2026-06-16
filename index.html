@@ -1393,6 +1393,7 @@ function streaksOf(id){
   });
   return{mw,ml,cw,cl}; // cw/cl = 현재 진행 중 연승/연패
 }
+const FORCED_TITLES={'성용찬':['퍼펙트 게임']}; // 🏅 수동 영구 칭호 — '이름/별명':[칭호…]. displayName·카톡명·별명 아무거나 매칭. 운영자가 추가
 function makeAwards(){
   const P=statPlayers().filter(s=>isActive(s.id)),D=statDuos(3),R=statRivals(3),C=statChamps(),PC=statPlayerChamps(2),SDp=statPlayerSides(1),out=[];
   const push=(title,target,desc)=>out.push({title,target,desc});
@@ -1486,15 +1487,13 @@ function makeAwards(){
     });
     if(bw)push('연승 제조기',bw.name,`최다 ${bw.n}연승 · 불장의 주역`);
     if(bl)push('멘탈 클리닉 VIP',bl.name,`최다 ${bl.n}연패 · 그래도 출석은 한다`);
-    // 퍼펙트 게임 — 0데스 + 5킬↑ + 승리. 🗓 매주 초기화 (이번 주 경기만), 달성자 전원 (1인 1회)
-    const wkStart=weekStartKST();
+    // 퍼펙트 게임 — 0데스 + 5킬↑ + 승리. 🏅 통산 영구 칭호 (한 번 달성하면 계속 유지), 달성자 전원 (1인 1회)
     const perfectSeen=new Set();
     for(const m of [...state.matches].sort((a,b)=>sortKey(b).localeCompare(sortKey(a)))){
-      if(String(m.playedAt||'')<wkStart)continue; // 이번 주 경기만 인정
       for(const p of m.participants){
         if(p.playerId&&num(p.deaths)===0&&num(p.kills)>=5&&p.team===m.winnerTeam&&!perfectSeen.has(p.playerId)){
           perfectSeen.add(p.playerId);
-          push('퍼펙트 게임',nameOf(p.playerId),`${num(p.kills)}/0/${num(p.assists)} · 이번 주 무결점 경기`);
+          push('퍼펙트 게임',nameOf(p.playerId),`${num(p.kills)}/0/${num(p.assists)} · 0데스 무결점 경기 (영구)`);
         }
       }
     }
@@ -1550,6 +1549,8 @@ function makeAwards(){
   });
   const onetrick=[...PC].filter(x=>x.games>=4).sort((a,b)=>b.games-a.games)[0];
   if(onetrick)push('원챔 장인',onetrick.name,`${onetrick.champion}만 ${onetrick.games}판 · 장인 정신 그 자체`);
+  // 🏅 수동 영구 칭호 — 이름/별명 매칭 → displayName 타겟 (프로필·랭킹 표시)
+  for(const _nm in FORCED_TITLES){const _fp=state.players.find(pl=>pl.displayName===_nm||pl.kakaoName===_nm||(pl.aliases||[]).includes(_nm));const _tg=_fp?_fp.displayName:_nm;FORCED_TITLES[_nm].forEach(_t=>{if(!out.some(a=>a.title===_t&&a.target===_tg))push(_t,_tg,'🏅 명예 영구 칭호');});}
   return out.slice(0,100);
 }
 
@@ -8011,18 +8012,20 @@ function balPerms(a){ // 5개 순열
   return out;
 }
 const BAL_LANES=['TOP','JUNGLE','MID','ADC','SUPPORT'];
-function balAssign(ids,prefs){ // 팀 5명 → 라인 배정 (희망 라인 최우선)
+const EX_PEN=1e6; // 제외 라인 = 사실상 금지
+function balPen(pf,lane){ // 신청 페널티: 주0 · 부8 · 그외30 · 제외 금지
+  if(!pf||pf.m==='any')return 0;
+  if(pf.m==='ex')return pf.lane===lane?EX_PEN:0;
+  if(lane===pf.lane)return 0;
+  if(pf.sub&&lane===pf.sub)return 8;
+  return 30;
+}
+function balAssign(ids,prefs){ // 팀 5명 → 라인 배정 (제외 금지 → 신청 페널티 최소 → 라인합 최대)
   let best=null;
   balPerms(ids).forEach(perm=>{
     let score=0,pen=0;
-    perm.forEach((pid,i)=>{
-      const lane=BAL_LANES[i];
-      score+=balRating(pid,lane);
-      const pf=prefs[pid];
-      if(pf&&pf!=='ANY'&&pf!==lane)pen+=30; // 희망 라인 위반 페널티
-    });
-    const total=score-pen;
-    if(!best||total>best.total)best={perm,score,pen,total};
+    perm.forEach((pid,i)=>{ const lane=BAL_LANES[i]; score+=balRating(pid,lane); pen+=balPen(prefs[pid],lane); });
+    if(!best||pen<best.pen||(pen===best.pen&&score>best.score))best={perm,score,pen};
   });
   return best;
 }
@@ -8042,28 +8045,43 @@ function balCompute(sel,prefs){ // 10명 → 252개 분할 전수 탐색
     const B=ids.filter(x=>!A.includes(x));
     const a=balAssign(A,prefs),b=balAssign(B,prefs);
     if(!a||!b)return;
-    const diff=Math.abs(a.total-b.total);
+    if(a.pen>=EX_PEN||b.pen>=EX_PEN)return; // 제외 라인 배치 불가 → 무효
+    const diff=Math.abs(a.score-b.score); // 밸런스 = 라인합(체급) 차이
     opts.push({A:a,B:b,diff,pen:a.pen+b.pen});
   });
-  opts.sort((x,y)=>(x.pen-y.pen)||(x.diff-y.diff));
+  opts.sort((x,y)=>(x.diff-y.diff)||(x.pen-y.pen)); // ⚖️ 밸런스 1순위 → 그다음 신청 라인
   return opts.slice(0,3);
 }
 function balToggle(pid){
-  window._balSel=window._balSel||{};
-  if(window._balSel[pid]!==undefined)delete window._balSel[pid];
+  const s=window._balSel=window._balSel||{};
+  if(s[pid]!==undefined)delete s[pid];
   else{
-    if(Object.keys(window._balSel).length>=10)return toast('10명까지만!',true);
-    window._balSel[pid]='ANY';
+    if(Object.keys(s).length>=10)return toast('10명까지만!',true);
+    const p=byId(pid); // 프로필 주/부 포지션 있으면 자동 기본값
+    if(p&&BAL_LANES.includes(p.soloPos))s[pid]={m:'main',lane:p.soloPos,sub:(BAL_LANES.includes(p.subPos)&&p.subPos!==p.soloPos)?p.subPos:null};
+    else s[pid]={m:'any'};
   }
   window._balRes=null;render();
 }
-function balLane(pid,lane){window._balSel[pid]=lane;window._balRes=null;render()}
+function balPref(pid,v){ // 주라인 / 상관없음 / 제외
+  const s=window._balSel;
+  if(v==='any')s[pid]={m:'any'};
+  else if(v[0]==='x')s[pid]={m:'ex',lane:v.slice(2)};
+  else{const lane=v.slice(2),old=s[pid]||{};s[pid]={m:'main',lane,sub:(old.sub&&old.sub!==lane)?old.sub:null};}
+  window._balRes=null;render();
+}
+function balSub(pid,v){ // 부라인 (주라인 모드일 때만)
+  const cur=window._balSel[pid]; if(!cur||cur.m!=='main')return;
+  cur.sub=v==='none'?null:v.slice(2); if(cur.sub===cur.lane)cur.sub=null;
+  window._balRes=null;render();
+}
 function balRun(){
   const sel=Object.keys(window._balSel||{});
   if(sel.length!==10)return toast(`딱 10명을 골라주세요 (현재 ${sel.length}명)`,true);
-  window._balRes=balCompute(sel,window._balSel);
+  const res=balCompute(sel,window._balSel);
+  window._balRes=res;
   render();
-  toast('⚖️ 빅데이터가 팀을 짰어요!');
+  toast(res.length?'⚖️ 빅데이터가 팀을 짰어요!':'⚠ 제외 조건이 너무 빡빡해서 5:5를 못 짰어요 — 제외를 줄여보세요.',!res.length);
 }
 function balCopy(i){
   const o=window._balRes[i];
@@ -8082,37 +8100,41 @@ function pgBalance(){
   const cand=state.players.filter(p=>p.active);
   const R=window._balRes;
   const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿',ANY:'무관'};
-  return head('⚖️ 빅데이터 팀 짜주기','내전 데이터(라인 숙련 + 통산 + 최근 폼)로 가장 공평한 5:5를 전수 탐색해요. 운영진 전용.')+_balSubnav+`
+  return head('⚖️ 빅데이터 팀 짜주기','솔랭 티어 + 내전 데이터로, 신청 라인(주/부/제외)을 반영해 가장 공평한 5:5를 전수 탐색해요. 운영진 전용.')+_balSubnav+`
   <div class="card">
     <h3 style="margin:0 0 4px">1️⃣ 오늘 멤버 10명 고르기 <span class="tag">${selN}/10</span></h3>
     <div class="row" style="gap:6px;flex-wrap:wrap">
       ${cand.map(p=>`<button class="btn sm ${sel[p.id]!==undefined?'gold':'ghost'}" onclick="balToggle('${p.id}')">${esc(p.displayName)}</button>`).join('')}
     </div>
     ${selN?`<div class="hr"></div>
-    <h3 style="margin:0 0 4px">2️⃣ 희망 라인 (선택)</h3>
-    <p class="mini dim" style="margin:0 0 6px">지정하면 그 라인을 최우선 배정하고, "무관"이면 데이터가 알아서 최적 라인을 찾아요.</p>
+    <h3 style="margin:0 0 4px">2️⃣ 신청 라인 (주 / 부 / 제외)</h3>
+    <p class="mini dim" style="margin:0 0 6px">주라인=0순위, 부라인=차순위로 배치. "OO 제외"는 그 라인에 절대 안 넣어요. "상관없음"은 데이터가 알아서 최적 라인. <b>밸런스(5:5)가 최우선</b>이라, 라인이 겹치면 부라인/조정으로 가장 팽팽한 팀을 만들어요.</p>
     <div class="row" style="gap:8px;flex-wrap:wrap">
-      ${Object.keys(sel).map(pid=>`<span class="pill" style="display:inline-flex;align-items:center;gap:5px;padding:4px 8px">${esc(nameOf(pid))}
-        <select onchange="balLane('${pid}',this.value)" style="font-size:11px;padding:2px 4px">${['ANY',...BAL_LANES].map(l=>`<option value="${l}" ${sel[pid]===l?'selected':''}>${laneKo[l]}</option>`).join('')}</select></span>`).join('')}
+      ${Object.keys(sel).map(pid=>{const pf=sel[pid]||{m:'any'};
+        const pv=pf.m==='ex'?('x:'+pf.lane):pf.m==='main'?('m:'+pf.lane):'any';
+        const prim=`<option value="any"${pv==='any'?' selected':''}>상관없음</option>`+BAL_LANES.map(l=>`<option value="m:${l}"${pv==='m:'+l?' selected':''}>주 ${laneKo[l]}</option>`).join('')+BAL_LANES.map(l=>`<option value="x:${l}"${pv==='x:'+l?' selected':''}>${laneKo[l]} 제외</option>`).join('');
+        const sv=(pf.m==='main'&&pf.sub)?('s:'+pf.sub):'none';
+        const sub=pf.m==='main'?`<select onchange="balSub('${pid}',this.value)" style="font-size:11px;padding:2px 4px"><option value="none"${sv==='none'?' selected':''}>부 없음</option>${BAL_LANES.filter(l=>l!==pf.lane).map(l=>`<option value="s:${l}"${sv==='s:'+l?' selected':''}>부 ${laneKo[l]}</option>`).join('')}</select>`:'';
+        return `<span class="pill" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px">${esc(nameOf(pid))}<select onchange="balPref('${pid}',this.value)" style="font-size:11px;padding:2px 4px">${prim}</select>${sub}</span>`;}).join('')}
     </div>`:''}
     <div class="hr"></div>
     <button class="btn gold" onclick="balRun()" ${selN===10?'':'disabled'}>⚖️ ${selN===10?'빅데이터로 팀 짜기!':`10명을 채워주세요 (${selN}/10)`}</button>
   </div>
   ${R?R.map((o,i)=>{
-    const wA=Math.round(100/(1+Math.pow(10,(o.B.total-o.A.total)/120)));
+    const wA=Math.round(100/(1+Math.pow(10,(o.B.score-o.A.score)/120)));
     return`<div class="card" style="margin-top:12px;border:1px solid ${i===0?'rgba(242,184,75,.5)':'var(--line)'}">
     <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-      <h3 style="margin:0">${i===0?'🥇 추천 1안 — 가장 팽팽':i===1?'🥈 2안':'🥉 3안'} <span class="tag">예상 ${wA}% : ${100-wA}%${o.pen?` · 희망라인 일부 조정`:' · 희망라인 100% 반영'}</span></h3>
+      <h3 style="margin:0">${i===0?'🥇 추천 1안 — 가장 팽팽':i===1?'🥈 2안':'🥉 3안'} <span class="tag">예상 ${wA}% : ${100-wA}%${o.pen?` · 신청 일부 조정`:' · 신청 100% 반영'}</span></h3>
       <button class="btn sm" onclick="balCopy(${i})">📋 복사</button>
     </div>
     <div class="grid c2" style="gap:10px;margin-top:8px">
       ${[['🅰 알파',o.A],['🅱 베타',o.B]].map(([t,a])=>`<div style="border:1px solid var(--line);border-radius:12px;padding:9px 12px">
         <p class="mini" style="margin:0 0 5px;font-weight:900">${t}</p>
-        ${a.perm.map((pid,j)=>`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span><b>${laneKo[BAL_LANES[j]]}</b> ${esc(nameOf(pid))}${(window._balSel[pid]&&window._balSel[pid]!=='ANY'&&window._balSel[pid]!==BAL_LANES[j])?' <span style="color:var(--lose)">⚠ 희망 외</span>':''}</span><span class="dim">${Math.round(balRating(pid,BAL_LANES[j]))}점</span></p>`).join('')}
+        ${a.perm.map((pid,j)=>{const lane=BAL_LANES[j],pn=balPen(window._balSel[pid],lane);const fl=pn===8?' <span style="color:var(--gold)">🔸부</span>':(pn>0&&pn<EX_PEN)?' <span style="color:var(--lose)">⚠ 조정</span>':'';return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span><b>${laneKo[lane]}</b> ${esc(nameOf(pid))}${fl}</span><span class="dim">${Math.round(balRating(pid,lane))}점</span></p>`;}).join('')}
       </div>`).join('')}
     </div>
   </div>`}).join(''):''}
-  <div class="card" style="margin-top:12px"><p class="mini dim" style="margin:0">💡 점수 = 기본 50 + 그 라인 승률·판수 숙련 + 통산 성적 + 최근 폼. 표본이 적은 멤버는 보수적으로 평가돼요. 252가지 팀 분할 × 라인 배치를 전부 따져서 가장 차이가 적은 3가지 안을 보여줍니다.</p></div>`;
+  <div class="card" style="margin-top:12px"><p class="mini dim" style="margin:0">💡 점수 = 솔랭·자유랭 티어(체급) + 그 라인 승률·판수 숙련 + 통산 성적 + 최근 폼. 252가지 팀 분할 × 라인 배치를 전부 따져, <b>밸런스(5:5)를 1순위</b>로, 신청 라인(주0순위·부차순위·제외 금지)을 그다음으로 반영해 가장 팽팽한 3안을 보여줍니다.</p></div>`;
 }
 
 /* ───── 당일 밴픽 (하드 피어리스 보드) ───── */
