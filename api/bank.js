@@ -1602,6 +1602,21 @@ module.exports = async function handler(req, res) {
             } }
         } catch (e) {}
       }
+      if (Array.isArray(body.mentions) && body.mentions.length) { // @멘션 → 언급된 멤버에게 알림
+        var mSeen = {};
+        for (var mi = 0; mi < body.mentions.length && mi < 10; mi++) {
+          var mName = String(body.mentions[mi] || '').slice(0, 24).trim();
+          if (!mName || mName === cbWho.name || mSeen[mName]) continue;
+          mSeen[mName] = 1;
+          var mAcct = await getAcct(mName);
+          if (!mAcct) continue; // 실제 멤버만
+          var mUid = crypto.createHash('sha256').update('u|' + mName).digest('hex').slice(0, 12);
+          if (mUid === cbUid) continue;
+          await redis(['LPUSH', 'cmtN:' + mUid, JSON.stringify({ type: 'mention', board: cbB2, pid: cbItem.id, from: cbNick, text: cbText.slice(0, 40), ts: Date.now() })]);
+          await redis(['LTRIM', 'cmtN:' + mUid, '0', '49']);
+          await redis(['EXPIRE', 'cmtN:' + mUid, SEC_CMT]);
+        }
+      }
       cbItem.like = 0;
       return res.status(200).json({ comment: cbItem });
     }
@@ -1682,8 +1697,13 @@ module.exports = async function handler(req, res) {
       var nItems = [];
       for (var ni = 0; ni < nRaw.length; ni++) { try { nItems.push(JSON.parse(nRaw[ni])); } catch (e) {} }
       var nLast = parseInt(await redis(['GET', 'cmtNread:' + nUid]), 10) || 0;
-      var nUnread = 0; for (var nu = 0; nu < nItems.length; nu++) { if ((nItems[nu].ts || 0) > nLast) nUnread++; }
-      return res.status(200).json({ items: nItems, unread: nUnread, lastRead: nLast });
+      var nKeep = nItems.filter(function (x) { return (x.ts || 0) > nLast; }); // 읽은 알림은 자동으로 사라짐
+      if (nKeep.length < nItems.length) { // 읽은 게 있으면 리스트 정리 (최신순 유지)
+        await redis(['DEL', 'cmtN:' + nUid]);
+        for (var nk = 0; nk < nKeep.length; nk++) await redis(['RPUSH', 'cmtN:' + nUid, JSON.stringify(nKeep[nk])]);
+        if (nKeep.length) await redis(['EXPIRE', 'cmtN:' + nUid, SEC_CMT]);
+      }
+      return res.status(200).json({ items: nKeep, unread: nKeep.length, lastRead: nLast });
     }
 
     if (req.method === 'POST' && action === 'cmtNotifRead') {
@@ -1693,6 +1713,27 @@ module.exports = async function handler(req, res) {
       var rNow = Date.now();
       await redis(['SET', 'cmtNread:' + rUid, String(rNow), 'EX', SEC_CMT]);
       return res.status(200).json({ ok: true, lastRead: rNow });
+    }
+
+    if (req.method === 'POST' && action === 'cmtNotifDel') { // 알림 1개 삭제 (ts로 지정)
+      var dWho = await auth(body.token);
+      if (!dWho) return res.status(401).json({ error: '로그인이 필요해요' });
+      var dUid = dWho.name ? crypto.createHash('sha256').update('u|' + dWho.name).digest('hex').slice(0, 12) : 'dev';
+      var dTs = Math.floor(Number(body.ts) || 0);
+      if (!dTs) return res.status(400).json({ error: 'ts 필요' });
+      var dRaw = (await redis(['LRANGE', 'cmtN:' + dUid, '0', '49'])) || [];
+      for (var di = 0; di < dRaw.length; di++) { var dc; try { dc = JSON.parse(dRaw[di]); } catch (e) { continue; }
+        if ((dc.ts || 0) === dTs) { await redis(['LREM', 'cmtN:' + dUid, '1', dRaw[di]]); break; } }
+      return res.status(200).json({ ok: true });
+    }
+
+    if (req.method === 'POST' && action === 'cmtNotifClear') { // 알림 전체 삭제
+      var cWho = await auth(body.token);
+      if (!cWho) return res.status(401).json({ error: '로그인이 필요해요' });
+      var cUid2 = cWho.name ? crypto.createHash('sha256').update('u|' + cWho.name).digest('hex').slice(0, 12) : 'dev';
+      await redis(['DEL', 'cmtN:' + cUid2]);
+      await redis(['DEL', 'cmtNLseen:' + cUid2]);
+      return res.status(200).json({ ok: true });
     }
 
     // ═══ 🎨 캐릭터 (메이플식 꾸미기 — 부위별 착장 + 슬롯 + 상점) ═══
