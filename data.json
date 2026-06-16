@@ -167,14 +167,14 @@
    "id": "p_2dlhnzwn_mq7nhxuq",
    "displayName": "01 구구",
    "kakaoName": "01 구구",
-   "riotName": "탑숭이",
-   "riotTag": "KR3",
+   "riotName": "Rom",
+   "riotTag": "kr3",
    "aliases": [
     "구구",
     "01구구"
    ],
    "active": true,
-   "memo": "",
+   "memo": "전 닉네임 탑숭이#KR3",
    "soloTier": "에메랄드",
    "flexTier": "마스터",
    "riotPuuid": "GMSBa9-Ezw3fZyuqGgXJ-Jnyj1MYlvEk4DKs2ICmqxCQmdVL0gVqcPs5CIbCBnTgxGC0u2OBzqt9_Q",
@@ -24804,8 +24804,8 @@
    ]
   }
  ],
- "rev": 299,
- "updatedAt": "2026-06-16T05:50:51.202Z",
+ "rev": 300,
+ "updatedAt": "2026-06-16T10:39:24.125Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
