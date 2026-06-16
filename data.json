@@ -26742,16 +26742,13 @@
    "participants": [
     {
      "team": "BLUE",
-     "lane": "JUNGLE",
+     "lane": "TOP",
      "playerId": "p_jlc2q699_mq7nhxup",
      "rawName": "미르수리",
      "championId": "암베사",
      "kills": 12,
      "deaths": 0,
      "assists": 10,
-     "gd15": -401,
-     "csd15": 22,
-     "xpd15": 3012,
      "stats": {
       "cs": 214,
       "goldEarned": 13747,
@@ -26771,16 +26768,13 @@
     },
     {
      "team": "BLUE",
-     "lane": "TOP",
+     "lane": "JUNGLE",
      "playerId": "p_snn2xfw3_mq7nhxuq",
      "rawName": "견호살빼면 롤접음",
      "championId": "신 짜오",
      "kills": 8,
      "deaths": 4,
      "assists": 9,
-     "gd15": -1054,
-     "csd15": -20,
-     "xpd15": -802,
      "stats": {
       "cs": 151,
       "goldEarned": 11961,
@@ -26794,8 +26788,7 @@
       "damageToObjectives": 25744,
       "damageToTurrets": 2854,
       "healing": 19033,
-      "selfMitigatedDamage": 21118,
-      "soloKills": 0
+      "selfMitigatedDamage": 21118
      }
     },
     {
@@ -26807,9 +26800,6 @@
      "kills": 7,
      "deaths": 8,
      "assists": 16,
-     "gd15": -102,
-     "csd15": -13,
-     "xpd15": -759,
      "stats": {
       "cs": 226,
       "goldEarned": 12924,
@@ -26823,8 +26813,7 @@
       "damageToObjectives": 11608,
       "damageToTurrets": 11608,
       "healing": 2274,
-      "selfMitigatedDamage": 15108,
-      "soloKills": 0
+      "selfMitigatedDamage": 15108
      }
     },
     {
@@ -26836,9 +26825,6 @@
      "kills": 7,
      "deaths": 1,
      "assists": 11,
-     "gd15": 143,
-     "csd15": 0,
-     "xpd15": 348,
      "stats": {
       "cs": 270,
       "goldEarned": 17216,
@@ -26865,9 +26851,6 @@
      "kills": 2,
      "deaths": 1,
      "assists": 17,
-     "gd15": 506,
-     "csd15": -15,
-     "xpd15": 665,
      "stats": {
       "cs": 39,
       "goldEarned": 8986,
@@ -26881,8 +26864,7 @@
       "damageToObjectives": 4263,
       "damageToTurrets": 740,
       "healing": 3732,
-      "selfMitigatedDamage": 5600,
-      "soloKills": 0
+      "selfMitigatedDamage": 5600
      }
     },
     {
@@ -26894,9 +26876,6 @@
      "kills": 2,
      "deaths": 6,
      "assists": 2,
-     "gd15": -657,
-     "csd15": 7,
-     "xpd15": -917,
      "stats": {
       "cs": 229,
       "goldEarned": 10570,
@@ -26923,9 +26902,6 @@
      "kills": 5,
      "deaths": 10,
      "assists": 3,
-     "gd15": 401,
-     "csd15": -22,
-     "xpd15": -3012,
      "stats": {
       "cs": 164,
       "goldEarned": 11204,
@@ -26937,7 +26913,6 @@
       "controlWardsBought": 4,
       "crowdControlScore": 21,
       "damageToObjectives": 15642,
-      "damageToTurrets": 0,
       "healing": 18837,
       "selfMitigatedDamage": 20421,
       "soloKills": 4
@@ -26952,9 +26927,6 @@
      "kills": 3,
      "deaths": 10,
      "assists": 1,
-     "gd15": 102,
-     "csd15": 13,
-     "xpd15": 759,
      "stats": {
       "cs": 250,
       "goldEarned": 11019,
@@ -26968,8 +26940,7 @@
       "damageToObjectives": 8068,
       "damageToTurrets": 8068,
       "healing": 9074,
-      "selfMitigatedDamage": 31055,
-      "soloKills": 0
+      "selfMitigatedDamage": 31055
      }
     },
     {
@@ -26981,9 +26952,6 @@
      "kills": 4,
      "deaths": 5,
      "assists": 2,
-     "gd15": -143,
-     "csd15": 0,
-     "xpd15": -348,
      "stats": {
       "cs": 254,
       "goldEarned": 13337,
@@ -26992,13 +26960,11 @@
       "visionScore": 15,
       "wardsPlaced": 5,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 18,
       "damageToObjectives": 8350,
       "damageToTurrets": 8015,
       "healing": 6881,
-      "selfMitigatedDamage": 12124,
-      "soloKills": 0
+      "selfMitigatedDamage": 12124
      }
     },
     {
@@ -27010,9 +26976,6 @@
      "kills": 0,
      "deaths": 5,
      "assists": 7,
-     "gd15": -506,
-     "csd15": 15,
-     "xpd15": -665,
      "stats": {
       "cs": 35,
       "goldEarned": 6903,
@@ -27026,8 +26989,7 @@
       "damageToObjectives": 1081,
       "damageToTurrets": 633,
       "healing": 3455,
-      "selfMitigatedDamage": 21963,
-      "soloKills": 0
+      "selfMitigatedDamage": 21963
      }
     }
    ],
@@ -27155,8 +27117,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 314,
- "updatedAt": "2026-06-16T17:08:21.132Z",
+ "rev": 315,
+ "updatedAt": "2026-06-16T18:54:22.964Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
