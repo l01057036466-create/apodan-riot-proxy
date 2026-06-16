@@ -379,7 +379,7 @@ module.exports = async function handler(req, res) {
       var allin = aB.bal === 0;
       await putAcct(aB);
       await ledger(aB.name, (allin ? '🚨 올인! ' : '🎰 ') + '베팅: ' + (team2 === 'alpha' ? '알파' : '베타') + ' 승리', -amt2, aB.bal);
-      await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sB.name, 'bet', '1']);
+      await redis(['HINCRBY', 'msn:' + weekIdOf() + ':' + sB.name, 'bet', '1']);
       var newBet = { team: team2, amt: curStake + amt2, t: new Date().toISOString(), allin: allin || (prev && prev.allin) || false, odds: lockedOdds };
       await redis(['SET', 'bet:' + mk2 + ':' + aB.name, JSON.stringify(newBet), 'EX', SEC90]);
       await redis(['SADD', 'mkt:' + mk2 + ':bettors', aB.name]);
@@ -538,7 +538,7 @@ module.exports = async function handler(req, res) {
       var gA = Math.round(Number(body.amount) || 0);
       var gM = String(body.memo || '').slice(0, 40);
       if (!gN) return res.status(400).json({ error: '받는 멤버 이름 확인' });
-      if (gA < 50 || gA > 5000) return res.status(400).json({ error: '상품권은 50~5,000 APO' });
+      if (gA < 50 || gA > 30000) return res.status(400).json({ error: '상품권은 50~30,000 APO' });
       var gAcc = await getAcct(gN);
       if (!gAcc || gAcc.status !== 'active') return res.status(404).json({ error: '계좌가 없거나 비활성' });
       gAcc.bal += gA;
@@ -569,7 +569,7 @@ module.exports = async function handler(req, res) {
         aR.bal += amtR;
         await putAcct(aR);
         await ledger(aR.name, '🎮 내전 참여 수당 (' + rd + ')', amtR, aR.bal);
-        await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + nmR, 'play', '1']);
+        await redis(['HINCRBY', 'msn:' + weekIdOf() + ':' + nmR, 'play', '1']);
         paidN++;
       }
       return res.status(200).json({ ok: true, paid: paidN, amount: amtR, skipped: skipped });
@@ -700,7 +700,7 @@ module.exports = async function handler(req, res) {
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
         await ledger(aT.name, '📈 매수 ' + tgt + ' ' + qty + '주 @' + execB + (tgt === aT.name ? ' (본인 주식 — 셀프할증 12%)' : ' (수수료·초상권료 포함)'), -cost, aT.bal);
-        await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sT.name, 'trade', '1']);
+        await redis(['HINCRBY', 'msn:' + weekIdOf() + ':' + sT.name, 'trade', '1']);
         var paidRoyalty = 0;
         if (royalty > 0 && tgt !== aT.name) { // 셀프 매수엔 초상권료 없음
           var star = await getAcct(tgt);
@@ -731,7 +731,7 @@ module.exports = async function handler(req, res) {
         await redis(['SET', 'hold:' + aT.name, JSON.stringify(hold)]);
         await putAcct(aT);
         await ledger(aT.name, '📉 매도 ' + tgt + ' ' + qty + '주 @' + execS + (tgt === aT.name ? ' (본인 주식 — 셀프수수료 13%)' : ''), gain, aT.bal);
-        await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sT.name, 'trade', '1']);
+        await redis(['HINCRBY', 'msn:' + weekIdOf() + ':' + sT.name, 'trade', '1']);
         await savePx(SX);
         await pushHist(tgt, execS, 'trade');
         await pushTape({ n: aT.name, s: 's', t: tgt, q: qty, p: execS, np: execS, ts: new Date().toISOString() });
@@ -1162,7 +1162,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ jackpot: jp, pcnpot: pcnp, news: nw, pcnStreak: pcnStreak });
     }
     // 📋 주간 미션 — 전부 자동 체크 (행동 시 서버가 카운트)
-    function weekIdOf() { var w = new Date(); return w.getUTCFullYear() + '-W' + Math.ceil(((w - new Date(Date.UTC(w.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7); }
+    function weekIdOf() { var k = new Date(Date.now() + 324e5); var d = (k.getUTCDay() + 6) % 7; k.setUTCDate(k.getUTCDate() - d); return k.toISOString().slice(0, 10); } // 월요일 KST 기준 (주간 미션 — 클라 weekStartKST와 동일)
     if (req.method === 'GET' && action === 'missions') {
       var sM2 = await auth(q.token);
       if (!sM2 || !sM2.name) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -1223,7 +1223,7 @@ module.exports = async function handler(req, res) {
       if (firstV !== 'OK') return res.status(409).json({ error: '이미 투표했어요' });
       await redis(['HINCRBY', 'mvp:' + dV + ':t', pk, '1']);
       await redis(['EXPIRE', 'mvp:' + dV + ':t', SEC90]);
-      await redis(['HINCRBY', 'msn:' + (new Date().getUTCFullYear() + '-W' + Math.ceil(((new Date() - new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7)) + ':' + sV.name, 'vote', '1']);
+      await redis(['HINCRBY', 'msn:' + weekIdOf() + ':' + sV.name, 'vote', '1']);
       return res.status(200).json({ ok: true, pick: pk });
     }
     // ── 🎁 운영진 특별 이벤트: 회장 주3회(총 1,000) · 부회장 주1회(총 500) — 선착순 봉투 ──
