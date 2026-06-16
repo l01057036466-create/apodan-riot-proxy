@@ -200,7 +200,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'cosBuy') {
       var sCo = await auth(body.token);
       if (!sCo || !sCo.name) return res.status(401).json({ error: '로그인이 필요해요' });
-      if (!(await acctLock('cos:' + sCo.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
+      if (!(await acctLock(sCo.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
       try {
         var aCo = await getAcct(sCo.name);
         if (!aCo || aCo.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
@@ -231,7 +231,7 @@ module.exports = async function handler(req, res) {
         await putAcct(aCo);
         await ledger(aCo.name, '🎲 코스튬 뽑기 (' + idCo.split('-')[2] + '번' + (pickCo == null ? ' · 랜덤' : ' · 선택') + ')', -priceCo, aCo.bal);
         return res.status(200).json({ ok: true, item: idCo, bal: aCo.bal });
-      } finally { await acctUnlock('cos:' + sCo.name); }
+      } finally { await acctUnlock(sCo.name); }
     }
 
     // ── 🚫 베팅 전액 환불 (내전 빵꾸·대타 — 운영진) ──
@@ -422,6 +422,8 @@ module.exports = async function handler(req, res) {
       var mk4 = String(body.market || ''), win = body.winner;
       if (!mktOk(mk4)) return res.status(400).json({ error: 'market 형식 오류' });
       if (win !== 'alpha' && win !== 'beta') return res.status(400).json({ error: 'winner는 alpha/beta' });
+      if (!(await acctLock('stl:' + mk4))) return res.status(429).json({ error: '정산 처리 중이에요 — 잠시만요' }); // 🔒 동시/더블클릭 이중지급 차단
+      try {
       var cur2 = (await redis(['GET', 'mkt:' + mk4 + ':status'])) || 'open';
       if (cur2.indexOf('settled') === 0) return res.status(400).json({ error: '이미 정산됐어요' });
       var lose = win === 'alpha' ? 'beta' : 'alpha';
@@ -454,6 +456,7 @@ module.exports = async function handler(req, res) {
       }
       await redis(['SET', 'mkt:' + mk4 + ':status', 'settled:' + win, 'EX', SEC90]);
       return res.status(200).json({ ok: true, winner: win, winners: winners, paidOut: paid });
+      } finally { await acctUnlock('stl:' + mk4); }
     }
 
     // ── 👀 베팅·지급 내역 조회 (운영진 — 이중 지급 추적용) ──
@@ -550,6 +553,8 @@ module.exports = async function handler(req, res) {
       var gM = String(body.memo || '').slice(0, 40);
       if (!gN) return res.status(400).json({ error: '받는 멤버 이름 확인' });
       if (gA < 50 || gA > 30000) return res.status(400).json({ error: '상품권은 50~30,000 APO' });
+      if (!(await acctLock(gN))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 수령자 잔액 유실 방지
+      try {
       var gAcc = await getAcct(gN);
       if (!gAcc || gAcc.status !== 'active') return res.status(404).json({ error: '계좌가 없거나 비활성' });
       gAcc.bal += gA;
@@ -559,6 +564,7 @@ module.exports = async function handler(req, res) {
         : '🎁 상품권' + (gM ? ' — ' + gM : '') + ' (from ' + (sG.name || '운영진') + ')';
       await ledger(gAcc.name, giftLabel, gA, gAcc.bal);
       return res.status(200).json({ ok: true, name: gN, amount: gA, bal: gAcc.bal });
+      } finally { await acctUnlock(gN); }
     }
 
     // (구버전 reward(grants) 핸들러 제거 — 날짜 멱등 버전이 단일 진실)
@@ -678,7 +684,8 @@ module.exports = async function handler(req, res) {
       } else { // 🩺 자가 치유: 거래자의 폼 힌트 쪽으로 기준가 자동 수렴 (운영진 접속 불필요)
         // 조작 안전: 힌트를 부풀리면 본인 매수가만 비싸지고, 깎으면 본인 매도가만 싸짐 — 자해라서 무의미
         var hintB = Math.max(1, Math.min(9999, Math.round(Number(body.hint) || 0)));
-        if (hintB && (hintB > SX.base[tgt] * 10 + 200 || hintB < SX.base[tgt] / 10 - 20)) hintB = 0; // 🚧 터무니없는 힌트만 차단 — 바닥(1)까지 떨어진 기준가도 폼으로 다시 회복 (일일 ±40 한도가 조작은 별도 차단)
+        if (hintB > 400) hintB = 0; // 폼 현실 상한(챌린저 ~178)+여유 — 그 이상은 조작
+        else if (SX.base[tgt] >= 30 && (hintB > SX.base[tgt] * 2 + 50 || hintB < SX.base[tgt] / 2 - 50)) hintB = 0; // 정상가(≥30) 종목은 ±2배 가드(펌핑 차단), 붕괴(미만) 종목만 폼으로 자유 회복
         var dayK = 'sdrift:' + tgt + ':' + new Date().toISOString().slice(0, 10);
         var drift0 = Number(await redis(['GET', dayK])) || 0;
         if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
@@ -928,6 +935,8 @@ module.exports = async function handler(req, res) {
       var dSS = String(body.date || ''), winSc = String(body.win || '');
       if (!mktOk(dSS)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!/^[0-9]:[0-9]$/.test(winSc)) return res.status(400).json({ error: '결과 스코어 형식 오류' });
+      if (!(await acctLock('stl:' + dSS))) return res.status(429).json({ error: '정산 처리 중이에요 — 잠시만요' }); // 🔒 동시/더블클릭 이중지급 차단
+      try {
       var stSS = (await redis(['GET', 'score:' + dSS + ':status'])) || 'open';
       if (stSS === 'settled') return res.status(400).json({ error: '이미 정산됨' });
       var bettorsSS = (await redis(['SMEMBERS', 'score:' + dSS + ':bettors'])) || [];
@@ -956,6 +965,7 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'score:' + dSS + ':status', 'settled', 'EX', SEC90]);
       await redis(['SET', 'score:' + dSS + ':win', winSc, 'EX', SEC90]);
       return res.status(200).json({ ok: true, win: winSc, winners: winners, paid: paid, pool: totalPool });
+      } finally { await acctUnlock('stl:' + dSS); }
     }
     if (req.method === 'POST' && action === 'scoreLock') {
       var sSL = await auth(body.token);
@@ -1034,6 +1044,8 @@ module.exports = async function handler(req, res) {
       if (action === 'buyItem' && (String(body.cat) === 'cos' || String(body.cat) === 'avG')) return res.status(400).json({ error: '코스튬은 🎲 뽑기로만 얻을 수 있어요' });
       var sSh = await auth(body.token);
       if (!sSh || !sSh.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sSh.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지
+      try {
       var aSh = await getAcct(sSh.name);
       if (!aSh || aSh.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       if (action === 'buyItem' && await suspGuard(sSh.name, res)) return;
@@ -1080,6 +1092,7 @@ module.exports = async function handler(req, res) {
         await putAcct(aSh);
         return res.status(200).json({ ok: true, equip: aSh.equip });
       }
+      } finally { await acctUnlock(sSh.name); }
     }
 
     // ═══ 🎪 오락실 — 카지노 논리: 유료 게임은 기대값 마이너스, 복구는 내전·배당으로 ═══
@@ -1092,6 +1105,8 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'spin') {
       var sSp = await auth(body.token);
       if (!sSp || !sSp.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sSp.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지
+      try {
       var aSp = await getAcct(sSp.name);
       if (!aSp || aSp.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       var dSp = kstDate();
@@ -1105,11 +1120,14 @@ module.exports = async function handler(req, res) {
       await putAcct(aSp);
       await ledger(aSp.name, '🎴 이치방쿠지 ' + kRank + '상', kPrize, aSp.bal);
       return res.status(200).json({ ok: true, prize: kPrize, rank: kRank, bal: aSp.bal, left: maxSpin - used });
+      } finally { await acctUnlock(sSp.name); }
     }
     // 🎫 누적 복권 (500 APO, 복권+빠칭코 통합 하루 한도 30,000, 90% 풀 적립 → 당첨까지 계속 쌓임)
     if (req.method === 'POST' && action === 'scratch') {
       var sSc2 = await auth(body.token);
       if (!sSc2 || !sSc2.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sSc2.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지
+      try {
       var aSc = await getAcct(sSc2.name);
       if (!aSc || aSc.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
       if (aSc.bal < 500) return res.status(400).json({ error: '복권은 500 APO' });
@@ -1134,6 +1152,7 @@ module.exports = async function handler(req, res) {
       await ledger(aSc.name, wonJp ? '🎫💥 복권 누적 잭팟!! 풀 전액' : (pz >= 500 ? '🎫 복권 당첨' : '🎫 복권 소액 환급'), pz - 500, aSc.bal);
       var potNowSc = wonJp ? 2000 : (Number(await redis(['GET', 'arcade:jackpot'])) || 2000);
       return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, pot: potNowSc, bal: aSc.bal, capLeft: Math.max(0, 30000 - spentSc) });
+      } finally { await acctUnlock(sSc2.name); }
     }
     // 🎰 빠칭코 넘버 (5,000 APO, 1~100 픽 · 1등=번호 일치→누적 잭팟 전액+롤오버 · 2~10등 이치방쿠지식)
     if (req.method === 'POST' && action === 'pachinko') {
@@ -1200,6 +1219,8 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'pgacha') {
       var sPg = await auth(body.token);
       if (!sPg || !sPg.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sPg.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지(바깥)
+      try {
       if (!(await acctLock('pgacha'))) return res.status(429).json({ error: '다른 사람이 뽑는 중 — 잠시 후 다시!' });
       try {
         var aPg = await getAcct(sPg.name);
@@ -1229,6 +1250,7 @@ module.exports = async function handler(req, res) {
         await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🧪 라인 보장권(테스트)' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
         return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, lanePass: Number(aPg.lanePass) || 0 });
       } finally { await acctUnlock('pgacha'); }
+      } finally { await acctUnlock(sPg.name); }
     }
     // ═══ 🎰 프리미엄 빠칭코 (7×7 게임판 · 등급 보상 · 개인판 — 가챠처럼 도박, 파산정지 무관) ═══
     var PCN_COST = 5000, PCN_CLEAR = 5000;
@@ -1259,6 +1281,8 @@ module.exports = async function handler(req, res) {
       if (!sPk || !sPk.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var idx = Math.floor(Number(body.idx));
       if (!(idx >= 0 && idx < 49)) return res.status(400).json({ error: '칸 번호 오류' });
+      if (!(await acctLock(sPk.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지(바깥)
+      try {
       if (!(await acctLock('pcnboard'))) return res.status(429).json({ error: '다른 분이 까는 중 — 잠시 후 다시!' }); // 🔒 공용 보드락
       try {
         var aPk = await getAcct(sPk.name);
@@ -1293,6 +1317,7 @@ module.exports = async function handler(req, res) {
         var pv2 = pcnView(done ? freshBd : bd);
         return res.status(200).json({ ok: true, idx: idx, grade: g, apo: apo, bonus: bonus, done: done, bal: aPk.bal, cells: pv2.cells, remain: pv2.remain, round: done ? (round + 1) : round, by: aPk.name });
       } finally { await acctUnlock('pcnboard'); }
+      } finally { await acctUnlock(sPk.name); }
     }
     if (req.method === 'POST' && action === 'pcnreset') {
       var sRs = await auth(body.token);
@@ -1338,6 +1363,8 @@ module.exports = async function handler(req, res) {
       var MDEF = { play: { need: 1, pay: 500 }, bet: { need: 2, pay: 200 }, trade: { need: 1, pay: 200 }, vote: { need: 1, pay: 100 }, all: { need: 0, pay: 1000 } };
       var fld = String(body.field || '');
       if (!MDEF[fld]) return res.status(400).json({ error: '없는 미션' });
+      if (!(await acctLock(sMC.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지
+      try {
       var wkC = weekIdOf();
       var flatC = (await redis(['HGETALL', 'msn:' + wkC + ':' + sMC.name])) || [];
       var cc = {}; for (var fc = 0; fc + 1 < flatC.length; fc += 2) cc[flatC[fc]] = Number(flatC[fc + 1]) || 0;
@@ -1352,6 +1379,7 @@ module.exports = async function handler(req, res) {
       await putAcct(aMC);
       await ledger(aMC.name, '📋 주간 미션 보상 — ' + fld, MDEF[fld].pay, aMC.bal);
       return res.status(200).json({ ok: true, field: fld, pay: MDEF[fld].pay, bal: aMC.bal });
+      } finally { await acctUnlock(sMC.name); }
     }
 
     // ═══ 🏅 MVP 온라인 투표 (계정 1인 1표) ═══
@@ -1422,10 +1450,12 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, left: QE.per - usedE });
     }
     if (req.method === 'POST' && action === 'eventJoin') {
+      var sJ = await auth(body.token);
+      if (!sJ || !sJ.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sJ.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' }); // 🔒 잔액 유실 방지(바깥)
+      try {
       if (!(await acctLock('evj:' + String(body.id || '')))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
       try {
-        var sJ = await auth(body.token);
-        if (!sJ || !sJ.name) return res.status(401).json({ error: '로그인이 필요해요' });
         var lJ = await evList();
         var evJ = lJ.find(function (e) { return e.id === String(body.id || ''); });
         if (!evJ) return res.status(404).json({ error: '이벤트가 없어요' });
@@ -1440,6 +1470,7 @@ module.exports = async function handler(req, res) {
         await ledger(aJ.name, '🎁 ' + evJ.role + ' ' + evJ.by + ' 이벤트: ' + evJ.title, evJ.pay, aJ.bal);
         return res.status(200).json({ ok: true, bal: aJ.bal, left: evJ.slots - evJ.got.length });
       } finally { await acctUnlock('evj:' + String(body.id || '')); }
+      } finally { await acctUnlock(sJ.name); }
     }
 
     // ── ⏱ MVP 투표 타이머 (운영진: N분 뒤 자동 마감) ──
