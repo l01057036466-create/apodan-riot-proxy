@@ -603,7 +603,7 @@ module.exports = async function handler(req, res) {
       return { base: b, prem: p };
     }
     function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±45%
-      var cap = Math.round((base || 100) * 0.45); // 🔻 캡 바닥 제거: 기준가 1짜리는 프리미엄 0 → 화면도 진짜 1 APO (4 아님)
+      var cap = Math.round((base || 100) * 0.25); // 수급 프리미엄 한도 = 기준가의 ±25% (상한가/하한가). 바닥 없음 → 기준가 1짜리는 프리미엄 0 → 진짜 1 APO
       return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
     }
     function combinePx(S) {
@@ -674,6 +674,16 @@ module.exports = async function handler(req, res) {
       var price = SX.base[tgt] ? clampPx(SX.base[tgt] + (Number(SX.prem[tgt]) || 0)) : 0;
       var tgtAcct = await getAcct(tgt);
       if (!price && !tgtAcct) return res.status(404).json({ error: '"' + tgt + '"는 등록된 종목(멤버)이 아니에요 — 시세판에서 골라주세요' });
+      // 🛑 급등락 방지턱 ① 이미 폭주 정지된 종목
+      if (await redis(['GET', 'vhalt:' + tgt])) return res.status(403).json({ error: '🛑 거래 폭주로 자동 정지 중 — 약 1시간 후 재개돼요 (급등락 방지턱)' });
+      // 🛑 ② 붕괴 종목(폼 대비 절반 미만 저가) = 시세 이상 → 운영자 동기화 전까지 매매 정지 (줍줍·인플레 차단)
+      var hintForm = Math.round(Number(body.hint) || 0);
+      if (price > 0 && hintForm > 0 && price < Math.round(hintForm * 0.5)) return res.status(403).json({ error: '🛑 시세 점검 중 (폼 대비 비정상 저가) — 운영자 시세 동기화 후 거래 재개돼요' });
+      // 🛑 ③ 한 종목 시간당 거래 폭주(40회 초과) → 자동 거래정지 1시간
+      var svolK = 'svol:' + tgt + ':' + new Date().toISOString().slice(0, 13);
+      var svolN = Number(await redis(['INCRBY', svolK, '1']));
+      await redis(['EXPIRE', svolK, '3700']);
+      if (svolN > 40) { await redis(['SET', 'vhalt:' + tgt, '1', 'EX', '3700']); return res.status(403).json({ error: '🛑 거래 폭주 감지 — 이 종목 약 1시간 자동 정지 (급등락 방지턱)' }); }
       if (!price) { // 미상장 → 폼 주가(힌트)로 상장
         var listH = Math.round(Number(body.hint) || 0);
         SX.base[tgt] = (listH >= 20 && listH <= 400) ? listH : 100; // 🚧 상장가 안전 범위 (말도 안 되는 힌트로 뻥튀기 상장 차단)
@@ -690,7 +700,8 @@ module.exports = async function handler(req, res) {
         var drift0 = Number(await redis(['GET', dayK])) || 0;
         if (hintB && Math.abs(hintB - SX.base[tgt]) >= 2) {
           var stepB = Math.max(-16, Math.min(16, Math.round((hintB - SX.base[tgt]) / 2)));
-          stepB = Math.max(-40 - drift0, Math.min(40 - drift0, stepB)); // 🚧 일일 기준가 변동 한도 ±40 (조작 봉쇄)
+          var dcap = Math.max(5, Math.round((SX.base[tgt] || 100) * 0.25)); // 🚧 일일 기준가 변동 한도 = 기준가의 ±25% (상한가/하한가 — 저가주 떡상 차단)
+        stepB = Math.max(-dcap - drift0, Math.min(dcap - drift0, stepB));
           if (!stepB) stepB = 0;
           var beforeC = price;
           SX.base[tgt] = Math.max(1, Math.min(9999, SX.base[tgt] + stepB));
