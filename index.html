@@ -33,6 +33,8 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 a{color:var(--blue)} button,input,select,textarea{font:inherit;color:inherit}
+  select{background:var(--inset);color:var(--text);border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 8px}
+  select option{background:var(--panel);color:var(--text)}
 button{cursor:pointer}
 ::selection{background:rgba(242,184,75,.3)}
 
@@ -6287,6 +6289,13 @@ function avatarEqOf(name){
   const r=(window._bankRoster||[]).find(x=>bareName(x.name)===bareName(name||''));
   return r?(r.equip||{}):null;
 }
+function acctOf(name){ return (window._bankRoster||[]).find(x=>bareName(x.name)===bareName(name||''))||null; } // 선수 displayName → 계정(전체: bio·madMovie 포함)
+function isMyProfile(p){ const b=bankSession&&bankSession(); if(!b||!b.name||!p)return false; const me=bareName(b.name); return bareName(p.displayName)===me||(p.aliases||[]).some(a=>bareName(a)===me)||isAdmin(); }
+function ytId(u){ const m=String(u||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{11})/); return m?m[1]:''; }
+function ytEmbed(u){ const id=ytId(u); if(!id)return '<p class="mini dim" style="margin:0">유튜브 링크를 인식하지 못했어요.</p>'; return `<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;border:1px solid var(--line)"><iframe src="https://www.youtube.com/embed/${id}" style="position:absolute;inset:0;width:100%;height:100%" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`; }
+async function _saveProfile(patch){ const B=bankSession&&bankSession(); if(!B||!B.name)return toast('로그인이 필요해요',true); try{ await bankCall('profile',patch); const r=acctOf(B.name); if(r)Object.assign(r,patch); toast('✅ 저장됐어요!'); render('force'); }catch(e){ toast(e.message||'저장 실패',true); } }
+function saveBio(){ const v=(document.getElementById('bioInput')||{}).value||''; _saveProfile({bio:v}); }
+function saveMadMovie(){ const v=((document.getElementById('mmUrl')||{}).value||'').trim(); if(v&&!ytId(v))return toast('유튜브 링크 형식을 확인해주세요 (youtu.be/… 또는 youtube.com/watch?v=…)',true); _saveProfile({madMovie:v}); }
 async function cosGender(g){
   try{await bankCall('equipItem',{cat:'avG',item:g});if(window._bank){window._bank.equip=window._bank.equip||{};window._bank.equip.avG=g}
   toast(g==='m'?'👦 남캐 생성 완료! 기본 외모는 좀 밋밋해요 — 코스튬으로 변신하세요':'👧 여캐 생성 완료! 기본 외모는 좀 밋밋해요 — 코스튬으로 변신하세요');render()}
@@ -7703,19 +7712,34 @@ function playerDetail(p){
   const{arr,wl}=formSeries(p.id);
   const avEq=avatarEqOf(p.displayName);
   const avHtml=avEq?cosAvatar(avEq,84):'';
-  return`<div class="card">
-    <div class="row">
-      ${avHtml?`<div style="background:var(--inset);border:1px solid var(--line);border-radius:14px;padding:6px;margin-right:4px;flex:none" title="이 선수의 캐릭터">${avHtml}</div>`:''}
-      <div><h3 style="margin:0">${esc(p.displayName)}${tierChip(p.displayName)} ${p.active?'':'<span class="pill">휴면</span>'}</h3>
-      <p class="mini" style="margin:4px 0 0">${p.riotName?`🎮 ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}`:'<span class="dim">롤 닉네임 미등록</span>'} ${p.memo?` · ${esc(p.memo)}`:''}</p>
-      ${p.aliases?.length?`<p class="mini dim" style="margin:3px 0 0">별명: ${p.aliases.map(esc).join(', ')}</p>`:''}</div>
-      ${isAdmin()?`<span class="right row">
-        <button class="btn sm" onclick="editingPlayer='${p.id}';render()">수정</button>
-        <button class="btn sm" onclick="togglePlayer('${p.id}')">${p.active?'휴면 처리':'활동 복귀'}</button>
-        <button class="btn sm lose" onclick="delPlayer('${p.id}')">삭제</button>
-      </span>`:''}
+  const _acct=acctOf(p.displayName), _bio=(_acct&&_acct.bio)||'', _mm=(_acct&&_acct.madMovie)||'', _mine=isMyProfile(p);
+  const _heroT=(function(){try{return makeAwards().filter(a=>a.target===p.displayName).slice(0,5)}catch(e){return[]}})();
+  const _gb='gb:'+p.id; maybeLoadCmts(_gb);
+  return`
+  <div class="card" style="text-align:center;padding-top:24px">
+    <div style="display:flex;justify-content:center;margin-bottom:12px">
+      <div style="background:var(--inset);border:1px solid var(--line);border-radius:20px;padding:10px">${avHtml?cosAvatar(avEq,128):'<div style="width:120px;height:150px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;text-align:center;line-height:1.6">캐릭터<br>미생성</div>'}</div>
     </div>
-    <div class="hr"></div>
+    <h2 style="margin:0;font-size:23px;letter-spacing:-.3px">${esc(p.displayName)} ${tierChip(p.displayName)}${p.active?'':' <span class="pill">휴면</span>'}</h2>
+    <p class="mini dim" style="margin:4px 0 0">${p.riotName?`🎮 ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}`:'롤 닉네임 미등록'}${p.aliases&&p.aliases.length?` · ${p.aliases.map(esc).join(', ')}`:''}</p>
+    ${_heroT.length?`<div class="row" style="justify-content:center;gap:5px;margin-top:9px;flex-wrap:wrap">${_heroT.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div>`:''}
+    <div style="max-width:420px;margin:12px auto 0">
+      ${_bio?`<p style="margin:0;font-size:14.5px">${esc(_bio)}</p>`:(_mine?'':'<p class="mini dim" style="margin:0">소개가 아직 없어요</p>')}
+      ${_mine?`<div class="row" style="gap:6px;justify-content:center;margin-top:8px"><input id="bioInput" maxlength="80" placeholder="한 줄 소개 (예: 정글 차이 내는 사람)" value="${esc(_bio)}" style="flex:1;max-width:300px;text-align:center;font-size:13px"><button class="btn sm gold" onclick="saveBio()">저장</button></div>`:''}
+    </div>
+    ${isAdmin()?`<div class="row" style="justify-content:center;gap:6px;margin-top:12px">
+      <button class="btn sm" onclick="editingPlayer='${p.id}';render()">수정</button>
+      <button class="btn sm" onclick="togglePlayer('${p.id}')">${p.active?'휴면 처리':'활동 복귀'}</button>
+      <button class="btn sm lose" onclick="delPlayer('${p.id}')">삭제</button>
+    </div>`:''}
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 8px">🎬 매드 무비</h3>
+    ${_mm?ytEmbed(_mm):`<p class="mini dim" style="margin:0">아직 등록된 매드무비가 없어요.${_mine?' 유튜브 링크를 등록해보세요!':''}</p>`}
+    ${_mine?`<div class="row" style="gap:6px;margin-top:10px"><input id="mmUrl" placeholder="유튜브 링크 붙여넣기 (youtu.be/… 또는 watch?v=…)" value="${esc(_mm)}" style="flex:1;font-size:13px"><button class="btn sm gold" onclick="saveMadMovie()">저장</button></div>${_mm?'<p class="mini dim" style="margin:6px 0 0">바꾸려면 새 링크 붙여넣고 저장 · 지우려면 비우고 저장</p>':''}`:''}
+  </div>
+  <div class="card">
+    <div class="hr" style="display:none"></div>
     ${S?`${lanes.length?`<p class="mini dim" style="margin:0 0 8px">📊 지표 기준: <b style="color:var(--gold)">${laneSel?esc(laneSel)+' 라인 '+kG+'판':'전체'}</b> <span style="opacity:.7">— 아래 탭으로 라인별 전환</span></p>`:''}<div class="grid c4">
       <div class="kpi"><div class="n">${kW}<span class="dim" style="font-size:16px">승</span> ${kG-kW}<span class="dim" style="font-size:16px">패</span></div><div class="l">전적 · 승률 ${kG?Math.round(kW/kG*100):0}%</div></div>
       <div class="kpi"><div class="n">${kKda}</div><div class="l">${laneSel?'KDA':'평균 KDA'}</div></div>
@@ -7788,7 +7812,8 @@ function playerDetail(p){
       <div><h3 style="font-size:14px">듀오 시너지</h3>${syn.length?`<table class="tbl">${syn.map(d=>{const mate=d.ids.find(x=>x!==p.id);return`<tr><td>${esc(nameOf(mate))}</td><td class="num">${d.wins}승 ${d.games-d.wins}패</td><td class="num ${d.winRate>=60?'up':d.winRate<=40?'dn':'even'}">${d.winRate}%</td></tr>`}).join('')}</table>`:'<p class="mini dim">함께한 기록이 없어요.</p>'}</div>
       <div><h3 style="font-size:14px">상대 전적</h3>${riv.length?`<table class="tbl">${riv.map(r=>{const me=r.ids.indexOf(p.id);const opp=r.ids[1-me];return`<tr><td>vs ${esc(nameOf(opp))}</td><td class="num">${r.w[me]}승 ${r.w[1-me]}패</td><td class="num">${r.w[me]>r.w[1-me]?'<span class="up">우세</span>':r.w[me]<r.w[1-me]?'<span class="dn">열세</span>':'<span class="even">동률</span>'}</td></tr>`}).join('')}</table>`:'<p class="mini dim">상대로 만난 기록이 없어요.</p>'}</div>
     </div>`:'<div class="empty">아직 경기 기록이 없어요.</div>'}
-  </div>`;
+  </div>
+  <div class="card">${cmtBoardHTML(_gb,[],Math.random,[],'📓 '+esc(p.displayName)+' 방명록','※ 따뜻한 한마디 남겨주세요 · 닉네임 자유 · 답글 가능')}</div>`;
 }
 function playerForm(p){
   const isNew=!p;
