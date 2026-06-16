@@ -3825,6 +3825,23 @@ async function bankResetMarket(){
     await bankRefresh(true);
   }catch(e){toast('실패: '+e.message,true)}
 }
+async function bankStockRescue(){
+  const nm=prompt('💰 종목 구제\n보유자 전원에게 매수원가(평단)를 환불하고, 정상가로 재상장합니다.\n환불은 산 만큼 정확히 돌려주는 거라 인플레가 0이에요.\n\n구제할 종목(멤버 닉네임)을 입력하세요:');
+  if(!nm)return;
+  const p=fuzzyPlayer(nm.trim());
+  if(!p){toast('"'+nm+'" 멤버를 못 찾았어요',true);return}
+  const form=marketPrice(p);
+  const relistStr=prompt('재상장 가격(정상가)을 입력하세요.\n폼 기준가 추천: '+form+' APO\n\n빈칸/0 = 환불만 하고 시세는 그대로 (붕괴 정지 유지, 나중에 동기화)', String(form));
+  if(relistStr===null)return;
+  const relistAt=Math.round(Number(relistStr)||0);
+  if(!confirm('💰 '+p.displayName+' 종목 구제\n• 보유자 전원에게 매수원가 환불 (인플레 0)\n• 모든 보유 물량 소멸\n'+(relistAt?('• '+relistAt+' APO로 재상장 (다시 매수 가능)'):'• 시세 변경 안 함 (붕괴 정지 유지)')+'\n\n계속할까요?'))return;
+  try{
+    const j=await bankCall('stockRescue',{target:p.displayName,relistAt});
+    toast('💰 '+p.displayName+' 구제 완료 — '+j.holders+'명에게 '+fmtAPO(j.refunded)+' APO 환불 ('+j.shares+'주 소멸)'+(j.relistAt?(' · '+j.relistAt+' APO 재상장'):''));
+    window._srvPx={};window._srvBase={};window._srvPrem={};window._pxHist={};window._stockHolders={};window._stockSel=null;
+    await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
+}
 async function bankResetBets(luId){
   const L=lineupOf(luId);if(!L)return;
   if(!confirm('↩ 이 판의 베팅을 초기화할까요?\n모든 참가자에게 베팅액이 전액 환불됩니다.'))return;
@@ -8905,7 +8922,7 @@ function pgBank(){
         <p class="mini" style="margin:0 0 4px;font-weight:900;color:var(--lose)">🚨 의심 거래 감시 <span class="dim" style="font-weight:600">(최근 체결 30건 분석 — 서버 차원에선 슬리피지·상한·시간당 30회 제한으로 이득 불가, 그래도 시도하면 여기 뜹니다)</span></p>
         ${sus.slice(0,4).map(x=>`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b>${esc(x.n)}</b> → ${esc(x.t)} · ${esc(x.why)}</span>
           <span class="row" style="gap:4px"><button class="btn sm ghost" onclick="bankApprove('${esc(x.n)}','freeze')">🧊 동결</button><button class="btn sm lose" onclick="bankFine('${esc(x.n)}')">💸 벌금</button></span></p>`).join('')}
-      </div>`:''}<div class="row" style="gap:6px;margin:0 0 10px"><button class="btn sm lose" onclick="bankResetMarket()">🧨 거래소 초기화 (전량 환매)</button></div>`})():''}
+      </div>`:''}<div class="row" style="gap:6px;margin:0 0 10px"><button class="btn sm lose" onclick="bankResetMarket()">🧨 거래소 초기화 (전량 환매)</button><button class="btn sm" onclick="bankStockRescue()">💰 종목 구제 (환불·재상장)</button></div>`})():''}
     <p class="mini dim" style="margin:0 0 10px">친구의 폼에 투자하세요! 승리·MVP·연승이면 주가 상승, 패배면 하락. <b>💸 매수액의 2%는 초상권료로 그 멤버 지갑에 입금</b> — 인기 종목일수록 본인이 돈을 법니다 (셀프 매수엔 초상권료 없음). 시세는 운영진 접속 시 자동 갱신.</p>
     ${(()=>{const H=B.holdings||{};const ks=Object.keys(H);if(!ks.length)return'<p class="mini dim">보유 종목이 없어요 — 첫 매수로 포트폴리오를 시작하세요.</p>';
       let tot=0,cost=0;
