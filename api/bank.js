@@ -1224,6 +1224,63 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, lanePass: Number(aPg.lanePass) || 0 });
       } finally { await acctUnlock('pgacha'); }
     }
+    // ═══ 🎰 프리미엄 빠칭코 (7×7 게임판 · 등급 보상 · 개인판 — 가챠처럼 도박, 파산정지 무관) ═══
+    var PCN_COST = 5000, PCN_CLEAR = 5000;
+    var PCN_G = [['SSS', 1, 50000], ['SS', 2, 18000], ['S', 6, 8000], ['A', 8, 4500], ['B', 15, 2000], ['C', 17, 1100]]; // 합 49칸
+    function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
+    function pcnNewBoard() {
+      var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
+      for (var j = cells.length - 1; j > 0; j--) { var m = Math.floor(Math.random() * (j + 1)); var t = cells[j]; cells[j] = cells[m]; cells[m] = t; }
+      return { cells: cells, rev: cells.map(function () { return false; }) };
+    }
+    function pcnView(bd) {
+      var remain = {}; PCN_G.forEach(function (g) { remain[g[0]] = 0; });
+      var view = bd.cells.map(function (g, i) { if (bd.rev[i]) return { r: true, g: g, apo: pcnGapo(g) }; remain[g] = (remain[g] || 0) + 1; return { r: false }; });
+      return { cells: view, remain: remain, done: bd.rev.every(function (x) { return x; }) };
+    }
+    if (req.method === 'GET' && action === 'pcnboard') {
+      var sPb = await auth(q.token);
+      if (!sPb || !sPb.name) return res.status(200).json({ cost: PCN_COST, def: PCN_G, need: true });
+      var pbRaw = await redis(['GET', 'pcn:board:' + sPb.name]);
+      var pbBd = pbRaw ? JSON.parse(pbRaw) : null;
+      if (!pbBd) { pbBd = pcnNewBoard(); await redis(['SET', 'pcn:board:' + sPb.name, JSON.stringify(pbBd)]); }
+      var pv = pcnView(pbBd);
+      return res.status(200).json({ cost: PCN_COST, clear: PCN_CLEAR, def: PCN_G, cells: pv.cells, remain: pv.remain, done: pv.done });
+    }
+    if (req.method === 'POST' && action === 'pcnpick') {
+      var sPk = await auth(body.token);
+      if (!sPk || !sPk.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var idx = Math.floor(Number(body.idx));
+      if (!(idx >= 0 && idx < 49)) return res.status(400).json({ error: '칸 번호 오류' });
+      if (!(await acctLock(sPk.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시!' });
+      try {
+        var aPk = await getAcct(sPk.name);
+        if (!aPk || aPk.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+        if (aPk.bal < PCN_COST) return res.status(400).json({ error: '한 칸 ' + PCN_COST + ' APO예요 (보유 ' + aPk.bal + ')' });
+        var bRaw = await redis(['GET', 'pcn:board:' + aPk.name]);
+        var bd = bRaw ? JSON.parse(bRaw) : pcnNewBoard();
+        if (bd.rev.every(function (x) { return x; })) return res.status(409).json({ error: '다 깐 게임판이에요 — ♻ 새 게임판을 눌러주세요' });
+        if (bd.rev[idx]) return res.status(409).json({ error: '이미 깐 칸이에요' });
+        bd.rev[idx] = true;
+        var g = bd.cells[idx], apo = pcnGapo(g);
+        aPk.bal -= PCN_COST; aPk.bal += apo;
+        var done = bd.rev.every(function (x) { return x; }), bonus = 0;
+        if (done) { bonus = PCN_CLEAR; aPk.bal += bonus; }
+        await putAcct(aPk);
+        await redis(['SET', 'pcn:board:' + aPk.name, JSON.stringify(bd)]);
+        await ledger(aPk.name, '🎰 프리미엄 빠칭코 ' + g + ' — +' + apo + ' APO (−' + PCN_COST + ')' + (done ? ' · 🎉올클리어 +' + bonus : ''), apo - PCN_COST + bonus, aPk.bal);
+        var pv2 = pcnView(bd);
+        return res.status(200).json({ ok: true, idx: idx, grade: g, apo: apo, bonus: bonus, done: done, bal: aPk.bal, remain: pv2.remain });
+      } finally { await acctUnlock(sPk.name); }
+    }
+    if (req.method === 'POST' && action === 'pcnreset') {
+      var sRs = await auth(body.token);
+      if (!sRs || !sRs.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var nb = pcnNewBoard();
+      await redis(['SET', 'pcn:board:' + sRs.name, JSON.stringify(nb)]);
+      var vr = pcnView(nb);
+      return res.status(200).json({ ok: true, cells: vr.cells, remain: vr.remain, done: false });
+    }
     if (req.method === 'GET' && action === 'arcade') {
       var jp = Number(await redis(['GET', 'arcade:jackpot'])) || 2000;
       var pcnp = Number(await redis(['GET', 'arcade:pcnpot'])) || 30000;
