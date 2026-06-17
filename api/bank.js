@@ -1666,7 +1666,7 @@ module.exports = async function handler(req, res) {
       if (cbCd === null) return res.status(429).json({ error: '너무 빨라요 — 잠깐 뒤에 다시 ㅎㅎ' });
       var cbEq = (cbWho.acct && cbWho.acct.equip) || {};
       var cbDeco = {}; ['art', 'color', 'frame', 'badge', 'legend'].forEach(function (k) { if (cbEq[k]) cbDeco[k] = cbEq[k]; });
-      var cbItem = { id: 'u' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), nick: cbNick, text: cbText, ts: Date.now(), parent: cbParent, uid: cbUid };
+      var cbItem = { id: 'u' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), nick: cbNick, text: cbText, ts: Date.now(), parent: cbParent, uid: cbUid }; if (cbWho.role === 'dev') cbItem.dev = 1;
       if (Object.keys(cbDeco).length) cbItem.deco = cbDeco;
       await redis(['RPUSH', 'cmt:' + cbB2, JSON.stringify(cbItem)]);
       await redis(['LTRIM', 'cmt:' + cbB2, '-800', '-1']);
