@@ -5709,7 +5709,7 @@ function cmtHighlight(text){
   let str=esc(text||''); if(str.indexOf('@')<0)return str;
   const r=window._bankRoster||[]; const bares=r.map(x=>bareName(x.name||x.n||'')).filter(Boolean).sort((a,b)=>b.length-a.length);
   bares.forEach(nm=>{ const e=nm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    str=str.replace(new RegExp('@'+e+'(?![\\w가-힣])','g'),'<b style="color:var(--gold)">@'+esc(nm)+'</b>'); });
+    str=str.replace(new RegExp('@'+e+'(?![\\w가-힣])','g'),'<b onclick="cmtOpenProfile(\''+encodeURIComponent(nm)+'\')" style="color:var(--gold);cursor:pointer">@'+esc(nm)+'</b>'); });
   return str;
 }
 
@@ -5736,14 +5736,15 @@ function _realToObj(rc){
   const dav=_cmtDecoAva(deco);
   return { id:rc.id, nick:rc.nick||'익명', text:rc.text||'', ago:ccAgoTs(rc.ts), like:rc.like||0,
     ava:dav?dav.html:_ccPick(CC_AVA,rr), bg:dav?dav.bg:_ccPick(CC_AVA_BG,rr),
-    deco:deco, real:true, best:false, parent:rc.parent||'', _ts:rc.ts||0 };
+    deco:deco, real:true, dev:rc.dev||0, best:false, parent:rc.parent||'', _ts:rc.ts||0 };
 }
 
 /* 댓글 한 줄 (top/답글 공용). 실제 댓글은 👍 클릭 가능 + LIVE 표식 */
+function cmtOpenProfile(name){ try{ var nm=String(name||''); try{nm=decodeURIComponent(nm)}catch(_e){} var p=(typeof findPlayer==='function')?findPlayer(nm):null; if(!p)return; selPlayer=p.id; window._pLane=null; if(typeof go==='function')go('players'); }catch(e){} }
 function cmtRow(c,board,isReply){
   const likeCol=c.like>=60?'#ff8a3a':c.like>=15?'var(--gold)':'var(--dim)';
   const bestBadge=(c.best&&!isReply&&!c._yeopo)?'<span class="pill" style="font-size:9px;padding:0 5px;font-weight:900;border-color:var(--lose);color:var(--lose)">BEST</span>':'';
-  const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
+  const liveBadge=(c.real&&!c.dev)?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
   const yeopoBadge=c._yeopo?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--lose);color:var(--lose)">🚫 신고 누적</span>':'';
   const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
   const _Bm=bankSession(), _mod=!!(_Bm&&_Bm.role==='dev'), _myName=_Bm&&_Bm.name;
@@ -5765,7 +5766,7 @@ function cmtRow(c,board,isReply){
     <div style="flex:1;min-width:0">
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         ${bestBadge}${liveBadge}${yeopoBadge}
-        ${_cmtNameHtml(c.nick,c.deco)}
+        ${(typeof findPlayer==='function'&&findPlayer(c.nick))?`<span onclick="cmtOpenProfile('${encodeURIComponent(c.nick)}')" style="cursor:pointer">${_cmtNameHtml(c.nick,c.deco)}</span>`:_cmtNameHtml(c.nick,c.deco)}
         <span class="mini dim" style="font-size:10px">${esc(c.ago)}</span>
         ${editedMark}${replyBtn}${editBtn}${delBtn}
       </div>
@@ -5788,7 +5789,7 @@ function cmtComposer(board,parent){
   const sid=_cmtSafeId(parent?(board+'|'+parent):board);
   const ph=parent?'답글 달기…':'댓글 남기기…';
   const onkey=`if(event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();submitCmt(this,'${board}','${parent||''}')}`;
-  const mod=!!(B&&(B.role==='admin'||B.role==='dev'));
+  const mod=!!(B&&B.role==='dev');
   const authorEl=mod
     ? `<input id="cn_${sid}" maxlength="24" placeholder="${esc(B.name)}" title="운영진: 닉네임 바꿔서 달기 (비우면 본인 이름)" style="flex:none;width:82px;font-size:11px;padding:7px 7px;border-radius:9px;border:1px solid var(--gold);background:var(--card2,#161922);color:var(--gold);font-weight:700" />`
     : `<span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>`;
