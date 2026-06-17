@@ -7421,11 +7421,11 @@ function pgMe(){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['result','📊 경기 결과'],['record','📝 경기 기록'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전 (BETA)'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
- ['doom','🏆 멸망전',['doom']],
+ ['doom','🏆 멸망전 (BETA)',['doom']],
  ['live','⚔️ 내전',['notice','result','today','record','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
@@ -8998,7 +8998,7 @@ function pgDoom(){
   <div class="card" style="margin-top:14px"><h3>📋 신청 시 주의사항</h3>
     <p class="mini" style="margin:6px 0;color:var(--lose)"><b>1.</b> 노쇼 발생 시 추방, 신중하게 신청해주세요</p>
     <p class="mini" style="margin:6px 0;color:var(--lose)"><b>2.</b> 꼭 본계정으로 신청, 티어 속이면 추방합니다</p>
-    <p class="mini" style="margin:6px 0"><b>3.</b> 참가비 7,000원 / <b style="color:var(--gold)">신한 110-465-152906 김나영</b></p>
+    <p class="mini" style="margin:6px 0"><b>3.</b> 참가비 7,000원 / <b style="color:var(--gold)">신한 110-***-***906 · 예금주 김*영</b> <span class="dim" style="font-size:11px">정확한 계좌는 신청 시 안내</span></p>
     <p class="mini" style="margin:6px 0"><b>4.</b> 경기 날짜는 정해진 기간 내에 맞붙는 팀끼리 조율</p>
     <p class="mini" style="margin:6px 0"><b>5.</b> 일정 조율 실패 시 운영진 판단하에 기권패 처리</p>
     <p class="mini" style="margin:6px 0"><b>6.</b> 신청기간 내 20명 모집 완료 시 조기 마감합니다</p>
