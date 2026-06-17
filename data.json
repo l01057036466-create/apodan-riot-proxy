@@ -714,7 +714,9 @@
    "riotTag": "kr33",
    "aliases": [
     "잔성",
-    "04잔성"
+    "04잔성",
+    "DRX Ae1",
+    "DRXAe1"
    ],
    "active": true,
    "memo": "",
@@ -28156,7 +28158,7 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "playerId": "",
+     "playerId": "p_p4y4tq6mq7ub77o",
      "rawName": "DRX Ae1",
      "championId": "유나라",
      "kills": 2,
@@ -28501,7 +28503,7 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "playerId": "",
+     "playerId": "p_p4y4tq6mq7ub77o",
      "rawName": "DRX Ae1",
      "championId": "루시안",
      "kills": 1,
@@ -28846,7 +28848,7 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "playerId": "",
+     "playerId": "p_p4y4tq6mq7ub77o",
      "rawName": "DRX Ae1",
      "championId": "이즈리얼",
      "kills": 3,
@@ -30775,7 +30777,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-17T17:02:24.225Z",
+  "lastBackupAt": "2026-06-17T22:33:38.169Z",
   "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -30850,8 +30852,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 342,
- "updatedAt": "2026-06-17T22:32:16.333Z",
+ "rev": 344,
+ "updatedAt": "2026-06-17T22:34:44.721Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
