@@ -1530,6 +1530,67 @@ function makeAwards(){
     if(blueSon)push('블루의 아들',blueSon.name,`블루 ${blueSon.bRate}% vs 레드 ${blueSon.rRate}% · 진영을 가리는 남자`);
     const redSon=sided.filter(x=>x.rRate-x.bRate>=25).sort((a,b)=>(b.rRate-b.bRate)-(a.rRate-a.bRate))[0];
     if(redSon)push('레드의 후예',redSon.name,`레드 ${redSon.rRate}% vs 블루 ${redSon.bRate}% · 빨간 맛을 아는 자`);
+    // ── 🆕 칭호 대량 추가 (라인 다양성 + 프로 지표) ──
+    const RT=ratesMap(), rg=id=>RT.get(id)||{}, lnN=id=>playerLanes(id).length;
+    const multi=P.filter(p=>p.games>=3).map(p=>({p,n:lnN(p.id)})).sort((a,b)=>b.n-a.n)[0];
+    if(multi&&multi.n>=5)push('🃏 만능 조커',multi.p.name,`${multi.n}개 라인 전부 소화 · 자리 안 가리는 만능 용병`);
+    else if(multi&&multi.n>=4)push('🧭 포지션 프리',multi.p.name,`${multi.n}개 라인 가능 · 어디 꽂아도 1인분 하는 사람`);
+    const tri=P.filter(p=>p.games>=3&&lnN(p.id)===3)[0];
+    if(tri)push('🎲 라인 가챠',tri.name,'3개 라인 소화 · 오늘 포지션은 뽑기 운');
+    const gdK=P.filter(p=>p.games>=3&&rg(p.id).gd15!=null).sort((a,b)=>rg(b.id).gd15-rg(a.id).gd15)[0];
+    if(gdK&&rg(gdK.id).gd15>0)push('💰 라인전 갑부',gdK.name,`15분 골드차 +${fmt(rg(gdK.id).gd15)} · 라인전부터 지갑이 두둑`);
+    const gdL=P.filter(p=>p.games>=3&&rg(p.id).gd15!=null).sort((a,b)=>rg(a.id).gd15-rg(b.id).gd15)[0];
+    if(gdL&&rg(gdL.id).gd15<0)push('🩹 초반 약골',gdL.name,`15분 골드차 ${rg(gdL.id).gd15} · 초반은 좀 봐주세요`);
+    const csK=P.filter(p=>p.games>=3&&rg(p.id).cspm>0).sort((a,b)=>rg(b.id).cspm-rg(a.id).cspm)[0];
+    if(csK)push('🌾 파밍 머신',csK.name,`분당 CS ${rg(csK.id).cspm.toFixed(1)} · 미니언 입장에선 천적`);
+    const xpK=P.filter(p=>p.games>=3&&rg(p.id).xpd15!=null).sort((a,b)=>rg(b.id).xpd15-rg(a.id).xpd15)[0];
+    if(xpK&&rg(xpK.id).xpd15>0)push('📈 레벨 깡패',xpK.name,`15분 경험치 +${fmt(rg(xpK.id).xpd15)} · 항상 한 렙 위에서 시작`);
+    const csdK=P.filter(p=>p.games>=3&&rg(p.id).csd15!=null).sort((a,b)=>rg(b.id).csd15-rg(a.id).csd15)[0];
+    if(csdK&&rg(csdK.id).csd15>0)push('🧊 라인전 빙벽',csdK.name,`15분 CS차 +${rg(csdK.id).csd15} · 라인 압박의 정석`);
+    const early=P.filter(p=>p.games>=3&&rg(p.id).gd15>0&&rg(p.id).csd15>0).sort((a,b)=>(rg(b.id).gd15+rg(b.id).csd15*20)-(rg(a.id).gd15+rg(a.id).csd15*20))[0];
+    if(early)push('⚡ 초반 폭군',early.name,`15분 골드·CS 모두 우위 · 라인전에서 끝내는 타입`);
+    const visK=P.filter(p=>p.games>=3&&rg(p.id).vspm>0).sort((a,b)=>rg(b.id).vspm-rg(a.id).vspm)[0];
+    if(visK)push('🗺 맵 장악러',visK.name,`분당 시야 ${rg(visK.id).vspm.toFixed(1)} · 적 동선이 손바닥 안`);
+    const dshK=P.filter(p=>p.games>=3&&rg(p.id).dmgShare!=null).sort((a,b)=>rg(b.id).dmgShare-rg(a.id).dmgShare)[0];
+    if(dshK)push('💣 원맨 딜러',dshK.name,`팀 딜의 ${rg(dshK.id).dmgShare}% 담당 · 화력은 거의 혼자 책임`);
+    const dpgK=P.filter(p=>p.games>=3&&rg(p.id).dpg>0).sort((a,b)=>rg(b.id).dpg-rg(a.id).dpg)[0];
+    if(dpgK)push('💵 가성비 甲',dpgK.name,`1천 골드당 딜 ${fmt(rg(dpgK.id).dpg)} · 쓴 돈 그 이상을 뽑는다`);
+    const goldHog=P.filter(p=>p.games>=3&&rg(p.id).goldShare!=null&&rg(p.id).dmgShare!=null&&rg(p.id).goldShare>rg(p.id).dmgShare+3).sort((a,b)=>rg(b.id).goldShare-rg(a.id).goldShare)[0];
+    if(goldHog)push('🐷 골드 먹보',goldHog.name,`골드 ${rg(goldHog.id).goldShare}% 먹고 딜은 ${rg(goldHog.id).dmgShare}% · 본전이 생각남`);
+    const dpmK=P.filter(p=>p.games>=3&&rg(p.id).dpm>0).sort((a,b)=>rg(b.id).dpm-rg(a.id).dpm)[0];
+    if(dpmK)push('🔥 분당딜 폭격기',dpmK.name,`분당 딜 ${fmt(rg(dpmK.id).dpm)} · 쉬는 시간이 없는 화력`);
+    const kpK=P.filter(p=>p.games>=3&&rg(p.id).kp>0).sort((a,b)=>rg(b.id).kp-rg(a.id).kp)[0];
+    if(kpK)push('🤲 한타 지배자',kpK.name,`킬관여 ${rg(kpK.id).kp}% · 모든 싸움에 지분이 있음`);
+    const kpL=P.filter(p=>p.games>=4&&rg(p.id).kp>0).sort((a,b)=>rg(a.id).kp-rg(b.id).kp)[0];
+    if(kpL)push('🏝 마이웨이',kpL.name,`킬관여 ${rg(kpL.id).kp}% · 팀 싸움보다 내 갈 길`);
+    const lone=P.filter(p=>p.games>=4&&rg(p.id).solo>0&&rg(p.id).kp>0&&rg(p.id).kp<48).sort((a,b)=>rg(b.id).solo-rg(a.id).solo)[0];
+    if(lone)push('🐺 외로운 늑대',lone.name,`솔로킬 ${rg(lone.id).solo}회·관여 ${rg(lone.id).kp}% · 혼자 사냥하는 타입`);
+    const tankK=P.filter(p=>p.games>=3&&rg(p.id).tankpm>0).sort((a,b)=>rg(b.id).tankpm-rg(a.id).tankpm)[0];
+    if(tankK)push('🛡 인간 방패',tankK.name,`분당 받은 피해 1위 · 다 내가 맞고 버틴다`);
+    const objK=P.filter(p=>p.games>=3&&rg(p.id).objpm>0).sort((a,b)=>rg(b.id).objpm-rg(a.id).objpm)[0];
+    if(objK)push('🐉 오브젝트 셔틀',objK.name,`분당 오브젝트 딜 1위 · 용·바론은 내 담당`);
+    const ccK=P.filter(p=>p.games>=3&&rg(p.id).ccpm>0).sort((a,b)=>rg(b.id).ccpm-rg(a.id).ccpm)[0];
+    if(ccK)push('🩸 CC 마스터',ccK.name,`분당 군중제어 1위 · 적 손발을 묶어버린다`);
+    const utilK=P.filter(p=>p.games>=3&&rg(p.id).utilpm>0&&playerMainLane(p.id)==='서폿').sort((a,b)=>rg(b.id).utilpm-rg(a.id).utilpm)[0];
+    if(utilK)push('💊 만능 서포터',utilK.name,`분당 힐·실드 1위 · 팀의 생명줄`);
+    const ironWall=P.filter(p=>p.games>=4&&p.winRate>=52).sort((a,b)=>per(a,'deaths')-per(b,'deaths'))[0];
+    if(ironWall&&per(ironWall,'deaths')<=3)push('🧱 철벽 수비수',ironWall.name,`경기당 ${per(ironWall,'deaths').toFixed(1)}데스·승률 ${ironWall.winRate}% · 안 죽고 이긴다`);
+    const deathT=P.filter(p=>p.games>=4).sort((a,b)=>(b.deaths||0)-(a.deaths||0))[0];
+    if(deathT&&(deathT.deaths||0)>=30)push('💀 데스 컬렉터',deathT.name,`누적 ${deathT.deaths}데스 · 협곡에 묻힌 횟수`);
+    const pillar=P.filter(p=>p.games>=4&&rg(p.id).dmgShare!=null&&rg(p.id).kp>0&&rg(p.id).dmgShare>=25&&rg(p.id).kp>=55)[0];
+    if(pillar)push('🦸 팀의 대들보',pillar.name,`딜 ${rg(pillar.id).dmgShare}%·관여 ${rg(pillar.id).kp}% · 없으면 안 돌아감`);
+    const spicy=P.filter(p=>p.games>=3&&per(p,'kills')>=4&&per(p,'deaths')>=4)[0];
+    if(spicy)push('🌶 매운맛',spicy.name,`경기당 ${per(spicy,'kills').toFixed(1)}킬 ${per(spicy,'deaths').toFixed(1)}데스 · 화끈한 한타 중독`);
+    const calm=P.filter(p=>p.games>=4&&per(p,'deaths')<=3&&per(p,'assists')>=6)[0];
+    if(calm)push('🧊 침착한 조율가',calm.name,`데스 ${per(calm,'deaths').toFixed(1)}·어시 ${per(calm,'assists').toFixed(1)} · 안 죽고 돕기만`);
+    const engine=P.filter(p=>p.games>=6&&p.winRate>=52).sort((a,b)=>b.games-a.games)[0];
+    if(engine)push('🔋 꺼지지 않는 엔진',engine.name,`${engine.games}판 승률 ${engine.winRate}% · 꾸준함이 무기`);
+    const precise=P.filter(p=>p.games>=4&&p.kda>=3.5&&per(p,'deaths')<=3).sort((a,b)=>b.kda-a.kda)[0];
+    if(precise)push('🎯 정밀 타격',precise.name,`KDA ${precise.kda}·데스 ${per(precise,'deaths').toFixed(1)} · 실수가 없다`);
+    const rookie=P.filter(p=>p.games>=2&&p.games<=4&&p.winRate>=60)[0];
+    if(rookie)push('🌱 떡잎부터 다른',rookie.name,`${rookie.games}판 승률 ${rookie.winRate}% · 될성부른 신성`);
+    const swing=P.filter(p=>{const ss=streaksOf(p.id);return p.games>=6&&ss.mw>=3&&ss.ml>=3})[0];
+    if(swing){const ss=streaksOf(swing.id);push('🎢 롤러코스터',swing.name,`${ss.mw}연승·${ss.ml}연패 다 경험 · 기복이 곧 콘텐츠`);}
   }
   // 듀오 / 상대 — 칭호는 희소해야 가치가 있다: 부문별 1쌍만
   const bestDuo=[...D].filter(d=>d.games>=3&&d.winRate>=70).sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
@@ -6885,10 +6946,41 @@ async function pcnPick(idx){
   try{const j=await bankCall('pcnpick',{idx});if(window._bank)window._bank.bal=j.bal;
     if(window._pcn){if(j.cells)window._pcn.cells=j.cells;window._pcn.remain=j.remain;window._pcn.done=j.done;if(j.round)window._pcn.round=j.round}
     await pcnPickFx(j.grade,j.apo,j.bonus);
-    toast(`🎰 ${j.grade}! +${fmtAPO(j.apo)} APO${j.bonus?` 🎉올클리어 +${fmtAPO(j.bonus)}`:''}`);
+    toast(`🎰 ${j.grade}! +${fmtAPO(j.apo)} APO`);
+    if(j.lastOne){pcnLastModal();return}
     render()}
   catch(e){toast('🎰 '+e.message,true)}
   finally{window._pcnBusy=false}
+}
+function pcnLastModal(){
+  var ov=document.getElementById('pcnLastOv'); if(ov)ov.remove();
+  ov=document.createElement('div'); ov.id='pcnLastOv';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML='<div style="background:var(--card,#161922);border:2px solid var(--gold);border-radius:18px;padding:24px 20px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)">'
+    +'<div style="font-size:32px;margin-bottom:4px">🎉</div>'
+    +'<div style="font-weight:900;font-size:20px;color:var(--gold);margin-bottom:5px">풀클리어! 라스트 원 찬스</div>'
+    +'<p class="mini dim" style="margin:0 0 18px;line-height:1.5">마지막 칸을 깐 당신만의 한 번뿐인 기회!<br><b style="color:#3aa0ff">49% 확률로 49,000 APO</b><br>좌·중·우 중 하나를 고르세요</p>'
+    +'<div id="pcnLastBtns" class="row" style="gap:10px;justify-content:center">'
+    +['L','C','R'].map(function(c,i){return '<button onclick="pcnLastPick(\''+c+'\')" style="flex:1;max-width:96px;aspect-ratio:3/4;border-radius:14px;background:linear-gradient(160deg,#9b5de5,#6d2fb8);border:2px solid var(--gold);color:#fff;font-weight:900;font-size:32px;cursor:pointer;box-shadow:0 6px 18px rgba(155,93,229,.5)">'+['◀','★','▶'][i]+'</button>'}).join('')
+    +'</div><div id="pcnLastResult" style="margin-top:18px;min-height:26px"></div></div>';
+  document.body.appendChild(ov);
+}
+async function pcnLastPick(choice){
+  var btns=document.getElementById('pcnLastBtns'); if(btns)Array.prototype.forEach.call(btns.querySelectorAll('button'),function(b){b.disabled=true;b.style.opacity='.45';b.style.cursor='default'});
+  var rs=document.getElementById('pcnLastResult'); if(rs)rs.innerHTML='<span class="mini dim">개봉 중…</span>';
+  try{
+    var j=await bankCall('pcnlast',{choice:choice});
+    if(window._bank)window._bank.bal=j.bal;
+    if(rs){
+      if(j.win)rs.innerHTML='<div style="font-size:28px">🎉💰</div><div style="font-weight:900;font-size:19px;color:#3fd9c5">당첨! +'+fmtAPO(j.prize)+' APO</div>';
+      else rs.innerHTML='<div style="font-size:26px">😢</div><div style="font-weight:900;font-size:17px;color:var(--lose)">아쉽게 꽝… 다음 기회에!</div>';
+    }
+    toast(j.win?'🎉 라스트원 당첨! +'+fmtAPO(j.prize)+' APO':'😢 라스트원 꽝…',!j.win);
+    setTimeout(function(){var ov=document.getElementById('pcnLastOv');if(ov)ov.remove();render()},2300);
+  }catch(e){
+    if(rs)rs.innerHTML='<span class="mini" style="color:var(--lose)">'+(e.message||'오류')+'</span>';
+    setTimeout(function(){var ov=document.getElementById('pcnLastOv');if(ov)ov.remove();render()},1800);
+  }
 }
 async function pcnCleanup(){
   if(!isAdmin()){toast('운영자 전용이에요',true);return}
@@ -7219,7 +7311,7 @@ function renderTicker(){
   // 1.5) 🎰 잭팟·대박 속보 (오락실) — 로그인 멤버에게만 (외부인 노출 차단)
   if(canViewFinance())(window._bankFeed||[]).slice(0,3).forEach(f=>{
     const big=Number(f.v)>=10000||f.t==='pcn'||f.t==='pg';
-    const kind=f.t==='jp'?'🎫 복권 잭팟':f.t==='scr'?'🎫 복권 1등':f.t==='pcn'?`🎰 빠칭코 ${f.g||''}`:f.t==='pcnclear'?'🎰 빠칭코 올클리어':f.t==='pg'?'🎴 이치방쿠지':'🎰 룰렛 잭팟';
+    const kind=f.t==='jp'?'🎫 복권 잭팟':f.t==='scr'?'🎫 복권 1등':f.t==='pcn'?`🎰 빠칭코 ${f.g||''}`:f.t==='pcnclear'?'🎰 빠칭코 풀클리어':f.t==='pcnlast'?('🎰 라스트원 '+(f.win?'당첨🎉':'꽝')):f.t==='pg'?'🎴 이치방쿠지':'🎰 룰렛 잭팟';
     const tail=f.t==='pg'?`<b>A상 — 라인 보장권</b> 획득!`:`+${fmtAPO(f.v)} APO 획득!`;
     items.push(`<b class="${big?'tk-jack':'tk-up'}">${kind}${big?' 💥':''}</b> <b>${esc(f.n)}</b>${josa(f.n,'이','가')} ${tail}${big?' 🎉':''}`);
   });
