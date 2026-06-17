@@ -194,7 +194,7 @@
    "active": true,
    "memo": "",
    "soloTier": "에메랄드",
-   "flexTier": "다이아",
+   "flexTier": "에메랄드",
    "riotPuuid": "pKdPKLE5-N3z4a_193rcLX9LXPd87WON4M-pcpxucSv-2j0saBjuKKyD8EUsmg4U5inQ7kdfStQkOw",
    "soloPos": "",
    "subPos": ""
@@ -303,7 +303,7 @@
    "active": true,
    "memo": "",
    "soloTier": "플래티넘",
-   "flexTier": "에메랄드",
+   "flexTier": "다이아",
    "riotPuuid": "9bwBtosr-vX6CobRFV7MzNB6SPRbNg6o3WFVLP45kUOInurFUYzycu4tlu7NmvgVF3U0Lfez12dHUA",
    "soloPos": "ADC",
    "subPos": "TOP"
@@ -483,7 +483,7 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "골드",
+   "soloTier": "플래티넘",
    "flexTier": "골드",
    "riotPuuid": "Zz0c77V4JTSthKrvRhhCEHVUGTuYkwJsZKLd6E2TNU384WS2yiE5h_V-I0yKA9BHXQyAdoz5j-eojg",
    "soloPos": "ADC",
@@ -538,7 +538,7 @@
    "active": true,
    "memo": "",
    "soloTier": "플래티넘",
-   "flexTier": "브론즈",
+   "flexTier": "실버",
    "riotPuuid": "x46O-T8zl1XXcf40r7Z0e5a049qUGMOWcD2TX0Kd714KnAOwHbRbnSYBVyj0FZdT4Q485PPSTRENkg",
    "soloPos": "TOP",
    "subPos": "SUPPORT"
@@ -574,7 +574,7 @@
    "active": true,
    "memo": "",
    "soloTier": "플래티넘",
-   "flexTier": "에메랄드",
+   "flexTier": "다이아",
    "riotPuuid": "-7v6A-keEqtvYPjeJB_9RivVAS9ed98Lamy5x-2kWj486wS2pgugbcJJEnKktfAdM0-6zN0o0II3Xw",
    "soloPos": "MID",
    "subPos": "TOP"
@@ -710,17 +710,17 @@
    "id": "p_p4y4tq6mq7ub77o",
    "displayName": "04 잔성",
    "kakaoName": "04 잔성",
-   "riotName": "잔 성",
-   "riotTag": "여명성",
+   "riotName": "DRX Ae1",
+   "riotTag": "kr33",
    "aliases": [
     "잔성",
     "04잔성"
    ],
    "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
-   "riotPuuid": "",
+   "soloTier": "에메랄드",
+   "flexTier": "다이아",
+   "riotPuuid": "OMf0AHgCqS5SrInF1KgxQU5SyL2nONAqg3KGFaa5iSKxvQyyT3dZM9yCYWS-bOVcRKoVqaWmZ6mqEA",
    "soloPos": "",
    "subPos": ""
   },
@@ -29848,7 +29848,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-17T12:46:10.085Z",
+  "lastBackupAt": "2026-06-17T12:51:18.757Z",
   "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": true,
@@ -29946,8 +29946,8 @@
    ]
   }
  ],
- "rev": 328,
- "updatedAt": "2026-06-17T12:46:10.085Z",
+ "rev": 331,
+ "updatedAt": "2026-06-17T12:55:57.004Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
