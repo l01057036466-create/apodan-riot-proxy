@@ -478,6 +478,8 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return fa
 
 /* ───── 상태 ───── */
 let state=loadState();
+if(!state.season)state.season={no:1,startDate:''};
+if(!Array.isArray(state.hallOfFame))state.hallOfFame=[];
 let tab='dashboard';
 let draft=null;          // 검수 대기 데이터
 let draftEditId=null;    // 기존 경기 수정 중일 때
@@ -694,6 +696,36 @@ function changePin(){
   state.settings.adminPinHash=pinHash(nw);save();render();toast('PIN을 변경했어요. 잊지 마세요!');
 }
 /* ───── 통계 엔진 ───── */
+window._seasonView=window._seasonView||'all';
+function withSeasonMatches(fn){
+  if(window._seasonView==='all'||!(state.season&&state.season.startDate))return fn();
+  var sd=String(state.season.startDate),orig=state.matches;
+  state.matches=orig.filter(function(m){return String(m.playedAt||'')>=sd});
+  try{return fn()}finally{state.matches=orig}
+}
+function setSeasonView(v){window._seasonView=v;render()}
+function endSeason(){
+  if(needAdmin())return;
+  var keep=window._seasonView; window._seasonView='season';
+  var snap; try{snap=makeAwards()}catch(e){snap=[]} window._seasonView=keep;
+  if(!confirm('시즌 '+state.season.no+'을(를) 종료할까요?\n\n지금 칭호 '+snap.length+'개가 명예의 전당에 박제되고,\n새 시즌이 오늘부터 시작돼요.\n\n경기 기록은 그대로 보존돼요.'))return;
+  state.hallOfFame.push({no:state.season.no,endDate:todayStr(),startDate:state.season.startDate||'',awards:snap.map(function(a){return{title:a.title,target:a.target,desc:a.desc}})});
+  state.season={no:state.season.no+1,startDate:todayStr()};
+  window._seasonView='season';
+  save();render();
+  toast('🏁 시즌 종료! 명예의 전당에 '+snap.length+'개 박제됐어요.');
+}
+function restoreSeason(){
+  if(needAdmin())return;
+  if(!state.hallOfFame||!state.hallOfFame.length){toast('되돌릴 종료 기록이 없어요.',true);return}
+  var last=state.hallOfFame[state.hallOfFame.length-1];
+  if(!confirm('직전 시즌 종료를 취소할까요?\n\n시즌 '+last.no+'(으)로 되돌아가고,\n명예의 전당에서 그 기록이 빠져요.\n(박제됐던 칭호 기록도 함께 사라져요)'))return;
+  state.hallOfFame.pop();
+  state.season={no:last.no,startDate:last.startDate||''};
+  window._seasonView=last.startDate?'season':'all';
+  save();render();
+  toast('↩️ 시즌 종료를 취소했어요 (시즌 '+last.no+' 복귀)');
+}
 function statPlayers(){
   const map=new Map();
   state.players.forEach(p=>map.set(p.id,{id:p.id,name:p.displayName,games:0,wins:0,kills:0,deaths:0,assists:0,mvp:0,
@@ -795,7 +827,7 @@ function statPlayerSides(min=1){ // 개인별 진영 승률
     const s=map.get(p.playerId),win=p.team===m.winnerTeam;
     if(p.team==='BLUE'){s.bG++;if(win)s.bW++}else{s.rG++;if(win)s.rW++}
   }));
-  return[...map.values()].filter(s=>s.bG+s.rG>=min)
+  return[...map.values()].filter(s=>s.bG+s.rG>=min&&isActive(s.id))
     .map(s=>({...s,name:nameOf(s.id),bRate:pct(s.bW,s.bG),rRate:pct(s.rW,s.rG)}))
     .sort((a,b)=>(b.bG+b.rG)-(a.bG+a.rG));
 }
@@ -841,7 +873,7 @@ function statPlayerChamps(min=2){
     if(!map.has(k))map.set(k,{playerId:p.playerId,champion:c,games:0,wins:0});
     const s=map.get(k); s.games++; if(p.team===m.winnerTeam)s.wins++;
   }));
-  return [...map.values()].filter(x=>x.games>=min)
+  return [...map.values()].filter(x=>x.games>=min&&isActive(x.playerId))
     .map(x=>({...x,name:nameOf(x.playerId),winRate:pct(x.wins,x.games)}))
     .sort((a,b)=>b.winRate-a.winRate||b.games-a.games);
 }
@@ -1591,6 +1623,142 @@ function makeAwards(){
     if(rookie)push('🌱 떡잎부터 다른',rookie.name,`${rookie.games}판 승률 ${rookie.winRate}% · 될성부른 신성`);
     const swing=P.filter(p=>{const ss=streaksOf(p.id);return p.games>=6&&ss.mw>=3&&ss.ml>=3})[0];
     if(swing){const ss=streaksOf(swing.id);push('🎢 롤러코스터',swing.name,`${ss.mw}연승·${ss.ml}연패 다 경험 · 기복이 곧 콘텐츠`);}
+    // ── 🆕 칭호 2차: MVP 등급 + 다양 50종 ──
+    P.forEach(function(p){
+      if(p.mvp>=15)push('🏆 MVP 명예의 전당',p.name,'MVP '+p.mvp+'회 · 살아있는 전설');
+      else if(p.mvp>=10)push('🔱 MVP 군주',p.name,'MVP '+p.mvp+'회 · 경기를 지배하는 자');
+      else if(p.mvp>=7)push('👑 MVP 단골',p.name,'MVP '+p.mvp+'회 · 표는 늘 이 사람에게');
+      else if(p.mvp>=5)push('🏅 MVP 컬렉터',p.name,'MVP '+p.mvp+'회 · 모으는 재미가 있다');
+      else if(p.mvp>=3)push('🎖 MVP 트리플',p.name,'MVP '+p.mvp+'회 · 꾸준한 클래스');
+      else if(p.mvp>=2)push('⭐ MVP 더블',p.name,'MVP '+p.mvp+'회 · 두 번은 실력이다');
+      else if(p.mvp>=1)push('🌟 첫 MVP',p.name,'생애 첫 MVP · 시작이 좋다');
+    });
+    const mvpR=P.filter(function(p){return p.games>=4&&p.mvp>=2}).map(function(p){return{p:p,r:p.mvp/p.games}}).sort(function(a,b){return b.r-a.r})[0];
+    if(mvpR&&mvpR.r>=0.25)push('🎯 MVP 제조기',mvpR.p.name,Math.round(mvpR.r*100)+'% 경기에서 MVP · 나오면 일낸다');
+    const mvpDry=P.filter(function(p){return p.games>=8&&p.mvp===0&&p.winRate>=50})[0];
+    if(mvpDry)push('🥲 무관의 제왕',mvpDry.name,mvpDry.games+'판 승률 '+mvpDry.winRate+'%인데 MVP 0 · 저평가의 아이콘');
+    const tK=P.slice().sort(function(a,b){return (b.kills||0)-(a.kills||0)})[0];
+    if(tK&&(tK.kills||0)>=100)push('⚔ 100킬 클럽',tK.name,'통산 '+tK.kills+'킬 · 협곡의 도살자');
+    const tA=P.slice().sort(function(a,b){return (b.assists||0)-(a.assists||0)})[0];
+    if(tA&&(tA.assists||0)>=150)push('🫶 150어시 클럽',tA.name,'통산 '+tA.assists+'어시 · 헌신의 기록');
+    const tW=P.slice().sort(function(a,b){return (b.wins||0)-(a.wins||0)})[0];
+    if(tW&&(tW.wins||0)>=25)push('🎗 다승 컬렉터',tW.name,'통산 '+tW.wins+'승 · 이겨본 사람');
+    const tG=P.slice().sort(function(a,b){return b.games-a.games})[0];
+    if(tG&&tG.games>=40)push('🗓 개근의 신',tG.name,'통산 '+tG.games+'판 · 내전 모범생');
+    const tD=P.filter(function(p){return p.games>=5}).sort(function(a,b){return (b.deaths||0)-(a.deaths||0)})[0];
+    if(tD&&(tD.deaths||0)>=80)push('🪦 무덤 단골',tD.name,'통산 '+tD.deaths+'데스 · 부활의 달인');
+    const fighter=P.filter(function(p){return p.games>=4}).map(function(p){return{p:p,r:per(p,'kills')+per(p,'assists')}}).sort(function(a,b){return b.r-a.r})[0];
+    if(fighter)push('🥊 전투 본능',fighter.p.name,'경기당 킬+어시 '+(per(fighter.p,'kills')+per(fighter.p,'assists')).toFixed(1)+' · 싸움엔 빠지지 않음');
+    const survivor=P.filter(function(p){return p.games>=5&&p.kda>=3&&per(p,'deaths')<=2.5}).sort(function(a,b){return per(a,'deaths')-per(b,'deaths')})[0];
+    if(survivor)push('🍀 불사조',survivor.name,'경기당 '+per(survivor,'deaths').toFixed(1)+'데스 KDA '+survivor.kda+' · 좀처럼 안 죽는다');
+    const explosive=P.filter(function(p){return p.games>=4&&per(p,'kills')>=5}).sort(function(a,b){return per(b,'kills')-per(a,'kills')})[0];
+    if(explosive)push('💥 폭발적인 캐리',explosive.name,'경기당 '+per(explosive,'kills').toFixed(1)+'킬 · 터지면 무섭다');
+    const generous=P.filter(function(p){return p.games>=4&&per(p,'assists')>=8}).sort(function(a,b){return per(b,'assists')-per(a,'assists')})[0];
+    if(generous)push('🎁 퍼주기 장인',generous.name,'경기당 '+per(generous,'assists').toFixed(1)+'어시 · 킬은 친구에게');
+    const hot=P.map(function(p){return{p:p,s:streaksOf(p.id).cw||0}}).sort(function(a,b){return b.s-a.s})[0];
+    if(hot&&hot.s>=3)push('🔥 현재 불타는 중',hot.p.name,'현재 '+hot.s+'연승 중 · 지금 만나면 진다');
+    const cold=P.map(function(p){return{p:p,s:streaksOf(p.id).cl||0}}).sort(function(a,b){return b.s-a.s})[0];
+    if(cold&&cold.s>=3)push('🧊 현재 침체기',cold.p.name,'현재 '+cold.s+'연패 중 · 반등이 필요해');
+    const comeback=P.filter(function(p){var s=streaksOf(p.id);return p.games>=6&&s.ml>=4&&s.cw>=2})[0];
+    if(comeback){var cs2=streaksOf(comeback.id);push('🦅 오뚝이',comeback.name,cs2.ml+'연패 끊고 '+cs2.cw+'연승 · 바닥 찍고 반등');}
+    const jgD=P.filter(function(p){return p.games>=3&&playerMainLane(p.id)==='정글'}).sort(function(a,b){return b.kda-a.kda})[0];
+    if(jgD)push('🌲 정글 차이',jgD.name,'정글 KDA '+jgD.kda+' · 갱이 곧 캐리');
+    const adcA=P.filter(function(p){return p.games>=3&&playerMainLane(p.id)==='원딜'}).sort(function(a,b){return b.avgDmg-a.avgDmg})[0];
+    if(adcA)push('🏹 원딜 에이스',adcA.name,'원딜 평균 딜 '+fmt(adcA.avgDmg)+' · 후반 캐리의 정석');
+    const topG=P.filter(function(p){return p.games>=3&&playerMainLane(p.id)==='탑'}).sort(function(a,b){return b.winRate-a.winRate})[0];
+    if(topG)push('🗻 탑 신',topG.name,'탑 승률 '+topG.winRate+'% · 섬에서 혼자 이긴다');
+    const midK=P.filter(function(p){return p.games>=3&&playerMainLane(p.id)==='미드'}).sort(function(a,b){return b.kda-a.kda})[0];
+    if(midK)push('🎯 미드 지배자',midK.name,'미드 KDA '+midK.kda+' · 중앙을 장악');
+    const supH=P.filter(function(p){return p.games>=3&&playerMainLane(p.id)==='서폿'}).sort(function(a,b){return per(b,'assists')-per(a,'assists')})[0];
+    if(supH)push('🛟 갓폿',supH.name,'서폿 경기당 어시 '+per(supH,'assists').toFixed(1)+' · 캐리의 숨은 공신');
+    const glass=P.filter(function(p){return p.games>=4&&p.avgDmg>0&&per(p,'kills')>=4&&per(p,'deaths')>=5})[0];
+    if(glass)push('🍷 유리 대포',glass.name,'경기당 '+per(glass,'kills').toFixed(1)+'킬 '+per(glass,'deaths').toFixed(1)+'데스 · 화려하게 살고 화려하게 죽는다');
+    const turtle=P.filter(function(p){return p.games>=4&&per(p,'deaths')<=2&&p.kda>=2.5}).sort(function(a,b){return per(a,'deaths')-per(b,'deaths')})[0];
+    if(turtle)push('🐢 거북이 농법',turtle.name,'경기당 '+per(turtle,'deaths').toFixed(1)+'데스 · 안 죽고 천천히 굴린다');
+    const oneShot=P.filter(function(p){var s=streaksOf(p.id);return p.games>=6&&s.mw>=4})[0];
+    if(oneShot){var os=streaksOf(oneShot.id);push('🎲 한방의 사나이',oneShot.name,'최장 '+os.mw+'연승 · 타면 끝까지 탄다');}
+    const ramen=P.filter(function(p){var s=streaksOf(p.id);return p.games>=6&&s.ml>=4})[0];
+    if(ramen){var rm=streaksOf(ramen.id);push('🍜 라면 각',ramen.name,'최장 '+rm.ml+'연패 · 멘탈 관리가 필요한 순간');}
+    const horse=P.filter(function(p){return p.games>=8&&p.kda>=2&&p.kda<=2.8&&p.winRate>=47&&p.winRate<=53})[0];
+    if(horse)push('🐴 묵묵한 일꾼',horse.name,horse.games+'판 · 티 안 나게 1인분 하는 사람');
+    const chaos=P.filter(function(p){return p.games>=4&&per(p,'kills')>=5&&per(p,'deaths')>=5&&per(p,'assists')>=8})[0];
+    if(chaos)push('🌪 걸어다니는 변수',chaos.name,'킬·데스·어시 다 많음 · 화면에 늘 등장');
+    const stealth=P.filter(function(p){return p.games>=4&&per(p,'kills')<2.5&&per(p,'deaths')<2.5&&p.winRate>=52}).sort(function(a,b){return b.winRate-a.winRate})[0];
+    if(stealth)push('🥷 스텔스 승리',stealth.name,'킬 '+per(stealth,'kills').toFixed(1)+' 데스 '+per(stealth,'deaths').toFixed(1)+' 승률 '+stealth.winRate+'% · 조용히 이긴다');
+    const balanced2=P.filter(function(p){return p.games>=5&&p.kda>=2.3&&p.kda<=3.2&&Math.abs(per(p,'kills')-per(p,'deaths'))<=1})[0];
+    if(balanced2)push('⚖️ 밸런스 장인',balanced2.name,'킬·데스 균형 KDA '+balanced2.kda+' · 기복 없는 안정감');
+    const bigGame=P.filter(function(p){return p.games>=4&&p.mvp>=1&&p.kda>=3.5}).sort(function(a,b){return b.kda-a.kda})[0];
+    if(bigGame)push('🎬 큰 경기에 강한',bigGame.name,'KDA '+bigGame.kda+' MVP '+bigGame.mvp+'회 · 중요할 때 나온다');
+    const heavy=P.filter(function(p){return p.games>=4&&p.avgDmg>0}).sort(function(a,b){return b.avgDmg-a.avgDmg})[1];
+    if(heavy)push('🥈 화력 2인자',heavy.name,'평균 딜 '+fmt(heavy.avgDmg)+' · 1등 다음으로 무섭다');
+    const allLane2=P.filter(function(p){return p.games>=4&&lnN(p.id)===2})[0];
+    if(allLane2)push('🔄 듀얼 포지션',allLane2.name,'2개 라인 소화 · 어디든 무난하게');
+    const partyStarter=P.filter(function(p){return p.games>=4&&per(p,'kills')>=4&&per(p,'assists')>=6})[0];
+    if(partyStarter)push('🎉 한타 메이커',partyStarter.name,'킬 '+per(partyStarter,'kills').toFixed(1)+' 어시 '+per(partyStarter,'assists').toFixed(1)+' · 싸움을 만든다');
+    const lateB=P.filter(function(p){return p.games>=5&&p.kda>=3&&p.winRate<50})[0];
+    if(lateB)push('🌙 야수의 심장',lateB.name,'KDA '+lateB.kda+' 승률 '+lateB.winRate+'% · 팀운만 따르면 1황');
+    const consistent=P.filter(function(p){return p.games>=8&&p.kda>=2.5&&p.winRate>=50})[0];
+    if(consistent)push('📏 꾸준함의 미학',consistent.name,consistent.games+'판 KDA '+consistent.kda+' 승률 '+consistent.winRate+'% · 매판 제 몫');
+    const peace=P.filter(function(p){return p.games>=4&&per(p,'kills')<2&&per(p,'assists')>=6})[0];
+    if(peace)push('🕊 평화주의자',peace.name,'킬 '+per(peace,'kills').toFixed(1)+' 어시 '+per(peace,'assists').toFixed(1)+' · 죽이기보다 돕는다');
+    const veteran2=P.filter(function(p){return p.games>=15})[0];
+    if(veteran2)push('🎖 백전노장',veteran2.name,'통산 '+veteran2.games+'판 · 산전수전 다 겪음');
+    const sniper2=P.filter(function(p){return p.games>=4&&p.kda>=4&&per(p,'deaths')<=2})[0];
+    if(sniper2)push('🎯 저격수',sniper2.name,'KDA '+sniper2.kda+' 데스 '+per(sniper2,'deaths').toFixed(1)+' · 한 발 한 발이 치명적');
+    const allin=P.filter(function(p){return p.games>=4&&per(p,'kills')>=6})[0];
+    if(allin)push('⚡ 폭주 기관차',allin.name,'경기당 '+per(allin,'kills').toFixed(1)+'킬 · 브레이크가 고장났다');
+    const zen=P.filter(function(p){var s=streaksOf(p.id);return p.games>=8&&s.ml>=4&&p.winRate>=48})[0];
+    if(zen)push('🧘 평정심',zen.name,'연패에도 승률 '+zen.winRate+'% 유지 · 흔들려도 돌아온다');
+    const newbie=P.filter(function(p){return p.games>=2&&p.games<=3&&p.winRate>=50})[0];
+    if(newbie)push('🌱 새싹',newbie.name,newbie.games+'판 승률 '+newbie.winRate+'% · 앞으로가 기대되는');
+    const ironman=P.filter(function(p){var s=streaksOf(p.id);return p.games>=10&&s.ml<=2})[0];
+    if(ironman)push('🛡 멘탈 갑옷',ironman.name,ironman.games+'판 최장 연패 짧음 · 흔들리지 않는 강철');
+    // ── 🆕 칭호 3차: 한 경기 기록·날짜·챔프/듀오 심화 (기존 130종과 겹침 없는 새 영역) ──
+    var __bg={};
+    state.matches.forEach(function(m){(m.participants||[]).forEach(function(p){
+      if(!p.playerId||!isActive(p.playerId))return;
+      var b=__bg[p.playerId]||(__bg[p.playerId]={k:0,a:0,d:0,kda:0,k10:0,d0w:0,perf:0});
+      var k=p.kills||0,a=p.assists||0,d=p.deaths||0,win=p.team===m.winnerTeam,kda=(k+a)/Math.max(1,d);
+      if(k>b.k)b.k=k; if(a>b.a)b.a=a; if(d>b.d)b.d=d; if(kda>b.kda)b.kda=kda;
+      if(k>=10)b.k10++; if(d===0&&win)b.d0w++; if(kda>=10)b.perf++;
+    })});
+    var __bgA=Object.keys(__bg).map(function(id){return Object.assign({id:id,name:nameOf(id)},__bg[id])});
+    var bgk=__bgA.filter(function(x){return x.k>=8}).sort(function(a,b){return b.k-a.k})[0]; if(bgk)push('🎯 한 경기 '+bgk.k+'킬',bgk.name,'단일 경기 최다 킬 · 그날 폼 미쳤다');
+    var bga=__bgA.filter(function(x){return x.a>=12}).sort(function(a,b){return b.a-a.a})[0]; if(bga)push('🤲 한 경기 '+bga.a+'어시',bga.name,'단일 경기 최다 어시 · 다 묻혀줬다');
+    var bgkda=__bgA.filter(function(x){return x.kda>=6}).sort(function(a,b){return b.kda-a.kda})[0]; if(bgkda)push('🌟 인생 경기',bgkda.name,'단일 경기 KDA '+bgkda.kda.toFixed(1)+' · 박제각');
+    var bgd0=__bgA.filter(function(x){return x.d0w>=1}).sort(function(a,b){return b.d0w-a.d0w})[0]; if(bgd0)push('🛡 무결점 게임',bgd0.name,'0데스 승리 '+bgd0.d0w+'번 · 완벽한 캐리');
+    var bg10=__bgA.filter(function(x){return x.k10>=1}).sort(function(a,b){return b.k10-a.k10})[0]; if(bg10)push('🔟 두 자릿수 킬',bg10.name,'한 경기 10킬+ '+bg10.k10+'번 · 학살의 추억');
+    var bgp=__bgA.filter(function(x){return x.perf>=1}).sort(function(a,b){return b.perf-a.perf})[0]; if(bgp)push('💎 퍼펙트 폼',bgp.name,'KDA 10+ 경기 '+bgp.perf+'번 · 클래스는 영원하다');
+    var bgd=__bgA.filter(function(x){return x.d>=10}).sort(function(a,b){return b.d-a.d})[0]; if(bgd)push('💀 그 경기 (흑역사)',bgd.name,'단일 경기 '+bgd.d+'데스 · 누구나 그런 날이 있다');
+    var __dy={};
+    state.matches.forEach(function(m){var dt=new Date(String(m.playedAt));var wd=isNaN(dt.getTime())?-1:dt.getDay();(m.participants||[]).forEach(function(p){if(!p.playerId||!isActive(p.playerId))return;var d=__dy[p.playerId]||(__dy[p.playerId]={we:0,wd:0,days:{},total:0});d.total++;if(wd===0||wd===6)d.we++;else if(wd>=1)d.wd++;d.days[m.playedAt]=1})});
+    var __dyA=Object.keys(__dy).map(function(id){var o=__dy[id];return{id:id,name:nameOf(id),we:o.we,wd:o.wd,days:Object.keys(o.days).length,total:o.total}});
+    var dwe=__dyA.filter(function(x){return x.total>=5&&x.we/x.total>=0.6}).sort(function(a,b){return b.we-a.we})[0]; if(dwe)push('☀️ 주말 전사',dwe.name,'경기의 '+Math.round(dwe.we/dwe.total*100)+'%가 주말 · 주말만 기다린다');
+    var dwd=__dyA.filter(function(x){return x.total>=5&&x.wd/x.total>=0.7}).sort(function(a,b){return b.wd-a.wd})[0]; if(dwd)push('💼 평일 워커홀릭',dwd.name,'경기의 '+Math.round(dwd.wd/dwd.total*100)+'%가 평일 · 평일에도 달린다');
+    var dds=__dyA.slice().sort(function(a,b){return b.days-a.days})[0]; if(dds&&dds.days>=8)push('📅 출석 일수왕',dds.name,'서로 다른 '+dds.days+'일 참여 · 꾸준한 발걸음');
+    var __cp={};
+    state.matches.forEach(function(m){(m.participants||[]).forEach(function(p){if(!p.playerId||!isActive(p.playerId))return;var c=champOf(p);if(!c)return;var o=__cp[p.playerId]||(__cp[p.playerId]={ch:{},total:0});o.ch[c]=o.ch[c]||{g:0,w:0};o.ch[c].g++;if(p.team===m.winnerTeam)o.ch[c].w++;o.total++})});
+    var __cpA=Object.keys(__cp).map(function(id){var o=__cp[id];var ks=Object.keys(o.ch);var best=null;ks.forEach(function(c){if(!best||o.ch[c].g>o.ch[best].g)best=c});return{id:id,name:nameOf(id),variety:ks.length,total:o.total,ch:o.ch,best:best}});
+    var cv=__cpA.filter(function(x){return x.total>=6}).sort(function(a,b){return b.variety-a.variety})[0]; if(cv&&cv.variety>=7)push('🎰 챔프 백화점',cv.name,'서로 다른 챔프 '+cv.variety+'종 · 픽창이 곧 자유');
+    var cw=__cpA.filter(function(x){var b=x.ch[x.best];return b&&b.g>=4&&b.w===b.g}).sort(function(a,b){return b.ch[b.best].g-a.ch[a.best].g})[0]; if(cw)push('🏆 불패의 시그니처',cw.name,cw.best+' '+cw.ch[cw.best].g+'전 전승 · 이 챔프는 못 막는다');
+    var co=__cpA.filter(function(x){var b=x.ch[x.best];return x.total>=6&&b&&b.g/x.total>=0.5}).sort(function(a,b){return (b.ch[b.best].g/b.total)-(a.ch[a.best].g/a.total)})[0]; if(co)push('🔂 외길 인생',co.name,co.best+' 비중 '+Math.round(co.ch[co.best].g/co.total*100)+'% · 한 우물만 판다');
+    var car=__cpA.filter(function(x){var b=x.ch[x.best];return b&&b.g>=5&&b.w/b.g>=0.6}).sort(function(a,b){return (b.ch[b.best].w/b.ch[b.best].g)-(a.ch[a.best].w/a.ch[a.best].g)})[0]; if(car)push('🛠 '+car.best+' 장인',car.name,car.best+' '+car.ch[car.best].g+'판 승률 '+Math.round(car.ch[car.best].w/car.ch[car.best].g*100)+'% · 손에 완전히 익었다');
+    var __duo={};
+    state.matches.forEach(function(m){TEAMS.forEach(function(t){var ids=(m.participants||[]).filter(function(p){return p.team===t&&p.playerId&&isActive(p.playerId)}).map(function(p){return p.playerId}).sort();for(var i=0;i<ids.length;i++)for(var j=i+1;j<ids.length;j++){var key=ids[i]+'|'+ids[j];__duo[key]=(__duo[key]||0)+1}})});
+    var dct=Object.keys(__duo).sort(function(a,b){return __duo[b]-__duo[a]})[0]; if(dct&&__duo[dct]>=4){var dpp=dct.split('|');push('👯 단짝',nameOf(dpp[0])+' & '+nameOf(dpp[1]),'같은 팀으로 '+__duo[dct]+'번 · 만나면 한 팀');}
+    var __riv={};
+    state.matches.forEach(function(m){var bl=(m.participants||[]).filter(function(p){return p.team==='BLUE'&&p.playerId&&isActive(p.playerId)});var rd=(m.participants||[]).filter(function(p){return p.team==='RED'&&p.playerId&&isActive(p.playerId)});bl.forEach(function(a){rd.forEach(function(b){var key=[a.playerId,b.playerId].sort().join('|');__riv[key]=(__riv[key]||0)+1})})});
+    var rct=Object.keys(__riv).sort(function(a,b){return __riv[b]-__riv[a]})[0]; if(rct&&__riv[rct]>=4){var rpp=rct.split('|');push('⚔️ 앙숙',nameOf(rpp[0])+' vs '+nameOf(rpp[1]),'상대 팀으로 '+__riv[rct]+'번 · 자꾸 적으로 만난다');}
+    var __SD=statPlayerSides(3);
+    var rdm=__SD.filter(function(s){return s.rG>=3&&s.rRate>=60}).sort(function(a,b){return b.rRate-a.rRate})[0]; if(rdm)push('🔴 레드 사이드 마스터',rdm.name,'레드 진영 승률 '+rdm.rRate+'% · 빨강이 체질');
+    var amb=__SD.filter(function(s){return s.bG>=3&&s.rG>=3&&s.bRate>=55&&s.rRate>=55})[0]; if(amb)push('🔵🔴 양손잡이',amb.name,'블루 '+amb.bRate+'% 레드 '+amb.rRate+'% · 진영 안 가린다');
+    var __first={};
+    state.matches.forEach(function(m){(m.participants||[]).forEach(function(p){if(!p.playerId)return;if(!__first[p.playerId]||String(m.playedAt)<__first[p.playerId])__first[p.playerId]=String(m.playedAt)})});
+    var __fk=Object.keys(__first).filter(function(id){return isActive(id)});
+    var oldP=__fk.slice().sort(function(a,b){return __first[a]<__first[b]?-1:1})[0]; if(oldP)push('🏛 창단 멤버',nameOf(oldP),'가장 오래된 기록부터 함께 · 내전의 산증인');
+    var newP=__fk.slice().sort(function(a,b){return __first[a]>__first[b]?-1:1})[0]; if(newP&&newP!==oldP)push('🆕 새 식구',nameOf(newP),'가장 최근 합류 · 환영합니다');
+
+
   }
   // 듀오 / 상대 — 칭호는 희소해야 가치가 있다: 부문별 1쌍만
   const bestDuo=[...D].filter(d=>d.games>=3&&d.winRate>=70).sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
@@ -2400,8 +2568,8 @@ function swapSides(id){
 
 
 /* ───── 멤버끼리 결 비교 (공통축) ───── */
-function genericHexAll(){
-  const rates=ratesMap(); const out=new Map();
+function genericHexAll(laneKo){
+  const rates=ratesMap(laneKo); const out=new Map();
   const ids=[...rates.keys()].filter(id=>rates.get(id).games>=2);
   if(ids.length<2)return out;
   // 백분위(등수) 기반: 축마다 전체 멤버 중 몇 등인지로 환산 — 극단값 한 명이 전체를 짓누르거나 모두가 후해지는 왜곡 제거
@@ -2419,8 +2587,10 @@ function genericHexAll(){
   ids.forEach(id=>out.set(id,GENERIC_AXES.map((_,i)=>pct[i](id))));
   return out;
 }
-function memberMatch(id){
-  const all=genericHexAll(); const me=all.get(id); if(!me)return null;
+function memberMatch(id,laneKo){
+  let all=genericHexAll(laneKo); let me=all.get(id);
+  if(!me){all=genericHexAll();me=all.get(id);}
+  if(!me)return null;
   const labels=GENERIC_AXES.map(x=>x[1]);
   let best=null,worst=null;
   all.forEach((v,pid)=>{
@@ -7251,10 +7421,11 @@ function pgMe(){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['result','📊 경기 결과'],['record','📝 경기 기록'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
+ ['doom','🏆 멸망전',['doom']],
  ['live','⚔️ 내전',['notice','result','today','record','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
@@ -7417,7 +7588,7 @@ function render(opt){
     return;
   }
   const R={dashboard:pgDashboard,notice:pgNotice,result:pgResult,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
-    champions:pgChampions,form:pgForm,awards:pgAwards,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
+    champions:pgChampions,form:pgForm,awards:pgAwards,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
   let _xs=[];try{document.querySelectorAll('#view [id]').forEach(el=>{if(el.scrollLeft>0)_xs.push([el.id,el.scrollLeft])})}catch(e){} // 가로 스크롤 보존
   const _se=(typeof document!=='undefined'&&(document.scrollingElement||document.documentElement))||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
   const _sy=Math.max((_se&&_se.scrollTop)||0,(document.body&&document.body.scrollTop)||0,((typeof window!=='undefined'&&(window.pageYOffset||window.scrollY))||0));
@@ -7983,7 +8154,7 @@ function playerListHtml(list){
   return list.map(x=>`
         <div class="pItem ${x.id===selPlayer?'on':''} ${x.active?'':'off'}" onclick="selPlayer='${x.id}';window._pLane=null;render()">
           <div><b>${esc(x.displayName)}</b>${x.riotName?`<div class="ign">${esc(x.riotName)}${x.riotTag?'#'+esc(x.riotTag):''}</div>`:''}</div>
-          ${x.active?'':'<span class="pill">휴면</span>'}
+          ${x.active?'':(x.kicked?'<span class="pill lose">퇴출</span>':'<span class="pill">휴면</span>')}
         </div>`).join('')||'<p class="mini dim" style="padding:6px 2px">검색 결과가 없어요.</p>';
 }
 function filterPlayerList(){ // 한글 조립을 깨지 않도록, 목록만 부분 갱신
@@ -8043,7 +8214,7 @@ function playerDetail(p){
     <div style="display:flex;justify-content:center;margin-bottom:12px">
       <div style="background:var(--inset);border:1px solid var(--line);border-radius:20px;padding:10px">${avHtml?cosAvatar(avEq,128):'<div style="width:120px;height:150px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;text-align:center;line-height:1.6">캐릭터<br>미생성</div>'}</div>
     </div>
-    <h2 style="margin:0;font-size:23px;letter-spacing:-.3px">${esc(p.displayName)} ${tierChip(p.displayName)}${p.active?'':' <span class="pill">휴면</span>'}</h2>
+    <h2 style="margin:0;font-size:23px;letter-spacing:-.3px">${esc(p.displayName)} ${tierChip(p.displayName)}${p.active?'':(p.kicked?' <span class="pill lose">퇴출</span>':' <span class="pill">휴면</span>')}</h2>
     <p class="mini dim" style="margin:4px 0 0">${p.riotName?`🎮 ${esc(p.riotName)}${p.riotTag?'#'+esc(p.riotTag):''}`:'롤 닉네임 미등록'}${p.aliases&&p.aliases.length?` · ${p.aliases.map(esc).join(', ')}`:''}</p>
     ${_heroT.length?`<div class="row" style="justify-content:center;gap:5px;margin-top:9px;flex-wrap:wrap">${_heroT.map(a=>`<span class="pill gold" title="${esc(a.desc)}">${esc(a.title)}</span>`).join('')}</div>`:''}
     <div style="max-width:420px;margin:12px auto 0">
@@ -8053,6 +8224,7 @@ function playerDetail(p){
     ${isAdmin()?`<div class="row" style="justify-content:center;gap:6px;margin-top:12px">
       <button class="btn sm" onclick="editingPlayer='${p.id}';render()">수정</button>
       <button class="btn sm" onclick="togglePlayer('${p.id}')">${p.active?'휴면 처리':'활동 복귀'}</button>
+      ${p.active?`<button class="btn sm lose" onclick="kickPlayer('${p.id}')">🚪 퇴출</button>`:''}
       <button class="btn sm lose" onclick="delPlayer('${p.id}')">삭제</button>
     </div>`:''}
   </div>
@@ -8069,6 +8241,12 @@ function playerDetail(p){
       <div class="kpi"><div class="n">${kDmg?fmt(kDmg):'-'}</div><div class="l">${laneSel?'딜량':'평균 딜량'}</div></div>
       <div class="kpi gold"><div class="n">${S.mvp}</div><div class="l">MVP 횟수</div></div>
     </div>
+    ${(()=>{const dR=laneSel?LR:ratesMap().get(p.id);if(!dR||!dR.games)return'';
+      const f1=n=>n==null?'-':(Math.round(n*10)/10),f0=n=>n==null?'-':Math.round(n),sg=n=>n==null?'-':((n>0?'+':'')+Math.round(n)),pc=n=>n==null?'-':n+'%';
+      const rows=[['분당 딜 (DPM)',f0(dR.dpm)],['분당 CS',f1(dR.cspm)],['분당 시야',f1(dR.vspm)],['킬 관여',pc(dR.kp)],['딜 비중',pc(dR.dmgShare)],['골드 비중',pc(dR.goldShare)],['탱킹 비중',pc(dR.tankShare)],['분당 골드',f0(dR.gpm)],['골드당 딜',f1(dR.dpg)],['판당 데스',f1(dR.deathsPg)],['판당 솔로킬',f1(dR.soloPg)],['분당 오브젝트 딜',f0(dR.objpm)],['분당 시설 딜',f0(dR.demolpm)],['분당 CC',f1(dR.ccpm)],['분당 유틸',f0(dR.utilpm)],['분당 탱킹',f0(dR.tankpm)],['15분 골드차',sg(dR.gd15)],['15분 CS차',sg(dR.csd15)],['15분 경험치차',sg(dR.xpd15)]];
+      return`<details class="fold" style="margin-top:12px"><summary class="mini" style="font-weight:800;cursor:pointer">📊 전체 세부 지표 — ${laneSel?esc(laneSel)+' 라인':'전체'} (${dR.games}판) ▾</summary>
+        <div class="scrollx" style="margin-top:8px"><table class="tbl" style="min-width:260px"><tbody>${rows.map(r=>`<tr><td class="dim">${r[0]}</td><td class="num" style="font-weight:700">${r[1]}</td></tr>`).join('')}</tbody></table></div>
+        <p class="mini dim" style="margin:6px 0 0">위 라인 탭을 바꾸면 이 표도 그 라인 기록만 다시 집계해요.</p></details>`})()}
     ${(()=>{const sd=statPlayerSides(1).find(x=>x.id===p.id);return sd?`<p class="mini" style="margin:12px 0 0">진영별: <b class="tBlue">블루 ${sd.bW}승 ${sd.bG-sd.bW}패${sd.bG?` (${sd.bRate}%)`:''}</b> · <b class="tRed">레드 ${sd.rW}승 ${sd.rG-sd.rW}패${sd.rG?` (${sd.rRate}%)`:''}</b></p>`:''})()}
     ${(()=>{
       const activeLane=laneSel;
@@ -8090,7 +8268,7 @@ function playerDetail(p){
           ${rep.str.map(x=>`<p class="mini" style="margin:0 0 5px">💪 <b style="color:var(--win)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].hi)}</p>`).join('')}
           ${rep.weak.map(x=>`<p class="mini" style="margin:0 0 5px">🩹 <b style="color:var(--lose)">${esc(x.l)} ${Math.round(x.v*100)}점</b> · ${esc(AXIS_NOTE[x.l].lo)}</p>`).join('')}
           ${hex.rates&&hex.rates.hasSolo?`<p class="mini" style="margin:0 0 5px">🗡 <b style="color:var(--gold)">솔로킬 경기당 ${hex.rates.soloPg.toFixed(1)}회</b> · 1:1에서 증명된 손맛</p>`:''}
-          ${(()=>{const mm=memberMatch(p.id);if(!mm)return'';
+          ${(()=>{const mm=memberMatch(p.id,laneSel);if(!mm)return'';
             if(mm.similar.name===mm.opposite.name)return`<p class="mini" style="margin:6px 0 0">🤝 결이 가장 가까운 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%) — ${esc(mm.similar.why)}</p>`;
             return`<p class="mini" style="margin:6px 0 0;line-height:1.6">🤝 결이 닮은 멤버: <b>${esc(mm.similar.name)}</b> (${mm.similar.sim}%)<br><span class="dim">${esc(mm.similar.why)}</span></p>
             <p class="mini" style="margin:5px 0 0;line-height:1.6">🌗 정반대 스타일: <b>${esc(mm.opposite.name)}</b> (${mm.opposite.sim}%)<br><span class="dim">${esc(mm.opposite.why)}</span></p>`})()}
@@ -8176,7 +8354,15 @@ function savePlayerForm(){
   editingPlayer=null;save();render();
 }
 function togglePlayer(id){
-  if(needAdmin())return;const p=byId(id);p.active=!p.active;save();render()}
+  if(needAdmin())return;const p=byId(id);p.active=!p.active;if(p.active)p.kicked=false;save();render()}
+function kickPlayer(id){
+  if(needAdmin())return;
+  const p=byId(id); if(!p)return;
+  if(p.active===false){toast('이미 명단에서 빠져 있어요.',true);return}
+  if(!confirm(p.displayName+'님을 퇴출할까요?\n\n명단·랭킹·통계·거래에서 빠지지만 과거 경기 기록은 그대로 보존돼요.\n(잘못 눌렀으면 \'활동 복귀\'로 되돌릴 수 있어요)'))return;
+  p.active=false; p.kicked=true; p.memo='🚪 퇴출 (그룹 탈퇴)';
+  save();render();toast(p.displayName+'님을 퇴출 처리했어요.');
+}
 function delPlayer(id){
   if(needAdmin())return;
   const used=state.matches.some(m=>m.participants.some(p=>p.playerId===id));
@@ -8251,7 +8437,7 @@ function pgStats(){
 /* ───── 1:1 비교 ───── */
 function pgCompare(){
   const rates=ratesMap();
-  const P=statPlayers().filter(s=>rates.get(s.id)?.games>=1);
+  const P=statPlayers().filter(s=>isActive(s.id)&&rates.get(s.id)?.games>=1);
   if(P.length<2)return head('1:1 비교','두 명 이상 경기 기록이 있어야 비교할 수 있어요.')+'<div class="empty">경기를 더 기록해주세요.</div>';
   if(!window._cmpA||!P.some(s=>s.id===window._cmpA))window._cmpA=P[0].id;
   if(!window._cmpB||!P.some(s=>s.id===window._cmpB)||window._cmpB===window._cmpA)window._cmpB=(P.find(s=>s.id!==window._cmpA)||P[1]).id;
@@ -8785,8 +8971,75 @@ function pgLaneTier(){
 
 /* ───── 칭호 ───── */
 function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
+function pgDoom(){
+  return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')+`
+  <div class="card" style="background:linear-gradient(135deg,rgba(34,90,52,.18),rgba(242,184,75,.10));border:1px solid var(--gold);text-align:center;padding:26px 18px">
+    <div style="font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:800">APD · LEAGUE OF LEGENDS</div>
+    <h2 style="font-size:30px;margin:8px 0 4px">제 2회 아포단 멸망전</h2>
+    <p class="mini" style="margin:0;font-size:14px">📅 2026.07.01 ~ 07.30 · 더블 엘리미네이션 · 하드 피어리스</p>
+    <div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <span class="pill gold" style="font-size:14px;padding:6px 14px">🏆 우승 200,000원</span>
+      <span class="pill" style="font-size:14px;padding:6px 14px">👥 20명 모집</span>
+      <span class="pill" style="font-size:14px;padding:6px 14px">💵 참가비 7,000원</span>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>🗓 일정 안내</h3>
+    <p class="mini dim" style="margin:-4px 0 10px">일정이 당겨질 경우 그때마다 팀장방에 공지할 예정입니다!</p>
+    <div class="scrollx"><table class="tbl" style="min-width:380px"><tbody>
+      <tr><td><b>07.01 ~ 07.02</b></td><td>📝 신청 기간</td></tr>
+      <tr><td><b>07.03 ~ 07.04</b></td><td>💰 경매 진행 및 팀 확정</td></tr>
+      <tr><td><b>07.05 ~ 07.11</b></td><td>⚔️ 1차 경기</td></tr>
+      <tr><td><b>07.12 ~ 07.18</b></td><td>⚔️ 2차 경기</td></tr>
+      <tr><td><b>07.19 ~ 07.25</b></td><td>⚔️ 3차 경기</td></tr>
+      <tr><td><b>07.26 ~ 07.30</b></td><td>🏆 결승 경기</td></tr>
+    </tbody></table></div>
+    <p class="mini dim" style="margin:8px 0 0">각 경기는 주어진 기간 내 모든 경기가 끝나면 다음 일정이 유동적으로 당겨질 예정입니다.</p>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>📋 신청 시 주의사항</h3>
+    <p class="mini" style="margin:6px 0;color:var(--lose)"><b>1.</b> 노쇼 발생 시 추방, 신중하게 신청해주세요</p>
+    <p class="mini" style="margin:6px 0;color:var(--lose)"><b>2.</b> 꼭 본계정으로 신청, 티어 속이면 추방합니다</p>
+    <p class="mini" style="margin:6px 0"><b>3.</b> 참가비 7,000원 / <b style="color:var(--gold)">신한 110-465-152906 김나영</b></p>
+    <p class="mini" style="margin:6px 0"><b>4.</b> 경기 날짜는 정해진 기간 내에 맞붙는 팀끼리 조율</p>
+    <p class="mini" style="margin:6px 0"><b>5.</b> 일정 조율 실패 시 운영진 판단하에 기권패 처리</p>
+    <p class="mini" style="margin:6px 0"><b>6.</b> 신청기간 내 20명 모집 완료 시 조기 마감합니다</p>
+    <p class="mini dim" style="margin:8px 0 0">신청 마감되면 그날 내로 참가명단 올려드리겠습니다!</p>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>🎯 신청방법 & 팀원 경매</h3>
+    <div class="grid c2" style="gap:10px">
+      <div><b class="mini" style="color:var(--gold)">① 참가신청</b><p class="mini">톡방에 멸망전 신청 일정이 올라오면 참석 누르고, 댓글에 닉네임과 주라인을 적어주세요.</p></div>
+      <div><b class="mini" style="color:var(--gold)">② 팀장 선정</b><p class="mini">참가자 20명 중 티어 + 나이 + 플레이스타일 등으로 네 분 선정.</p></div>
+      <div><b class="mini" style="color:var(--gold)">③ 경매</b><p class="mini">팀장들은 포인트를 지급받고, 본인 포인트 내에서 경매로 팀원을 데려옵니다.</p></div>
+      <div><b class="mini" style="color:var(--gold)">④ 팀 확정</b><p class="mini">경매 완료되면 팀명과 라인을 상의한 후 운영진에게 보내주세요.</p></div>
+      <div><b class="mini" style="color:var(--gold)">⑤ 최종명단</b><p class="mini">전원 팀 확정되면 최종 팀 명단을 올려드릴 예정입니다.</p></div>
+    </div>
+    <p class="mini dim" style="margin:8px 0 0">댓글에 적는 주라인은 경매를 위한 참고용이며, 다른 라인으로 갈 수도 있습니다.</p>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>⚔️ 멸망전 규칙</h3>
+    <div class="grid c2" style="gap:8px">
+      <p class="mini" style="margin:4px 0">▪ <b>더블 엘리미네이션 토너먼트</b>로 진행, <b style="color:var(--lose)">하드 피어리스룰</b> 적용</p>
+      <p class="mini" style="margin:4px 0">▪ 모든 경기 <b>3판 2선</b>, 결승전만 <b>5판 3선</b></p>
+      <p class="mini" style="margin:4px 0">▪ 첫 판 진영은 사다리타기, 다음 세트부터 <b>패배한 팀이 선택</b></p>
+      <p class="mini" style="margin:4px 0">▪ 팀 구성 라인 그대로 진행, <b style="color:var(--lose)">라인 스왑 불가</b> (인게임 라인퀘 달성 후 가능)</p>
+      <p class="mini" style="margin:4px 0">▪ 결승전 먼저 올라가는 팀에게 <b>결승 진영 우선 선택권</b></p>
+      <p class="mini" style="margin:4px 0">▪ 실수 픽 / 랜덤픽 / 밴 실수 모두 <b>봐주지 않고</b> 진행</p>
+      <p class="mini" style="margin:4px 0">▪ 경기 시작 <b style="color:var(--lose)">5분 전</b>까지 디코·롤 미접속 팀원 있으면 상대팀에 진영 우선권</p>
+      <p class="mini" style="margin:4px 0">▪ 퍼즈는 인터넷 이슈 등 문제 시에만, 퍼즈 상태선 <b>전원 디코 헤드셋 off</b></p>
+    </div>
+    <p class="mini dim" style="margin:8px 0 0">경기 시간 전 전원 준비완료면 미리 시작 가능 · 퍼즈 풀 땐 채팅으로 양쪽 준비완료 확인 후</p>
+  </div>
+  <div class="card" style="margin-top:14px;background:linear-gradient(135deg,rgba(34,90,52,.20),rgba(34,90,52,.06));border:1px solid var(--win)"><h3>🏆 우승 상금</h3>
+    <div style="text-align:center;padding:8px 0 14px">
+      <div class="mini" style="color:var(--gold);font-weight:800">우승팀</div>
+      <div style="font-size:34px;font-weight:900;color:var(--win)">200,000원</div>
+    </div>
+    <div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>파이널 MVP</th><th>준우승 MVP</th><th>3등팀 랜덤</th><th>4등팀 랜덤</th></tr></thead><tbody>
+      <tr style="text-align:center"><td><b>50,000원</b></td><td>스킨 선물<br><span class="dim">(1820RP↓)</span></td><td>스킨 선물<br><span class="dim">(1350RP↓)</span></td><td>커피<br>기프티콘</td></tr>
+    </tbody></table></div>
+  </div>
+  <div class="card" style="margin-top:14px;text-align:center"><p class="mini dim" style="margin:0">멸망전에 관한 질문 및 문의사항이 있다면 편하게 얘기해주세요!</p></div>`;
+}
 function pgAwards(){
-  const A=makeAwards();
+  const A=withSeasonMatches(()=>makeAwards());
   const DUO=new Set(['국밥 듀오','서사가 필요한 듀오','쌍둥이 텔레파시']);
   const RIV=new Set(['천적 관계','영혼의 라이벌']);
   const CHAMP=new Set(['승리 부적','봉인픽','밴카드 도둑']);
@@ -8804,7 +9057,21 @@ function pgAwards(){
     <div class="card"><h3>${emoji} ${title}</h3>
     ${list.length?list.map(a=>`<div class="arow" style="padding:9px 0;border-top:1px dashed var(--line)"><b style="color:var(--gold)">${esc(a.title)}</b> — <b>${esc(a.target)}</b><span class="mini" style="display:block;margin-top:1px">${esc(a.desc)}</span></div>`).join(''):'<p class="mini dim">아직 없어요. 판이 더 쌓이면 생깁니다.</p>'}
     </div>`;
-  return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+`
+  const __sv=window._seasonView||'all';
+  const __seasonBar=`<div class="card" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <b>🗓 시즌 ${state.season.no}</b>
+    ${state.season.startDate?`<span class="mini dim">${state.season.startDate} ~ 진행 중</span>`:`<span class="mini dim">전체 기간 (첫 시즌)</span>`}
+    <span style="flex:1"></span>
+    <button class="btn sm${__sv==='season'?'':' ghost'}" onclick="setSeasonView('season')">이번 시즌</button>
+    <button class="btn sm${__sv==='all'?'':' ghost'}" onclick="setSeasonView('all')">통산</button>
+    ${isAdmin()?`<button class="btn sm lose" onclick="endSeason()">🏁 시즌 종료</button>${(state.hallOfFame&&state.hallOfFame.length)?`<button class="btn sm ghost" onclick="restoreSeason()">↩️ 직전 종료 취소</button>`:``}`:``}
+  </div>`;
+  const __hof=(state.hallOfFame&&state.hallOfFame.length)?`<div class="card" style="margin-top:14px"><h3>📜 역대 시즌 명예의 전당</h3>
+    ${state.hallOfFame.slice().reverse().map(h=>`<details style="border-top:1px dashed var(--line);padding:8px 0"><summary style="cursor:pointer"><b>🏅 시즌 ${h.no}</b> <span class="mini dim">${h.startDate||'처음'} ~ ${h.endDate} · 칭호 ${(h.awards||[]).length}개</span></summary>
+      <div style="padding:6px 0 2px">${(h.awards||[]).map(a=>`<div class="arow mini" style="padding:2px 0"><b style="color:var(--gold)">${esc(a.title)}</b> — ${esc(a.target)}</div>`).join('')}</div>
+    </details>`).join('')}
+  </div>`:``;
+  return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+__seasonBar+`
   <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
     ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
   </div>
@@ -8819,7 +9086,7 @@ function pgAwards(){
       <div><b class="mini" style="color:var(--gold)">플레이 스타일</b><p class="mini">KDA 명품관 · 광기의 돌격대장 · 어시스트 자판기 · 협곡의 간디 · 데스 아티스트 · 숟가락 장인 · 딜량왕 · 인간 가고일 · 시야 대통령 · 매의 눈 · 오브젝트 깎는 노인 · 철거반장 · 힐링캠프 원장 · 피해감소 방화벽 · CS 공장장 · 골드 광산 · CC 제조기</p></div>
       <div><b class="mini" style="color:var(--gold)">📈 주식 (거래소 랭킹)</b><p class="mini">주식의 신 · 텐배거 헌터 · 수익 장인 · 알짜 투자자 · 단타의 신 · 데이트레이더 · 존버 장인 · 큰손 오브 아포단 · 무거래 적금러 · 파산 후 부활 · 롤러코스터 · 한강뷰 전문가 · 손절 기계 · 깡통계좌 · 오버트레이딩 희생자</p></div>
       <div><b class="mini" style="color:var(--gold)">듀오 · 상대 · 챔피언</b><p class="mini">국밥 듀오 · 서사가 필요한 듀오 · 쌍둥이 텔레파시 · 천적 관계 · 영혼의 라이벌 · 승리 부적 · 봉인픽 · 밴카드 도둑 · 원챔 장인</p></div>
-    </div></div>`;
+    </div></div>`+__hof;
 }
 
 /* (베타 MVP 삭제 — 온라인 회차별 MVP로 대체) */
