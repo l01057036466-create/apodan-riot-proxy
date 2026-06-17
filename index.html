@@ -5746,7 +5746,7 @@ function cmtRow(c,board,isReply){
   const liveBadge=c.real?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--win);color:var(--win)">LIVE</span>':'';
   const yeopoBadge=c._yeopo?'<span class="pill" style="font-size:8px;padding:0 4px;font-weight:800;border-color:var(--lose);color:var(--lose)">🚫 신고 누적</span>':'';
   const replyBtn=(!isReply)?`<button onclick="cmtReply('${board}','${c.id}')" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer;padding:0;font-weight:700">답글</button>`:'';
-  const _Bm=bankSession(), _mod=!!(_Bm&&(_Bm.role==='admin'||_Bm.role==='dev')), _myName=_Bm&&_Bm.name;
+  const _Bm=bankSession(), _mod=!!(_Bm&&_Bm.role==='dev'), _myName=_Bm&&_Bm.name;
   const _canDel=_mod||(c.real&&_myName&&c.nick===_myName);
   const delBtn=_canDel?`<button onclick="delCmt('${board}','${c.id}')" title="삭제" style="background:none;border:none;color:var(--lose);font-size:11px;cursor:pointer;padding:0;font-weight:700">🗑</button>`:'';
   const editBtn=(_mod&&!c.real)?`<button onclick="editCmt('${board}','${c.id}','${encodeURIComponent(c.text||'')}')" title="AI 댓글 편집" style="background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;padding:0;font-weight:700">✏️</button>`:'';
@@ -5949,7 +5949,7 @@ async function delCmt(board,id){
 }
 /* ✏️ AI(가짜) 댓글 편집 — 운영진 전용 (내용 수정, 빈칸이면 원복) */
 async function editCmt(board,id,curEnc){
-  const B=bankSession(); if(!B||!(B.role==='admin'||B.role==='dev')){ if(typeof toast==='function')toast('운영진만 편집할 수 있어요',true); return; }
+  const B=bankSession(); if(!B||B.role!=='dev'){ if(typeof toast==='function')toast('개발자만 편집할 수 있어요',true); return; }
   let cur=''; try{ cur=decodeURIComponent(curEnc||''); }catch(e){ cur=curEnc||''; }
   const t=prompt('AI 댓글 편집 (비우고 확인하면 원래 자동 댓글로 복구)', cur);
   if(t===null)return;
@@ -8198,21 +8198,24 @@ function pgCompare(){
   }).join('');
   const laneNote=x=>x.laneScoped?`${x.lane} 포지션 내 상대평가`:'전체 멤버 기준 상대평가';
   // 더비 데이터: 맞대결 + 한 팀 동행 기록
-  let meet=0,awin=0,recent=[];let dgames=0,dwins=0;
+  let meet=0,awin=0,recent=[];let dgames=0,dwins=0;const laneH2H={};
   [...state.matches].sort((x,y)=>sortKey(x).localeCompare(sortKey(y))).forEach(m=>{
     const pa=m.participants.find(p=>p.playerId===A.id),pb=m.participants.find(p=>p.playerId===B.id);
     if(!pa||!pb)return;
-    if(pa.team!==pb.team){meet++;const w=pa.team===m.winnerTeam;if(w)awin++;recent.push(w)}
+    if(pa.team!==pb.team){meet++;const w=pa.team===m.winnerTeam;if(w)awin++;recent.push(w);if(pa.lane&&pb.lane&&pa.lane===pb.lane){if(!laneH2H[pa.lane])laneH2H[pa.lane]=[0,0];laneH2H[pa.lane][w?0:1]++}}
     else{dgames++;if(pa.team===m.winnerTeam)dwins++}
   });
   const derbyTitle=meet>=4&&Math.abs(awin-(meet-awin))<=1?'⚡ 아포단 엘 클라시코'
     :meet>=3&&(awin/meet>=.75||awin/meet<=.25)?'🦁 천적 매치':meet>=1?'🤜🤛 맞대결':'';
+  const _laneKeys=LANES.filter(L=>laneH2H[L]);
+  const laneBlock=meet?(_laneKeys.length?`<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:6px"><p class="mini" style="margin:0 0 3px;text-align:center;font-weight:800;color:var(--gold)">🧷 라인별 1대1 <span class="dim" style="font-weight:600">(같은 라인 직접 대결)</span></p>${_laneKeys.map(L=>{const ww=laneH2H[L];return`<div class="row" style="justify-content:space-between;padding:2px 10px"><span class="mini" style="font-weight:800">${LANE_KO[L]||L}</span><span class="mini"><b style="color:var(--gold)">${ww[0]}</b> <span class="dim">-</span> <b style="color:var(--win)">${ww[1]}</b> <span class="dim" style="font-size:10px">(${ww[0]+ww[1]}판)</span></span></div>`}).join('')}</div>`:`<p class="mini dim" style="margin:8px 0 0;text-align:center">🧷 같은 라인에서 직접 맞붙은 적은 없어요 (서로 포지션이 달라요)</p>`):'';
   const derby=meet?`<div class="derby">
     <div class="mini" style="letter-spacing:.2em;color:var(--gold);font-weight:800">${derbyTitle}</div>
     <div style="font-size:22px;font-weight:900;margin:4px 0"><span style="color:var(--gold)">${esc(A.name)}</span> <span class="dim" style="font-size:15px">${meet}전</span> <span style="color:var(--win)">${esc(B.name)}</span></div>
     <div style="font-size:17px;font-weight:800">${awin} <span class="dim mini">vs</span> ${meet-awin}</div>
     <div class="row" style="justify-content:center;gap:5px;margin-top:7px">${recent.slice(-5).map(w=>`<span class="pill" style="background:${w?'rgba(242,184,75,.25)':'rgba(63,217,197,.25)'};font-weight:800">${w?esc(A.name).slice(0,4):esc(B.name).slice(0,4)} 승`).map(x=>x+'</span>').join('')}</div>
     ${dgames?`<p class="mini dim" style="margin:8px 0 0">같은 팀이었을 땐 ${dgames}판 ${pct(dwins,dgames)}% — ${pct(dwins,dgames)>=60?'적보다 아군일 때 무서운 조합':'한 팀이어도 화학반응은 미지수'}</p>`:''}
+    ${laneBlock}
   </div>`:'';
   return head('1:1 비교','LCK 맞대결 그래픽처럼. 🎖 체급 점수와 프로 지표(딜 점유율·15분 라인전 등)는 여기서만 자세히 봐요. 육각형은 포지션 내 위치, 표는 실제 수치.')+`
   <div class="card">
