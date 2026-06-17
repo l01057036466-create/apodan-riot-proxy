@@ -5777,6 +5777,9 @@ function cmtRow(c,board,isReply){
 }
 
 /* 작성칸 (로그인 필수 · 작성자=내 계정명) */
+function cmtMentionInput(el){ try{ var sid=el.id.slice(3); var dd=document.getElementById('md_'+sid); if(!dd)return; var v=el.value||'', pos=(el.selectionStart!=null?el.selectionStart:v.length), before=v.slice(0,pos); var m=before.match(/@([^\s@]*)$/); if(!m){ dd.style.display='none'; dd.innerHTML=''; return; } var q=bareName(m[1]).toLowerCase(), r=window._bankRoster||[], seen={}, cands=[]; for(var i=0;i<r.length;i++){ var nm=bareName(r[i].name||r[i].n||''); if(!nm||seen[nm])continue; if(q===''||nm.toLowerCase().indexOf(q)>=0){ seen[nm]=1; cands.push(nm); if(cands.length>=7)break; } } if(!cands.length){ dd.style.display='none'; dd.innerHTML=''; return; } dd.innerHTML=cands.map(function(nm){ return '<div onmousedown="event.preventDefault();cmtMentionPick(\''+el.id+'\',\''+encodeURIComponent(nm)+'\')" style="padding:9px 11px;cursor:pointer;font-size:13px;font-weight:700;color:#3aa0ff;border-bottom:1px solid var(--line)">@'+esc(nm)+'</div>'; }).join(''); dd.style.display='block'; }catch(e){} }
+function cmtMentionPick(inputId,encName){ try{ var el=document.getElementById(inputId); if(!el)return; var name=encName; try{name=decodeURIComponent(encName)}catch(_e){} var v=el.value||'', pos=(el.selectionStart!=null?el.selectionStart:v.length), before=v.slice(0,pos), after=v.slice(pos); var nb=before.replace(/@([^\s@]*)$/,'@'+name+' '); el.value=nb+after; var np=nb.length; var dd=document.getElementById('md_'+inputId.slice(3)); if(dd){dd.style.display='none';dd.innerHTML='';} el.focus(); try{el.setSelectionRange(np,np)}catch(_e2){} }catch(e){} }
+function cmtMentionBlur(sid){ setTimeout(function(){ var d=document.getElementById('md_'+sid); if(d){d.style.display='none';} },180); }
 function cmtComposer(board,parent){
   const B=bankSession();
   if(!B||!B.name){
@@ -5793,10 +5796,11 @@ function cmtComposer(board,parent){
   const authorEl=mod
     ? `<input id="cn_${sid}" maxlength="24" placeholder="${esc(B.name)}" title="운영진: 닉네임 바꿔서 달기 (비우면 본인 이름)" style="flex:none;width:82px;font-size:11px;padding:7px 7px;border-radius:9px;border:1px solid var(--gold);background:var(--card2,#161922);color:var(--gold);font-weight:700" />`
     : `<span class="pill" title="작성자" style="flex:none;font-size:10px;padding:0 7px;font-weight:800;border-color:var(--win);color:var(--win)">${esc(B.name)}</span>`;
-  return `<div style="display:flex;gap:6px;align-items:center;${parent?'margin:4px 0 4px 30px':'margin:6px 0 8px'}">
+  return `<div style="position:relative;display:flex;gap:6px;align-items:center;${parent?'margin:4px 0 4px 30px':'margin:6px 0 8px'}">
     ${authorEl}
-    <input id="ct_${sid}" maxlength="300" placeholder="${ph}" onkeydown="${onkey}" style="flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card2,#161922);color:var(--fg)" />
+    <input id="ct_${sid}" maxlength="300" placeholder="${ph}" autocomplete="off" oninput="cmtMentionInput(this)" onkeydown="${onkey}" onblur="cmtMentionBlur('${sid}')" style="flex:1;min-width:0;font-size:13px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:var(--card2,#161922);color:var(--fg)" />
     <button class="btn sm" style="flex:none" onclick="submitCmt(this,'${board}','${parent||''}')">등록</button>
+    <div id="md_${sid}" style="display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:var(--card2,#161922);border:1px solid #3aa0ff;border-radius:9px;overflow:hidden;z-index:60;max-height:190px;overflow-y:auto;box-shadow:0 10px 26px rgba(0,0,0,.5)"></div>
   </div>`;
 }
 
