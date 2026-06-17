@@ -391,6 +391,16 @@ body.space .pageHead .sub{color:#dccef2}
 .constel circle{fill:rgba(255,255,255,.9)}
 @keyframes constelTw{0%,100%{opacity:.16}50%{opacity:.4}}
 @media (prefers-reduced-motion:reduce){.constel{animation:none;opacity:.25}}
+
+/* 모바일 가독성 추가 보강 */
+body.space{--bg:#0e0b24;--panel:#1d1448;--panel2:#271a5e;--inset:#181040}
+body.space .mini{color:#d2c9ed}
+body.space .sub,body.space .pageHead .sub{color:#ded5f3}
+body.space .dim{color:#b3a7d6}
+body.space .card{border-color:var(--line2)}
+@media (max-width:560px){
+  body.space .sub{font-size:12.5px;line-height:1.55}
+}
 </style>
 </head>
 <body>
@@ -7502,7 +7512,7 @@ const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
 PAGES.push(['bank','💰 지갑·랭킹'],['games','🎮 포인트 게임'],['shop','🛍 포인트 상점'],['me','🙋 내 정보']);
 const PAGE_LABEL=Object.fromEntries(PAGES);
 function groupOf(page){return(NAV_GROUPS.find(([,,ps])=>ps.includes(page))||NAV_GROUPS[0])[0]}
-function go(id){tab=id;render();window.scrollTo({top:0})}
+function go(id){tab=id;window._ime=false;render('force');window.scrollTo({top:0})}
 const ADMIN_ONLY_PAGES=new Set(['record','notice']);
 const FINANCE_PAGES=new Set(['bank','form','games','shop']); // 💰 도박·주식·상점 — 외부인(비로그인) 노출 차단
 function canViewFinance(){const B=bankSession();return !!(B&&(B.name||B.role==='dev'))||isAdmin()} // 로그인 멤버·개발자·운영자만
