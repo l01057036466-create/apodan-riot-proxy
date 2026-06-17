@@ -8972,71 +8972,13 @@ function pgLaneTier(){
 /* ───── 칭호 ───── */
 function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
 function pgDoom(){
+  const slides=[1,2,3,4,5,6,7];
   return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')+`
-  <div class="card" style="background:linear-gradient(135deg,rgba(34,90,52,.18),rgba(242,184,75,.10));border:1px solid var(--gold);text-align:center;padding:26px 18px">
-    <div style="font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:800">APD · LEAGUE OF LEGENDS</div>
-    <h2 style="font-size:30px;margin:8px 0 4px">제 2회 아포단 멸망전</h2>
-    <p class="mini" style="margin:0;font-size:14px">📅 2026.07.01 ~ 07.30 · 더블 엘리미네이션 · 하드 피어리스</p>
-    <div class="row" style="justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
-      <span class="pill gold" style="font-size:14px;padding:6px 14px">🏆 우승 200,000원</span>
-      <span class="pill" style="font-size:14px;padding:6px 14px">👥 20명 모집</span>
-      <span class="pill" style="font-size:14px;padding:6px 14px">💵 참가비 7,000원</span>
-    </div>
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:880px;margin:0 auto">
+    ${slides.map(n=>`<img src="/doom${n}.jpg" alt="멸망전 공지 ${n}페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display='none';var w=document.getElementById('doomWarn');if(w)w.style.display='block'">`).join('')}
   </div>
-  <div class="card" style="margin-top:14px"><h3>🗓 일정 안내</h3>
-    <p class="mini dim" style="margin:-4px 0 10px">일정이 당겨질 경우 그때마다 팀장방에 공지할 예정입니다!</p>
-    <div class="scrollx"><table class="tbl" style="min-width:380px"><tbody>
-      <tr><td><b>07.01 ~ 07.02</b></td><td>📝 신청 기간</td></tr>
-      <tr><td><b>07.03 ~ 07.04</b></td><td>💰 경매 진행 및 팀 확정</td></tr>
-      <tr><td><b>07.05 ~ 07.11</b></td><td>⚔️ 1차 경기</td></tr>
-      <tr><td><b>07.12 ~ 07.18</b></td><td>⚔️ 2차 경기</td></tr>
-      <tr><td><b>07.19 ~ 07.25</b></td><td>⚔️ 3차 경기</td></tr>
-      <tr><td><b>07.26 ~ 07.30</b></td><td>🏆 결승 경기</td></tr>
-    </tbody></table></div>
-    <p class="mini dim" style="margin:8px 0 0">각 경기는 주어진 기간 내 모든 경기가 끝나면 다음 일정이 유동적으로 당겨질 예정입니다.</p>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>📋 신청 시 주의사항</h3>
-    <p class="mini" style="margin:6px 0;color:var(--lose)"><b>1.</b> 노쇼 발생 시 추방, 신중하게 신청해주세요</p>
-    <p class="mini" style="margin:6px 0;color:var(--lose)"><b>2.</b> 꼭 본계정으로 신청, 티어 속이면 추방합니다</p>
-    <p class="mini" style="margin:6px 0"><b>3.</b> 참가비 7,000원 / <b style="color:var(--gold)">신한 110-***-***906 · 예금주 김*영</b> <span class="dim" style="font-size:11px">정확한 계좌는 신청 시 안내</span></p>
-    <p class="mini" style="margin:6px 0"><b>4.</b> 경기 날짜는 정해진 기간 내에 맞붙는 팀끼리 조율</p>
-    <p class="mini" style="margin:6px 0"><b>5.</b> 일정 조율 실패 시 운영진 판단하에 기권패 처리</p>
-    <p class="mini" style="margin:6px 0"><b>6.</b> 신청기간 내 20명 모집 완료 시 조기 마감합니다</p>
-    <p class="mini dim" style="margin:8px 0 0">신청 마감되면 그날 내로 참가명단 올려드리겠습니다!</p>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>🎯 신청방법 & 팀원 경매</h3>
-    <div class="grid c2" style="gap:10px">
-      <div><b class="mini" style="color:var(--gold)">① 참가신청</b><p class="mini">톡방에 멸망전 신청 일정이 올라오면 참석 누르고, 댓글에 닉네임과 주라인을 적어주세요.</p></div>
-      <div><b class="mini" style="color:var(--gold)">② 팀장 선정</b><p class="mini">참가자 20명 중 티어 + 나이 + 플레이스타일 등으로 네 분 선정.</p></div>
-      <div><b class="mini" style="color:var(--gold)">③ 경매</b><p class="mini">팀장들은 포인트를 지급받고, 본인 포인트 내에서 경매로 팀원을 데려옵니다.</p></div>
-      <div><b class="mini" style="color:var(--gold)">④ 팀 확정</b><p class="mini">경매 완료되면 팀명과 라인을 상의한 후 운영진에게 보내주세요.</p></div>
-      <div><b class="mini" style="color:var(--gold)">⑤ 최종명단</b><p class="mini">전원 팀 확정되면 최종 팀 명단을 올려드릴 예정입니다.</p></div>
-    </div>
-    <p class="mini dim" style="margin:8px 0 0">댓글에 적는 주라인은 경매를 위한 참고용이며, 다른 라인으로 갈 수도 있습니다.</p>
-  </div>
-  <div class="card" style="margin-top:14px"><h3>⚔️ 멸망전 규칙</h3>
-    <div class="grid c2" style="gap:8px">
-      <p class="mini" style="margin:4px 0">▪ <b>더블 엘리미네이션 토너먼트</b>로 진행, <b style="color:var(--lose)">하드 피어리스룰</b> 적용</p>
-      <p class="mini" style="margin:4px 0">▪ 모든 경기 <b>3판 2선</b>, 결승전만 <b>5판 3선</b></p>
-      <p class="mini" style="margin:4px 0">▪ 첫 판 진영은 사다리타기, 다음 세트부터 <b>패배한 팀이 선택</b></p>
-      <p class="mini" style="margin:4px 0">▪ 팀 구성 라인 그대로 진행, <b style="color:var(--lose)">라인 스왑 불가</b> (인게임 라인퀘 달성 후 가능)</p>
-      <p class="mini" style="margin:4px 0">▪ 결승전 먼저 올라가는 팀에게 <b>결승 진영 우선 선택권</b></p>
-      <p class="mini" style="margin:4px 0">▪ 실수 픽 / 랜덤픽 / 밴 실수 모두 <b>봐주지 않고</b> 진행</p>
-      <p class="mini" style="margin:4px 0">▪ 경기 시작 <b style="color:var(--lose)">5분 전</b>까지 디코·롤 미접속 팀원 있으면 상대팀에 진영 우선권</p>
-      <p class="mini" style="margin:4px 0">▪ 퍼즈는 인터넷 이슈 등 문제 시에만, 퍼즈 상태선 <b>전원 디코 헤드셋 off</b></p>
-    </div>
-    <p class="mini dim" style="margin:8px 0 0">경기 시간 전 전원 준비완료면 미리 시작 가능 · 퍼즈 풀 땐 채팅으로 양쪽 준비완료 확인 후</p>
-  </div>
-  <div class="card" style="margin-top:14px;background:linear-gradient(135deg,rgba(34,90,52,.20),rgba(34,90,52,.06));border:1px solid var(--win)"><h3>🏆 우승 상금</h3>
-    <div style="text-align:center;padding:8px 0 14px">
-      <div class="mini" style="color:var(--gold);font-weight:800">우승팀</div>
-      <div style="font-size:34px;font-weight:900;color:var(--win)">200,000원</div>
-    </div>
-    <div class="scrollx"><table class="tbl" style="min-width:420px"><thead><tr><th>파이널 MVP</th><th>준우승 MVP</th><th>3등팀 랜덤</th><th>4등팀 랜덤</th></tr></thead><tbody>
-      <tr style="text-align:center"><td><b>50,000원</b></td><td>스킨 선물<br><span class="dim">(1820RP↓)</span></td><td>스킨 선물<br><span class="dim">(1350RP↓)</span></td><td>커피<br>기프티콘</td></tr>
-    </tbody></table></div>
-  </div>
-  <div class="card" style="margin-top:14px;text-align:center"><p class="mini dim" style="margin:0">멸망전에 관한 질문 및 문의사항이 있다면 편하게 얘기해주세요!</p></div>`;
+  <p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom7.jpg를 올렸는지 확인해주세요!</p>
+  <p class="mini dim" style="margin:16px 0 0;text-align:center">멸망전 관련 질문·문의는 편하게 얘기해주세요!</p>`;
 }
 function pgAwards(){
   const A=withSeasonMatches(()=>makeAwards());
