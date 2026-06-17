@@ -8169,34 +8169,34 @@ function pgCompare(){
   const laneA=(window._cmpLA&&lanesA.some(l=>l.lane===window._cmpLA))?window._cmpLA:(lanesA[0]?.lane||null);
   const laneB=(window._cmpLB&&lanesB.some(l=>l.lane===window._cmpLB))?window._cmpLB:(lanesB[0]?.lane||null);
   const hA=playerHex(A.id,laneA),hB=playerHex(B.id,laneB);
-  const rAl=laneA?ratesMap(laneA).get(A.id):rA, rBl=laneB?ratesMap(laneB).get(B.id):rB; // 비교 라인 기준 체급
+  const rAl=(laneA?ratesMap(laneA).get(A.id):null)||rA, rBl=(laneB?ratesMap(laneB).get(B.id):null)||rB; // 비교 라인 기준 (지표 테이블도 사용)
   const tA=rAl?talentScore(rAl,laneA||playerMainLane(A.id),A.id):0, tB=rBl?talentScore(rBl,laneB||playerMainLane(B.id),B.id):0;
   const sel=(id,val)=>`<select onchange="window._cmp${id}=this.value;window._cmpL${id}=null;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%">${P.map(s=>`<option value="${s.id}"${s.id===val?' selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
   const laneSel=(id,lanes,val)=>lanes.length>1?`<select onchange="window._cmpL${id}=this.value;render()" style="background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:9px;min-width:0;width:100%;margin-top:6px">${lanes.map(l=>`<option value="${l.lane}"${l.lane===val?' selected':''}>${esc(l.lane)} (${l.games}판)</option>`).join('')}</select>`:(lanes[0]?`<p class="mini dim" style="margin:6px 0 0">${esc(lanes[0].lane)} ${lanes[0].games}판</p>`:'');
   const f1=v=>Math.round(v*10)/10;
   const rows=[
     ['🎖 체급 점수',tA,tB,'','높을수록'],
-    ['승률',A.winRate,B.winRate,'%','높을수록'],
+    ['승률',(rAl.games?Math.round(rAl.wins/rAl.games*1000)/10:0),(rBl.games?Math.round(rBl.wins/rBl.games*1000)/10:0),'%','높을수록'],
     ['전적',null,null,'',''],
-    ['KDA',A.kda,B.kda,'','높을수록'],
-    ['분당 딜 (DPM)',Math.round(rA.dpm),Math.round(rB.dpm),'','높을수록'],
-    ['분당 CS (CSPM)',f1(rA.cspm),f1(rB.cspm),'','높을수록'],
-    ['분당 시야',f1(rA.vspm),f1(rB.vspm),'','높을수록'],
-    ['킬관여율',rA.kp,rB.kp,'%','높을수록'],
-    ['골드 효율 (1천골드당 딜)',Math.round(rA.dpg),Math.round(rB.dpg),'','높을수록'],
-    ['경기당 데스',f1(rA.deathsPg),f1(rB.deathsPg),'','낮을수록'],
-    ['평균 딜량',rA.avgDmg,rB.avgDmg,'','높을수록'],
-    ['솔로킬 누적',rA.solo,rB.solo,'','높을수록'],
-    ['딜 점유율',rA.dmgShare,rB.dmgShare,'%','높을수록'],
-    ['골드 점유율',rA.goldShare,rB.goldShare,'%','높을수록'],
-    ['솔로킬/판',rA.hasSolo?Math.round(rA.soloPg*10)/10:null,rB.hasSolo?Math.round(rB.soloPg*10)/10:null,'','높을수록'],
-    ['15분 골드차 (GD@15)',rA.gd15,rB.gd15,'','높을수록'],
-    ['15분 CS차 (CSD@15)',rA.csd15,rB.csd15,'','높을수록'],
-    ['15분 경험치차 (XPD@15)',rA.xpd15,rB.xpd15,'','높을수록'],
+    ['KDA',Math.round(rAl.kda*100)/100,Math.round(rBl.kda*100)/100,'','높을수록'],
+    ['분당 딜 (DPM)',Math.round(rAl.dpm),Math.round(rBl.dpm),'','높을수록'],
+    ['분당 CS (CSPM)',f1(rAl.cspm),f1(rBl.cspm),'','높을수록'],
+    ['분당 시야',f1(rAl.vspm),f1(rBl.vspm),'','높을수록'],
+    ['킬관여율',rAl.kp,rBl.kp,'%','높을수록'],
+    ['골드 효율 (1천골드당 딜)',Math.round(rAl.dpg),Math.round(rBl.dpg),'','높을수록'],
+    ['경기당 데스',f1(rAl.deathsPg),f1(rBl.deathsPg),'','낮을수록'],
+    ['평균 딜량',rAl.avgDmg,rBl.avgDmg,'','높을수록'],
+    ['솔로킬 누적',rAl.solo,rBl.solo,'','높을수록'],
+    ['딜 점유율',rAl.dmgShare,rBl.dmgShare,'%','높을수록'],
+    ['골드 점유율',rAl.goldShare,rBl.goldShare,'%','높을수록'],
+    ['솔로킬/판',rAl.hasSolo?Math.round(rAl.soloPg*10)/10:null,rBl.hasSolo?Math.round(rBl.soloPg*10)/10:null,'','높을수록'],
+    ['15분 골드차 (GD@15)',rAl.gd15,rBl.gd15,'','높을수록'],
+    ['15분 CS차 (CSD@15)',rAl.csd15,rBl.csd15,'','높을수록'],
+    ['15분 경험치차 (XPD@15)',rAl.xpd15,rBl.xpd15,'','높을수록'],
     ['MVP',A.mvp,B.mvp,'','높을수록']
   ];
   const tr=rows.map(([l,a,b,unit,dir])=>{
-    if(l==='전적')return`<tr><td>전적</td><td class="num">${A.wins}승 ${A.losses}패</td><td class="num">${B.wins}승 ${B.losses}패</td></tr>`;
+    if(l==='전적')return`<tr><td>전적</td><td class="num">${rAl.wins}승 ${rAl.games-rAl.wins}패</td><td class="num">${rBl.wins}승 ${rBl.games-rBl.wins}패</td></tr>`;
     if((a==null&&b==null)||(l==='솔로킬 누적'&&!a&&!b))return'';
     const na=a==null?-Infinity:a, nb=b==null?-Infinity:b;
     const aw=a!=null&&(dir==='낮을수록'?na<nb:na>nb), bw=b!=null&&(dir==='낮을수록'?nb<na:nb>na);
@@ -8226,7 +8226,7 @@ function pgCompare(){
     ${dgames?`<p class="mini dim" style="margin:8px 0 0">같은 팀이었을 땐 ${dgames}판 ${pct(dwins,dgames)}% — ${pct(dwins,dgames)>=60?'적보다 아군일 때 무서운 조합':'한 팀이어도 화학반응은 미지수'}</p>`:''}
     ${laneBlock}
   </div>`:'';
-  return head('1:1 비교','LCK 맞대결 그래픽처럼. 🎖 체급 점수와 프로 지표(딜 점유율·15분 라인전 등)는 여기서만 자세히 봐요. 육각형은 포지션 내 위치, 표는 실제 수치.')+`
+  return head('1:1 비교','LCK 맞대결 그래픽처럼. 🎖 체급 점수와 프로 지표(딜 점유율·15분 라인전 등)는 여기서만 자세히 봐요. 육각형은 포지션 내 위치, 표는 실제 수치. 위에서 라인을 고르면 그 라인 경기만으로 지표가 다시 계산돼요.')+`
   <div class="card">
     ${derby}
     <div class="grid c2" style="margin:14px 0">
