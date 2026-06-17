@@ -333,18 +333,18 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 
 /* ===== 우주 테마 (토글 · body.space) ===== */
 body.space{
-  --bg:#0a0617; --bg2:#070411; --panel:#160d2b; --panel2:#1e1240; --inset:#10092a;
-  --line:#34245f; --line2:#4b3779;
-  --text:#f0e9ff; --mut:#bbb0dd; --dim:#9789c4;
-  --gold:#c98bff; --gold-dim:rgba(177,79,255,.17);
-  --win:#54f08a; --win-dim:rgba(84,240,138,.15);
-  --lose:#ff6f9e; --lose-dim:rgba(255,111,158,.15);
-  --blue:#7db5ff; --blue-dim:rgba(125,181,255,.15);
-  --violet:#c98bff; --neon:#b14fff; --green:#54f08a;
-  --shadow:0 14px 44px rgba(70,25,130,.45);
+  --bg:#0d0a20; --bg2:#0a0718; --panel:#1b1340; --panel2:#251858; --inset:#150e32;
+  --line:#3c2c6a; --line2:#54427f;
+  --text:#f4efff; --mut:#cabfe9; --dim:#ac9fd4;
+  --gold:#cf9eff; --gold-dim:rgba(190,110,255,.18);
+  --win:#5cf394; --win-dim:rgba(92,243,148,.16);
+  --lose:#ff7aa3; --lose-dim:rgba(255,122,163,.16);
+  --blue:#86baff; --blue-dim:rgba(134,186,255,.16);
+  --violet:#cf9eff; --neon:#bd6bff; --green:#5cf394;
+  --shadow:0 14px 44px rgba(60,25,120,.42);
   background:
-    radial-gradient(ellipse 75% 50% at 16% -6%, #2a1259 0%, transparent 55%),
-    radial-gradient(ellipse 65% 45% at 92% 5%, #1a0a45 0%, transparent 50%),
+    radial-gradient(ellipse 70% 45% at 18% -10%, #221450 0%, transparent 62%),
+    radial-gradient(ellipse 58% 40% at 90% 0%, #170d38 0%, transparent 58%),
     var(--bg) !important;
   background-attachment:fixed;
 }
@@ -374,6 +374,13 @@ body.space #spaceToggle{border-color:#b14fff;background:rgba(42,18,80,.92);box-s
 .msRow.ok .msTop{color:var(--win)}
 .msRow.ok .msNum{color:var(--win)}
 .msRow.ok .msBar i{background:var(--win)}
+
+/* 우주 테마 가독성 보강 */
+body.space .sub{color:var(--mut)}
+body.space .mini{color:var(--mut)}
+body.space .dim{color:var(--dim)}
+body.space .card{border-color:var(--line2)}
+body.space .pageHead .sub{color:#dccef2}
 </style>
 </head>
 <body>
@@ -6337,19 +6344,19 @@ function hupuFullCard(m,row,ctx){
       <div style="text-align:right;flex:none">
         <div class="mini" style="color:#c9cf3a;font-weight:900;font-size:11px;letter-spacing:.02em">🐯 후푸 평점</div>
         <div style="font-size:42px;font-weight:900;line-height:.95;color:${col}">${sc.toFixed(1)}</div>
-        <div class="mini" style="color:#6b7689;font-size:10px">${ccLikeStr(raters)}명 평가</div>
+        <div class="mini" style="color:var(--dim);font-size:10px">${ccLikeStr(raters)}명 평가</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)">
       <div style="display:flex;align-items:center;gap:7px">
         ${_hupuTeamBadge(row.p.team,24)}
-        <div><div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${scoreStr}</div><div class="mini" style="color:#6b7689;font-size:9px">${esc(setLabel)}</div></div>
+        <div><div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${scoreStr}</div><div class="mini" style="color:var(--dim);font-size:9px">${esc(setLabel)}</div></div>
         ${_hupuTeamBadge(foe,24)}
       </div>
       <div style="display:flex;gap:14px;text-align:center">
-        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.k}</div><div class="mini" style="color:#6b7689;font-size:9px">킬</div></div>
-        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.d}</div><div class="mini" style="color:#6b7689;font-size:9px">데스</div></div>
-        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.a}</div><div class="mini" style="color:#6b7689;font-size:9px">어시</div></div>
+        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.k}</div><div class="mini" style="color:var(--dim);font-size:9px">킬</div></div>
+        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.d}</div><div class="mini" style="color:var(--dim);font-size:9px">데스</div></div>
+        <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.a}</div><div class="mini" style="color:var(--dim);font-size:9px">어시</div></div>
       </div>
     </div>
     <div class="hupuRibbon">🔥 베스트 댓글${_hupuDev?` <span onclick="event.stopPropagation();editCmt('${_hb}','${pid}','${encodeURIComponent(comment)}')" title="후푸 댓글 편집 (dev)" style="cursor:pointer">✏️</span>`:''}</div>
@@ -6366,11 +6373,11 @@ function hupuFullCard(m,row,ctx){
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px">
       <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border-radius:8px;padding:5px 10px">
         <span style="font-size:11px;font-weight:900;color:#ff5c5c;background:#fff;border-radius:3px;padding:0 3px">🐯</span>
-        <b style="font-size:12px;color:#cdd5e0">${esc(nm)}</b><span style="color:#6b7689">🔍</span>
+        <b style="font-size:12px;color:#cdd5e0">${esc(nm)}</b><span style="color:var(--dim)">🔍</span>
       </div>
       ${ccPseudoQR(m.id+pid,46)}
     </div>
-    <div class="mini" style="color:#6b7689;font-size:10px;margin-top:7px;letter-spacing:.08em;font-weight:700">경기 종료 · 아포단 내전실록 열기</div>
+    <div class="mini" style="color:var(--dim);font-size:10px;margin-top:7px;letter-spacing:.08em;font-weight:700">경기 종료 · 아포단 내전실록 열기</div>
   </div>`;
 }
 /* 경기 한 판의 10명 후푸 카드 스와이프 갤러리 (점수순 = 하이라이트 릴) */
@@ -7467,7 +7474,7 @@ function pgMe(){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['result','📊 경기 결과'],['record','📝 경기 기록'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['awardprog','🏅 칭호 진척도'],['doom','🏆 멸망전 (BETA)'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전 (BETA)'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
@@ -7475,7 +7482,7 @@ const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['live','⚔️ 내전',['notice','result','today','record','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
- ['hall','🥇 명예의 전당',['stats','awards','awardprog']],
+ ['hall','🥇 명예의 전당',['stats','awards']],
  ['bank','💰 거래소',['bank','form']],
  ['games','🎮 포인트 게임',['games']],
  ['shop','🛍 포인트 상점',['shop']],
@@ -7659,7 +7666,7 @@ function render(opt){
     return;
   }
   const R={dashboard:pgDashboard,notice:pgNotice,result:pgResult,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
-    champions:pgChampions,form:pgForm,awards:pgAwards,awardprog:pgAwardProgress,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
+    champions:pgChampions,form:pgForm,awards:pgAwards,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
   let _xs=[];try{document.querySelectorAll('#view [id]').forEach(el=>{if(el.scrollLeft>0)_xs.push([el.id,el.scrollLeft])})}catch(e){} // 가로 스크롤 보존
   const _se=(typeof document!=='undefined'&&(document.scrollingElement||document.documentElement))||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
   const _sy=Math.max((_se&&_se.scrollTop)||0,(document.body&&document.body.scrollTop)||0,((typeof window!=='undefined'&&(window.pageYOffset||window.scrollY))||0));
@@ -9043,26 +9050,48 @@ function pgLaneTier(){
 /* ───── 칭호 ───── */
 function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
 
+function _awTabs(t){return`<div class="subnav" style="margin:0 0 14px">
+  <button class="${t==='list'?'on':''}" onclick="window._awTab='list';render()">🏆 칭호</button>
+  <button class="${t==='prog'?'on':''}" onclick="window._awTab='prog';render()">🏅 진척도</button>
+  <button class="${t==='quest'?'on':''}" onclick="window._awTab='quest';render()">🎯 퀘스트</button>
+</div>`}
+function _awQuest(){return head('🏅 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+`<div class="card" style="text-align:center;padding:42px 20px"><div style="font-size:42px">🎯</div><h3 style="margin:12px 0 6px">포지션 퀘스트 준비 중</h3><p class="mini dim">포지션별 미션을 깨고 APO를 받는 기능이 곧 추가돼요!</p></div>`}
 function pgAwardProgress(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🏅 칭호 진척도','')+'<div class="empty">선수가 없어요.</div>';
   let sel=window._apId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
   const me=statPlayers().find(s=>s.id===sel);
   const MS=[
+    {e:'⚔️',n:'첫 50킬',v:s=>s.kills,g:50},
     {e:'⚔️',n:'100킬 클럽',v:s=>s.kills,g:100},
-    {e:'🗡️',n:'250킬 학살자',v:s=>s.kills,g:250},
-    {e:'🫶',n:'150어시 클럽',v:s=>s.assists,g:150},
-    {e:'🤝',n:'300어시 헌신왕',v:s=>s.assists,g:300},
+    {e:'🗡️',n:'200킬',v:s=>s.kills,g:200},
+    {e:'🗡️',n:'350킬 학살자',v:s=>s.kills,g:350},
+    {e:'💥',n:'500킬 전설',v:s=>s.kills,g:500},
+    {e:'🫶',n:'100어시',v:s=>s.assists,g:100},
+    {e:'🫶',n:'200어시 클럽',v:s=>s.assists,g:200},
+    {e:'🤝',n:'350어시',v:s=>s.assists,g:350},
+    {e:'👐',n:'500어시 헌신왕',v:s=>s.assists,g:500},
+    {e:'🏆',n:'10승',v:s=>s.wins,g:10},
     {e:'🏆',n:'25승 클럽',v:s=>s.wins,g:25},
     {e:'👑',n:'50승 고지',v:s=>s.wins,g:50},
     {e:'💯',n:'100승 전설',v:s=>s.wins,g:100},
+    {e:'🌌',n:'150승 신화',v:s=>s.wins,g:150},
+    {e:'🎮',n:'25판 참가',v:s=>s.games,g:25},
     {e:'🎖️',n:'50판 개근',v:s=>s.games,g:50},
     {e:'📅',n:'100판 출석왕',v:s=>s.games,g:100},
+    {e:'🗓️',n:'200판 터줏대감',v:s=>s.games,g:200},
+    {e:'🌟',n:'MVP 3회',v:s=>s.mvp,g:3},
     {e:'🌟',n:'MVP 5회',v:s=>s.mvp,g:5},
     {e:'🔱',n:'MVP 10회 군주',v:s=>s.mvp,g:10},
+    {e:'💎',n:'MVP 20회 황제',v:s=>s.mvp,g:20},
     {e:'💀',n:'100데스 헌납',v:s=>s.deaths,g:100},
+    {e:'⚰️',n:'300데스 희생정신',v:s=>s.deaths,g:300},
+    {e:'🌾',n:'총 CS 10,000',v:s=>s.cs||0,g:10000},
+    {e:'👁️',n:'총 시야점수 1,000',v:s=>s.visionScore||0,g:1000},
+    {e:'💢',n:'총 딜 100만',v:s=>s.damageToChampions||0,g:1000000},
+    {e:'🔥',n:'올라운더 (킬·어시 100+)',v:s=>Math.min(s.kills,s.assists),g:100},
   ];
-  let h=head('🏅 칭호 진척도','내가 딴 칭호와 도전 중인 마일스톤')+
+  let h=head('🏅 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('prog')+
     `<div class="card" style="margin-bottom:14px"><span class="mini dim">선수 </span> <select onchange="window._apId=this.value;render()" style="margin-left:6px">${playerOpts(sel)}</select></div>`;
   if(!me)return h+'<div class="empty">아직 경기 기록이 없는 선수예요. 한 판이라도 기록되면 진척도가 생겨요.</div>';
   const awards=makeAwards().filter(a=>a.target===me.name);
@@ -9097,6 +9126,9 @@ function pgDoom(){
   <p class="mini dim" style="margin:16px 0 0;text-align:center">멸망전 관련 질문·문의는 편하게 얘기해주세요!</p>`;
 }
 function pgAwards(){
+  const _t=window._awTab||'list';
+  if(_t==='prog')return pgAwardProgress();
+  if(_t==='quest')return _awQuest();
   const A=withSeasonMatches(()=>makeAwards());
   const DUO=new Set(['국밥 듀오','서사가 필요한 듀오','쌍둥이 텔레파시']);
   const RIV=new Set(['천적 관계','영혼의 라이벌']);
@@ -9129,7 +9161,7 @@ function pgAwards(){
       <div style="padding:6px 0 2px">${(h.awards||[]).map(a=>`<div class="arow mini" style="padding:2px 0"><b style="color:var(--gold)">${esc(a.title)}</b> — ${esc(a.target)}</div>`).join('')}</div>
     </details>`).join('')}
   </div>`:``;
-  return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+__seasonBar+`
+  return head('칭호','사람 기준으로 정리했어요. 각 멤버가 지금 무슨 칭호를 들고 있는지 한눈에.')+_awTabs('list')+__seasonBar+`
   <div class="card"><h3>🏆 명예의 전당 — 플레이어별 보유 칭호</h3>
     ${owners.length?`<div class="owners">${ownerCards}</div>`:'<div class="empty">경기를 기록하면 칭호가 자동으로 생겨요.</div>'}
   </div>
