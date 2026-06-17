@@ -6032,10 +6032,13 @@ function hupuFullCard(m,row,ctx){
   const setLabel=(num(m.setNumber)||idx+1)+'세트';
   const foe=myBlue?'RED':'BLUE';
   // 후푸 한줄평 (라인 인식) — 풀카드용은 좀 더 길게
-  const comment=hupuComment(sc,nameOf(pid),champ,(ctx.salt||0)+7,lane);
+  let comment=hupuComment(sc,nameOf(pid),champ,(ctx.salt||0)+7,lane);
   // 댓글러
   const crng=_ccRng(_ccHash('hc|'+m.id+'|'+pid));
-  const cnick=ccNick(crng), cava=_ccPick(CC_AVA,crng), cbg=_ccPick(CC_AVA_BG,crng);
+  let cnick=ccNick(crng); const cava=_ccPick(CC_AVA,crng), cbg=_ccPick(CC_AVA_BG,crng);
+  const _bs=(typeof bankSession==='function')?bankSession():null, _hupuDev=!!(_bs&&_bs.role==='dev');
+  const _hb='hupu:'+m.id, _hov=(window._cmtOverrides&&window._cmtOverrides[_hb]&&window._cmtOverrides[_hb][pid])||null;
+  if(_hov){ if(_hov.text)comment=_hov.text; if(_hov.nick)cnick=_hov.nick; }
   const likes=20+Math.floor(crng()*430);
   const starN=sc>=7?5:sc>=4.5?Math.round(3+crng()*2):Math.round(1+crng()*2);
   let starHtml='';for(let i=1;i<=5;i++)starHtml+=`<span style="color:${i<=starN?'#3aa0ff':'#cdd5e0'};font-size:13px">★</span>`;
@@ -6067,7 +6070,7 @@ function hupuFullCard(m,row,ctx){
         <div><div style="font-size:17px;font-weight:900;color:#fff;line-height:1">${row.a}</div><div class="mini" style="color:#6b7689;font-size:9px">어시</div></div>
       </div>
     </div>
-    <div class="hupuRibbon">🔥 베스트 댓글</div>
+    <div class="hupuRibbon">🔥 베스트 댓글${_hupuDev?` <span onclick="event.stopPropagation();editCmt('${_hb}','${pid}','${encodeURIComponent(comment)}')" title="후푸 댓글 편집 (dev)" style="cursor:pointer">✏️</span>`:''}</div>
     <div class="hupuQuote">
       <p style="margin:0 0 12px;font-size:16px;font-weight:600;line-height:1.45;color:#15181f">${esc(comment)}</p>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
@@ -6091,6 +6094,7 @@ function hupuFullCard(m,row,ctx){
 /* 경기 한 판의 10명 후푸 카드 스와이프 갤러리 (점수순 = 하이라이트 릴) */
 function hupuGallery(m,ctx){
   const rt=matchRatings(m); if(!rt.length)return '';
+  if(typeof maybeLoadCmts==='function')maybeLoadCmts('hupu:'+m.id);
   const sorted=rt.slice().sort((a,b)=>b.score-a.score);
   const cards=sorted.map((row,i)=>hupuFullCard(m,row,Object.assign({salt:i},ctx))).join('');
   return `<div class="hupuGalleryWrap">
