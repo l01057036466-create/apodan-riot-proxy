@@ -628,9 +628,11 @@ module.exports = async function handler(req, res) {
       if (!sP || (sP.role !== 'admin' && sP.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var inP = body.prices && typeof body.prices === 'object' ? body.prices : {};
       var SP = await loadPx();
+      var rescM2 = JSON.parse((await redis(['GET', 'stock:rescued'])) || '{}'); var nowR2 = Date.now(); // 🛡 구제 보호 종목은 폼 동기화가 못 덮어씀
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
+        if (rescM2[kP] && rescM2[kP] > nowR2) continue; // 구제 보호 기간 중 — 폼 기준가 갱신 스킵
         if (nameOk(kP) && vP >= 1 && vP <= 9999) {
           var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
           SP.base[kP] = vP; nP++;
@@ -905,6 +907,7 @@ module.exports = async function handler(req, res) {
         var SSR = await loadPx();
         SSR.base[tgtSR] = relistSR; SSR.prem[tgtSR] = 0;
         await savePx(SSR);
+        var rescM = JSON.parse((await redis(['GET', 'stock:rescued'])) || '{}'); var nowC = Date.now(); for (var rk in rescM) { if (rescM[rk] <= nowC) delete rescM[rk]; } rescM[tgtSR] = nowC + 14 * 864e5; await redis(['SET', 'stock:rescued', JSON.stringify(rescM)]); // 🛡 폼 동기화가 구제가를 14일간 못 덮어쓰게 보호
         await redis(['DEL', 'vhalt:' + tgtSR]);
         await redis(['DEL', 'sdrift:' + tgtSR + ':' + new Date().toISOString().slice(0, 10)]);
         await pushHist(tgtSR, relistSR, 'rescue');
