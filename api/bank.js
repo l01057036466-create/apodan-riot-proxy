@@ -1347,8 +1347,7 @@ module.exports = async function handler(req, res) {
         bd.rev[idx] = true; bd.by[idx] = aPk.name;
         var g = bd.cells[idx], apo = pcnGapo(g);
         aPk.bal -= PCN_COST; aPk.bal += apo;
-        var done = bd.rev.every(function (x) { return x; }), bonus = 0;
-        if (done) { bonus = PCN_CLEAR; aPk.bal += bonus; }
+        var done = bd.rev.every(function (x) { return x; }), bonus = 0; // 풀클리어 보너스는 라스트원 찬스(좌·중·우 49% → 49,000)로 대체
         await putAcct(aPk);
         if (g === 'SSS' || g === 'SS') { // 💥 빅윈 → 공용 속보 (LIVE 티커+배너)
           await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPk.name, t: 'pcn', g: g, v: apo, ts: new Date().toISOString() })]);
@@ -1356,7 +1355,8 @@ module.exports = async function handler(req, res) {
         }
         var round = bd.round || 1, freshBd = null;
         if (done) { // 🎉 풀클리어 → 마지막 까은 사람 보너스 + 자동 새 판
-          await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPk.name, t: 'pcnclear', v: bonus, r: round, ts: new Date().toISOString() })]);
+          await redis(['SET', 'pcn:lastone', JSON.stringify({ round: round, name: aPk.name, ts: Date.now() }), 'EX', '7200']); // 🎰 라스트원 찬스 등록 (2시간 내 수령)
+          await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPk.name, t: 'pcnclear', r: round, ts: new Date().toISOString() })]);
           await redis(['LTRIM', 'arcade:news', '0', '9']);
           freshBd = pcnNewBoard(); freshBd.round = round + 1;
           await redis(['SET', 'pcn:board', JSON.stringify(freshBd)]);
@@ -1365,11 +1365,33 @@ module.exports = async function handler(req, res) {
         }
         await redis(['SET', 'arcade:jackpot', '2000', 'NX']);
         await redis(['INCRBY', 'arcade:jackpot', '400']); // 🎫 손해분 → 로또 적립
-        await ledger(aPk.name, '🎰 프리미엄 빠칭코 ' + g + ' — +' + apo + ' APO (−' + PCN_COST + ')' + (done ? ' · 🎉올클리어 +' + bonus : ''), apo - PCN_COST + bonus, aPk.bal);
+        await ledger(aPk.name, '🎰 프리미엄 빠칭코 ' + g + ' — +' + apo + ' APO (−' + PCN_COST + ')' + (done ? ' · 🎉풀클리어! 라스트원 찬스 획득' : ''), apo - PCN_COST + bonus, aPk.bal);
         var pv2 = pcnView(done ? freshBd : bd);
-        return res.status(200).json({ ok: true, idx: idx, grade: g, apo: apo, bonus: bonus, done: done, bal: aPk.bal, cells: pv2.cells, remain: pv2.remain, round: done ? (round + 1) : round, by: aPk.name });
+        return res.status(200).json({ ok: true, idx: idx, grade: g, apo: apo, bonus: bonus, done: done, lastOne: done, bal: aPk.bal, cells: pv2.cells, remain: pv2.remain, round: done ? (round + 1) : round, by: aPk.name });
       } finally { await acctUnlock('pcnboard'); }
       } finally { await acctUnlock(sPk.name); }
+    }
+    if (req.method === 'POST' && action === 'pcnlast') { // 🎰 풀클리어 라스트원 찬스 — 좌·중·우 49% → 49,000
+      var sPl = await auth(body.token);
+      if (!sPl || !sPl.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var choice = String(body.choice || '');
+      if (['L', 'C', 'R'].indexOf(choice) < 0) return res.status(400).json({ error: '좌·중·우 중 하나를 골라주세요' });
+      if (!(await acctLock('pcnlast'))) return res.status(429).json({ error: '잠시 후 다시!' });
+      try {
+        var loRaw = await redis(['GET', 'pcn:lastone']);
+        if (!loRaw) return res.status(409).json({ error: '받을 수 있는 라스트원 보상이 없어요 (이미 뽑았거나 만료됨)' });
+        var lo = JSON.parse(loRaw);
+        if (lo.name !== sPl.name) return res.status(403).json({ error: '풀클리어를 마무리한 분만 뽑을 수 있어요' });
+        var aPl = await getAcct(sPl.name);
+        if (!aPl || aPl.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+        var LAST_PRIZE = 49000, win = Math.random() < 0.49, prize = win ? LAST_PRIZE : 0;
+        if (win) { aPl.bal += prize; await putAcct(aPl); }
+        await redis(['DEL', 'pcn:lastone']); // 1회만
+        await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: sPl.name, t: 'pcnlast', v: prize, win: win, ts: new Date().toISOString() })]);
+        await redis(['LTRIM', 'arcade:news', '0', '9']);
+        await ledger(sPl.name, '🎰 빠칭코 라스트원 ' + (win ? '🎉당첨 +' + prize : '꽝') + ' (' + choice + ')', prize, aPl.bal);
+        return res.status(200).json({ ok: true, win: win, prize: prize, choice: choice, bal: aPl.bal });
+      } finally { await acctUnlock('pcnlast'); }
     }
     if (req.method === 'POST' && action === 'pcnreset') {
       var sRs = await auth(body.token);
