@@ -1660,7 +1660,7 @@ module.exports = async function handler(req, res) {
       var cbParent = _cbId(body.parent);
       if (!cbText) return res.status(400).json({ error: '내용을 입력해주세요' });
       var cbNick = cbWho.name || '운영자';
-      if ((cbWho.role === 'admin' || cbWho.role === 'dev') && body.nick) { var cbCN = String(body.nick).slice(0, 24).trim(); if (cbCN) cbNick = cbCN; } // 운영진은 닉네임 바꿔서 달 수 있음
+      if ((cbWho.role === 'dev') && body.nick) { var cbCN = String(body.nick).slice(0, 24).trim(); if (cbCN) cbNick = cbCN; } // 운영진은 닉네임 바꿔서 달 수 있음
       var cbUid = cbWho.name ? crypto.createHash('sha256').update('u|' + cbWho.name).digest('hex').slice(0, 12) : 'dev';
       var cbCd = await redis(['SET', 'cmtcd:' + cbUid + ':' + cbB2, '1', 'NX', 'EX', '1']);
       if (cbCd === null) return res.status(429).json({ error: '너무 빨라요 — 잠깐 뒤에 다시 ㅎㅎ' });
@@ -1739,7 +1739,7 @@ module.exports = async function handler(req, res) {
       var cbMe = await auth(body.token);
       if (!cbMe) return res.status(401).json({ error: '로그인이 필요해요' });
       var cbMeUid = cbMe.name ? crypto.createHash('sha256').update('u|' + cbMe.name).digest('hex').slice(0, 12) : 'dev';
-      var cbMod = (cbMe.role === 'dev' || cbMe.role === 'admin');
+      var cbMod = (cbMe.role === 'dev');
       var cbList = (await redis(['LRANGE', 'cmt:' + cbB4, '0', '799'])) || [];
       var cbTarget = null;
       for (var cj = 0; cj < cbList.length; cj++) { try { var ccx = JSON.parse(cbList[cj]); if (ccx.id === cbDid) { cbTarget = { raw: cbList[cj], c: ccx }; break; } } catch (e) {} }
@@ -1761,7 +1761,7 @@ module.exports = async function handler(req, res) {
       if (!ovB || !ovId) return res.status(400).json({ error: '요청 형식 오류' });
       var ovWho = await auth(body.token);
       if (!ovWho) return res.status(401).json({ error: '로그인이 필요해요' });
-      if (!(ovWho.role === 'admin' || ovWho.role === 'dev')) return res.status(403).json({ error: '운영진만 편집할 수 있어요' });
+      if (ovWho.role !== 'dev') return res.status(403).json({ error: '개발자만 편집할 수 있어요' });
       if (body.remove) { await redis(['HDEL', 'cmtOv:' + ovB, ovId]); return res.status(200).json({ ok: true, id: ovId, removed: true }); }
       var ovText = _cbClip(body.text, 280);
       if (!ovText) return res.status(400).json({ error: '내용을 입력해주세요' });
