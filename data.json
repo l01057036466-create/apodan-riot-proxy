@@ -18754,78 +18754,6 @@
    ]
   },
   {
-   "id": "m_uj4ihmwmqccopjf",
-   "playedAt": "2026-06-09",
-   "setNumber": 4,
-   "winnerTeam": "BLUE",
-   "memo": "클라이언트 추출 입력",
-   "mvpId": null,
-   "gameId": "8252128306",
-   "durationMin": 11,
-   "createdAt": "2026-06-13T12:47:33.195Z",
-   "participants": [
-    {
-     "team": "BLUE",
-     "lane": "TOP",
-     "playerId": "p_jlc2q699_mq7nhxup",
-     "rawName": "미르수리",
-     "championId": "세트",
-     "kills": 1,
-     "deaths": 2,
-     "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
-     "stats": {
-      "cs": 41,
-      "goldEarned": 2936,
-      "damageToChampions": 4494,
-      "damageTaken": 8323,
-      "visionScore": 5,
-      "wardsPlaced": 3,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
-      "crowdControlScore": 7,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
-      "healing": 542,
-      "selfMitigatedDamage": 4297,
-      "soloKills": 0
-     }
-    },
-    {
-     "team": "RED",
-     "lane": "JUNGLE",
-     "playerId": "p_j93ommzd_mq7nhxuq",
-     "rawName": "물방울",
-     "championId": "그라가스",
-     "kills": 2,
-     "deaths": 1,
-     "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
-     "stats": {
-      "cs": 24,
-      "goldEarned": 2852,
-      "damageToChampions": 6096,
-      "damageTaken": 4866,
-      "visionScore": 0,
-      "wardsPlaced": 0,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
-      "crowdControlScore": 25,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
-      "healing": 2795,
-      "selfMitigatedDamage": 2274,
-      "soloKills": 0
-     }
-    }
-   ],
-   "bans": []
-  },
-  {
    "id": "m_8d0tallmqccopjm",
    "playedAt": "2026-06-09",
    "setNumber": 5,
@@ -29850,20 +29778,20 @@
   },
   {
    "id": "m_nbaontvmqibi458",
-   "createdAt": "2026-06-17T17:01:02.972Z",
    "playedAt": "2026-06-17",
    "setNumber": 6,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8262758901",
    "durationMin": 44,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-17T17:01:02.972Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "관악산 산군",
      "playerId": "p_zupqjv6b_mq7nhxup",
+     "rawName": "관악산 산군",
      "championId": "문도 박사",
      "kills": 5,
      "deaths": 3,
@@ -29891,8 +29819,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "녹턴",
      "kills": 11,
      "deaths": 6,
@@ -29920,8 +29848,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "팀원죽이기",
      "playerId": "p_07v55ab9_mq7nhxuq",
+     "rawName": "팀원죽이기",
      "championId": "빅토르",
      "kills": 9,
      "deaths": 9,
@@ -29949,8 +29877,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "시비르",
      "kills": 6,
      "deaths": 5,
@@ -29978,8 +29906,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "모카라떼",
      "playerId": "p_hdu5pzwf_mq7nhxup",
+     "rawName": "모카라떼",
      "championId": "유미",
      "kills": 0,
      "deaths": 2,
@@ -30007,8 +29935,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "죄 인",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "베인",
      "kills": 4,
      "deaths": 9,
@@ -30036,8 +29964,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "경 민",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "모데카이저",
      "kills": 8,
      "deaths": 8,
@@ -30065,8 +29993,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "말파이트",
      "kills": 5,
      "deaths": 6,
@@ -30094,8 +30022,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "Savege",
      "playerId": "p_ze5lbhymq7ub77p",
+     "rawName": "Savege",
      "championId": "자야",
      "kills": 4,
      "deaths": 4,
@@ -30123,8 +30051,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "판테온",
      "kills": 4,
      "deaths": 4,
@@ -30195,20 +30123,20 @@
   },
   {
    "id": "m_xdti1vymqibi45o",
-   "createdAt": "2026-06-17T17:01:02.988Z",
    "playedAt": "2026-06-17",
    "setNumber": 7,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8262866861",
    "durationMin": 32,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-17T17:01:02.988Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "죄 인",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "이렐리아",
      "kills": 5,
      "deaths": 6,
@@ -30236,8 +30164,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "경 민",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "잭스",
      "kills": 11,
      "deaths": 3,
@@ -30265,8 +30193,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "아리",
      "kills": 10,
      "deaths": 2,
@@ -30294,8 +30222,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "Savege",
      "playerId": "p_ze5lbhymq7ub77p",
+     "rawName": "Savege",
      "championId": "세나",
      "kills": 6,
      "deaths": 1,
@@ -30323,8 +30251,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "쓰레쉬",
      "kills": 1,
      "deaths": 3,
@@ -30352,8 +30280,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "관악산 산군",
      "playerId": "p_zupqjv6b_mq7nhxup",
+     "rawName": "관악산 산군",
      "championId": "마오카이",
      "kills": 2,
      "deaths": 7,
@@ -30381,8 +30309,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "오공",
      "kills": 3,
      "deaths": 7,
@@ -30410,8 +30338,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "팀원죽이기",
      "playerId": "p_07v55ab9_mq7nhxuq",
+     "rawName": "팀원죽이기",
      "championId": "요네",
      "kills": 9,
      "deaths": 8,
@@ -30439,8 +30367,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "제라스",
      "kills": 1,
      "deaths": 5,
@@ -30468,8 +30396,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "모카라떼",
      "playerId": "p_hdu5pzwf_mq7nhxup",
+     "rawName": "모카라떼",
      "championId": "카르마",
      "kills": 0,
      "deaths": 6,
@@ -30540,27 +30468,24 @@
   },
   {
    "id": "m_kcpsyo7mqibi460",
-   "createdAt": "2026-06-17T17:01:03.000Z",
    "playedAt": "2026-06-17",
    "setNumber": 8,
    "winnerTeam": "BLUE",
-   "gameId": "8262947492",
-   "durationMin": 37,
    "memo": "클라이언트 추출 입력",
    "mvpId": "p_37h5qp33_mq7nhxuq",
+   "gameId": "8262947492",
+   "durationMin": 37,
+   "createdAt": "2026-06-17T17:01:03.000Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "관악산 산군",
      "playerId": "p_zupqjv6b_mq7nhxup",
+     "rawName": "관악산 산군",
      "championId": "오른",
      "kills": 10,
      "deaths": 4,
      "assists": 9,
-     "gd15": 1179,
-     "csd15": 12,
-     "xpd15": 1755,
      "stats": {
       "cs": 211,
       "goldEarned": 15219,
@@ -30569,7 +30494,6 @@
       "visionScore": 32,
       "wardsPlaced": 14,
       "wardsKilled": 1,
-      "controlWardsBought": 0,
       "crowdControlScore": 57,
       "damageToObjectives": 10046,
       "damageToTurrets": 7078,
@@ -30581,15 +30505,12 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "자르반 4세",
      "kills": 8,
      "deaths": 0,
      "assists": 18,
-     "gd15": 1843,
-     "csd15": 29,
-     "xpd15": -975,
      "stats": {
       "cs": 239,
       "goldEarned": 16475,
@@ -30603,22 +30524,18 @@
       "damageToObjectives": 57922,
       "damageToTurrets": 5854,
       "healing": 23536,
-      "selfMitigatedDamage": 51665,
-      "soloKills": 0
+      "selfMitigatedDamage": 51665
      }
     },
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "팀원죽이기",
      "playerId": "p_07v55ab9_mq7nhxuq",
+     "rawName": "팀원죽이기",
      "championId": "사일러스",
      "kills": 8,
      "deaths": 3,
      "assists": 10,
-     "gd15": 317,
-     "csd15": -5,
-     "xpd15": -424,
      "stats": {
       "cs": 262,
       "goldEarned": 15099,
@@ -30627,7 +30544,6 @@
       "visionScore": 16,
       "wardsPlaced": 4,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 31,
       "damageToObjectives": 5408,
       "damageToTurrets": 4647,
@@ -30639,15 +30555,12 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "코그모",
      "kills": 9,
      "deaths": 3,
      "assists": 7,
-     "gd15": -562,
-     "csd15": 3,
-     "xpd15": -709,
      "stats": {
       "cs": 302,
       "goldEarned": 18453,
@@ -30661,22 +30574,18 @@
       "damageToObjectives": 17116,
       "damageToTurrets": 10732,
       "healing": 5006,
-      "selfMitigatedDamage": 17079,
-      "soloKills": 0
+      "selfMitigatedDamage": 17079
      }
     },
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "모카라떼",
      "playerId": "p_hdu5pzwf_mq7nhxup",
+     "rawName": "모카라떼",
      "championId": "룰루",
      "kills": 0,
      "deaths": 3,
      "assists": 17,
-     "gd15": -347,
-     "csd15": 3,
-     "xpd15": 405,
      "stats": {
       "cs": 33,
       "goldEarned": 9020,
@@ -30688,24 +30597,19 @@
       "controlWardsBought": 14,
       "crowdControlScore": 31,
       "damageToObjectives": 2459,
-      "damageToTurrets": 0,
       "healing": 4801,
-      "selfMitigatedDamage": 10487,
-      "soloKills": 0
+      "selfMitigatedDamage": 10487
      }
     },
     {
      "team": "RED",
-     "lane": "JUNGLE",
-     "rawName": "죄 인",
+     "lane": "TOP",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "카밀",
      "kills": 3,
      "deaths": 12,
      "assists": 4,
-     "gd15": -1179,
-     "csd15": -12,
-     "xpd15": -1755,
      "stats": {
       "cs": 222,
       "goldEarned": 13734,
@@ -30713,8 +30617,6 @@
       "damageTaken": 52166,
       "visionScore": 17,
       "wardsPlaced": 7,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 31,
       "damageToObjectives": 14386,
       "damageToTurrets": 14386,
@@ -30725,16 +30627,13 @@
     },
     {
      "team": "RED",
-     "lane": "TOP",
-     "rawName": "경 민",
+     "lane": "JUNGLE",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "뽀삐",
      "kills": 4,
      "deaths": 6,
      "assists": 6,
-     "gd15": 891,
-     "csd15": 1,
-     "xpd15": -2147,
      "stats": {
       "cs": 197,
       "goldEarned": 12396,
@@ -30755,15 +30654,12 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "견호살빼면 롤접음",
      "playerId": "p_snn2xfw3_mq7nhxuq",
+     "rawName": "견호살빼면 롤접음",
      "championId": "리산드라",
      "kills": 1,
      "deaths": 8,
      "assists": 3,
-     "gd15": -317,
-     "csd15": 5,
-     "xpd15": 424,
      "stats": {
       "cs": 227,
       "goldEarned": 10438,
@@ -30777,22 +30673,18 @@
       "damageToObjectives": 3088,
       "damageToTurrets": 2655,
       "healing": 4066,
-      "selfMitigatedDamage": 14856,
-      "soloKills": 0
+      "selfMitigatedDamage": 14856
      }
     },
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "Savege",
      "playerId": "p_ze5lbhymq7ub77p",
+     "rawName": "Savege",
      "championId": "애쉬",
      "kills": 4,
      "deaths": 6,
      "assists": 4,
-     "gd15": 562,
-     "csd15": -3,
-     "xpd15": 709,
      "stats": {
       "cs": 284,
       "goldEarned": 15746,
@@ -30801,27 +30693,22 @@
       "visionScore": 28,
       "wardsPlaced": 8,
       "wardsKilled": 6,
-      "controlWardsBought": 0,
       "crowdControlScore": 52,
       "damageToObjectives": 9088,
       "damageToTurrets": 7965,
       "healing": 1939,
-      "selfMitigatedDamage": 10480,
-      "soloKills": 0
+      "selfMitigatedDamage": 10480
      }
     },
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "레오나",
      "kills": 1,
      "deaths": 3,
      "assists": 4,
-     "gd15": 347,
-     "csd15": -3,
-     "xpd15": -405,
      "stats": {
       "cs": 48,
       "goldEarned": 9156,
@@ -30835,8 +30722,7 @@
       "damageToObjectives": 1342,
       "damageToTurrets": 1227,
       "healing": 7973,
-      "selfMitigatedDamage": 40731,
-      "soloKills": 0
+      "selfMitigatedDamage": 40731
      }
     }
    ],
@@ -30964,8 +30850,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 340,
- "updatedAt": "2026-06-17T17:02:28.519Z",
+ "rev": 342,
+ "updatedAt": "2026-06-17T22:32:16.333Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
