@@ -5709,7 +5709,7 @@ function cmtHighlight(text){
   let str=esc(text||''); if(str.indexOf('@')<0)return str;
   const r=window._bankRoster||[]; const bares=r.map(x=>bareName(x.name||x.n||'')).filter(Boolean).sort((a,b)=>b.length-a.length);
   bares.forEach(nm=>{ const e=nm.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    str=str.replace(new RegExp('@'+e+'(?![\\w가-힣])','g'),'<b onclick="cmtOpenProfile(\''+encodeURIComponent(nm)+'\')" style="color:var(--gold);cursor:pointer">@'+esc(nm)+'</b>'); });
+    str=str.replace(new RegExp('@'+e+'(?![\\w가-힣])','g'),'<b style="color:#3aa0ff;font-weight:800">@'+esc(nm)+'</b>'); });
   return str;
 }
 
