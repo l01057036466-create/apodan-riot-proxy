@@ -330,9 +330,54 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 @supports not (background:color-mix(in srgb,#fff 50%,transparent)){
   .hupuCard{background:linear-gradient(168deg,#181b22 0%,#0c0d11 62%,#070809 100%)}
 }
+
+/* ===== 우주 테마 (토글 · body.space) ===== */
+body.space{
+  --bg:#0a0617; --bg2:#070411; --panel:#160d2b; --panel2:#1e1240; --inset:#10092a;
+  --line:#34245f; --line2:#4b3779;
+  --text:#f0e9ff; --mut:#bbb0dd; --dim:#9789c4;
+  --gold:#c98bff; --gold-dim:rgba(177,79,255,.17);
+  --win:#54f08a; --win-dim:rgba(84,240,138,.15);
+  --lose:#ff6f9e; --lose-dim:rgba(255,111,158,.15);
+  --blue:#7db5ff; --blue-dim:rgba(125,181,255,.15);
+  --violet:#c98bff; --neon:#b14fff; --green:#54f08a;
+  --shadow:0 14px 44px rgba(70,25,130,.45);
+  background:
+    radial-gradient(ellipse 75% 50% at 16% -6%, #2a1259 0%, transparent 55%),
+    radial-gradient(ellipse 65% 45% at 92% 5%, #1a0a45 0%, transparent 50%),
+    var(--bg) !important;
+  background-attachment:fixed;
+}
+#spaceStars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#spaceStars i{position:absolute;border-radius:50%;display:block;animation:stTw 3s ease-in-out infinite}
+@keyframes stTw{0%,100%{opacity:.16}50%{opacity:.95}}
+body:not(.space) #spaceStars{display:none}
+body.space .wrap{position:relative;z-index:1}
+body.space .top{background:rgba(12,7,28,.88)}
+body.space .top .brand h1{color:#fff;text-shadow:0 0 13px rgba(201,139,255,.75)}
+body.space .top .brand p b{color:#54f08a;text-shadow:0 0 8px rgba(84,240,138,.5)}
+body.space .mark{box-shadow:0 0 16px rgba(177,79,255,.55);background:linear-gradient(135deg,#3a1a6e,#1e1240)}
+body.space .pageHead h2{text-shadow:0 0 12px rgba(201,139,255,.55)}
+body.space .ticker .lbl{color:#54f08a;text-shadow:0 0 8px rgba(84,240,138,.5)}
+#spaceToggle{position:fixed;right:14px;bottom:16px;z-index:60;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:#fff;font-size:21px;cursor:pointer;line-height:1;box-shadow:0 4px 16px rgba(0,0,0,.45);transition:transform .18s,box-shadow .18s,border-color .18s;display:flex;align-items:center;justify-content:center}
+#spaceToggle:hover{transform:scale(1.08)}
+#spaceToggle:active{transform:scale(.96)}
+body.space #spaceToggle{border-color:#b14fff;background:rgba(42,18,80,.92);box-shadow:0 0 20px rgba(177,79,255,.55)}
+@media (max-width:560px){#spaceToggle{width:42px;height:42px;font-size:19px;right:12px;bottom:12px}}
+@media (prefers-reduced-motion:reduce){#spaceStars i{animation:none}}
+
+/* 칭호 진척도 마일스톤 바 */
+.msRow .msTop{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;margin-bottom:5px;gap:8px}
+.msRow .msNum{font-variant-numeric:tabular-nums;color:var(--mut);font-size:12px;white-space:nowrap}
+.msBar{height:9px;border-radius:6px;background:var(--inset);overflow:hidden}
+.msBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--win));border-radius:6px;transition:width .5s ease}
+.msRow.ok .msTop{color:var(--win)}
+.msRow.ok .msNum{color:var(--win)}
+.msRow.ok .msBar i{background:var(--win)}
 </style>
 </head>
 <body>
+<script>try{var _st=localStorage.getItem("spaceTheme");if(_st===null||_st==="1")document.body.classList.add("space");}catch(e){}</script>
 
 <header class="top">
   <div class="topIn">
@@ -350,6 +395,7 @@ nav.tabs>.row::-webkit-scrollbar,.subnav::-webkit-scrollbar{display:none}
 
 <div id="toast"></div>
 <div class="modal" id="modal"><div class="modalBox" id="modalBox"></div></div>
+<button id="spaceToggle" onclick="toggleSpace()" aria-label="우주 테마 전환" title="우주 테마 켜기/끄기">🛸</button>
 <datalist id="dlPlayers"></datalist>
 <datalist id="dlChamps"></datalist>
 
@@ -7421,7 +7467,7 @@ function pgMe(){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['result','📊 경기 결과'],['record','📝 경기 기록'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전 (BETA)'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['awardprog','🏅 칭호 진척도'],['doom','🏆 멸망전 (BETA)'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
@@ -7429,7 +7475,7 @@ const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['live','⚔️ 내전',['notice','result','today','record','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
  ['member','📊 선수',['players','laneTier','compare']],
- ['hall','🥇 명예의 전당',['stats','awards']],
+ ['hall','🥇 명예의 전당',['stats','awards','awardprog']],
  ['bank','💰 거래소',['bank','form']],
  ['games','🎮 포인트 게임',['games']],
  ['shop','🛍 포인트 상점',['shop']],
@@ -7559,6 +7605,31 @@ function syncBanner(){ // 게시 실패/미게시 경고 — 운영자에게만
   </div>`;
   return'';
 }
+function ensureStars(on){
+  var box=document.getElementById('spaceStars');
+  if(on){
+    if(!box){
+      box=document.createElement('div');box.id='spaceStars';
+      var h='';
+      for(var i=0;i<110;i++){
+        var sz=(Math.random()*1.8+1).toFixed(1);
+        var rr=Math.random();
+        var col=rr<.14?'rgba(201,139,255,.95)':(rr<.25?'rgba(84,240,138,.85)':'rgba(255,255,255,.92)');
+        h+='<i style="left:'+(Math.random()*100).toFixed(2)+'%;top:'+(Math.random()*100).toFixed(2)+'%;width:'+sz+'px;height:'+sz+'px;background:'+col+';animation-delay:-'+(Math.random()*3).toFixed(2)+'s;animation-duration:'+(Math.random()*2.5+1.8).toFixed(2)+'s"></i>';
+      }
+      box.innerHTML=h;
+      document.body.insertBefore(box,document.body.firstChild);
+    }
+    box.style.display='';
+  }else if(box){box.style.display='none';}
+}
+function toggleSpace(){
+  var on=document.body.classList.toggle('space');
+  try{localStorage.setItem('spaceTheme',on?'1':'0');}catch(e){}
+  ensureStars(on);
+  if(typeof toast==='function')toast(on?'우주 테마 ON 🛸':'우주 테마 OFF');
+}
+try{ensureStars(document.body.classList.contains('space'));}catch(e){}
 function head(title,sub){
   return syncBanner()+`<div class="pageHead"><div><h2>${title}</h2>${sub?`<p class="sub">${sub}</p>`:''}</div>
   <div class="meta"><span class="chip">플레이어 ${state.players.filter(p=>p.active).length}명</span><span class="chip">경기 ${state.matches.length}판</span><span class="chip">챔피언 ${CHAMPIONS.length}종</span></div></div>`;
@@ -7588,7 +7659,7 @@ function render(opt){
     return;
   }
   const R={dashboard:pgDashboard,notice:pgNotice,result:pgResult,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
-    champions:pgChampions,form:pgForm,awards:pgAwards,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
+    champions:pgChampions,form:pgForm,awards:pgAwards,awardprog:pgAwardProgress,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
   let _xs=[];try{document.querySelectorAll('#view [id]').forEach(el=>{if(el.scrollLeft>0)_xs.push([el.id,el.scrollLeft])})}catch(e){} // 가로 스크롤 보존
   const _se=(typeof document!=='undefined'&&(document.scrollingElement||document.documentElement))||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
   const _sy=Math.max((_se&&_se.scrollTop)||0,(document.body&&document.body.scrollTop)||0,((typeof window!=='undefined'&&(window.pageYOffset||window.scrollY))||0));
@@ -8971,6 +9042,51 @@ function pgLaneTier(){
 
 /* ───── 칭호 ───── */
 function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
+
+function pgAwardProgress(){
+  const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
+  if(!ps.length)return head('🏅 칭호 진척도','')+'<div class="empty">선수가 없어요.</div>';
+  let sel=window._apId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
+  const me=statPlayers().find(s=>s.id===sel);
+  const MS=[
+    {e:'⚔️',n:'100킬 클럽',v:s=>s.kills,g:100},
+    {e:'🗡️',n:'250킬 학살자',v:s=>s.kills,g:250},
+    {e:'🫶',n:'150어시 클럽',v:s=>s.assists,g:150},
+    {e:'🤝',n:'300어시 헌신왕',v:s=>s.assists,g:300},
+    {e:'🏆',n:'25승 클럽',v:s=>s.wins,g:25},
+    {e:'👑',n:'50승 고지',v:s=>s.wins,g:50},
+    {e:'💯',n:'100승 전설',v:s=>s.wins,g:100},
+    {e:'🎖️',n:'50판 개근',v:s=>s.games,g:50},
+    {e:'📅',n:'100판 출석왕',v:s=>s.games,g:100},
+    {e:'🌟',n:'MVP 5회',v:s=>s.mvp,g:5},
+    {e:'🔱',n:'MVP 10회 군주',v:s=>s.mvp,g:10},
+    {e:'💀',n:'100데스 헌납',v:s=>s.deaths,g:100},
+  ];
+  let h=head('🏅 칭호 진척도','내가 딴 칭호와 도전 중인 마일스톤')+
+    `<div class="card" style="margin-bottom:14px"><span class="mini dim">선수 </span> <select onchange="window._apId=this.value;render()" style="margin-left:6px">${playerOpts(sel)}</select></div>`;
+  if(!me)return h+'<div class="empty">아직 경기 기록이 없는 선수예요. 한 판이라도 기록되면 진척도가 생겨요.</div>';
+  const awards=makeAwards().filter(a=>a.target===me.name);
+  const done=MS.filter(m=>(m.v(me)||0)>=m.g).length;
+  h+=`<div class="card" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px">
+    <div><div class="mini dim">획득 칭호</div><div style="font-size:22px;font-weight:800">${awards.length}<span class="mini dim"> 개</span></div></div>
+    <div><div class="mini dim">마일스톤</div><div style="font-size:22px;font-weight:800">${done}<span class="mini dim"> / ${MS.length}</span></div></div>
+    <div><div class="mini dim">통산</div><div style="font-size:13px;font-weight:600;line-height:1.6">${me.games}판 · ${me.wins}승 · ${me.kills}킬 / ${me.assists}어시 / ${me.deaths}데스</div></div>
+  </div>`;
+  h+=`<h3 style="margin:18px 4px 10px">🏆 획득한 칭호 <span class="mini dim">(${awards.length})</span></h3>`;
+  h+= awards.length ? `<div class="awards">${awards.map(awardCard).join('')}</div>`
+    : '<div class="empty" style="padding:22px">아직 받은 칭호가 없어요. 아래 마일스톤부터 도전해보세요! 🚀</div>';
+  h+=`<h3 style="margin:24px 4px 10px">🎯 마일스톤 도전 <span class="mini dim">(누적 기록 기준)</span></h3><div class="card">`;
+  MS.forEach((m,i)=>{
+    const cur=m.v(me)||0, pc=Math.min(100,Math.round(cur/m.g*100)), ok=cur>=m.g;
+    h+=`<div class="msRow${ok?' ok':''}"${i?' style="margin-top:13px"':''}>
+      <div class="msTop"><span>${m.e} ${m.n}</span><span class="msNum">${cur} / ${m.g}${ok?' ✓':''}</span></div>
+      <div class="msBar"><i style="width:${pc}%"></i></div>
+    </div>`;
+  });
+  h+=`</div><p class="mini dim" style="margin:14px 4px 0">마일스톤은 명예 도전 과제예요. 포인트 보상은 포지션 퀘스트에서 받을 수 있어요!</p>`;
+  return h;
+}
+
 function pgDoom(){
   const slides=[1,2,3,4,5,6,7];
   return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')+`
