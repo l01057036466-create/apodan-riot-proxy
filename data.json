@@ -26749,6 +26749,9 @@
      "kills": 12,
      "deaths": 0,
      "assists": 10,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 13747,
@@ -26775,6 +26778,9 @@
      "kills": 8,
      "deaths": 4,
      "assists": 9,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 151,
       "goldEarned": 11961,
@@ -26800,6 +26806,9 @@
      "kills": 7,
      "deaths": 8,
      "assists": 16,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 226,
       "goldEarned": 12924,
@@ -26825,6 +26834,9 @@
      "kills": 7,
      "deaths": 1,
      "assists": 11,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 270,
       "goldEarned": 17216,
@@ -26851,6 +26863,9 @@
      "kills": 2,
      "deaths": 1,
      "assists": 17,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 39,
       "goldEarned": 8986,
@@ -26876,6 +26891,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 2,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 10570,
@@ -26902,6 +26920,9 @@
      "kills": 5,
      "deaths": 10,
      "assists": 3,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 164,
       "goldEarned": 11204,
@@ -26927,6 +26948,9 @@
      "kills": 3,
      "deaths": 10,
      "assists": 1,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 250,
       "goldEarned": 11019,
@@ -26952,6 +26976,9 @@
      "kills": 4,
      "deaths": 5,
      "assists": 2,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 254,
       "goldEarned": 13337,
@@ -26976,6 +27003,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 7,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 35,
       "goldEarned": 6903,
@@ -27116,9 +27146,32 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [],
- "rev": 315,
- "updatedAt": "2026-06-16T18:54:22.964Z",
+ "lineups": [
+  {
+   "id": "lu_txv8rrhmqhfz3y8",
+   "date": "2026-06-17",
+   "round": "1차",
+   "series": "3판 2선승",
+   "note": "",
+   "event": false,
+   "blue": [
+    "p_ybyb79mg_mq7nhxup",
+    "p_h7k04k4c_mq7nhxuq",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_ze5lbhymq7ub77p",
+    "p_w3emkfoa_mq7nhxuq"
+   ],
+   "red": [
+    "p_j93ommzd_mq7nhxuq",
+    "p_2dlhnzwn_mq7nhxuq",
+    "p_07v55ab9_mq7nhxuq",
+    "p_snn2xfw3_mq7nhxuq",
+    "p_jlc2q699_mq7nhxup"
+   ]
+  }
+ ],
+ "rev": 316,
+ "updatedAt": "2026-06-17T02:18:28.160Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
