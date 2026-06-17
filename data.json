@@ -27188,10 +27188,32 @@
     "p_snn2xfw3_mq7nhxuq",
     "p_jlc2q699_mq7nhxup"
    ]
+  },
+  {
+   "id": "lu_3uzr2wumqho21im",
+   "date": "2026-06-17",
+   "round": "2차",
+   "series": "3판 2선승",
+   "note": "8시 저티어 내전",
+   "event": false,
+   "blue": [
+    "p_zupqjv6b_mq7nhxup",
+    "p_37h5qp33_mq7nhxuq",
+    "p_07v55ab9_mq7nhxuq",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_hdu5pzwf_mq7nhxup"
+   ],
+   "red": [
+    "p_1v451ep9_mq7nhxuq",
+    "p_53io5pq0_mq7nhxuq",
+    "p_snn2xfw3_mq7nhxuq",
+    "p_ze5lbhymq7ub77p",
+    "p_29ndxd5j_mq7nhxuq"
+   ]
   }
  ],
- "rev": 317,
- "updatedAt": "2026-06-17T04:15:58.606Z",
+ "rev": 318,
+ "updatedAt": "2026-06-17T06:04:41.902Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
