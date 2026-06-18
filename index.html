@@ -9242,9 +9242,9 @@ function qRecentStatsByLane(pid,lane,N){
 function qTotalStats(pid){
   const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(a.playedAt||'').localeCompare(String(b.playedAt||'')));
   if(!ms.length)return null;
-  let w=0,st=0,best=0,tk=0,td=0,ta=0,mvp=0,tdmg=0,tvis=0,tcs=0,noWin=0,solo=0,kp80=0; const lanes=new Set();
-  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;if(p.lane)lanes.add(p.lane);const win=m.winnerTeam===p.team;if(win){w++;st++;if(st>best)best=st}else st=0;tk+=p.kills||0;td+=p.deaths||0;ta+=p.assists||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)mvp++;tdmg+=(p.stats&&p.stats.damageToChampions)||0;tvis+=(p.stats&&p.stats.visionScore)||0;tcs+=(p.stats&&p.stats.cs)||0;if(win&&(p.deaths||0)===0)noWin++;if(((p.stats&&p.stats.soloKills)||0)>=2)solo++;const _tmK=(m.participants||[]).filter(x=>x.team===p.team).reduce((z,x)=>z+(x.kills||0),0);if(_tmK>0&&((p.kills||0)+(p.assists||0))/_tmK>=0.8)kp80++});
-  return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs,T_noWin:noWin,T_solo:solo,T_kp80:kp80};
+  let w=0,st=0,best=0,tk=0,td=0,ta=0,mvp=0,tdmg=0,tvis=0,tcs=0,noWin=0,solo=0,kp80=0,twards=0,tobj=0,perfect=0; const lanes=new Set();
+  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;if(p.lane)lanes.add(p.lane);const win=m.winnerTeam===p.team;if(win){w++;st++;if(st>best)best=st}else st=0;tk+=p.kills||0;td+=p.deaths||0;ta+=p.assists||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)mvp++;tdmg+=(p.stats&&p.stats.damageToChampions)||0;tvis+=(p.stats&&p.stats.visionScore)||0;tcs+=(p.stats&&p.stats.cs)||0;if(win&&(p.deaths||0)===0)noWin++;if(((p.stats&&p.stats.soloKills)||0)>=2)solo++;const _tmK=(m.participants||[]).filter(x=>x.team===p.team).reduce((z,x)=>z+(x.kills||0),0);if(_tmK>0&&((p.kills||0)+(p.assists||0))/_tmK>=0.8)kp80++;twards+=(p.stats&&p.stats.wardsKilled)||0;tobj+=(p.stats&&p.stats.damageToObjectives)||0;if(win&&(p.deaths||0)===0&&(p.kills||0)>=5)perfect++});
+  return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs,T_noWin:noWin,T_solo:solo,T_kp80:kp80,T_wards:twards,T_obj:tobj,T_perfect:perfect};
 }
 const QUEST_DEFS=[
   {c:'TOP',u:'받은 피해',mt:'avgTaken',f:'k',T:[[15000,2000],[22000,3000],[30000,5000]]},
@@ -9404,6 +9404,13 @@ function pgAwardProgress(){
     {e:'🎯',n:'한타의 중심 — 킬관여 80%+ 경기',v:s=>ts.T_kp80||0,g:8},
     {e:'📈',n:'연승 가도 — 최고 연승',v:s=>ts.T_streak||0,g:5},
     {e:'🧭',n:'멀티 포지션 — 출전 라인 수',v:s=>ts.T_lanes||0,g:5},
+    {e:'👁️',n:'시야 청소 입문 — 와드 파괴',v:s=>ts.T_wards||0,g:50},
+    {e:'🦅',n:'매의 눈 — 와드 파괴',v:s=>ts.T_wards||0,g:150},
+    {e:'🛡️',n:'상대 시야 청소업체 — 와드 파괴',v:s=>ts.T_wards||0,g:300},
+    {e:'🐉',n:'오브젝트 입문 — 오브젝트 피해',v:s=>ts.T_obj||0,g:100000},
+    {e:'🐲',n:'오브젝트 깎는 노인 — 오브젝트 피해',v:s=>ts.T_obj||0,g:500000},
+    {e:'👑',n:'여론의 왕 — MVP',v:s=>ts.T_mvp||0,g:5},
+    {e:'💎',n:'퍼펙트 게임 — 0데스 무결점(5킬↑ 승리)',v:s=>ts.T_perfect||0,g:1},
   ];
   let h=head('🏅 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('prog')+
     `<div class="card" style="margin-bottom:14px"><span class="mini dim">선수 </span> <select onchange="window._apId=this.value;render()" style="margin-left:6px">${playerOpts(sel)}</select></div>`;
@@ -9427,6 +9434,11 @@ function pgAwardProgress(){
     </div>`;
   });
   h+=`</div><p class="mini dim" style="margin:14px 4px 0">마일스톤은 명예 도전 과제예요. 포인트 보상은 포지션 퀘스트에서 받을 수 있어요!</p>`;
+  const _CROWNS=[['딜량왕','damageToChampions','누적 딜'],['인간 가고일','damageTaken','받은 피해'],['시야 대통령','visionScore','시야 점수'],['매의 눈','wardsKilled','와드 파괴'],['오브젝트 깎는 노인','damageToObjectives','오브젝트 피해'],['철거반장','damageToTurrets','포탑 피해'],['힐링캠프 원장','healing','회복량'],['피해감소 방화벽','selfMitigatedDamage','피해 감소'],['CS 공장장','cs','누적 CS'],['골드 광산','goldEarned','누적 골드'],['CC 제조기','crowdControlScore','군중 제어'],['솔로킬 머신','soloKills','솔로킬']];
+  const _allP=statPlayers().filter(isActive);
+  h+=`<h3 style="margin:24px 4px 10px">👑 1위 경쟁 <span class="mini dim">(전설 칭호까지 남은 거리)</span></h3><div class="card">`;
+  _CROWNS.forEach(arr=>{const title=arr[0],fld=arr[1],lbl=arr[2];const sorted=_allP.filter(p=>(p[fld]||0)>0).sort((a,b)=>(b[fld]||0)-(a[fld]||0));if(!sorted.length)return;const top1=sorted[0],topVal=top1[fld]||0,myVal=(me&&me[fld])||0,isMe1=!!(me&&top1.id===me.id),pct=topVal>0?Math.min(100,Math.round(myVal/topVal*100)):0,gap=Math.max(0,topVal-myVal);h+=`<div style="margin:0 0 13px"><div class="row" style="justify-content:space-between;gap:8px"><b style="font-size:13px">${title} <span class="mini dim">${lbl}</span></b><span class="mini" style="color:${isMe1?'var(--gold)':'var(--mut)'};white-space:nowrap">${isMe1?'👑 현재 1위!':'1위까지 '+fmt(gap)}</span></div><div class="bar" style="height:9px;margin-top:5px;background:var(--inset);border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;background:${isMe1?'var(--gold)':'var(--violet)'}"></i></div><p class="mini dim" style="margin:3px 0 0">내 기록 ${fmt(myVal)}${isMe1?'':' · 1위 '+esc(top1.name)+' '+fmt(topVal)}</p></div>`;});
+  h+=`</div>`;
   return h;
 }
 
