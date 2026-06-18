@@ -1526,6 +1526,11 @@ function streaksOf(id){
   return{mw,ml,cw,cl}; // cw/cl = 현재 진행 중 연승/연패
 }
 const FORCED_TITLES={'성용찬':['퍼펙트 게임']}; // 🏅 수동 영구 칭호 — '이름/별명':[칭호…]. displayName·카톡명·별명 아무거나 매칭. 운영자가 추가
+function playerLaneStats(pid){
+  const map={};
+  state.matches.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p||!p.lane)return;if(!map[p.lane])map[p.lane]={g:0,w:0,k:0,d:0,a:0,dmg:0,vis:0};const s=map[p.lane];s.g++;if(m.winnerTeam===p.team)s.w++;s.k+=p.kills||0;s.d+=p.deaths||0;s.a+=p.assists||0;s.dmg+=(p.stats&&p.stats.damageToChampions)||0;s.vis+=(p.stats&&p.stats.visionScore)||0});
+  return map;
+}
 function makeAwards(){
   const P=statPlayers().filter(s=>isActive(s.id)),D=statDuos(3),R=statRivals(3),C=statChamps(),PC=statPlayerChamps(2),SDp=statPlayerSides(1),out=[];
   const push=(title,target,desc)=>out.push({title,target,desc});
@@ -1890,6 +1895,37 @@ function makeAwards(){
     if(b.games>=8&&b.winRate>=65)push('아포단 '+nm,b.name,ch+' 봉인픽 — '+b.games+'판 승률 '+b.winRate+'%');
     else if(b.games>=5&&b.winRate>=60)push(nm,b.name,ch+' 네임드 — '+b.games+'판 승률 '+b.winRate+'%');
     else if(b.games>=3&&b.winRate>=50)push(nm+' 숙련자',b.name,ch+' 숙련자 — '+b.games+'판 승률 '+b.winRate+'%');
+  });
+  // ===== 다포지션 칭호 =====
+  P.forEach(pl=>{
+    const ls=playerLaneStats(pl.id), lanes=Object.keys(ls);
+    if(lanes.length<2)return;
+    const won=lanes.filter(L=>ls[L].w>=1).length;
+    const kda2=lanes.filter(L=>{const s=ls[L];return (s.k+s.a)/Math.max(1,s.d)>=2}).length;
+    const oneInn=lanes.filter(L=>{const s=ls[L];return (s.k+s.a)/Math.max(1,s.d)>=1.5}).length;
+    if(won>=2)push('투라인 가능자',pl.name,'서로 다른 2개 포지션에서 각각 승리');
+    if(lanes.length>=3)push('멀티 포지션 입문',pl.name,'서로 다른 3개 포지션 출전');
+    if(kda2>=3)push('올라운더 후보',pl.name,'3개 포지션에서 KDA 2 이상');
+    if(won>=3)push('전천후 선수',pl.name,'3개 포지션에서 각각 승리');
+    if(won>=4)push('진짜 올라운더',pl.name,'4개 포지션에서 각각 승리');
+    if(lanes.length>=5)push('다섯 라인의 증명',pl.name,'5개 포지션 전부 출전');
+    if(won>=5)push('다섯 라인의 왕',pl.name,'5개 포지션에서 각각 승리');
+    if(lanes.length>=5&&kda2>=5)push('완전체 올라운더',pl.name,'5개 포지션 출전 + 전부 KDA 2 이상');
+    if(oneInn>=5)push('포지션 마스터',pl.name,'5개 포지션 전부에서 1인분 이상');
+    if(lanes.length>=5&&pl.winRate>=50)push('아포단 만능키',pl.name,'5개 포지션 출전 + 전체 승률 50% 이상');
+  });
+  // ===== 끝판왕 칭호 (포지션별 시즌 최고 1명) =====
+  const _legName={TOP:'Zeus',JUNGLE:'Canyon',MID:'Faker',ADC:'Ruler',SUPPORT:'Keria'};
+  const _legBy={TOP:[],JUNGLE:[],MID:[],ADC:[],SUPPORT:[]};
+  P.forEach(pl=>{
+    const ls=playerLaneStats(pl.id);
+    Object.keys(ls).forEach(L=>{const s=ls[L];if(s.g>=10&&_legBy[L]){const kda=(s.k+s.a)/Math.max(1,s.d),wr=Math.round(s.w/s.g*100);_legBy[L].push({name:pl.name,g:s.g,kda:kda,wr:wr})}});
+  });
+  Object.keys(_legName).forEach(L=>{
+    const cands=_legBy[L].filter(c=>c.kda>=3.5&&c.wr>=60);
+    if(!cands.length)return;
+    const b=cands.sort((a,b)=>b.kda-a.kda||b.wr-a.wr)[0];
+    push(_legName[L],b.name,(LANE_KO[L]||L)+' 시즌 최고 — '+b.g+'판 승률 '+b.wr+'% KDA '+b.kda.toFixed(1));
   });
   return out.slice(0,400);
 }
@@ -9149,9 +9185,9 @@ function qRecentStats(pid,N){
 function qTotalStats(pid){
   const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(a.playedAt||'').localeCompare(String(b.playedAt||'')));
   if(!ms.length)return null;
-  let w=0,st=0,best=0,tk=0,td=0,ta=0,mvp=0,tdmg=0,tvis=0,tcs=0; const lanes=new Set();
-  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;if(p.lane)lanes.add(p.lane);const win=m.winnerTeam===p.team;if(win){w++;st++;if(st>best)best=st}else st=0;tk+=p.kills||0;td+=p.deaths||0;ta+=p.assists||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)mvp++;tdmg+=(p.stats&&p.stats.damageToChampions)||0;tvis+=(p.stats&&p.stats.visionScore)||0;tcs+=(p.stats&&p.stats.cs)||0});
-  return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs};
+  let w=0,st=0,best=0,tk=0,td=0,ta=0,mvp=0,tdmg=0,tvis=0,tcs=0,noWin=0,solo=0,kp80=0; const lanes=new Set();
+  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;if(p.lane)lanes.add(p.lane);const win=m.winnerTeam===p.team;if(win){w++;st++;if(st>best)best=st}else st=0;tk+=p.kills||0;td+=p.deaths||0;ta+=p.assists||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)mvp++;tdmg+=(p.stats&&p.stats.damageToChampions)||0;tvis+=(p.stats&&p.stats.visionScore)||0;tcs+=(p.stats&&p.stats.cs)||0;if(win&&(p.deaths||0)===0)noWin++;if(((p.stats&&p.stats.soloKills)||0)>=2)solo++;const _tmK=(m.participants||[]).filter(x=>x.team===p.team).reduce((z,x)=>z+(x.kills||0),0);if(_tmK>0&&((p.kills||0)+(p.assists||0))/_tmK>=0.8)kp80++});
+  return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs,T_noWin:noWin,T_solo:solo,T_kp80:kp80};
 }
 const QUEST_DEFS=[
   {c:'TOP',u:'받은 피해',mt:'avgTaken',f:'k',T:[[15000,2000],[22000,3000],[30000,5000]]},
@@ -9187,7 +9223,10 @@ const QUEST_DEFS=[
   {c:'ALL',u:'통산 CS',mt:'T_cs',f:'n',T:[[1000,2000],[2500,3000],[5000,5000]]},
   {c:'ALL',u:'통산 승리(고수)',mt:'T_wins',f:'n',T:[[40,3000],[60,4000],[80,6000]]},
   {c:'ALL',u:'통산 킬(고수)',mt:'T_kills',f:'n',T:[[400,3000],[600,4000],[800,6000]]},
-  {c:'ALL',u:'통산 경기(고수)',mt:'T_games',f:'n',T:[[50,3000],[80,4000],[120,6000]]}
+  {c:'ALL',u:'통산 경기(고수)',mt:'T_games',f:'n',T:[[50,3000],[80,4000],[120,6000]]},
+  {c:'ALL',u:'0데스 승리 경기',mt:'T_noWin',f:'n',T:[[1,0],[2,0],[4,0]]},
+  {c:'ALL',u:'솔킬 2회+ 경기',mt:'T_solo',f:'n',T:[[1,0],[3,0],[5,0]]},
+  {c:'ALL',u:'킬관여 80%+ 경기',mt:'T_kp80',f:'n',T:[[1,0],[3,0],[6,0]]}
 ];
 function _awQuest(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
