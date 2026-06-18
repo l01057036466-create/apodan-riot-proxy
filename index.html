@@ -1528,7 +1528,7 @@ function streaksOf(id){
 const FORCED_TITLES={'성용찬':['퍼펙트 게임']}; // 🏅 수동 영구 칭호 — '이름/별명':[칭호…]. displayName·카톡명·별명 아무거나 매칭. 운영자가 추가
 function playerLaneStats(pid){
   const map={};
-  state.matches.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p||!p.lane)return;if(!map[p.lane])map[p.lane]={g:0,w:0,k:0,d:0,a:0,dmg:0,vis:0};const s=map[p.lane];s.g++;if(m.winnerTeam===p.team)s.w++;s.k+=p.kills||0;s.d+=p.deaths||0;s.a+=p.assists||0;s.dmg+=(p.stats&&p.stats.damageToChampions)||0;s.vis+=(p.stats&&p.stats.visionScore)||0});
+  state.matches.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p||!p.lane)return;if(!map[p.lane])map[p.lane]={g:0,w:0,k:0,d:0,a:0,dmg:0,vis:0,mvp:0};const s=map[p.lane];s.g++;if(m.winnerTeam===p.team)s.w++;s.k+=p.kills||0;s.d+=p.deaths||0;s.a+=p.assists||0;s.dmg+=(p.stats&&p.stats.damageToChampions)||0;s.vis+=(p.stats&&p.stats.visionScore)||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)s.mvp++});
   return map;
 }
 function makeAwards(){
@@ -1888,13 +1888,14 @@ function makeAwards(){
   // ===== 챔피언 장인 칭호 (실제 장인 오마주, 챔피언당 1명) =====
   const CHAMP_MASTER={'자이라':'닝겐자이라','자크':'박종하','잔나':'아라미','잭스':'샤이','제드':'온제','제라스':'엔마','제리':'괴물쥐','제이스':'제우스','조이':'명조이','직스':'헤징','진':'프레이','질리언':'가재맨','징크스':'고수달','초가스':'Cho God','카르마':'막눈','카밀':'갓키형','카사딘':'도파','카서스':'이석희','카시오페아':'백크','카이사':'땅우양','카직스':'미니언 고립','카타리나':'크림몬','칼리스타':'뜨뜨뜨뜨','케넨':'케넨장관','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'돌카사','크산테':'깨돌이','클레드':'좀비클레드','키아나':'재만이','킨드레드':'표식','타릭':'애디','탈론':'과로사','탐 켄치':'탐탐이','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'항심','파이크':'Davemon','판테온':'나라카일','피들스틱':'테디스틱','피오라':'피오라킹','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'유웨이'};
   Object.keys(CHAMP_MASTER).forEach(ch=>{
-    const cands=PC.filter(x=>x.champion===ch&&x.games>=3);
+    const cands=PC.filter(x=>x.champion===ch&&x.games>=2);
     if(!cands.length)return;
     const b=cands.slice().sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
     const nm=CHAMP_MASTER[ch];
     if(b.games>=8&&b.winRate>=65)push('아포단 '+nm,b.name,ch+' 봉인픽 — '+b.games+'판 승률 '+b.winRate+'%');
     else if(b.games>=5&&b.winRate>=60)push(nm,b.name,ch+' 네임드 — '+b.games+'판 승률 '+b.winRate+'%');
-    else if(b.games>=3&&b.winRate>=50)push(nm+' 숙련자',b.name,ch+' 숙련자 — '+b.games+'판 승률 '+b.winRate+'%');
+    else if(b.games>=2&&b.winRate>=50)push(nm+' 숙련자',b.name,ch+' 숙련자 — '+b.games+'판 승률 '+b.winRate+'%');
+    else if(b.games>=2)push(nm+' 입문',b.name,ch+' 입문 — '+b.games+'판 승률 '+b.winRate+'%');
   });
   // ===== 다포지션 칭호 =====
   P.forEach(pl=>{
@@ -1913,6 +1914,16 @@ function makeAwards(){
     if(lanes.length>=5&&kda2>=5)push('완전체 올라운더',pl.name,'5개 포지션 출전 + 전부 KDA 2 이상');
     if(oneInn>=5)push('포지션 마스터',pl.name,'5개 포지션 전부에서 1인분 이상');
     if(lanes.length>=5&&pl.winRate>=50)push('아포단 만능키',pl.name,'5개 포지션 출전 + 전체 승률 50% 이상');
+    const _mvpLanes=lanes.filter(L=>ls[L].mvp>=1).length;
+    const _mainL=mainLaneOf(pl.id);
+    const _subWins=lanes.filter(L=>L!==_mainL).reduce((z,L)=>z+ls[L].w,0);
+    const _kdaAll=(pl.kills+pl.assists)/Math.max(1,pl.deaths);
+    const _overLanes=lanes.filter(L=>{const s=ls[L];return (s.k+s.a)/Math.max(1,s.d)>=_kdaAll}).length;
+    if(_mvpLanes>=2)push('멀티롤 캐리',pl.name,'서로 다른 2개 포지션에서 MVP 획득');
+    if(_subWins>=1)push('비상 대타 성공',pl.name,'주 포지션이 아닌 라인에서 승리');
+    if(_subWins>=3)push('팀 밸런스의 신',pl.name,'부포지션에서 승리 3회 이상');
+    if(lanes.length>=4&&_overLanes>=4)push('어디 가도 1인분',pl.name,'4개 포지션에서 본인 평균 KDA 이상');
+    if(won>=5&&_mvpLanes>=1)push('아포단 올라운더 명예의 전당',pl.name,'5개 포지션 승리 + MVP 1회 이상');
   });
   // ===== 끝판왕 칭호 (포지션별 최강 — 8종) =====
   const _legBy={TOP:[],JUNGLE:[],MID:[],ADC:[],SUPPORT:[]};
@@ -9266,9 +9277,15 @@ async function questClaimDo(mid,reward,label){
 function _awQuest(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🎯 포지션 퀘스트','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+'<div class="empty">선수가 없어요.</div>';
-  let sel=window._qId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
+  const _Bq=bankSession();
+  const _nbq=x=>String(x||'').trim().toLowerCase();
+  let sel=window._qId;
+  if(!ps.some(p=>p.id===sel)){
+    const _meP=_Bq&&_Bq.name?ps.find(p=>_nbq(p.displayName)===_nbq(_Bq.name)||_nbq(p.name)===_nbq(_Bq.name)):null;
+    sel=_meP?_meP.id:ps[0].id;
+  }
   const lane=mainLaneOf(sel), rs=qRecentStats(sel,5), ts=qTotalStats(sel);
-  window._qIsMe=(()=>{const _B=bankSession();const _sp=byId(sel);return !!(_B&&_B.name&&_sp&&(_sp.displayName===_B.name||_sp.name===_B.name))})();
+  window._qIsMe=!!(_Bq&&_Bq.name);
   if(window._qClaimedLoaded===undefined&&bankSession()){window._qClaimedLoaded=1;bankCall('qClaimed',{}).then(j=>{window._qClaimed=new Set(j.claimed||[]);render()}).catch(()=>{})}
   const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'};
   const lk=laneKo[lane]||'미정';
