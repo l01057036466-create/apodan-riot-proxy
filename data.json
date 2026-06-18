@@ -928,6 +928,23 @@
    "riotPuuid": "eHkfFZzeJD-g8mSKzOGXvDNkj8gr1dWGUgoifPXmrz8JttWW4iq1fUZDpNjkbHSCTuC4pT1aeQNbow",
    "soloPos": "",
    "subPos": ""
+  },
+  {
+   "id": "p_fdytblemqjnflc4",
+   "displayName": "02 안농",
+   "kakaoName": "02 안농",
+   "riotName": "systemd",
+   "riotTag": "9007",
+   "aliases": [
+    "안농"
+   ],
+   "active": true,
+   "memo": "",
+   "soloTier": "마스터",
+   "flexTier": "마스터",
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   }
  ],
  "matches": [
@@ -30882,8 +30899,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 346,
- "updatedAt": "2026-06-18T15:01:37.726Z",
+ "rev": 347,
+ "updatedAt": "2026-06-18T15:22:46.852Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
