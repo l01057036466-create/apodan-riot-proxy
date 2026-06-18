@@ -9318,6 +9318,7 @@ function pgAwardProgress(){
   if(!ps.length)return head('🏅 칭호 진척도','')+'<div class="empty">선수가 없어요.</div>';
   let sel=window._apId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
   const me=statPlayers().find(s=>s.id===sel);
+  const ts=(typeof qTotalStats==='function'?qTotalStats(sel):null)||{};
   const MS=[
     {e:'⚔️',n:'첫 50킬',v:s=>s.kills,g:50},
     {e:'⚔️',n:'100킬 클럽',v:s=>s.kills,g:100},
@@ -9347,11 +9348,16 @@ function pgAwardProgress(){
     {e:'👁️',n:'총 시야점수 1,000',v:s=>s.visionScore||0,g:1000},
     {e:'💢',n:'총 딜 100만',v:s=>s.damageToChampions||0,g:1000000},
     {e:'🔥',n:'올라운더 (킬·어시 100+)',v:s=>Math.min(s.kills,s.assists),g:100},
+    {e:'🛡️',n:'무결점 — 0데스 승리',v:s=>ts.T_noWin||0,g:5},
+    {e:'⚡',n:'솔로킬 사냥꾼 — 솔킬 2회+ 경기',v:s=>ts.T_solo||0,g:5},
+    {e:'🎯',n:'한타의 중심 — 킬관여 80%+ 경기',v:s=>ts.T_kp80||0,g:8},
+    {e:'📈',n:'연승 가도 — 최고 연승',v:s=>ts.T_streak||0,g:5},
+    {e:'🧭',n:'멀티 포지션 — 출전 라인 수',v:s=>ts.T_lanes||0,g:5},
   ];
   let h=head('🏅 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('prog')+
     `<div class="card" style="margin-bottom:14px"><span class="mini dim">선수 </span> <select onchange="window._apId=this.value;render()" style="margin-left:6px">${playerOpts(sel)}</select></div>`;
   if(!me)return h+'<div class="empty">아직 경기 기록이 없는 선수예요. 한 판이라도 기록되면 진척도가 생겨요.</div>';
-  const awards=makeAwards().filter(a=>a.target===me.name);
+  const awards=makeAwards().filter(a=>a.target&&(a.target===me.name||a.target.indexOf(me.name)>=0));
   const done=MS.filter(m=>(m.v(me)||0)>=m.g).length;
   h+=`<div class="card" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px">
     <div><div class="mini dim">획득 칭호</div><div style="font-size:22px;font-weight:800">${awards.length}<span class="mini dim"> 개</span></div></div>
