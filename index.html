@@ -1914,18 +1914,27 @@ function makeAwards(){
     if(oneInn>=5)push('포지션 마스터',pl.name,'5개 포지션 전부에서 1인분 이상');
     if(lanes.length>=5&&pl.winRate>=50)push('아포단 만능키',pl.name,'5개 포지션 출전 + 전체 승률 50% 이상');
   });
-  // ===== 끝판왕 칭호 (포지션별 시즌 최고 1명) =====
-  const _legName={TOP:'Zeus',JUNGLE:'Canyon',MID:'Faker',ADC:'Ruler',SUPPORT:'Keria'};
+  // ===== 끝판왕 칭호 (포지션별 최강 — 8종) =====
   const _legBy={TOP:[],JUNGLE:[],MID:[],ADC:[],SUPPORT:[]};
   P.forEach(pl=>{
     const ls=playerLaneStats(pl.id);
-    Object.keys(ls).forEach(L=>{const s=ls[L];if(s.g>=10&&_legBy[L]){const kda=(s.k+s.a)/Math.max(1,s.d),wr=Math.round(s.w/s.g*100);_legBy[L].push({name:pl.name,g:s.g,kda:kda,wr:wr})}});
+    Object.keys(ls).forEach(L=>{const s=ls[L];if(s.g>=10&&_legBy[L]){const kda=(s.k+s.a)/Math.max(1,s.d),wr=Math.round(s.w/s.g*100);_legBy[L].push({name:pl.name,g:s.g,kda:kda,wr:wr,dmg:Math.round(s.dmg/s.g),vis:Math.round(s.vis/s.g),dpg:s.d/s.g})}});
   });
-  Object.keys(_legName).forEach(L=>{
-    const cands=_legBy[L].filter(c=>c.kda>=3.5&&c.wr>=60);
+  const _LEG=[
+    {L:'TOP',t:'Zeus',d:'탑 최강자(승률)',ok:c=>c.kda>=3&&c.wr>=60,sort:(a,b)=>b.wr-a.wr||b.kda-a.kda},
+    {L:'TOP',t:'TheShy',d:'탑 캐리력(딜)',ok:c=>c.dmg>=22000&&c.kda>=2.5,sort:(a,b)=>b.dmg-a.dmg},
+    {L:'JUNGLE',t:'Canyon',d:'정글 최강자',ok:c=>c.kda>=3.5&&c.wr>=60,sort:(a,b)=>b.kda-a.kda||b.wr-a.wr},
+    {L:'MID',t:'Faker',d:'미드 황제(승률)',ok:c=>c.wr>=63&&c.kda>=3.3,sort:(a,b)=>b.wr-a.wr||b.kda-a.kda},
+    {L:'MID',t:'Chovy',d:'미드 안정성(저데스)',ok:c=>c.kda>=4&&c.dpg<=3,sort:(a,b)=>b.kda-a.kda},
+    {L:'ADC',t:'Ruler',d:'원딜 최강자(승률)',ok:c=>c.wr>=60&&c.kda>=3.3,sort:(a,b)=>b.wr-a.wr||b.kda-a.kda},
+    {L:'ADC',t:'Uzi',d:'원딜 화력(딜)',ok:c=>c.dmg>=25000,sort:(a,b)=>b.dmg-a.dmg},
+    {L:'SUPPORT',t:'Keria',d:'서폿 최강자(시야)',ok:c=>c.kda>=3&&c.wr>=58,sort:(a,b)=>b.vis-a.vis||b.wr-a.wr}
+  ];
+  _LEG.forEach(lg=>{
+    const cands=(_legBy[lg.L]||[]).filter(lg.ok);
     if(!cands.length)return;
-    const b=cands.sort((a,b)=>b.kda-a.kda||b.wr-a.wr)[0];
-    push(_legName[L],b.name,(LANE_KO[L]||L)+' 시즌 최고 — '+b.g+'판 승률 '+b.wr+'% KDA '+b.kda.toFixed(1));
+    const b=cands.slice().sort(lg.sort)[0];
+    push(lg.t,b.name,(LANE_KO[lg.L]||lg.L)+' '+lg.d+' — '+b.g+'판 승률'+b.wr+'% KDA'+b.kda.toFixed(1));
   });
   return out.slice(0,400);
 }
@@ -8355,13 +8364,31 @@ function filterPlayerList(){ // 한글 조립을 깨지 않도록, 목록만 부
   const box=$('pListBox'); if(box)box.innerHTML=playerListHtml(list);
   const c=$('pCount'); if(c)c.textContent=list.filter(x=>x.active).length;
 }
+function sideBalanceView(){
+  const SD=statSides(),PS=statPlayerSides(2);
+  if(!SD.total)return'<div class="empty" style="padding:30px">아직 경기 기록이 없어요. 경기를 기록하면 진영별 승률이 나와요!</div>';
+  return `<div class="card"><h3>진영 밸런스 <span class="tag">블루 vs 레드</span></h3>
+    <div class="row" style="gap:14px">
+      <b class="tBlue" style="font-size:18px">블루 ${SD.blue}승 (${SD.blueRate}%)</b>
+      <div class="bar grow" style="height:12px;background:rgba(255,92,122,.25)"><i style="width:${SD.blueRate}%;background:var(--blue)"></i></div>
+      <b class="tRed" style="font-size:18px">레드 ${SD.red}승 (${SD.redRate}%)</b>
+    </div>
+    ${PS.length?`<div class="hr"></div><p class="mini" style="margin:0 0 8px">개인별 진영 승률 (2판 이상)</p>
+    <div class="scrollx"><table class="tbl" style="min-width:620px"><thead><tr><th>플레이어</th><th class="num">블루 전적</th><th class="num">블루 승률</th><th class="num">레드 전적</th><th class="num">레드 승률</th><th>특화 진영</th></tr></thead><tbody>
+    ${PS.slice(0,30).map(x=>{const diff=x.bRate-x.rRate;const note=(x.bG<1||x.rG<1)?'<span class="pill">표본 부족</span>':Math.abs(diff)<10?'<span class="pill">밸런스형</span>':diff>0?'<span class="pill blue">블루 특화</span>':'<span class="pill lose">레드 특화</span>';
+      return`<tr><td><b>${esc(x.name)}</b></td><td class="num dim">${x.bW}승 ${x.bG-x.bW}패</td><td class="num ${x.bRate>=50?'up':'dn'}">${x.bG?x.bRate+'%':'-'}</td><td class="num dim">${x.rW}승 ${x.rG-x.rW}패</td><td class="num ${x.rRate>=50?'up':'dn'}">${x.rG?x.rRate+'%':'-'}</td><td>${note}</td></tr>`}).join('')}</tbody></table></div>`:''}
+  </div>`;
+}
 function pgPlayers(){
+  const _pt=window._plTab||'list';
+  const _psub=`<div class="subnav" style="margin-bottom:14px"><button class="${_pt==='list'?'on':''}" onclick="window._plTab='list';render()">👤 선수별</button><button class="${_pt==='sides'?'on':''}" onclick="window._plTab='sides';render()">🔵🔴 진영 밸런스</button></div>`;
+  if(_pt==='sides')return head('플레이어 관리','블루 vs 레드 진영별 승률과 개인 진영 특화를 봅니다.')+_psub+sideBalanceView();
   const list=playerListItems();
   const _sel=byId(selPlayer);
   if(!selPlayer||!_sel||(!isAdmin()&&_sel.active===false))selPlayer=list[0]?.id||state.players.find(x=>x.active)?.id||null;
   const p=byId(selPlayer);
   const e=editingPlayer?byId(editingPlayer):null;
-  return head('플레이어 관리','통계는 이름 글자가 아니라 고유 ID로 묶여서, 닉네임이 바뀌어도 같은 사람으로 유지돼요.')+`
+  return head('플레이어 관리','통계는 이름 글자가 아니라 고유 ID로 묶여서, 닉네임이 바뀌어도 같은 사람으로 유지돼요.')+_psub+`
   <div class="grid pGrid">
     <div class="card">
       <h3>명단 (<span id="pCount">${list.filter(x=>x.active).length}</span>명)</h3>
@@ -8603,19 +8630,7 @@ function tblPlayers(P){
 }
 function pgStats(){
   const D=statDuos(),R=statRivals(),PC=statPlayerChamps(),P=statPlayers();
-  const SD=statSides(),PS=statPlayerSides(2);
   return head('통계','개인 승률 · 진영 밸런스 · 듀오 시너지 · 상대전적 · 챔피언 궁합. 전부 플레이어 고유 ID 기준입니다.')+`
-  ${SD.total?`<div class="card" style="margin-bottom:14px"><h3>진영 밸런스 <span class="tag">블루 vs 레드</span></h3>
-    <div class="row" style="gap:14px">
-      <b class="tBlue" style="font-size:18px">블루 ${SD.blue}승 (${SD.blueRate}%)</b>
-      <div class="bar grow" style="height:12px;background:rgba(255,92,122,.25)"><i style="width:${SD.blueRate}%;background:var(--blue)"></i></div>
-      <b class="tRed" style="font-size:18px">레드 ${SD.red}승 (${SD.redRate}%)</b>
-    </div>
-    ${PS.length?`<div class="hr"></div><p class="mini" style="margin:0 0 8px">개인별 진영 승률 (2판 이상)</p>
-    <div class="scrollx"><table class="tbl" style="min-width:620px"><thead><tr><th>플레이어</th><th class="num">블루 전적</th><th class="num">블루 승률</th><th class="num">레드 전적</th><th class="num">레드 승률</th><th>특화 진영</th></tr></thead><tbody>
-    ${PS.slice(0,30).map(x=>{const diff=x.bRate-x.rRate;const note=(x.bG<1||x.rG<1)?'<span class="pill">표본 부족</span>':Math.abs(diff)<10?'<span class="pill">밸런스형</span>':diff>0?'<span class="pill blue">블루 특화</span>':'<span class="pill lose">레드 특화</span>';
-      return`<tr><td><b>${esc(x.name)}</b></td><td class="num dim">${x.bW}승 ${x.bG-x.bW}패</td><td class="num ${x.bRate>=50?'up':'dn'}">${x.bG?x.bRate+'%':'-'}</td><td class="num dim">${x.rW}승 ${x.rG-x.rW}패</td><td class="num ${x.rRate>=50?'up':'dn'}">${x.rG?x.rRate+'%':'-'}</td><td>${note}</td></tr>`}).join('')}</tbody></table></div>`:''}
-  </div>`:''}
   <div class="card"><h3>개인 승률</h3>${tblPlayers(P)}</div>
   <div class="grid c2" style="margin-top:14px">
     <div class="card"><h3>듀오 시너지 <span class="tag">2판 이상</span></h3>
@@ -9228,11 +9243,33 @@ const QUEST_DEFS=[
   {c:'ALL',u:'솔킬 2회+ 경기',mt:'T_solo',f:'n',T:[[1,0],[3,0],[5,0]]},
   {c:'ALL',u:'킬관여 80%+ 경기',mt:'T_kp80',f:'n',T:[[1,0],[3,0],[6,0]]}
 ];
+function _claimBtn(m){
+  const mid=m.c+'_'+m.mt+'_'+m.d;
+  if(window._qClaimed&&window._qClaimed.has(mid))return'<span class="pill win" style="flex:none">받음 ✅</span>';
+  if(window._qIsMe)return`<button class="btn sm gold" style="flex:none;padding:5px 9px;white-space:nowrap" onclick="questClaimDo('${mid}',${m.rw},'${esc(m.u)} ${m.d}')">받기 ${Math.round(m.rw).toLocaleString()}</button>`;
+  return'<span class="pill win" style="flex:none">✅ 달성</span>';
+}
+async function questClaimDo(mid,reward,label){
+  const B=bankSession();
+  if(!B||!B.name){toast('먼저 거래소(은행) 탭에서 로그인해주세요.',true);return}
+  try{
+    const j=await bankCall('questClaim',{missionId:mid,reward:reward,label:label});
+    if(!window._qClaimed)window._qClaimed=new Set();
+    window._qClaimed.add(mid);
+    toast('🎯 '+Math.round(reward).toLocaleString()+' APO 받았어요! (잔액 '+Math.round(j.bal).toLocaleString()+')');
+    render();
+  }catch(e){
+    if(e.status===409){if(!window._qClaimed)window._qClaimed=new Set();window._qClaimed.add(mid);render();toast('이미 받은 보상이에요.')}
+    else toast('받기 실패: '+e.message,true);
+  }
+}
 function _awQuest(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🎯 포지션 퀘스트','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+'<div class="empty">선수가 없어요.</div>';
   let sel=window._qId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
   const lane=mainLaneOf(sel), rs=qRecentStats(sel,5), ts=qTotalStats(sel);
+  window._qIsMe=(()=>{const _B=bankSession();const _sp=byId(sel);return !!(_B&&_B.name&&_sp&&(_sp.displayName===_B.name||_sp.name===_B.name))})();
+  if(window._qClaimedLoaded===undefined&&bankSession()){window._qClaimedLoaded=1;bankCall('qClaimed',{}).then(j=>{window._qClaimed=new Set(j.claimed||[]);render()}).catch(()=>{})}
   const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'};
   const lk=laneKo[lane]||'미정';
   const sels=`<select onchange="window._qId=this.value;render()" style="padding:8px 10px;border-radius:8px;font-size:14px;background:var(--inset);color:var(--text);border:1px solid var(--line2)">${ps.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${esc(p.displayName)}</option>`).join('')}</select>`;
@@ -9256,7 +9293,7 @@ function _awQuest(){
         <b style="font-size:13px">${esc(m.u)} ${fmtV(m.f,m.gl)}${m.low?' 이하':' 이상'}</b>
         <div class="bar grow" style="height:5px;margin-top:4px;background:var(--inset)"><i style="width:${pct}%;background:${done?'var(--win)':'var(--gold)'}"></i></div>
       </div>
-      ${done?'<span class="pill win" style="flex:none">✅</span>':`<span class="mini dim" style="min-width:50px;text-align:right;flex:none">${hd?fmtV(m.f,cur):'-'}</span><span class="pill gold" style="min-width:52px;text-align:center;flex:none">${km(m.rw)}</span>`}
+      ${done?_claimBtn(m):`<span class="mini dim" style="min-width:50px;text-align:right;flex:none">${hd?fmtV(m.f,cur):'-'}</span><span class="pill gold" style="min-width:52px;text-align:center;flex:none">${km(m.rw)}</span>`}
     </div>`;
   };
   const sect=(t,arr)=>arr.length?`<div class="card" style="margin-bottom:14px;padding:0;overflow:hidden"><h3 style="padding:12px 14px 8px;margin:0">${t} <span class="tag">${arr.length}개</span></h3>${arr.map(card).join('')}</div>`:'';
