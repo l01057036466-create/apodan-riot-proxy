@@ -7713,7 +7713,7 @@ function render(opt){
   const _se=(typeof document!=='undefined'&&(document.scrollingElement||document.documentElement))||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
   const _sy=Math.max((_se&&_se.scrollTop)||0,(document.body&&document.body.scrollTop)||0,((typeof window!=='undefined'&&(window.pageYOffset||window.scrollY))||0));
   const _sx=(typeof document!=='undefined'&&document.querySelectorAll)?[...document.querySelectorAll('.scrollx')].map(el=>el.scrollLeft):[]; // 🐛fix: 가로 스크롤(표)도 보존
-  $('view').innerHTML=(R[tab]||pgDashboard)();
+  try{$('view').innerHTML=(R[tab]||pgDashboard)();}catch(_pgErr){console.error('[render]',tab,_pgErr);$('view').innerHTML=`<div class="card" style="max-width:600px;margin:24px auto"><h3>⚠️ 페이지 오류</h3><p class="mini">${esc(tab)} 페이지를 불러오다 문제가 생겼어요.</p><p class="mini" style="color:var(--lose);word-break:break-all">${esc(String((_pgErr&&_pgErr.message)||_pgErr))}</p><p class="mini dim">이 메시지를 개발자에게 알려주세요</p></div>`;}
   const after={record:afterRecord,players:afterPlayers}[tab]; if(after)after();
   if(window._scrollTab===tab){
     const _put=()=>{try{
@@ -9105,7 +9105,60 @@ function _awTabs(t){return`<div class="subnav" style="margin:0 0 14px">
   <button class="${t==='prog'?'on':''}" onclick="window._awTab='prog';render()">🏅 진척도</button>
   <button class="${t==='quest'?'on':''}" onclick="window._awTab='quest';render()">🎯 퀘스트</button>
 </div>`}
-function _awQuest(){return head('🏅 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+`<div class="card" style="text-align:center;padding:42px 20px"><div style="font-size:42px">🎯</div><h3 style="margin:12px 0 6px">포지션 퀘스트 준비 중</h3><p class="mini dim">포지션별 미션을 깨고 APO를 받는 기능이 곧 추가돼요!</p></div>`}
+function mainLaneOf(pid){
+  const c={};
+  state.matches.forEach(m=>(m.participants||[]).forEach(p=>{if(p.playerId===pid&&p.lane)c[p.lane]=(c[p.lane]||0)+1}));
+  let best=null,bn=0; for(const k in c)if(c[k]>bn){bn=c[k];best=k} return best;
+}
+function qRecentStats(pid,N){
+  const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(b.playedAt||'').localeCompare(String(a.playedAt||''))).slice(0,N);
+  let g=0,k=0,d=0,a=0,dmg=0,tk=0,vis=0,cs=0,gold=0,win=0;
+  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;g++;k+=p.kills||0;d+=p.deaths||0;a+=p.assists||0;dmg+=(p.stats&&p.stats.damageToChampions)||0;tk+=(p.stats&&p.stats.damageTaken)||0;vis+=(p.stats&&p.stats.visionScore)||0;cs+=(p.stats&&p.stats.cs)||0;gold+=(p.stats&&p.stats.goldEarned)||0;if(m.winnerTeam===p.team)win++});
+  if(!g)return null;
+  return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
+}
+const POS_QUESTS={
+  TOP:[{ic:'🛡️',nm:'철벽 탱커',ds:'평균 받은 피해 22,000 이상',mt:'avgTaken',gl:22000,rw:3000},{ic:'🏆',nm:'탑 캐리',ds:'승률 50% 이상',mt:'winRate',gl:50,rw:3000},{ic:'⚔️',nm:'안정적인 탑',ds:'KDA 2.5 이상',mt:'kda',gl:2.5,rw:2000}],
+  JUNGLE:[{ic:'🗺️',nm:'갱킹 마스터',ds:'평균 킬관여(킬+어시) 10 이상',mt:'ka',gl:10,rw:3000},{ic:'👁️',nm:'시야 장악',ds:'평균 시야 점수 18 이상',mt:'avgVision',gl:18,rw:3000},{ic:'⚔️',nm:'정글 차이',ds:'KDA 3 이상',mt:'kda',gl:3,rw:2000}],
+  MID:[{ic:'💥',nm:'딜링 머신',ds:'평균 딜량 24,000 이상',mt:'avgDmg',gl:24000,rw:3000},{ic:'🎯',nm:'미드 지배자',ds:'KDA 3.5 이상',mt:'kda',gl:3.5,rw:3000},{ic:'🔥',nm:'로밍의 신',ds:'평균 킬 5 이상',mt:'kills',gl:5,rw:2000}],
+  ADC:[{ic:'💥',nm:'원거리 화력',ds:'평균 딜량 28,000 이상',mt:'avgDmg',gl:28000,rw:3000},{ic:'💰',nm:'골드 파밍',ds:'평균 골드 12,000 이상',mt:'avgGold',gl:12000,rw:3000},{ic:'🛟',nm:'생존왕',ds:'평균 데스 4 이하',mt:'deaths',gl:4,rw:2000,low:true}],
+  SUPPORT:[{ic:'👁️',nm:'시야 지배',ds:'평균 시야 점수 30 이상',mt:'avgVision',gl:30,rw:3000},{ic:'🤝',nm:'서포팅',ds:'평균 어시 11 이상',mt:'assists',gl:11,rw:3000},{ic:'🏆',nm:'캐리 서폿',ds:'승률 50% 이상',mt:'winRate',gl:50,rw:2000}]
+};
+function _awQuest(){
+  const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
+  if(!ps.length)return head('🎯 포지션 퀘스트','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+'<div class="empty">선수가 없어요.</div>';
+  let sel=window._qId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
+  const lane=mainLaneOf(sel), rs=qRecentStats(sel,5);
+  const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'}[lane]||'미정';
+  const qs=lane&&POS_QUESTS[lane]?POS_QUESTS[lane]:[];
+  const sels=`<select onchange="window._qId=this.value;render()" style="padding:8px 10px;border-radius:8px;font-size:14px;background:var(--inset);color:var(--text);border:1px solid var(--line2)">${ps.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${esc(p.displayName)}</option>`).join('')}</select>`;
+  const fmt1=n=>Math.round(n).toLocaleString();
+  const valS=(mt,v)=>(mt==='avgDmg'||mt==='avgGold'||mt==='avgTaken')?fmt1(v):(mt==='winRate')?Math.round(v)+'%':(mt==='ka'||mt==='kda'||mt==='kills'||mt==='deaths')?(+v).toFixed(1):String(v);
+  const cards=qs.map(q=>{
+    const cur=rs?(rs[q.mt]||0):0;
+    const done=rs?(q.low?cur<=q.gl:cur>=q.gl):false;
+    const pct=q.low?(cur<=q.gl?100:Math.max(0,Math.round(100-(cur-q.gl)/q.gl*100))):Math.min(100,Math.round(cur/q.gl*100));
+    return`<div class="card" style="margin-bottom:10px;${done?'border:1px solid var(--win)':''}">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px">
+        <div><b style="font-size:15px">${q.ic} ${esc(q.nm)}</b><p class="mini dim" style="margin:2px 0 0">${esc(q.ds)}</p></div>
+        ${done?'<span class="pill win">✅ 달성</span>':`<span class="pill gold">+${fmt1(q.rw)} APO</span>`}
+      </div>
+      <div class="bar grow" style="height:10px;margin-top:8px;background:var(--inset)"><i style="width:${pct}%;background:${done?'var(--win)':'var(--gold)'}"></i></div>
+      <p class="mini" style="margin:5px 0 0">현재 <b>${rs?valS(q.mt,cur):'-'}</b> / 목표 ${valS(q.mt,q.gl)} ${done||!rs?'':`<span class="dim">(${pct}%)</span>`}</p>
+    </div>`;
+  }).join('');
+  const earned=qs.filter(q=>rs?(q.low?(rs[q.mt]||0)<=q.gl:(rs[q.mt]||0)>=q.gl):false).reduce((sm,q)=>sm+q.rw,0);
+  return head('🎯 포지션 퀘스트','최근 5경기 기록으로 자동 판정 · 달성하면 APO 보상')+_awTabs('quest')+`
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
+      <span>선수</span>${sels}
+      <span class="pill blue">주 포지션 ${laneKo}</span>
+      ${rs?`<span class="mini dim">최근 ${rs.games}경기 기준</span>`:'<span class="mini dim">기록 없음</span>'}
+    </div>
+    ${earned?`<p class="mini" style="margin:8px 0 0;color:var(--win)">🎉 현재 달성 보상 합계 <b>${fmt1(earned)} APO</b> <span class="dim">(지급 기능 곧 추가)</span></p>`:''}
+  </div>
+  ${lane?cards:'<div class="empty">아직 출전 기록이 없어 포지션을 정할 수 없어요.</div>'}`;
+}
 function pgAwardProgress(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🏅 칭호 진척도','')+'<div class="empty">선수가 없어요.</div>';
@@ -9179,6 +9232,7 @@ function pgAwards(){
   const _t=window._awTab||'list';
   if(_t==='prog')return pgAwardProgress();
   if(_t==='quest')return _awQuest();
+  try{
   const A=withSeasonMatches(()=>makeAwards());
   const DUO=new Set(['국밥 듀오','서사가 필요한 듀오','쌍둥이 텔레파시']);
   const RIV=new Set(['천적 관계','영혼의 라이벌']);
@@ -9227,6 +9281,7 @@ function pgAwards(){
       <div><b class="mini" style="color:var(--gold)">📈 주식 (거래소 랭킹)</b><p class="mini">주식의 신 · 텐배거 헌터 · 수익 장인 · 알짜 투자자 · 단타의 신 · 데이트레이더 · 존버 장인 · 큰손 오브 아포단 · 무거래 적금러 · 파산 후 부활 · 롤러코스터 · 한강뷰 전문가 · 손절 기계 · 깡통계좌 · 오버트레이딩 희생자</p></div>
       <div><b class="mini" style="color:var(--gold)">듀오 · 상대 · 챔피언</b><p class="mini">국밥 듀오 · 서사가 필요한 듀오 · 쌍둥이 텔레파시 · 천적 관계 · 영혼의 라이벌 · 승리 부적 · 봉인픽 · 밴카드 도둑 · 원챔 장인</p></div>
     </div></div>`+__hof;
+  }catch(_awErr){console.error('[pgAwards]',_awErr);return head('🏆 칭호','칭호 · 진척도 · 퀘스트')+_awTabs('list')+`<div class="card"><h3>⚠️ 칭호 표시 오류</h3><p class="mini" style="color:var(--lose);word-break:break-all">${esc(String((_awErr&&_awErr.message)||_awErr))}</p><p class="mini dim">이 메시지를 개발자에게 알려주세요</p></div>`;}
 }
 
 /* (베타 MVP 삭제 — 온라인 회차별 MVP로 대체) */
