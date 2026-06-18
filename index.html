@@ -409,6 +409,23 @@ body.space .card{border-color:var(--line2)}
   .matchTbl td{padding:7px 6px}
   .matchTbl td:first-child{white-space:nowrap}
 }
+
+/* 미니탭 글자 가독성 + 페이지 헤더(head) 잘림 수정 */
+.subnav button{background:var(--inset);color:var(--text);border:1px solid var(--line2);border-radius:8px}
+.subnav button.on{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:800}
+.pageHead>div:first-child{min-width:0;flex:1 1 auto}
+.pageHead .sub{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.meta{flex-wrap:wrap}
+@media (max-width:560px){
+  .meta{gap:5px}
+  .meta .chip{font-size:11px;padding:4px 8px}
+  .pageHead .sub{font-size:12.5px}
+  .pageHead h2{word-break:keep-all}
+}
+
+/* 선수 페이지 2열 → 모바일 1열 (가로 잘림 방지) */
+.pGrid{grid-template-columns:330px minmax(0,1fr)}
+@media (max-width:880px){.pGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1863,7 +1880,18 @@ function makeAwards(){
   if(onetrick)push('원챔 장인',onetrick.name,`${onetrick.champion}만 ${onetrick.games}판 · 장인 정신 그 자체`);
   // 🏅 수동 영구 칭호 — 이름/별명 매칭 → displayName 타겟 (프로필·랭킹 표시)
   for(const _nm in FORCED_TITLES){const _fp=state.players.find(pl=>pl.displayName===_nm||pl.kakaoName===_nm||(pl.aliases||[]).includes(_nm));const _tg=_fp?_fp.displayName:_nm;FORCED_TITLES[_nm].forEach(_t=>{if(!out.some(a=>a.title===_t&&a.target===_tg))push(_t,_tg,'🏅 명예 영구 칭호');});}
-  return out.slice(0,100);
+  // ===== 챔피언 장인 칭호 (실제 장인 오마주, 챔피언당 1명) =====
+  const CHAMP_MASTER={'자이라':'닝겐자이라','자크':'박종하','잔나':'아라미','잭스':'샤이','제드':'온제','제라스':'엔마','제리':'괴물쥐','제이스':'제우스','조이':'명조이','직스':'헤징','진':'프레이','질리언':'가재맨','징크스':'고수달','초가스':'Cho God','카르마':'막눈','카밀':'갓키형','카사딘':'도파','카서스':'이석희','카시오페아':'백크','카이사':'땅우양','카직스':'미니언 고립','카타리나':'크림몬','칼리스타':'뜨뜨뜨뜨','케넨':'케넨장관','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'돌카사','크산테':'깨돌이','클레드':'좀비클레드','키아나':'재만이','킨드레드':'표식','타릭':'애디','탈론':'과로사','탐 켄치':'탐탐이','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'항심','파이크':'Davemon','판테온':'나라카일','피들스틱':'테디스틱','피오라':'피오라킹','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'유웨이'};
+  Object.keys(CHAMP_MASTER).forEach(ch=>{
+    const cands=PC.filter(x=>x.champion===ch&&x.games>=3);
+    if(!cands.length)return;
+    const b=cands.slice().sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
+    const nm=CHAMP_MASTER[ch];
+    if(b.games>=8&&b.winRate>=65)push('아포단 '+nm,b.name,ch+' 봉인픽 — '+b.games+'판 승률 '+b.winRate+'%');
+    else if(b.games>=5&&b.winRate>=60)push(nm,b.name,ch+' 네임드 — '+b.games+'판 승률 '+b.winRate+'%');
+    else if(b.games>=3&&b.winRate>=50)push(nm+' 숙련자',b.name,ch+' 숙련자 — '+b.games+'판 승률 '+b.winRate+'%');
+  });
+  return out.slice(0,400);
 }
 
 /* ============================================================
@@ -7697,6 +7725,7 @@ function render(opt){
   if(window._ime){window._renderQueued=1;return} // 한글 조합 중엔 화면 교체 보류 (글자 깨짐 방지)
   if(opt!=='force'&&isTypingText()){window._renderQueued=1;return} // ⌨ 텍스트 입력 중에만 화면 교체 보류 (로그인 PIN 등 보호 · select 변경은 즉시 반영)
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
+  if(!state.season)state.season={no:1,startDate:''};
   syncArtCatalog();renderNav();renderTicker();fillDatalists();
   if(state.settings&&state.settings.maintenance&&!isAdmin()){
     $('view').innerHTML=`<div class="card" style="max-width:560px;margin:60px auto;text-align:center;padding:40px 24px">
@@ -8297,7 +8326,7 @@ function pgPlayers(){
   const p=byId(selPlayer);
   const e=editingPlayer?byId(editingPlayer):null;
   return head('플레이어 관리','통계는 이름 글자가 아니라 고유 ID로 묶여서, 닉네임이 바뀌어도 같은 사람으로 유지돼요.')+`
-  <div class="grid" style="grid-template-columns:330px minmax(0,1fr)">
+  <div class="grid pGrid">
     <div class="card">
       <h3>명단 (<span id="pCount">${list.filter(x=>x.active).length}</span>명)</h3>
       <div class="f" style="margin-bottom:10px"><input id="pq" placeholder="이름·롤닉 검색" value="${esc(window._pq||'')}" oninput="window._pq=this.value;filterPlayerList()"></div>
@@ -9117,47 +9146,96 @@ function qRecentStats(pid,N){
   if(!g)return null;
   return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
 }
-const POS_QUESTS={
-  TOP:[{ic:'🛡️',nm:'철벽 탱커',ds:'평균 받은 피해 22,000 이상',mt:'avgTaken',gl:22000,rw:3000},{ic:'🏆',nm:'탑 캐리',ds:'승률 50% 이상',mt:'winRate',gl:50,rw:3000},{ic:'⚔️',nm:'안정적인 탑',ds:'KDA 2.5 이상',mt:'kda',gl:2.5,rw:2000}],
-  JUNGLE:[{ic:'🗺️',nm:'갱킹 마스터',ds:'평균 킬관여(킬+어시) 10 이상',mt:'ka',gl:10,rw:3000},{ic:'👁️',nm:'시야 장악',ds:'평균 시야 점수 18 이상',mt:'avgVision',gl:18,rw:3000},{ic:'⚔️',nm:'정글 차이',ds:'KDA 3 이상',mt:'kda',gl:3,rw:2000}],
-  MID:[{ic:'💥',nm:'딜링 머신',ds:'평균 딜량 24,000 이상',mt:'avgDmg',gl:24000,rw:3000},{ic:'🎯',nm:'미드 지배자',ds:'KDA 3.5 이상',mt:'kda',gl:3.5,rw:3000},{ic:'🔥',nm:'로밍의 신',ds:'평균 킬 5 이상',mt:'kills',gl:5,rw:2000}],
-  ADC:[{ic:'💥',nm:'원거리 화력',ds:'평균 딜량 28,000 이상',mt:'avgDmg',gl:28000,rw:3000},{ic:'💰',nm:'골드 파밍',ds:'평균 골드 12,000 이상',mt:'avgGold',gl:12000,rw:3000},{ic:'🛟',nm:'생존왕',ds:'평균 데스 4 이하',mt:'deaths',gl:4,rw:2000,low:true}],
-  SUPPORT:[{ic:'👁️',nm:'시야 지배',ds:'평균 시야 점수 30 이상',mt:'avgVision',gl:30,rw:3000},{ic:'🤝',nm:'서포팅',ds:'평균 어시 11 이상',mt:'assists',gl:11,rw:3000},{ic:'🏆',nm:'캐리 서폿',ds:'승률 50% 이상',mt:'winRate',gl:50,rw:2000}]
-};
+function qTotalStats(pid){
+  const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(a.playedAt||'').localeCompare(String(b.playedAt||'')));
+  if(!ms.length)return null;
+  let w=0,st=0,best=0,tk=0,td=0,ta=0,mvp=0,tdmg=0,tvis=0,tcs=0; const lanes=new Set();
+  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;if(p.lane)lanes.add(p.lane);const win=m.winnerTeam===p.team;if(win){w++;st++;if(st>best)best=st}else st=0;tk+=p.kills||0;td+=p.deaths||0;ta+=p.assists||0;if(typeof mvpOf==='function'&&mvpOf(m)===pid)mvp++;tdmg+=(p.stats&&p.stats.damageToChampions)||0;tvis+=(p.stats&&p.stats.visionScore)||0;tcs+=(p.stats&&p.stats.cs)||0});
+  return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs};
+}
+const QUEST_DEFS=[
+  {c:'TOP',u:'받은 피해',mt:'avgTaken',f:'k',T:[[15000,2000],[22000,3000],[30000,5000]]},
+  {c:'TOP',u:'KDA',mt:'kda',f:'d',T:[[2,2000],[2.5,3000],[3.5,5000]]},
+  {c:'TOP',u:'승률',mt:'winRate',f:'p',T:[[40,2000],[50,3000],[65,5000]]},
+  {c:'TOP',u:'CS',mt:'avgCs',f:'n',T:[[150,2000],[200,3000],[250,5000]]},
+  {c:'JUNGLE',u:'킬관여(킬+어시)',mt:'ka',f:'d',T:[[8,2000],[10,3000],[14,5000]]},
+  {c:'JUNGLE',u:'시야 점수',mt:'avgVision',f:'d',T:[[14,2000],[18,3000],[24,5000]]},
+  {c:'JUNGLE',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3,3000],[4,5000]]},
+  {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',T:[[3,2000],[5,3000],[7,5000]]},
+  {c:'MID',u:'딜량',mt:'avgDmg',f:'k',T:[[18000,2000],[24000,3000],[32000,5000]]},
+  {c:'MID',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[4.5,5000]]},
+  {c:'MID',u:'평균 킬',mt:'kills',f:'d',T:[[4,2000],[5,3000],[7,5000]]},
+  {c:'MID',u:'CS',mt:'avgCs',f:'n',T:[[160,2000],[210,3000],[260,5000]]},
+  {c:'ADC',u:'딜량',mt:'avgDmg',f:'k',T:[[20000,2000],[28000,3000],[36000,5000]]},
+  {c:'ADC',u:'골드',mt:'avgGold',f:'k',T:[[10000,2000],[12000,3000],[15000,5000]]},
+  {c:'ADC',u:'데스',mt:'deaths',f:'d',low:1,T:[[5,2000],[4,3000],[3,5000]]},
+  {c:'ADC',u:'CS',mt:'avgCs',f:'n',T:[[170,2000],[220,3000],[270,5000]]},
+  {c:'SUPPORT',u:'시야 점수',mt:'avgVision',f:'d',T:[[22,2000],[30,3000],[40,5000]]},
+  {c:'SUPPORT',u:'어시',mt:'assists',f:'d',T:[[9,2000],[11,3000],[15,5000]]},
+  {c:'SUPPORT',u:'승률',mt:'winRate',f:'p',T:[[40,2000],[50,3000],[65,5000]]},
+  {c:'SUPPORT',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[5,5000]]},
+  {c:'ALL',u:'통산 승리',mt:'T_wins',f:'n',T:[[5,2000],[15,3000],[30,5000]]},
+  {c:'ALL',u:'통산 경기',mt:'T_games',f:'n',T:[[10,2000],[30,3000],[60,5000]]},
+  {c:'ALL',u:'MVP 횟수',mt:'T_mvp',f:'n',T:[[1,2000],[3,3000],[7,5000]]},
+  {c:'ALL',u:'통산 킬',mt:'T_kills',f:'n',T:[[50,2000],[150,3000],[300,5000]]},
+  {c:'ALL',u:'통산 어시',mt:'T_assists',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
+  {c:'ALL',u:'통산 KDA',mt:'T_kda',f:'d',T:[[2,2000],[3,3000],[4,5000]]},
+  {c:'ALL',u:'경험한 포지션 수',mt:'T_lanes',f:'n',T:[[2,2000],[3,3000],[5,5000]]},
+  {c:'ALL',u:'최다 연승',mt:'T_streak',f:'n',T:[[2,2000],[3,3000],[5,5000]]},
+  {c:'ALL',u:'통산 딜량(만)',mt:'T_dmg',f:'n',T:[[20,2000],[50,3000],[100,5000]]},
+  {c:'ALL',u:'통산 시야',mt:'T_vision',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
+  {c:'ALL',u:'통산 CS',mt:'T_cs',f:'n',T:[[1000,2000],[2500,3000],[5000,5000]]},
+  {c:'ALL',u:'통산 승리(고수)',mt:'T_wins',f:'n',T:[[40,3000],[60,4000],[80,6000]]},
+  {c:'ALL',u:'통산 킬(고수)',mt:'T_kills',f:'n',T:[[400,3000],[600,4000],[800,6000]]},
+  {c:'ALL',u:'통산 경기(고수)',mt:'T_games',f:'n',T:[[50,3000],[80,4000],[120,6000]]}
+];
 function _awQuest(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🎯 포지션 퀘스트','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+'<div class="empty">선수가 없어요.</div>';
   let sel=window._qId; if(!ps.some(p=>p.id===sel))sel=ps[0].id;
-  const lane=mainLaneOf(sel), rs=qRecentStats(sel,5);
-  const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'}[lane]||'미정';
-  const qs=lane&&POS_QUESTS[lane]?POS_QUESTS[lane]:[];
+  const lane=mainLaneOf(sel), rs=qRecentStats(sel,5), ts=qTotalStats(sel);
+  const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'};
+  const lk=laneKo[lane]||'미정';
   const sels=`<select onchange="window._qId=this.value;render()" style="padding:8px 10px;border-radius:8px;font-size:14px;background:var(--inset);color:var(--text);border:1px solid var(--line2)">${ps.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${esc(p.displayName)}</option>`).join('')}</select>`;
-  const fmt1=n=>Math.round(n).toLocaleString();
-  const valS=(mt,v)=>(mt==='avgDmg'||mt==='avgGold'||mt==='avgTaken')?fmt1(v):(mt==='winRate')?Math.round(v)+'%':(mt==='ka'||mt==='kda'||mt==='kills'||mt==='deaths')?(+v).toFixed(1):String(v);
-  const cards=qs.map(q=>{
-    const cur=rs?(rs[q.mt]||0):0;
-    const done=rs?(q.low?cur<=q.gl:cur>=q.gl):false;
-    const pct=q.low?(cur<=q.gl?100:Math.max(0,Math.round(100-(cur-q.gl)/q.gl*100))):Math.min(100,Math.round(cur/q.gl*100));
-    return`<div class="card" style="margin-bottom:10px;${done?'border:1px solid var(--win)':''}">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px">
-        <div><b style="font-size:15px">${q.ic} ${esc(q.nm)}</b><p class="mini dim" style="margin:2px 0 0">${esc(q.ds)}</p></div>
-        ${done?'<span class="pill win">✅ 달성</span>':`<span class="pill gold">+${fmt1(q.rw)} APO</span>`}
+  const km=n=>Math.round(n).toLocaleString();
+  const fmtV=(f,v)=>f==='k'?km(v):f==='p'?Math.round(v)+'%':f==='d'?(+v).toFixed(1):km(v);
+  const dn=['하','중','상','최상'];const RW=[400,1500,4000,8000];
+  const all=[];
+  QUEST_DEFS.forEach(def=>{const last=def.T[def.T.length-1];const ex=def.low?[Math.max(1,Math.round(last[0]*0.7)),0]:[Math.round(last[0]*1.3),0];def.T.concat([ex]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
+  const valOf=m=>m.c==='ALL'?(ts?(ts[m.mt]||0):0):(rs?(rs[m.mt]||0):0);
+  const hasData=m=>m.c==='ALL'?!!ts:!!rs;
+  let totalEarn=0,doneN=0;
+  const card=m=>{
+    const cur=valOf(m), hd=hasData(m);
+    const done=hd&&(m.low?cur<=m.gl:cur>=m.gl);
+    if(done){totalEarn+=m.rw;doneN++}
+    const pct=m.low?(cur<=m.gl?100:Math.max(0,Math.round(100-(cur-m.gl)/m.gl*100))):Math.min(100,Math.round((cur/Math.max(1,m.gl))*100));
+    const dc=m.d==='최상'?'lose':m.d==='상'?'gold':m.d==='중'?'blue':'';
+    return`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);${done?'background:rgba(46,204,113,.07)':''}">
+      <span class="pill ${dc}" style="min-width:26px;text-align:center;flex:none">${m.d}</span>
+      <div style="flex:1;min-width:0">
+        <b style="font-size:13px">${esc(m.u)} ${fmtV(m.f,m.gl)}${m.low?' 이하':' 이상'}</b>
+        <div class="bar grow" style="height:5px;margin-top:4px;background:var(--inset)"><i style="width:${pct}%;background:${done?'var(--win)':'var(--gold)'}"></i></div>
       </div>
-      <div class="bar grow" style="height:10px;margin-top:8px;background:var(--inset)"><i style="width:${pct}%;background:${done?'var(--win)':'var(--gold)'}"></i></div>
-      <p class="mini" style="margin:5px 0 0">현재 <b>${rs?valS(q.mt,cur):'-'}</b> / 목표 ${valS(q.mt,q.gl)} ${done||!rs?'':`<span class="dim">(${pct}%)</span>`}</p>
+      ${done?'<span class="pill win" style="flex:none">✅</span>':`<span class="mini dim" style="min-width:50px;text-align:right;flex:none">${hd?fmtV(m.f,cur):'-'}</span><span class="pill gold" style="min-width:52px;text-align:center;flex:none">${km(m.rw)}</span>`}
     </div>`;
-  }).join('');
-  const earned=qs.filter(q=>rs?(q.low?(rs[q.mt]||0)<=q.gl:(rs[q.mt]||0)>=q.gl):false).reduce((sm,q)=>sm+q.rw,0);
-  return head('🎯 포지션 퀘스트','최근 5경기 기록으로 자동 판정 · 달성하면 APO 보상')+_awTabs('quest')+`
+  };
+  const sect=(t,arr)=>arr.length?`<div class="card" style="margin-bottom:14px;padding:0;overflow:hidden"><h3 style="padding:12px 14px 8px;margin:0">${t} <span class="tag">${arr.length}개</span></h3>${arr.map(card).join('')}</div>`:'';
+  const myPos=all.filter(m=>m.c===lane);
+  const allCat=all.filter(m=>m.c==='ALL');
+  const myHtml=lane?sect('🎯 내 주포지션 ('+lk+')',myPos):'';
+  const allHtml=sect('🌟 종합 도전',allCat);
+  const otherHtml=Object.keys(laneKo).filter(L=>L!==lane).map(L=>sect(laneKo[L]+' 포지션 도전',all.filter(m=>m.c===L))).join('');
+  const body=myHtml+allHtml+`<h3 style="margin:18px 0 10px">🔓 다른 포지션 도전</h3>`+otherHtml;
+  const earnHtml=totalEarn?`<div class="card" style="margin:6px 0 14px;border:1px solid var(--win)"><p class="mini" style="margin:0;color:var(--win)">🎉 달성 미션 <b>${doneN}개</b> · 보상 합계 <b>${km(totalEarn)} APO</b> <span class="dim">(지급 기능 곧 추가)</span></p></div>`:'';
+  return head('🎯 포지션 퀘스트','최근 5경기·통산 기록으로 자동 판정 · 총 '+all.length+'개 미션')+_awTabs('quest')+`
   <div class="card" style="margin-bottom:14px">
     <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
       <span>선수</span>${sels}
-      <span class="pill blue">주 포지션 ${laneKo}</span>
-      ${rs?`<span class="mini dim">최근 ${rs.games}경기 기준</span>`:'<span class="mini dim">기록 없음</span>'}
+      <span class="pill blue">주 포지션 ${lk}</span>
+      ${rs?`<span class="mini dim">최근 ${rs.games}경기</span>`:'<span class="mini dim">최근 경기 기록 없음</span>'}
     </div>
-    ${earned?`<p class="mini" style="margin:8px 0 0;color:var(--win)">🎉 현재 달성 보상 합계 <b>${fmt1(earned)} APO</b> <span class="dim">(지급 기능 곧 추가)</span></p>`:''}
-  </div>
-  ${lane?cards:'<div class="empty">아직 출전 기록이 없어 포지션을 정할 수 없어요.</div>'}`;
+  </div>`+earnHtml+body;
 }
 function pgAwardProgress(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
@@ -9253,8 +9331,8 @@ function pgAwards(){
     </div>`;
   const __sv=window._seasonView||'all';
   const __seasonBar=`<div class="card" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-    <b>🗓 시즌 ${state.season.no}</b>
-    ${state.season.startDate?`<span class="mini dim">${state.season.startDate} ~ 진행 중</span>`:`<span class="mini dim">전체 기간 (첫 시즌)</span>`}
+    <b>🗓 시즌 ${(state.season&&state.season.no)||1}</b>
+    ${(state.season&&state.season.startDate)?`<span class="mini dim">${state.season.startDate} ~ 진행 중</span>`:`<span class="mini dim">전체 기간 (첫 시즌)</span>`}
     <span style="flex:1"></span>
     <button class="btn sm${__sv==='season'?'':' ghost'}" onclick="setSeasonView('season')">이번 시즌</button>
     <button class="btn sm${__sv==='all'?'':' ghost'}" onclick="setSeasonView('all')">통산</button>
