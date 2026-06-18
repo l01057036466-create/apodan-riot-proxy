@@ -9247,10 +9247,10 @@ const QUEST_DEFS=[
   {c:'JUNGLE',u:'킬관여(킬+어시)',mt:'ka',f:'d',T:[[8,2000],[10,3000],[14,5000]]},
   {c:'JUNGLE',u:'시야 점수',mt:'avgVision',f:'d',T:[[14,2000],[18,3000],[24,5000]]},
   {c:'JUNGLE',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3,3000],[4,5000]]},
-  {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',cap:6,T:[[2,2000],[3,3000],[4,5000]]},
+  {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',T:[[3,2000],[5,3000],[7,5000]]},
   {c:'MID',u:'딜량',mt:'avgDmg',f:'k',T:[[18000,2000],[24000,3000],[32000,5000]]},
   {c:'MID',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[4.5,5000]]},
-  {c:'MID',u:'평균 킬',mt:'kills',f:'d',cap:6,T:[[2,2000],[3,3000],[4,5000]]},
+  {c:'MID',u:'평균 킬',mt:'kills',f:'d',T:[[4,2000],[5,3000],[7,5000]]},
   {c:'MID',u:'CS',mt:'avgCs',f:'n',T:[[160,2000],[210,3000],[260,5000]]},
   {c:'ADC',u:'딜량',mt:'avgDmg',f:'k',T:[[20000,2000],[28000,3000],[36000,5000]]},
   {c:'ADC',u:'골드',mt:'avgGold',f:'k',T:[[10000,2000],[12000,3000],[15000,5000]]},
@@ -9318,7 +9318,7 @@ function _awQuest(){
   const fmtV=(f,v)=>f==='k'?km(v):f==='p'?Math.round(v)+'%':f==='d'?(+v).toFixed(1):km(v);
   const dn=['하','중','상','최상'];const RW=[150,500,1500,3500];
   const all=[];
-  QUEST_DEFS.forEach(def=>{const last=def.T[def.T.length-1];let _eg=def.low?Math.max(1,Math.round(last[0]*0.7)):Math.round(last[0]*1.3);if(def.cap!=null)_eg=def.low?Math.max(_eg,def.cap):Math.min(_eg,def.cap);def.T.concat([[_eg,0]]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
+  QUEST_DEFS.forEach(def=>{const _fix=def.mt==='kills'||def.mt==='T_lanes';const _rnd=v=>def.f==='n'?Math.round(v):Math.round(v*10)/10;const T2=def.T.map((t,i)=>(i===2&&!def.low&&!_fix)?[_rnd(t[0]*1.2),t[1]]:t);const last=T2[T2.length-1];let _eg=def.low?Math.max(1,Math.round(last[0]*0.7)):_rnd(last[0]*(_fix?1.3:1.5));if(def.mt==='winRate')_eg=Math.min(_eg,92);if(def.cap!=null)_eg=def.low?Math.max(_eg,def.cap):Math.min(_eg,def.cap);T2.concat([[_eg,0]]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
   const valOf=m=>m.c==='ALL'?(ts?(ts[m.mt]||0):0):(rs?(rs[m.mt]||0):0);
   const hasData=m=>m.c==='ALL'?!!ts:!!rs;
   let totalEarn=0,doneN=0;
