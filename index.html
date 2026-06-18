@@ -343,6 +343,14 @@ body.space{
   --violet:#cf9eff; --neon:#bd6bff; --green:#5cf394;
   --shadow:0 14px 44px rgba(60,25,120,.42);
   background:
+    radial-gradient(1.3px 1.3px at 15% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 78% 16%, rgba(255,255,255,.85), transparent),
+    radial-gradient(1.4px 1.4px at 42% 9%, #fff, transparent),
+    radial-gradient(1px 1px at 90% 38%, rgba(207,158,255,.9), transparent),
+    radial-gradient(1px 1px at 11% 58%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1.3px 1.3px at 64% 70%, #fff, transparent),
+    radial-gradient(1px 1px at 30% 86%, rgba(134,186,255,.85), transparent),
+    radial-gradient(1.1px 1.1px at 85% 92%, #fff, transparent),
     radial-gradient(ellipse 70% 45% at 18% -10%, #221450 0%, transparent 62%),
     radial-gradient(ellipse 58% 40% at 90% 0%, #170d38 0%, transparent 58%),
     var(--bg) !important;
@@ -426,7 +434,23 @@ body.space .card{border-color:var(--line2)}
 /* 선수 페이지 2열 → 모바일 1열 (가로 잘림 방지) */
 .pGrid{grid-template-columns:330px minmax(0,1fr)}
 @media (max-width:880px){.pGrid{grid-template-columns:1fr}}
+/* 🌌 성좌 칭호 (우주 테마 전용) */
+body.space .award{background:linear-gradient(158deg,#201552 0%,#150e32 100%)!important;border-color:#463080!important;box-shadow:0 4px 22px rgba(140,90,255,.16),inset 0 1px 0 rgba(207,158,255,.14)}
+body.space .award::after{content:'';position:absolute;top:-30px;right:-26px;width:88px;height:88px;background:radial-gradient(circle,rgba(207,158,255,.2),transparent 70%);pointer-events:none}
+body.space .award b{font-family:'Noto Serif KR',serif;font-weight:900;font-size:17px;color:#f7f1ff;text-shadow:0 0 14px rgba(207,158,255,.55),0 0 4px rgba(207,158,255,.3)}
+body.space .award .who{color:#d9c2ff;text-shadow:0 0 8px rgba(207,158,255,.28)}
+body.space .award.legend{background:linear-gradient(158deg,#2c1c64 0%,#1a0f44 100%)!important;border-color:#cf9eff!important;box-shadow:0 0 28px rgba(207,158,255,.26),inset 0 0 34px rgba(207,158,255,.07);padding:18px}
+body.space .award.legend::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 50% at 80% 8%,rgba(255,210,130,.14),transparent 60%)}
+body.space .award.legend b{font-family:'Noto Serif KR',serif;font-size:22px;color:#ffe9b8;text-shadow:0 0 18px rgba(255,200,100,.55),0 0 7px rgba(255,220,150,.45);animation:legGlow 3.2s ease-in-out infinite}
+@keyframes legGlow{0%,100%{text-shadow:0 0 18px rgba(255,200,100,.5),0 0 7px rgba(255,220,150,.4)}50%{text-shadow:0 0 28px rgba(255,210,130,.8),0 0 11px rgba(255,230,170,.6)}}
+body.space .award.legend .who{color:#f4efff;text-shadow:0 0 10px rgba(255,210,140,.3)}
+body.space .ownerCard{background:linear-gradient(158deg,#1d1450 0%,#150e32 100%)!important;border-color:#463080!important;box-shadow:0 4px 18px rgba(140,90,255,.14)}
+body.space .arow b{font-family:'Noto Serif KR',serif;font-weight:800;color:#f0e8ff;text-shadow:0 0 10px rgba(207,158,255,.4)}
+body.space .arow.legend b{color:#ffe9b8!important;text-shadow:0 0 14px rgba(255,200,100,.5),0 0 5px rgba(255,220,150,.4)}
+body.space .arow.legend::before{content:'★ ';color:#ffd98a;font-size:11px}
+@media(prefers-reduced-motion:reduce){body.space .award.legend b{animation:none}}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 <script>try{var _st=localStorage.getItem("spaceTheme");if(_st===null||_st==="1")document.body.classList.add("space");}catch(e){}</script>
@@ -9189,7 +9213,7 @@ function pgLaneTier(){
 }
 
 /* ───── 칭호 ───── */
-function awardCard(a){return`<div class="award"><b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
+function awardCard(a){const _LG=['Faker','Chovy','Canyon','Ruler','Uzi','Keria','TheShy','Zeus'];const _leg=_LG.indexOf(a.title)>=0;return`<div class="award${_leg?' legend':''}">${_leg?'<div class="crown" style="font-size:10px;letter-spacing:.1em;color:#ffd98a;font-weight:800;margin-bottom:2px">★ 끝판왕 ★</div>':''}<b>${esc(a.title)}</b><div class="who">${esc(a.target)}</div><p class="mini" style="margin:0">${esc(a.desc)}</p></div>`}
 
 function _awTabs(t){return`<div class="subnav" style="margin:0 0 14px">
   <button class="${t==='list'?'on':''}" onclick="window._awTab='list';render()">🏆 칭호</button>
@@ -9422,7 +9446,7 @@ function pgAwards(){
   const ownerCards=owners.map(([name,list])=>`
     <div class="ownerCard">
       <div class="oname"><span>${esc(name)}</span><span class="pill gold">칭호 ${list.length}개</span></div>
-      ${list.map(a=>`<div class="arow"><b>${esc(a.title)}</b><span class="mini">${esc(a.desc)}</span></div>`).join('')}
+      ${list.map(a=>{const _lg=['Faker','Chovy','Canyon','Ruler','Uzi','Keria','TheShy','Zeus'].indexOf(a.title)>=0;return`<div class="arow${_lg?' legend':''}"><b>${esc(a.title)}</b><span class="mini">${esc(a.desc)}</span></div>`}).join('')}
     </div>`).join('');
   const pairCard=(title,emoji,list)=>`
     <div class="card"><h3>${emoji} ${title}</h3>
