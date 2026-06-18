@@ -9247,10 +9247,10 @@ const QUEST_DEFS=[
   {c:'JUNGLE',u:'킬관여(킬+어시)',mt:'ka',f:'d',T:[[8,2000],[10,3000],[14,5000]]},
   {c:'JUNGLE',u:'시야 점수',mt:'avgVision',f:'d',T:[[14,2000],[18,3000],[24,5000]]},
   {c:'JUNGLE',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3,3000],[4,5000]]},
-  {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',T:[[3,2000],[5,3000],[7,5000]]},
+  {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',cap:6,T:[[2,2000],[3,3000],[4,5000]]},
   {c:'MID',u:'딜량',mt:'avgDmg',f:'k',T:[[18000,2000],[24000,3000],[32000,5000]]},
   {c:'MID',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[4.5,5000]]},
-  {c:'MID',u:'평균 킬',mt:'kills',f:'d',T:[[4,2000],[5,3000],[7,5000]]},
+  {c:'MID',u:'평균 킬',mt:'kills',f:'d',cap:6,T:[[2,2000],[3,3000],[4,5000]]},
   {c:'MID',u:'CS',mt:'avgCs',f:'n',T:[[160,2000],[210,3000],[260,5000]]},
   {c:'ADC',u:'딜량',mt:'avgDmg',f:'k',T:[[20000,2000],[28000,3000],[36000,5000]]},
   {c:'ADC',u:'골드',mt:'avgGold',f:'k',T:[[10000,2000],[12000,3000],[15000,5000]]},
@@ -9260,13 +9260,13 @@ const QUEST_DEFS=[
   {c:'SUPPORT',u:'어시',mt:'assists',f:'d',T:[[9,2000],[11,3000],[15,5000]]},
   {c:'SUPPORT',u:'승률',mt:'winRate',f:'p',T:[[40,2000],[50,3000],[65,5000]]},
   {c:'SUPPORT',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[5,5000]]},
-  {c:'ALL',u:'통산 승리',mt:'T_wins',f:'n',T:[[5,2000],[15,3000],[30,5000]]},
-  {c:'ALL',u:'통산 경기',mt:'T_games',f:'n',T:[[10,2000],[30,3000],[60,5000]]},
-  {c:'ALL',u:'MVP 횟수',mt:'T_mvp',f:'n',T:[[1,2000],[3,3000],[7,5000]]},
+  {c:'ALL',u:'통산 승리',mt:'T_wins',f:'n',T:[[10,2000],[25,3000],[45,5000]]},
+  {c:'ALL',u:'통산 경기',mt:'T_games',f:'n',T:[[20,2000],[45,3000],[80,5000]]},
+  {c:'ALL',u:'MVP 횟수',mt:'T_mvp',f:'n',cap:12,T:[[2,2000],[5,3000],[9,5000]]},
   {c:'ALL',u:'통산 킬',mt:'T_kills',f:'n',T:[[50,2000],[150,3000],[300,5000]]},
   {c:'ALL',u:'통산 어시',mt:'T_assists',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
   {c:'ALL',u:'통산 KDA',mt:'T_kda',f:'d',T:[[2,2000],[3,3000],[4,5000]]},
-  {c:'ALL',u:'경험한 포지션 수',mt:'T_lanes',f:'n',T:[[2,2000],[3,3000],[5,5000]]},
+  {c:'ALL',u:'경험한 포지션 수',mt:'T_lanes',f:'n',cap:5,T:[[2,2000],[3,3000],[4,5000]]},
   {c:'ALL',u:'최다 연승',mt:'T_streak',f:'n',T:[[2,2000],[3,3000],[5,5000]]},
   {c:'ALL',u:'통산 딜량(만)',mt:'T_dmg',f:'n',T:[[20,2000],[50,3000],[100,5000]]},
   {c:'ALL',u:'통산 시야',mt:'T_vision',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
@@ -9274,9 +9274,9 @@ const QUEST_DEFS=[
   {c:'ALL',u:'통산 승리(고수)',mt:'T_wins',f:'n',T:[[40,3000],[60,4000],[80,6000]]},
   {c:'ALL',u:'통산 킬(고수)',mt:'T_kills',f:'n',T:[[400,3000],[600,4000],[800,6000]]},
   {c:'ALL',u:'통산 경기(고수)',mt:'T_games',f:'n',T:[[50,3000],[80,4000],[120,6000]]},
-  {c:'ALL',u:'0데스 승리 경기',mt:'T_noWin',f:'n',T:[[1,0],[2,0],[4,0]]},
-  {c:'ALL',u:'솔킬 2회+ 경기',mt:'T_solo',f:'n',T:[[1,0],[3,0],[5,0]]},
-  {c:'ALL',u:'킬관여 80%+ 경기',mt:'T_kp80',f:'n',T:[[1,0],[3,0],[6,0]]}
+  {c:'ALL',u:'0데스 승리 경기',mt:'T_noWin',f:'n',T:[[2,0],[4,0],[7,0]]},
+  {c:'ALL',u:'솔킬 2회+ 경기',mt:'T_solo',f:'n',T:[[2,0],[4,0],[7,0]]},
+  {c:'ALL',u:'킬관여 80%+ 경기',mt:'T_kp80',f:'n',T:[[3,0],[6,0],[10,0]]}
 ];
 function _claimBtn(m){
   const mid=m.c+'_'+m.mt+'_'+m.d;
@@ -9309,16 +9309,16 @@ function _awQuest(){
     sel=_meP?_meP.id:ps[0].id;
   }
   const lane=mainLaneOf(sel), rs=qRecentStats(sel,5), ts=qTotalStats(sel);
-  window._qIsMe=!!(_Bq&&_Bq.name);
+  window._qIsMe=!!(_Bq&&_Bq.name&&byId(sel)&&(_nbq(byId(sel).displayName)===_nbq(_Bq.name)||_nbq(byId(sel).name)===_nbq(_Bq.name)));
   if(window._qClaimedLoaded===undefined&&bankSession()){window._qClaimedLoaded=1;bankCall('qClaimed',{}).then(j=>{window._qClaimed=new Set(j.claimed||[]);render()}).catch(()=>{})}
   const laneKo={TOP:'탑',JUNGLE:'정글',MID:'미드',ADC:'원딜',SUPPORT:'서폿'};
   const lk=laneKo[lane]||'미정';
   const sels=`<select onchange="window._qId=this.value;render()" style="padding:8px 10px;border-radius:8px;font-size:14px;background:var(--inset);color:var(--text);border:1px solid var(--line2)">${ps.map(p=>`<option value="${p.id}"${p.id===sel?' selected':''}>${esc(p.displayName)}</option>`).join('')}</select>`;
   const km=n=>Math.round(n).toLocaleString();
   const fmtV=(f,v)=>f==='k'?km(v):f==='p'?Math.round(v)+'%':f==='d'?(+v).toFixed(1):km(v);
-  const dn=['하','중','상','최상'];const RW=[400,1500,4000,8000];
+  const dn=['하','중','상','최상'];const RW=[150,500,1500,3500];
   const all=[];
-  QUEST_DEFS.forEach(def=>{const last=def.T[def.T.length-1];const ex=def.low?[Math.max(1,Math.round(last[0]*0.7)),0]:[Math.round(last[0]*1.3),0];def.T.concat([ex]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
+  QUEST_DEFS.forEach(def=>{const last=def.T[def.T.length-1];let _eg=def.low?Math.max(1,Math.round(last[0]*0.7)):Math.round(last[0]*1.3);if(def.cap!=null)_eg=def.low?Math.max(_eg,def.cap):Math.min(_eg,def.cap);def.T.concat([[_eg,0]]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
   const valOf=m=>m.c==='ALL'?(ts?(ts[m.mt]||0):0):(rs?(rs[m.mt]||0):0);
   const hasData=m=>m.c==='ALL'?!!ts:!!rs;
   let totalEarn=0,doneN=0;
@@ -9344,7 +9344,7 @@ function _awQuest(){
   const allHtml=sect('🌟 종합 도전',allCat);
   const otherHtml=Object.keys(laneKo).filter(L=>L!==lane).map(L=>sect(laneKo[L]+' 포지션 도전',all.filter(m=>m.c===L))).join('');
   const body=myHtml+allHtml+`<h3 style="margin:18px 0 10px">🔓 다른 포지션 도전</h3>`+otherHtml;
-  const earnHtml=totalEarn?`<div class="card" style="margin:6px 0 14px;border:1px solid var(--win)"><p class="mini" style="margin:0;color:var(--win)">🎉 달성 미션 <b>${doneN}개</b> · 보상 합계 <b>${km(totalEarn)} APO</b> <span class="dim">(지급 기능 곧 추가)</span></p></div>`:'';
+  const earnHtml=totalEarn?`<div class="card" style="margin:6px 0 14px;border:1px solid var(--win)"><p class="mini" style="margin:0;color:var(--win)">🎉 달성 미션 <b>${doneN}개</b> · 보상 합계 <b>${km(totalEarn)} APO</b></p></div>`:'';
   return head('🎯 포지션 퀘스트','최근 5경기·통산 기록으로 자동 판정 · 총 '+all.length+'개 미션')+_awTabs('quest')+`
   <div class="card" style="margin-bottom:14px">
     <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
