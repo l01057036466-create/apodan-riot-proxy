@@ -30488,6 +30488,9 @@
      "kills": 10,
      "deaths": 4,
      "assists": 9,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 211,
       "goldEarned": 15219,
@@ -30513,6 +30516,9 @@
      "kills": 8,
      "deaths": 0,
      "assists": 18,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 239,
       "goldEarned": 16475,
@@ -30538,6 +30544,9 @@
      "kills": 8,
      "deaths": 3,
      "assists": 10,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 262,
       "goldEarned": 15099,
@@ -30563,6 +30572,9 @@
      "kills": 9,
      "deaths": 3,
      "assists": 7,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 302,
       "goldEarned": 18453,
@@ -30588,6 +30600,9 @@
      "kills": 0,
      "deaths": 3,
      "assists": 17,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 33,
       "goldEarned": 9020,
@@ -30612,6 +30627,9 @@
      "kills": 3,
      "deaths": 12,
      "assists": 4,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 222,
       "goldEarned": 13734,
@@ -30636,6 +30654,9 @@
      "kills": 4,
      "deaths": 6,
      "assists": 6,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 197,
       "goldEarned": 12396,
@@ -30662,6 +30683,9 @@
      "kills": 1,
      "deaths": 8,
      "assists": 3,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 227,
       "goldEarned": 10438,
@@ -30687,6 +30711,9 @@
      "kills": 4,
      "deaths": 6,
      "assists": 4,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 284,
       "goldEarned": 15746,
@@ -30711,6 +30738,9 @@
      "kills": 1,
      "deaths": 3,
      "assists": 4,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 48,
       "goldEarned": 9156,
@@ -30851,9 +30881,32 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [],
- "rev": 344,
- "updatedAt": "2026-06-17T22:34:44.721Z",
+ "lineups": [
+  {
+   "id": "lu_jkb7au5mqizfoom",
+   "date": "2026-06-18",
+   "round": "1차",
+   "series": "3판 2선승",
+   "note": "",
+   "event": false,
+   "blue": [
+    "p_3v5tiwk3_mq7nhxuq",
+    "p_ze5lbhymq7ub77p",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_0g6qhb6e_mq7nhxuq",
+    "p_2dlhnzwn_mq7nhxuq"
+   ],
+   "red": [
+    "p_4siqelqmq7ub77p",
+    "p_j93ommzd_mq7nhxuq",
+    "p_wqf3x0omq7ub77q",
+    "p_ybyb79mg_mq7nhxup",
+    "p_gi86d5qmq7ub77o"
+   ]
+  }
+ ],
+ "rev": 345,
+ "updatedAt": "2026-06-18T04:11:00.406Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
@@ -30867,5 +30920,9 @@
   "2026-06-16#3": true,
   "2026-06-17": true,
   "2026-06-17#2": true
+ },
+ "season": {
+  "no": 1,
+  "startDate": ""
  }
 }
