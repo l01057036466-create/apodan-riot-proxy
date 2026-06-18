@@ -1890,6 +1890,31 @@ module.exports = async function handler(req, res) {
       await putAcct(aCE);
       return res.status(200).json({ ok: true, char: cCE });
     }
+    // 🎯 퀘스트 보상 수령 (멱등 — 미션 1회만, SADD로 중복 차단)
+    if (req.method === 'POST' && action === 'questClaim') {
+      var sQ = await auth(body.token);
+      if (!sQ || !sQ.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var midQ = String(body.missionId || ''), rwQ = Math.round(Number(body.reward) || 0), lblQ = String(body.label || '').slice(0, 40);
+      if (!midQ || rwQ < 1 || rwQ > 20000) return res.status(400).json({ error: '잘못된 보상 요청' });
+      if (!(await acctLock(sQ.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시 시도해주세요' });
+      try {
+        var addedQ = await redis(['SADD', 'qclaimed:' + sQ.name, midQ]);
+        if (Number(addedQ) !== 1) return res.status(409).json({ error: '이미 받은 보상이에요' });
+        var aQ = await getAcct(sQ.name);
+        if (!aQ) { await redis(['SREM', 'qclaimed:' + sQ.name, midQ]); return res.status(404).json({ error: '계좌를 찾을 수 없어요' }); }
+        aQ.bal += rwQ;
+        await putAcct(aQ);
+        await ledger(aQ.name, '🎯 퀘스트 — ' + (lblQ || midQ), rwQ, aQ.bal);
+        return res.status(200).json({ ok: true, bal: aQ.bal, reward: rwQ });
+      } finally { await acctUnlock(sQ.name); }
+    }
+    // 🎯 퀘스트 수령 목록 조회
+    if (req.method === 'POST' && action === 'qClaimed') {
+      var sQc = await auth(body.token);
+      if (!sQc || !sQc.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var listQc = await redis(['SMEMBERS', 'qclaimed:' + sQc.name]);
+      return res.status(200).json({ claimed: Array.isArray(listQc) ? listQc : [] });
+    }
     if (req.method === 'POST' && action === 'charBuy') {
       var sCB = await auth(body.token);
       if (!sCB || !sCB.name) return res.status(401).json({ error: '로그인이 필요해요' });
