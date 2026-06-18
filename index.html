@@ -8044,6 +8044,7 @@ function pgDashboard(){
   const recent=_rp.length?_rp.map(m=>({m,s:matchIntensity(m)})).sort((a,b)=>b.s-a.s)[0].m:null; // 가장 치열했던 한 판
   const meta=statChamps().filter(c=>c.picks>=2)[0];
   return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
+  ${(()=>{const _bk=window._bank,_pn=window._bankPending||[];if(!_bk||(_bk.role!=='admin'&&_bk.role!=='dev')||!_pn.length)return'';return`<div class="card" style="margin-bottom:14px;border:1px solid var(--gold);background:rgba(242,184,75,.1)"><h3 style="margin:0 0 4px;color:var(--gold)">⏳ 가입 신청 ${_pn.length}건 — 승인 대기 <span class="tag">운영진 전용</span></h3><p class="mini dim" style="margin:0 0 8px">홈에서 바로 승인할 수 있어요. 승인하면 10,000 APO가 자동 지급돼요.</p>${_pn.map(p=>`<div class="row" style="justify-content:space-between;align-items:center;padding:7px 0;border-top:1px dashed var(--line)"><span class="mini"><b>${esc(p.name)}</b> <span class="dim">${esc((p.created||'').slice(0,10))}</span></span><span class="row" style="gap:6px"><button class="btn sm gold" onclick="bankApprove('${esc(p.name)}','approve')">승인 (+10,000)</button><button class="btn sm lose" onclick="bankApprove('${esc(p.name)}','reject')">거절</button></span></div>`).join('')}</div>`})()}
   ${(()=>{if(voteApiBase()){bankLoadRoster();if(window._trades===undefined){window._trades=null;loadTrades().then(()=>softRender())}}const rb=recentBusts(48);if(!rb.length)return'';
     return`<div style="background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.45);border-radius:12px;padding:10px 14px;margin-bottom:14px;text-align:center">
       <span class="mini" style="font-weight:900;color:var(--lose);letter-spacing:.15em">💀 파산 속보</span>
@@ -9443,12 +9444,12 @@ function pgAwardProgress(){
 }
 
 function pgDoom(){
-  const slides=[1,2,3,4,5,6,7];
+  const slides=[1,2,3,4,5,6,7,8,9,10,11,12,13];
   return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')+`
   <div style="display:flex;flex-direction:column;gap:14px;max-width:880px;margin:0 auto">
     ${slides.map(n=>`<img src="/doom${n}.jpg" alt="멸망전 공지 ${n}페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display='none';var w=document.getElementById('doomWarn');if(w)w.style.display='block'">`).join('')}
   </div>
-  <p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom7.jpg를 올렸는지 확인해주세요!</p>
+  <p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom13.jpg를 올렸는지 확인해주세요!</p>
   <p class="mini dim" style="margin:16px 0 0;text-align:center">멸망전 관련 질문·문의는 편하게 얘기해주세요!</p>`;
 }
 function pgAwards(){
