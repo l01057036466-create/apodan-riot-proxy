@@ -401,6 +401,14 @@ body.space .card{border-color:var(--line2)}
 @media (max-width:560px){
   body.space .sub{font-size:12.5px;line-height:1.55}
 }
+
+/* 최근경기 팀 테이블 모바일 가로 잘림 방지 */
+.matchTbl{min-width:300px}
+@media (max-width:560px){
+  .matchTbl{font-size:12.5px}
+  .matchTbl td{padding:7px 6px}
+  .matchTbl td:first-child{white-space:nowrap}
+}
 </style>
 </head>
 <body>
@@ -7949,7 +7957,15 @@ function pgDashboard(){
     <div class="kpi"><div class="n">${meta?esc(meta.champion):'—'}</div><div class="l">아포단 메타픽</div></div>
   </div>
   <div class="grid c2" style="margin-top:14px">
-    <div class="card"><h3>최근 경기 <span class="tag">🔥 가장 치열했던 한 판</span></h3>${recent?matchInner(recent,true)+(()=>{try{const _rr=matchReview(recent);return _rr&&_rr.ok?('<div class="hr"></div>'+hupuOverallLine(recent)+hupuGallery(recent)+resultFeed(recent)):''}catch(e){return ''}})():'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
+    ${(()=>{const SD=statSides();return SD.total?`<div class="card" style="margin-bottom:14px"><h3>진영 밸런스 <span class="tag">블루 vs 레드</span></h3>
+  <div class="row" style="gap:12px;align-items:center;flex-wrap:wrap">
+    <b class="tBlue" style="font-size:17px">블루 ${SD.blue}승 ${SD.blueRate}%</b>
+    <div class="bar grow" style="height:12px;min-width:120px;background:rgba(255,92,122,.25)"><i style="width:${SD.blueRate}%;background:var(--blue)"></i></div>
+    <b class="tRed" style="font-size:17px">레드 ${SD.red}승 ${SD.redRate}%</b>
+  </div>
+  <p class="mini" style="margin:8px 0 0">개인별 진영 승률은 통계 탭에서 자세히 볼 수 있어요</p>
+</div>`:''})()}
+  <div class="card"><h3>최근 경기 <span class="tag">🔥 가장 치열했던 한 판</span></h3>${recent?matchInner(recent,true)+(()=>{try{const _rr=matchReview(recent);return _rr&&_rr.ok?('<div class="hr"></div>'+hupuOverallLine(recent)+hupuGallery(recent)+resultFeed(recent)):''}catch(e){return ''}})():'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
     <div class="card"><h3>오늘의 칭호 <span class="tag">AUTO</span></h3>
       ${A.length?`<div class="awards">${A.map(awardCard).join('')}</div>`:'<div class="empty">경기를 몇 판 기록하면 칭호가 자동으로 생겨요.</div>'}
     </div>
@@ -8201,13 +8217,13 @@ function manualDraft(){
 
 /* ───── 경기 목록 ───── */
 function teamRows(m,t){
-  return`<table class="tbl"><thead><tr><th class="${t==='BLUE'?'tBlue':'tRed'}">${t==='BLUE'?'블루팀':'레드팀'}</th><th>챔피언</th><th>KDA</th><th class="num">딜량</th></tr></thead><tbody>
+  return`<div class="scrollx"><table class="tbl matchTbl"><thead><tr><th class="${t==='BLUE'?'tBlue':'tRed'}">${t==='BLUE'?'블루팀':'레드팀'}</th><th>챔피언</th><th>KDA</th><th class="num">딜량</th></tr></thead><tbody>
   ${m.participants.filter(p=>p.team===t).map(p=>`<tr>
     <td><b>${esc(nameOf(p.playerId))}</b> <span class="dim mini">${LANE_KO[p.lane]||''}</span></td>
     <td style="white-space:nowrap">${champFace(p.championId,20)} ${esc(p.championId||'-')}</td>
     <td>${p.kills}/${p.deaths}/${p.assists}</td>
     <td class="num dim">${p.stats?.damageToChampions?fmt(p.stats.damageToChampions):'-'}</td>
-  </tr>`).join('')}</tbody></table>`;
+  </tr>`).join('')}</tbody></table></div>`;
 }
 function matchInner(m,compact){
   return`<div class="row" style="margin-bottom:10px">
