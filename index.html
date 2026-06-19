@@ -4562,7 +4562,7 @@ async function scoreLock(date,open){
   catch(e){toast('실패: '+e.message,true)}
 }
 /* ───── 🎯 토토 (용/퍼블/킬총합) — 라인업 공지 시 매치데이 카드에 자동 표시 ───── */
-const TOTO_KINDS={dragon:{label:'🐉 첫 용 사냥',opts:['1팀','2팀','비슷']},fb:{label:'🩸 퍼스트 블러드',opts:['1팀','2팀']},killsum:{label:'⚔️ 총 킬수',opts:['~25','26~35','36~45','46+']}};
+const TOTO_KINDS={dragon:{label:'🐉 첫 용 종류',odds:4.5,opts:['화염용','물용','바람용','대지용','마공용','화공용']},fb:{label:'🩸 퍼스트 블러드',odds:1.9,opts:['알파','베타']},killsum:{label:'⚔️ 총 킬수',odds:1.9,opts:['45 이하','46 이상']},baron:{label:'🦅 첫 바론',odds:1.9,opts:['알파','베타']}};
 async function fetchToto(date,kind){
   if(!voteApiBase()||!date||!TOTO_KINDS[kind])return;
   try{
@@ -4576,20 +4576,21 @@ async function castToto(date,kind,pick){
   if(B&&B.role==='dev'&&!B.name)return toast('🛠 유령 세션은 참여 못 해요 — 멤버 계정으로!',true);
   if(!B||!B.name)return toast('💰 거래소 로그인 후 참여 가능!',true);
   try{const _L=(typeof allLineups==='function')?allLineups().find(l=>voteKey(l)===date):null; if(_L&&myTeamIn(_L))return toast('본인 출전 경기예요 — 토토 참여 불가 (승부조작 방지 🙅)',true);}catch(e){}
-  const amt=Math.round(Number(prompt(`🎯 "${pick}"에 베팅할 금액? (최소 100 APO)\n정답자끼리 전체 풀을 나눠 가져요`,'500'))||0);
+  const amt=Math.round(Number(prompt(`🎯 "${pick}"에 베팅할 금액? (최소 100 APO)\n적중 시 배당 고정 (베팅액×배당)`,'500'))||0);
   if(amt<100)return amt&&toast('최소 100 APO',true);
+  if(amt>20000)return toast('한 경기 최대 2만 APO예요',true);
   try{
     const j=await bankCall('totoBet',{date,kind,pick,amount:amt});
     window._bank&&(window._bank.bal=j.bal);
-    toast(`🎯 ${pick} 참여 완료! ${fmtAPO(amt)} APO`);
+    toast(`🎯 ${pick} 참여! ${fmtAPO(amt)} APO (적중 x${(TOTO_KINDS[kind]&&TOTO_KINDS[kind].odds)||1.9})`);
     await fetchToto(date,kind);render();
   }catch(e){toast(e.status===409?'이미 참여했어요 (1인 1픽)':'실패: '+e.message,true)}
 }
 async function totoSettle(date,kind,win){
-  if(!confirm(`${TOTO_KINDS[kind].label} 결과를 "${win}"(으)로 정산할까요?\n정답자들에게 전체 풀(수수료 3% 제외)이 분배됩니다.`))return;
+  if(!confirm(`${TOTO_KINDS[kind].label} 결과를 "${win}"(으)로 정산할까요?\n적중자에게 베팅액 × 배당이 지급됩니다.`))return;
   try{
     const j=await bankCall('totoSettle',{date,kind,win});
-    toast(`🎯 ${win} 정산 — ${j.winners}명 적중, ${fmtAPO(j.paid)} APO 분배`);
+    toast(`🎯 ${win} 정산 — ${j.winners}명 적중, ${fmtAPO(j.paid)} APO 지급`);
     await fetchToto(date,kind);await bankRefresh(true);
   }catch(e){toast('실패: '+e.message,true)}
 }
@@ -8109,7 +8110,7 @@ function lineupCard(L){
           const BT=bankSession();
           const onlyT=!!only;
           return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
-            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.1em;color:var(--win)">🎯 내전 토토 <span class="dim" style="font-weight:600;letter-spacing:0">— 정답자끼리 풀 분배 · 1인 1픽</span></p>
+            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.1em;color:var(--win)">🎯 내전 토토 <span class="dim" style="font-weight:600;letter-spacing:0">— 고정 배당 · 1인 1픽 · 최대 2만</span></p>
             ${Object.keys(TOTO_KINDS).map(kind=>{
               const TK=(window._toto&&window._toto[key+'|'+kind]);
               if(TK===undefined){window._toto=window._toto||{};window._toto[key+'|'+kind]=null;fetchToto(key,kind).then(()=>softRender())}
@@ -8118,14 +8119,14 @@ function lineupCard(L){
               const totT=Object.values(T.tally||{}).reduce((a,b)=>a+b,0);
               const lockedT=T.status!=='open';
               return`<div style="margin:0 0 7px">
-                <p class="mini dim" style="margin:0 0 3px;text-align:center;font-weight:800">${TOTO_KINDS[kind].label}${T.win?` — 결과 <b style="color:var(--gold)">${T.win}</b>`:lockedT?' — 마감':''}${totT?` <span style="opacity:.55">· ${totT}명</span>`:''}</p>
+                <p class="mini dim" style="margin:0 0 3px;text-align:center;font-weight:800">${TOTO_KINDS[kind].label} <span style="color:var(--gold);font-weight:900">x${TOTO_KINDS[kind].odds}</span>${T.win?` — 결과 <b style="color:var(--gold)">${T.win}</b>`:lockedT?' — 마감':''}${totT?` <span style="opacity:.55">· ${totT}명</span>`:''}</p>
                 <div class="row" style="flex-wrap:wrap;gap:5px;justify-content:center">
                   ${opts.map(o=>{const v=(T.tally||{})[o]||0;const isWin=T.win===o;const mine=T.my&&T.my.split('|')[0]===o;
                     return`<button class="btn sm ${isWin?'gold':''}" ${lockedT||T.my||onlyT?'disabled':''} ${onlyT?'title="본인 출전 — 토토 불가"':''} onclick="castToto('${esc(key)}','${kind}','${o}')" style="${mine?'border-color:var(--win);color:var(--win);font-weight:900':''}${onlyT?';opacity:.4':''}">${isWin?'👑 ':''}${o}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
                 </div>
                 ${(BT&&(BT.role==='admin'||BT.role==='dev')&&!T.win)?`<p class="mini" style="text-align:center;margin:3px 0 0">${lockedT?`<button class="btn sm" onclick="totoLock('${esc(key)}','${kind}',true)">재개</button> `+opts.map(o=>`<button class="btn sm gold" onclick="totoSettle('${esc(key)}','${kind}','${o}')">${o}✓</button>`).join(''):`<button class="btn sm lose" onclick="totoLock('${esc(key)}','${kind}',false)">마감</button>`}</p>`:''}
               </div>`}).join('')}
-            <p class="mini dim" style="text-align:center;margin:2px 0 0">${BT&&BT.name?(onlyT?'🙅 본인 출전 경기 — 토토 불가 (승부조작 방지)':'용·퍼블·킬수를 맞혀보세요!'):'💰 로그인 후 참여'}</p>
+            <p class="mini dim" style="text-align:center;margin:2px 0 0">${BT&&BT.name?(onlyT?'🙅 본인 출전 경기 — 토토 불가 (승부조작 방지)':'용·퍼블·킬수·바론을 맞혀보세요! (적중 시 베팅액×배당)'):'💰 로그인 후 참여'}</p>
           </div>`})()}
         ${(()=>{const bets=(window._mktBets||{})[key];
           if(bets===undefined)return tot?`<p class="mini" style="text-align:center;margin:8px 0 0"><button class="btn sm ghost" onclick="loadBets('${L.id}')">👀 누가 어디에 걸었나 보기</button></p>`:'';
@@ -9490,31 +9491,31 @@ function qTotalStats(pid){
   return{T_wins:w,T_games:ms.length,T_mvp:mvp,T_kills:tk,T_assists:ta,T_kda:(tk+ta)/Math.max(1,td),T_lanes:lanes.size,T_streak:best,T_dmg:Math.round(tdmg/10000),T_vision:tvis,T_cs:tcs,T_noWin:noWin,T_solo:solo,T_kp80:kp80,T_wards:twards,T_obj:tobj,T_perfect:perfect};
 }
 const QUEST_DEFS=[
-  {c:'TOP',u:'받은 피해',mt:'avgTaken',f:'k',T:[[15000,2000],[22000,3000],[30000,5000]]},
+  {c:'TOP',u:'받은 피해',mt:'avgTaken',f:'k',T:[[22000,2000],[32000,3000],[42000,5000]]},
   {c:'TOP',u:'KDA',mt:'kda',f:'d',T:[[2,2000],[2.5,3000],[3.5,5000]]},
   {c:'TOP',u:'승률',mt:'winRate',f:'p',T:[[40,2000],[50,3000],[65,5000]]},
   {c:'TOP',u:'CS',mt:'avgCs',f:'n',T:[[150,2000],[200,3000],[250,5000]]},
-  {c:'JUNGLE',u:'킬관여(킬+어시)',mt:'ka',f:'d',T:[[8,2000],[10,3000],[14,5000]]},
-  {c:'JUNGLE',u:'시야 점수',mt:'avgVision',f:'d',T:[[14,2000],[18,3000],[24,5000]]},
-  {c:'JUNGLE',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3,3000],[4,5000]]},
+  {c:'JUNGLE',u:'킬관여(킬+어시)',mt:'ka',f:'d',T:[[10,2000],[14,3000],[18,5000]]},
+  {c:'JUNGLE',u:'시야 점수',mt:'avgVision',f:'d',T:[[22,2000],[33,3000],[43,5000]]},
+  {c:'JUNGLE',u:'KDA',mt:'kda',f:'d',T:[[3,2000],[4.5,3000],[6,5000]]},
   {c:'JUNGLE',u:'평균 킬',mt:'kills',f:'d',T:[[3,2000],[5,3000],[7,5000]]},
-  {c:'MID',u:'딜량',mt:'avgDmg',f:'k',T:[[18000,2000],[24000,3000],[32000,5000]]},
+  {c:'MID',u:'딜량',mt:'avgDmg',f:'k',T:[[20000,2000],[29000,3000],[40000,5000]]},
   {c:'MID',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[4.5,5000]]},
   {c:'MID',u:'평균 킬',mt:'kills',f:'d',T:[[4,2000],[5,3000],[7,5000]]},
   {c:'MID',u:'CS',mt:'avgCs',f:'n',T:[[160,2000],[210,3000],[260,5000]]},
   {c:'ADC',u:'딜량',mt:'avgDmg',f:'k',T:[[20000,2000],[28000,3000],[36000,5000]]},
-  {c:'ADC',u:'골드',mt:'avgGold',f:'k',T:[[10000,2000],[12000,3000],[15000,5000]]},
+  {c:'ADC',u:'골드',mt:'avgGold',f:'k',T:[[12000,2000],[15000,3000],[18000,5000]]},
   {c:'ADC',u:'데스',mt:'deaths',f:'d',low:1,T:[[5,2000],[4,3000],[3,5000]]},
-  {c:'ADC',u:'CS',mt:'avgCs',f:'n',T:[[170,2000],[220,3000],[270,5000]]},
-  {c:'SUPPORT',u:'시야 점수',mt:'avgVision',f:'d',T:[[22,2000],[30,3000],[40,5000]]},
-  {c:'SUPPORT',u:'어시',mt:'assists',f:'d',T:[[9,2000],[11,3000],[15,5000]]},
+  {c:'ADC',u:'CS',mt:'avgCs',f:'n',T:[[200,2000],[250,3000],[300,5000]]},
+  {c:'SUPPORT',u:'시야 점수',mt:'avgVision',f:'d',T:[[60,2000],[85,3000],[110,5000]]},
+  {c:'SUPPORT',u:'어시',mt:'assists',f:'d',T:[[10,2000],[13,3000],[16,5000]]},
   {c:'SUPPORT',u:'승률',mt:'winRate',f:'p',T:[[40,2000],[50,3000],[65,5000]]},
   {c:'SUPPORT',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[5,5000]]},
   {c:'ALL',u:'통산 승리',mt:'T_wins',f:'n',T:[[10,2000],[25,3000],[45,5000]]},
   {c:'ALL',u:'통산 경기',mt:'T_games',f:'n',T:[[20,2000],[45,3000],[80,5000]]},
   {c:'TOP',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
   {c:'MID',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
-  {c:'ADC',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
+  {c:'ADC',u:'분당 CS',mt:'cspm',f:'d',cap:10,T:[[7,2000],[8,3000],[9,5000]]},
   {c:'ALL',u:'MVP 횟수',mt:'T_mvp',f:'n',cap:12,T:[[2,2000],[5,3000],[9,5000]]},
   {c:'ALL',u:'통산 킬',mt:'T_kills',f:'n',T:[[50,2000],[150,3000],[300,5000]]},
   {c:'ALL',u:'통산 어시',mt:'T_assists',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
