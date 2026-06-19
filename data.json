@@ -33821,14 +33821,14 @@
   },
   {
    "id": "m_tmx1uf8mql9fnbe",
-   "createdAt": "2026-06-19T18:26:27.146Z",
    "playedAt": "2026-06-20",
    "setNumber": 3,
    "winnerTeam": "RED",
-   "gameId": "8265596187",
-   "durationMin": 27,
    "memo": "클라이언트 추출 입력",
    "mvpId": null,
+   "gameId": "8265596187",
+   "durationMin": 27,
+   "createdAt": "2026-06-19T18:26:27.146Z",
    "participants": [
     {
      "team": "BLUE",
@@ -33839,6 +33839,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 2,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 229,
       "goldEarned": 9573,
@@ -33862,6 +33865,9 @@
      "kills": 3,
      "deaths": 5,
      "assists": 4,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 193,
       "goldEarned": 10825,
@@ -33886,6 +33892,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 3,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 195,
       "goldEarned": 8329,
@@ -33911,6 +33920,9 @@
      "kills": 5,
      "deaths": 6,
      "assists": 4,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 225,
       "goldEarned": 12999,
@@ -33936,6 +33948,9 @@
      "kills": 3,
      "deaths": 8,
      "assists": 5,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 31,
       "goldEarned": 8081,
@@ -33959,6 +33974,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 1,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 177,
       "goldEarned": 8162,
@@ -33983,6 +34001,9 @@
      "kills": 3,
      "deaths": 1,
      "assists": 14,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 179,
       "goldEarned": 11240,
@@ -34008,6 +34029,9 @@
      "kills": 13,
      "deaths": 2,
      "assists": 2,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 253,
       "goldEarned": 16438,
@@ -34032,6 +34056,9 @@
      "kills": 9,
      "deaths": 3,
      "assists": 11,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 260,
       "goldEarned": 17450,
@@ -34057,6 +34084,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 19,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 29,
       "goldEarned": 8759,
@@ -34119,14 +34149,14 @@
   },
   {
    "id": "m_dwtvn2smql9fnbt",
-   "createdAt": "2026-06-19T18:26:27.161Z",
    "playedAt": "2026-06-20",
    "setNumber": 4,
    "winnerTeam": "BLUE",
-   "gameId": "8265623571",
-   "durationMin": 22,
    "memo": "클라이언트 추출 입력",
    "mvpId": null,
+   "gameId": "8265623571",
+   "durationMin": 22,
+   "createdAt": "2026-06-19T18:26:27.161Z",
    "participants": [
     {
      "team": "BLUE",
@@ -34137,6 +34167,9 @@
      "kills": 5,
      "deaths": 2,
      "assists": 0,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 10382,
@@ -34161,6 +34194,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 10,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 135,
       "goldEarned": 8943,
@@ -34186,6 +34222,9 @@
      "kills": 3,
      "deaths": 1,
      "assists": 6,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 183,
       "goldEarned": 8277,
@@ -34210,6 +34249,9 @@
      "kills": 10,
      "deaths": 0,
      "assists": 7,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 200,
       "goldEarned": 12862,
@@ -34234,6 +34276,9 @@
      "kills": 2,
      "deaths": 0,
      "assists": 15,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 23,
       "goldEarned": 6826,
@@ -34259,6 +34304,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 2,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 173,
       "goldEarned": 7806,
@@ -34282,6 +34330,9 @@
      "kills": 0,
      "deaths": 4,
      "assists": 0,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 175,
       "goldEarned": 7821,
@@ -34305,6 +34356,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 0,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 174,
       "goldEarned": 7284,
@@ -34329,6 +34383,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 1,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 170,
       "goldEarned": 8466,
@@ -34352,6 +34409,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 1,
+     "gd15": null,
+     "csd15": null,
+     "xpd15": null,
      "stats": {
       "cs": 28,
       "goldEarned": 4849,
