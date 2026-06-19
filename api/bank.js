@@ -366,6 +366,7 @@ module.exports = async function handler(req, res) {
       var sB = await auth(body.token);
       if (!sB || !sB.name) return res.status(401).json({ error: '로그인이 필요해요' });
       if (await suspGuard(sB.name, res)) return;
+      if (await redis(['GET', 'betsfreeze'])) return res.status(403).json({ error: '⏸ 운영자가 모든 베팅을 정지했어요 (경기 진행 중)' });
       var mk2 = String(body.market || ''), team2 = body.team;
       var amt2 = Math.round(Number(body.amount) || 0);
       if (!mktOk(mk2)) return res.status(400).json({ error: 'market 형식 오류' });
@@ -613,6 +614,19 @@ module.exports = async function handler(req, res) {
       var premOut = {};
       for (var pk0 in S0.base) premOut[pk0] = premCap(S0.base[pk0], S0.prem[pk0]); // 표시용: 상한 적용된 실제 수급
       return res.status(200).json({ prices: combinePx(S0), base: S0.base, prem: premOut });
+    }
+    if (req.method === 'POST' && action === 'stockManip') { // 🔧 개발자 전용 — 주가(폼 기준가) 직접 조작
+      var sMp = await auth(body.token);
+      if (!sMp || sMp.role !== 'dev') return res.status(403).json({ error: '개발자 전용 기능이에요' });
+      var whoMp = String(body.name || '').trim();
+      var prMp = Math.round(Number(body.price) || 0);
+      if (!whoMp) return res.status(400).json({ error: '대상 이름이 필요해요' });
+      if (prMp < 1) return res.status(400).json({ error: '가격은 1 APO 이상이어야 해요' });
+      var SMp = await loadPx();
+      SMp.base[whoMp] = clampPx(prMp); // 폼 기준가 강제 설정
+      SMp.prem[whoMp] = 0;             // 수급 프리미엄 초기화 → 순수 조작가가 시세로
+      await savePx(SMp);               // combinePx 캐시까지 즉시 갱신 → 바로 변동
+      return res.status(200).json({ ok: true, name: whoMp, price: clampPx(prMp), prices: combinePx(SMp) });
     }
     if (req.method === 'POST' && action === 'setPrices') { // 폼 변동 = 기준가만 갱신, 수급 프리미엄은 보존!
       var sP = await auth(body.token);
@@ -953,6 +967,7 @@ module.exports = async function handler(req, res) {
       var sSP = await auth(body.token);
       if (!sSP || !sSP.name) return res.status(401).json({ error: '로그인이 필요해요' });
       if (await suspGuard(sSP.name, res)) return;
+      if (await redis(['GET', 'betsfreeze'])) return res.status(403).json({ error: '⏸ 운영자가 모든 베팅을 정지했어요 (경기 진행 중)' });
       var dSP = String(body.date || ''), pickS = String(body.pick || '');
       if (!mktOk(dSP)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!/^[0-9]:[0-9]$/.test(pickS)) return res.status(400).json({ error: '스코어 형식: 2:0, 2:1 등' });
@@ -1296,7 +1311,7 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock(sPg.name); }
     }
     var PCN_COST = 5000, PCN_CLEAR = 5000;
-    var PCN_G = [['SSS', 1, 60000], ['SS', 2, 22000], ['S', 3, 10000], ['A', 10, 3800], ['B', 16, 1600], ['C', 17, 850]];
+    var PCN_G = [['SSS', 1, 60000], ['SS', 1, 22000], ['S', 3, 10000], ['A', 9, 3800], ['B', 18, 1600], ['C', 24, 850]];
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
@@ -1382,6 +1397,13 @@ module.exports = async function handler(req, res) {
         await ledger(sPl.name, '🎰 빠칭코 라스트원 ' + (win ? '🎉당첨 +' + prize : '꽝') + ' (' + choice + ')', prize, aPl.bal);
         return res.status(200).json({ ok: true, win: win, prize: prize, choice: choice, bal: aPl.bal });
       } finally { await acctUnlock('pcnlast'); }
+    }
+    if (req.method === 'POST' && action === 'pgreset') {
+      var sPgR = await auth(body.token);
+      if (!sPgR || (sPgR.role !== 'dev' && sPgR.role !== 'admin')) return res.status(403).json({ error: '가챠 박스는 운영자만 새로 깔 수 있어요' });
+      var nbPg = { A: 1, B: 2, C: 3, D: 5, E: 12, F: 13 };
+      await redis(['SET', 'pgacha:box', JSON.stringify(nbPg)]);
+      return res.status(200).json({ ok: true, box: nbPg });
     }
     if (req.method === 'POST' && action === 'pcnreset') {
       var sRs = await auth(body.token);
@@ -1474,12 +1496,25 @@ module.exports = async function handler(req, res) {
       var myTo = null;
       var sTo0 = await auth(q.token);
       if (sTo0 && sTo0.name) myTo = await redis(['GET', KTo + ':v:' + sTo0.name]);
-      return res.status(200).json({ date: dTo, kind: kTo, opts: TOTO_DEFS[kTo].opts, odds: TOTO_DEFS[kTo].odds, status: stTo, win: winTo, tally: talTo, pool: poolTo, my: myTo });
+      var betsTo = null;
+      if (sTo0 && (sTo0.role === 'admin' || sTo0.role === 'dev')) {
+        var btrsTo = (await redis(['SMEMBERS', KTo + ':bettors'])) || [];
+        betsTo = [];
+        for (var biTo = 0; biTo < btrsTo.length; biTo++) {
+          var vvTo = await redis(['GET', KTo + ':v:' + btrsTo[biTo]]);
+          if (!vvTo) continue;
+          var ppTo = String(vvTo).split('|');
+          betsTo.push({ name: btrsTo[biTo], pick: ppTo[0], amt: Number(ppTo[1]) || 0 });
+        }
+        betsTo.sort(function (a, b) { return b.amt - a.amt; });
+      }
+      return res.status(200).json({ date: dTo, kind: kTo, opts: TOTO_DEFS[kTo].opts, odds: TOTO_DEFS[kTo].odds, status: stTo, win: winTo, tally: talTo, pool: poolTo, my: myTo, bets: betsTo });
     }
     if (req.method === 'POST' && action === 'totoBet') {
       var sTB = await auth(body.token);
       if (!sTB || !sTB.name) return res.status(401).json({ error: '로그인이 필요해요' });
       if (await suspGuard(sTB.name, res)) return;
+      if (await redis(['GET', 'betsfreeze'])) return res.status(403).json({ error: '⏸ 운영자가 모든 베팅을 정지했어요 (경기 진행 중)' });
       var dTB = String(body.date || ''), kTB = String(body.kind || ''), pickTB = String(body.pick || '');
       if (!mktOk(dTB)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!TOTO_DEFS[kTB]) return res.status(400).json({ error: '없는 토토 종류' });
@@ -1515,6 +1550,16 @@ module.exports = async function handler(req, res) {
       if (!TOTO_DEFS[kTL]) return res.status(400).json({ error: '없는 토토 종류' });
       await redis(['SET', 'toto:' + kTL + ':' + dTL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
       return res.status(200).json({ ok: true });
+    }
+    if (action === 'freezeState') {
+      var fzS = await redis(['GET', 'betsfreeze']);
+      return res.status(200).json({ frozen: !!fzS });
+    }
+    if (req.method === 'POST' && action === 'setFreeze') {
+      var sFz = await auth(body.token);
+      if (!sFz || (sFz.role !== 'admin' && sFz.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      if (body.on) await redis(['SET', 'betsfreeze', '1']); else await redis(['DEL', 'betsfreeze']);
+      return res.status(200).json({ ok: true, frozen: !!body.on });
     }
     if (req.method === 'POST' && action === 'totoSettle') {
       var sTS = await auth(body.token);
@@ -1568,6 +1613,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'mvpVote') {
       var sV = await auth(body.token);
       if (!sV || !sV.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (await redis(['GET', 'betsfreeze'])) return res.status(403).json({ error: '⏸ 운영자가 모든 베팅을 정지했어요 (경기 진행 중)' });
       var dV = String(body.date || ''), pk = nameOk(body.pick);
       if (!mktOk(dV)) return res.status(400).json({ error: 'date 형식 오류' });
       if (!pk) return res.status(400).json({ error: '후보 이름 확인' });
