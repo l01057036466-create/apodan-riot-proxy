@@ -655,7 +655,7 @@ module.exports = async function handler(req, res) {
       if (await suspGuard(sT.name, res)) return;
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
-      if (qty < 1 || qty > 999) return res.status(400).json({ error: '수량은 1~999주' });
+      if (qty < 1 || qty > 9999) return res.status(400).json({ error: '수량은 1~9999주' });
       var haltL = JSON.parse((await redis(['GET', 'stock:halt'])) || '[]'); // 🚫 휴면·탈퇴 멤버 = 거래정지
       if (haltL.indexOf(tgt) >= 0) {
         if (action === 'stockBuy') return res.status(403).json({ error: '🚫 거래 정지 종목 (휴면·탈퇴 멤버) — 매수할 수 없어요' });
@@ -1189,7 +1189,7 @@ module.exports = async function handler(req, res) {
       var spKSc = 'spend:' + kstDate() + ':' + aSc.name; // 🎰 복권+빠칭코 통합 하루 한도 30,000
       var spentSc = Number(await redis(['INCRBY', spKSc, '500']));
       await redis(['EXPIRE', spKSc, '93600']);
-      if (spentSc > 30000) { await redis(['INCRBY', spKSc, '-500']); return res.status(429).json({ error: '오늘 게임 한도(30,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
+      if (spentSc > 50000) { await redis(['INCRBY', spKSc, '-500']); return res.status(429).json({ error: '오늘 게임 한도(50,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
       aSc.bal -= 500;
       await redis(['SET', 'arcade:jackpot', '2000', 'NX']); // 시드 2,000
       await redis(['INCRBY', 'arcade:jackpot', '100']); // 참가비 20% 풀 적립 (재분배 → 인플레 0)
@@ -1206,7 +1206,7 @@ module.exports = async function handler(req, res) {
       await putAcct(aSc);
       await ledger(aSc.name, wonJp ? '🎫💥 복권 누적 잭팟!! 풀 전액' : (pz >= 500 ? '🎫 복권 당첨' : '🎫 복권 소액 환급'), pz - 500, aSc.bal);
       var potNowSc = wonJp ? 2000 : (Number(await redis(['GET', 'arcade:jackpot'])) || 2000);
-      return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, pot: potNowSc, bal: aSc.bal, capLeft: Math.max(0, 30000 - spentSc) });
+      return res.status(200).json({ ok: true, prize: pz, jackpot: !!wonJp, pot: potNowSc, bal: aSc.bal, capLeft: Math.max(0, 50000 - spentSc) });
       } finally { await acctUnlock(sSc2.name); }
     }
     // 🎰 빠칭코 넘버 (5,000 APO, 1~100 픽 · 1등=번호 일치→누적 잭팟 전액+롤오버 · 2~10등 이치방쿠지식)
@@ -1227,7 +1227,7 @@ module.exports = async function handler(req, res) {
       var spKPc = 'spend:' + kstDate() + ':' + aPc.name; // 🎰 복권+빠칭코 통합 하루 한도 30,000
       spentPc = Number(await redis(['INCRBY', spKPc, String(ENTRY)]));
       await redis(['EXPIRE', spKPc, '93600']);
-      if (spentPc > 30000) { await redis(['INCRBY', spKPc, String(-ENTRY)]); return res.status(429).json({ error: '오늘 게임 한도(30,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
+      if (spentPc > 50000) { await redis(['INCRBY', spKPc, String(-ENTRY)]); return res.status(429).json({ error: '오늘 게임 한도(50,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
       aPc.bal -= ENTRY;
       await redis(['SET', 'arcade:pcnpot', '30000', 'NX']); // 잭팟 최소 보장 30,000 (초반에도 한 방 큼)
       await redis(['INCRBY', 'arcade:pcnpot', '200']); // 참가비 4% 적립 (재분배 → 인플레 0)
@@ -1255,13 +1255,13 @@ module.exports = async function handler(req, res) {
       await ledger(aPc.name, wonJp ? '🎰💥 빠칭코 1등!! 누적 잭팟' : (guard ? '🎰🛡 빠칭코 꽝방지 보장(본전)' : '🎰 빠칭코 ' + rank + '등'), prize - ENTRY, aPc.bal);
       if (rank <= 3 && !guard) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPc.name, t: (wonJp ? 'pcnjp' : 'pcn'), v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
       var potNowPc = wonJp ? 30000 : (Number(await redis(['GET', 'arcade:pcnpot'])) || 30000);
-      return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, guard: guard, streak: streak, pot: potNowPc, bal: aPc.bal, capLeft: Math.max(0, 30000 - spentPc) });
+      return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, guard: guard, streak: streak, pot: potNowPc, bal: aPc.bal, capLeft: Math.max(0, 50000 - spentPc) });
       } finally { await acctUnlock(sPc.name); }
     }
     // 잭팟 풀·속보 조회
     // ═══ 🎴 프리미엄 이치방쿠지 (포인트 · 한정 경품 박스 — 소진형 / 가차는 도박이라 파산정지와 무관) ═══
     var PG_COST = 3000;
-    var PG_BOX = [['A', 1, 'pass', '원하는 라인 1회 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3500], ['E', 12, 'apo', 1800], ['F', 13, 'apo', 1000]];
+    var PG_BOX = [['A', 1, 'pass', '원하는 사람과 같은 팀 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3500], ['E', 12, 'apo', 1800], ['F', 13, 'apo', 1000]];
     function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
     function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
     if (req.method === 'GET' && action === 'pgacha') {
@@ -1295,6 +1295,8 @@ module.exports = async function handler(req, res) {
         if (meta.kind === 'apo') { gotApo = meta.val; aPg.bal += gotApo; }
         else { aPg.lanePass = (Number(aPg.lanePass) || 0) + 1; gotPass = true; }
         await putAcct(aPg);
+        var boxReset = false;
+        if (drawn === 'A') { box = pgFullBox(); boxReset = true; } // 🎉 최고 등급 A상 → 박스 자동 초기화 (새 판 시작)
         await redis(['SET', 'pgacha:box', JSON.stringify(box)]);
         await redis(['SET', 'arcade:jackpot', '2000', 'NX']);
         await redis(['INCRBY', 'arcade:jackpot', '300']); // 🎫 손해분(하우스 엣지) → 로또(누적 복권 잭팟) 적립 — 재분배(인플 ≈ 0)
@@ -1302,14 +1304,14 @@ module.exports = async function handler(req, res) {
           await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPg.name, t: 'pg', g: 'A', ts: new Date().toISOString() })]);
           await redis(['LTRIM', 'arcade:news', '0', '9']);
         }
-        await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🧪 라인 보장권(테스트)' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
-        return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, lanePass: Number(aPg.lanePass) || 0 });
+        await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🎟 같은 팀 보장권 획득!' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
+        return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, boxReset: boxReset, lanePass: Number(aPg.lanePass) || 0 });
       } finally { await acctUnlock('pgacha'); }
       } finally { await acctUnlock(sPg.name); }
     }
     // ═══ 🎰 프리미엄 빠칭코 (7×7 게임판 · 등급 보상 · 개인판 — 가챠처럼 도박, 파산정지 무관) ═══
     var PCN_COST = 5000, PCN_CLEAR = 5000;
-    var PCN_G = [['SSS', 1, 50000], ['SS', 2, 18000], ['S', 6, 8000], ['A', 8, 4500], ['B', 15, 2000], ['C', 17, 1100]]; // 합 49칸
+    var PCN_G = [['SSS', 1, 60000], ['SS', 2, 22000], ['S', 3, 10000], ['A', 10, 4500], ['B', 16, 2000], ['C', 17, 1100]]; // 합 49칸 (S강화·확률너프: S이상 9→6칸)
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
