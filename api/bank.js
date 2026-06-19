@@ -1230,7 +1230,7 @@ module.exports = async function handler(req, res) {
       if (spentPc > 50000) { await redis(['INCRBY', spKPc, String(-ENTRY)]); return res.status(429).json({ error: '오늘 게임 한도(50,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
       aPc.bal -= ENTRY;
       await redis(['SET', 'arcade:pcnpot', '30000', 'NX']); // 잭팟 최소 보장 30,000 (초반에도 한 방 큼)
-      await redis(['INCRBY', 'arcade:pcnpot', '200']); // 참가비 4% 적립 (재분배 → 인플레 0)
+      await redis(['INCRBY', 'arcade:pcnpot', '150']); // 참가비 3% 적립 (잭팟 누적 속도↓)
       var winNum = 1 + Math.floor(Math.random() * 100);
       var rank, prize, wonJp = 0, guard = false;
       var stK = 'pcnstreak:' + aPc.name;
@@ -1243,9 +1243,9 @@ module.exports = async function handler(req, res) {
         await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0;
       } else {
         rank = pickWeighted([[2, 1], [3, 3], [4, 7], [5, 12], [6, 17], [7, 22], [8, 22], [9, 16]]); // 꽝(0) 없음 — 최저도 1,500 환급
-        prize = { 2: 30000, 3: 12000, 4: 8000, 5: 6000, 6: 5000, 7: 3500, 8: 2500, 9: 1500 }[rank];
+        prize = { 2: 25000, 3: 11000, 4: 7500, 5: 5500, 6: 4500, 7: 3200, 8: 2300, 9: 1400 }[rank];
         if (prize < ENTRY) { // 🛡 꽝방지 게이지 — 5판 연속 본전 미만이면 다음 판 본전 보장
-          if (streak >= 5) { prize = ENTRY; rank = 6; guard = true; await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
+          if (streak >= 7) { prize = ENTRY; rank = 6; guard = true; await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
           else { streak = streak + 1; await redis(['SET', stK, String(streak), 'EX', SEC30]); }
         } else { await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
       }
@@ -1261,7 +1261,7 @@ module.exports = async function handler(req, res) {
     // 잭팟 풀·속보 조회
     // ═══ 🎴 프리미엄 이치방쿠지 (포인트 · 한정 경품 박스 — 소진형 / 가차는 도박이라 파산정지와 무관) ═══
     var PG_COST = 3000;
-    var PG_BOX = [['A', 1, 'pass', '원하는 사람과 같은 팀 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3500], ['E', 12, 'apo', 1800], ['F', 13, 'apo', 1000]];
+    var PG_BOX = [['A', 1, 'pass', '원하는 사람과 같은 팀 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1500], ['F', 13, 'apo', 800]];
     function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
     function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
     if (req.method === 'GET' && action === 'pgacha') {
@@ -1311,7 +1311,7 @@ module.exports = async function handler(req, res) {
     }
     // ═══ 🎰 프리미엄 빠칭코 (7×7 게임판 · 등급 보상 · 개인판 — 가챠처럼 도박, 파산정지 무관) ═══
     var PCN_COST = 5000, PCN_CLEAR = 5000;
-    var PCN_G = [['SSS', 1, 60000], ['SS', 2, 22000], ['S', 3, 10000], ['A', 10, 4500], ['B', 16, 2000], ['C', 17, 1100]]; // 합 49칸 (S강화·확률너프: S이상 9→6칸)
+    var PCN_G = [['SSS', 1, 60000], ['SS', 2, 22000], ['S', 3, 10000], ['A', 10, 3800], ['B', 16, 1600], ['C', 17, 850]]; // 합 49칸 (대박 유지·저급↓로 하우스 엣지 확보)
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
