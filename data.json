@@ -31933,9 +31933,32 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [],
- "rev": 352,
- "updatedAt": "2026-06-18T18:20:33.429Z",
+ "lineups": [
+  {
+   "id": "lu_yivnw47mqkbuzpy",
+   "date": "2026-06-19",
+   "round": "1차",
+   "series": "3판 2선승",
+   "note": "",
+   "event": false,
+   "blue": [
+    "p_imjto1qf_mq7nhxuq",
+    "p_4siqelqmq7ub77p",
+    "p_j93ommzd_mq7nhxuq",
+    "p_jlc2q699_mq7nhxup",
+    "p_53io5pq0_mq7nhxuq"
+   ],
+   "red": [
+    "p_3v5tiwk3_mq7nhxuq",
+    "p_60ospv2c_mq7nhxuq",
+    "p_si39mrju_mq7nhxuq",
+    "p_wqf3x0omq7ub77q",
+    "p_gi86d5qmq7ub77o"
+   ]
+  }
+ ],
+ "rev": 353,
+ "updatedAt": "2026-06-19T02:46:36.118Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
