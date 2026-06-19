@@ -1459,11 +1459,11 @@ module.exports = async function handler(req, res) {
     }
 
     // ═══ 🎯 토토 (용/퍼블/킬총합 — 내전 공지에서 홈 개장, 1인 1픽, 정답자 풀 분배 3% 수수료) ═══
-    var TOTO_OPTS = { dragon: ['1팀', '2팀', '비슷'], fb: ['1팀', '2팀'], killsum: ['~25', '26~35', '36~45', '46+'] };
+    var TOTO_DEFS = { dragon: { odds: 4.5, opts: ['화염용', '물용', '바람용', '대지용', '마공용', '화공용'] }, fb: { odds: 1.9, opts: ['알파', '베타'] }, killsum: { odds: 1.9, opts: ['45 이하', '46 이상'] }, baron: { odds: 1.9, opts: ['알파', '베타'] } };
     if (req.method === 'GET' && action === 'totoTally') {
       var dTo = String(q.date || ''), kTo = String(q.kind || '');
       if (!mktOk(dTo)) return res.status(400).json({ error: 'date 형식 오류' });
-      if (!TOTO_OPTS[kTo]) return res.status(400).json({ error: '없는 토토 종류' });
+      if (!TOTO_DEFS[kTo]) return res.status(400).json({ error: '없는 토토 종류' });
       var KTo = 'toto:' + kTo + ':' + dTo;
       var stTo = (await redis(['GET', KTo + ':status'])) || 'open';
       var winTo = (await redis(['GET', KTo + ':win'])) || '';
@@ -1474,7 +1474,7 @@ module.exports = async function handler(req, res) {
       var myTo = null;
       var sTo0 = await auth(q.token);
       if (sTo0 && sTo0.name) myTo = await redis(['GET', KTo + ':v:' + sTo0.name]);
-      return res.status(200).json({ date: dTo, kind: kTo, opts: TOTO_OPTS[kTo], status: stTo, win: winTo, tally: talTo, pool: poolTo, my: myTo });
+      return res.status(200).json({ date: dTo, kind: kTo, opts: TOTO_DEFS[kTo].opts, odds: TOTO_DEFS[kTo].odds, status: stTo, win: winTo, tally: talTo, pool: poolTo, my: myTo });
     }
     if (req.method === 'POST' && action === 'totoBet') {
       var sTB = await auth(body.token);
@@ -1482,13 +1482,14 @@ module.exports = async function handler(req, res) {
       if (await suspGuard(sTB.name, res)) return;
       var dTB = String(body.date || ''), kTB = String(body.kind || ''), pickTB = String(body.pick || '');
       if (!mktOk(dTB)) return res.status(400).json({ error: 'date 형식 오류' });
-      if (!TOTO_OPTS[kTB]) return res.status(400).json({ error: '없는 토토 종류' });
-      if (TOTO_OPTS[kTB].indexOf(pickTB) < 0) return res.status(400).json({ error: '없는 선택지' });
+      if (!TOTO_DEFS[kTB]) return res.status(400).json({ error: '없는 토토 종류' });
+      if (TOTO_DEFS[kTB].opts.indexOf(pickTB) < 0) return res.status(400).json({ error: '없는 선택지' });
       var KTB = 'toto:' + kTB + ':' + dTB;
       var stTB = (await redis(['GET', KTB + ':status'])) || 'open';
       if (stTB !== 'open') return res.status(403).json({ error: '토토가 마감됐어요' });
       var amtTB = Math.round(Number(body.amount) || 0);
       if (amtTB < 100) return res.status(400).json({ error: '최소 100 APO' });
+      if (amtTB > 20000) return res.status(400).json({ error: '한 경기 최대 2만 APO예요' });
       if (!(await acctLock(sTB.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
       try {
         var aTB = await getAcct(sTB.name);
@@ -1511,7 +1512,7 @@ module.exports = async function handler(req, res) {
       if (!sTL || (sTL.role !== 'admin' && sTL.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var dTL = String(body.date || ''), kTL = String(body.kind || '');
       if (!mktOk(dTL)) return res.status(400).json({ error: 'date 형식 오류' });
-      if (!TOTO_OPTS[kTL]) return res.status(400).json({ error: '없는 토토 종류' });
+      if (!TOTO_DEFS[kTL]) return res.status(400).json({ error: '없는 토토 종류' });
       await redis(['SET', 'toto:' + kTL + ':' + dTL + ':status', body.open ? 'open' : 'locked', 'EX', SEC90]);
       return res.status(200).json({ ok: true });
     }
@@ -1520,8 +1521,8 @@ module.exports = async function handler(req, res) {
       if (!sTS || (sTS.role !== 'admin' && sTS.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
       var dTS = String(body.date || ''), kTS = String(body.kind || ''), winTS = String(body.win || '');
       if (!mktOk(dTS)) return res.status(400).json({ error: 'date 형식 오류' });
-      if (!TOTO_OPTS[kTS]) return res.status(400).json({ error: '없는 토토 종류' });
-      if (TOTO_OPTS[kTS].indexOf(winTS) < 0) return res.status(400).json({ error: '없는 결과' });
+      if (!TOTO_DEFS[kTS]) return res.status(400).json({ error: '없는 토토 종류' });
+      if (TOTO_DEFS[kTS].opts.indexOf(winTS) < 0) return res.status(400).json({ error: '없는 결과' });
       var KTS = 'toto:' + kTS + ':' + dTS;
       if (!(await acctLock('stl:' + KTS))) return res.status(429).json({ error: '정산 처리 중이에요 — 잠시만요' });
       try {
@@ -1531,21 +1532,21 @@ module.exports = async function handler(req, res) {
         var poolFlatTS = (await redis(['HGETALL', KTS + ':pool'])) || [];
         var totalP = 0, winP = 0;
         for (var pT = 0; pT + 1 < poolFlatTS.length; pT += 2) { totalP += Number(poolFlatTS[pT + 1]) || 0; if (poolFlatTS[pT] === winTS) winP = Number(poolFlatTS[pT + 1]) || 0; }
-        var netT = Math.floor(totalP * 0.97);
+        var oddsTS = (TOTO_DEFS[kTS] && TOTO_DEFS[kTS].odds) || 1.9;
         var winnersT = 0, paidT = 0;
         for (var bT = 0; bT < bettorsTS.length; bT++) {
           var betRT = await redis(['GET', KTS + ':v:' + bettorsTS[bT]]);
           if (!betRT) continue;
           var prT = betRT.split('|'), pkT = prT[0], amT = Number(prT[1]) || 0;
-          if (pkT === winTS && winP > 0) {
-            var shareT = Math.floor(netT * (amT / winP));
+          if (pkT === winTS) {
+            var shareT = Math.floor(amT * oddsTS);
             var accT = await getAcct(bettorsTS[bT]);
             if (accT) { accT.bal += shareT; paidT += shareT; winnersT++; await putAcct(accT); await ledger(accT.name, '🎯 토토 적중 ' + kTS + ' ' + winTS + ' — 배당', shareT, accT.bal); }
           }
         }
         await redis(['SET', KTS + ':status', 'settled', 'EX', SEC90]);
         await redis(['SET', KTS + ':win', winTS, 'EX', SEC90]);
-        return res.status(200).json({ ok: true, win: winTS, winners: winnersT, paid: paidT, pool: totalP });
+        return res.status(200).json({ ok: true, win: winTS, winners: winnersT, paid: paidT, pool: totalP, odds: oddsTS });
       } finally { await acctUnlock('stl:' + KTS); }
     }
 
