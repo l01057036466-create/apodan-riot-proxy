@@ -355,12 +355,13 @@
     "02외않되"
    ],
    "active": false,
-   "memo": "",
+   "memo": "🚪 퇴출 (그룹 탈퇴)",
    "soloTier": "실버",
    "flexTier": "실버",
    "riotPuuid": "QLo9jOVk38uVI7hRqmry3auvK-_j4Vi-j6ZvBdK0qo_z_b6_VB3OEc0a8MrtTphmvZbPojL17MNYGA",
    "soloPos": "",
-   "subPos": ""
+   "subPos": "",
+   "kicked": true
   },
   {
    "id": "p_faxcf4rq_mq7nhxuq",
@@ -31859,7 +31860,7 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-19T06:01:19.207Z",
+  "lastBackupAt": "2026-06-19T08:37:54.211Z",
   "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
   "maintenance": false,
@@ -32001,8 +32002,8 @@
    ]
   }
  ],
- "rev": 359,
- "updatedAt": "2026-06-19T06:06:20.751Z",
+ "rev": 362,
+ "updatedAt": "2026-06-19T08:46:23.047Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
