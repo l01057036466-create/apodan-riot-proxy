@@ -9299,25 +9299,25 @@ function pgChampions(){
   const periodBar=`<div class="row" style="gap:6px;margin-bottom:14px"><button class="btn sm ${period==='all'?'gold':''}" onclick="window._champPeriod='all';render()">전체 메타</button><button class="btn sm ${period==='week'?'gold':''}" onclick="window._champPeriod='week';render()">📅 최근 7일</button>${period==='week'?'<span class="mini dim" style="align-self:center">표본 적으면 보류 많음 (정상)</span>':''}</div>`;
   const TB={1:['#ff4d6b','1'],2:['#ff9d4d','2'],3:['#ffd24a','3'],4:['#5ea0ff','4'],5:['#8f9aa8','5']};
   const tierBadge=c=>{
-    if(c.grade==null)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:7px;background:#8f9aa81f;color:#8f9aa8;font-weight:900;font-size:12px;border:1px solid #8f9aa855">—</span>`;
-    if(c.op)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:28px;border-radius:7px;background:linear-gradient(135deg,#a970ff,#ff5c7a);color:#fff;font-weight:900;font-size:11px;letter-spacing:.02em;box-shadow:0 0 9px rgba(169,112,229,.55)">OP</span>`;
-    const t=TB[c.grade];return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:7px;background:${t[0]}1f;color:${t[0]};font-weight:900;font-size:13px;border:1px solid ${t[0]}55">${t[1]}</span>`};
+    if(c.grade==null)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:33px;border-radius:8px;background:#8f9aa81f;color:#8f9aa8;font-weight:900;font-size:13.5px;border:1px solid #8f9aa855">—</span>`;
+    if(c.op)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:33px;border-radius:8px;background:linear-gradient(135deg,#a970ff,#ff5c7a);color:#fff;font-weight:900;font-size:12.5px;letter-spacing:.02em;box-shadow:0 0 9px rgba(169,112,229,.55)">OP</span>`;
+    const t=TB[c.grade];return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:33px;border-radius:8px;background:${t[0]}1f;color:${t[0]};font-weight:900;font-size:15px;border:1px solid ${t[0]}55">${t[1]}</span>`};
   const sortBtn=(k,l)=>`<span onclick="window._champSort='${k}';render()" style="cursor:pointer;${sortBy===k?'color:var(--gold);font-weight:800':'color:#8f82b8'}">${l}${sortBy===k?' ▾':''}</span>`;
   const list=sorted.length?`<div class="card">
-    <div style="display:flex;align-items:center;padding:0 2px 9px;border-bottom:1px solid var(--line);font-size:11.5px">
-      <span style="width:38px;color:#8f82b8">티어</span><span style="flex:1;color:#8f82b8">챔피언</span>
-      <span style="width:50px;text-align:right">${sortBtn('score','APD')}</span>
-      <span style="width:48px;text-align:right">${sortBtn('winRate','승률')}</span>
-      <span style="width:40px;text-align:right">${sortBtn('pickRate','픽률')}</span>
-      <span style="width:30px;text-align:right">${sortBtn('bans','밴')}</span>
+    <div style="display:flex;align-items:center;padding:0 2px 11px;border-bottom:1px solid var(--line);font-size:13px">
+      <span style="width:46px;color:#8f82b8">티어</span><span style="flex:1;color:#8f82b8">챔피언</span>
+      <span style="width:58px;text-align:right">${sortBtn('score','APD')}</span>
+      <span style="width:56px;text-align:right">${sortBtn('winRate','승률')}</span>
+      <span style="width:48px;text-align:right">${sortBtn('pickRate','픽률')}</span>
+      <span style="width:40px;text-align:right">${sortBtn('bans','밴')}</span>
     </div>
-    ${sorted.map((c,idx)=>`<div onclick="champSel('${esc(c.champion)}')" style="display:flex;align-items:center;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer">
-      <span style="width:38px;flex-shrink:0">${tierBadge(c)}</span>
-      <span style="flex:1;display:flex;align-items:center;gap:6px;min-width:0"><b style="color:#8f82b8;font-size:11px;width:15px;flex-shrink:0;text-align:right">${idx+1}</b>${champFace(c.champion,24)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px">${esc(c.champion)}</b>${c.honey?' <span title="꿀챔 — 픽·밴 낮은데 승률 좋음">🍯</span>':''}${c.trap?' <span title="함정픽 — 픽 높은데 승률 낮음">🪤</span>':''}</span>
-      <span style="width:50px;text-align:right;font-weight:800;font-size:13px">${c.score}</span>
-      <span style="width:48px;text-align:right;font-weight:700;font-size:12.5px" class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span>
-      <span style="width:40px;text-align:right;color:#8f82b8;font-size:12px">${c.pickRate}%</span>
-      <span style="width:30px;text-align:right;color:#8f82b8;font-size:12px">${c.bans||'-'}</span>
+    ${sorted.map((c,idx)=>`<div onclick="champSel('${esc(c.champion)}')" style="display:flex;align-items:center;padding:13px 2px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer">
+      <span style="width:46px;flex-shrink:0">${tierBadge(c)}</span>
+      <span style="flex:1;display:flex;align-items:center;gap:10px;min-width:0"><b style="color:#8f82b8;font-size:13px;width:19px;flex-shrink:0;text-align:right">${idx+1}</b>${champFace(c.champion,38)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16.5px">${esc(c.champion)}</b>${c.honey?' <span title="꿀챔 — 픽·밴 낮은데 승률 좋음">🍯</span>':''}${c.trap?' <span title="함정픽 — 픽 높은데 승률 낮음">🪤</span>':''}</span>
+      <span style="width:58px;text-align:right;font-weight:800;font-size:15.5px">${c.score}</span>
+      <span style="width:56px;text-align:right;font-weight:700;font-size:14.5px" class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span>
+      <span style="width:48px;text-align:right;color:#8f82b8;font-size:13.5px">${c.pickRate}%</span>
+      <span style="width:40px;text-align:right;color:#8f82b8;font-size:13.5px">${c.bans||'-'}</span>
     </div>`).join('')}
     <p class="mini dim" style="margin:12px 0 0">📊 <b style="color:var(--gold)">APD 스코어</b>(50 기준·lol.ps식)는 베이지안 승률을 주축으로 픽률·밴율·최근 폼을 합친 지표예요. 픽·승률이 모두 높으면 1티어, 최상위는 👑 OP. 🍯<b>꿀챔</b>=픽·밴 낮은데 승률 좋음 / 🪤<b>함정픽</b>=픽 높은데 승률 낮음. <b>챔피언을 누르면 카운터·먹잇감·장인</b>이 펼쳐져요.</p>
   </div>`:`<div class="card"><div class="empty">${lane?'이 라인에서 3판 이상 픽된 챔피언이 아직 없어요.':'경기를 기록하면 아포단만의 티어표가 만들어져요.'}</div></div>`;
