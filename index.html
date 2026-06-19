@@ -3790,7 +3790,7 @@ async function bankRefresh(force){
   try{
     const me=await bankCall('me',null,'GET');
     if(bankToken()!==tk){window._bankBusy=false;return}
-    window._bank=me;
+    window._bank=me;window._pcn=undefined;window._pgacha=undefined; // 🆕 로그인 시 공용 게임판(빠칭코·가챠) 재조회 — 미로그인 때 캐시한 need 무효화
     lsSet('apodan_bank_me',JSON.stringify({name:me.name,role:me.role}));
     if(me.role==='admin'||me.role==='dev'){
       try{window._bankPending=(await bankCall('pending',null,'GET')).pending}catch(e){}
@@ -4077,6 +4077,7 @@ async function stockTrade(side){
   const roy=side==='buy'&&!isSelf?Math.floor(base*0.02):0;
   const total=side==='buy'?base+fee+roy:Math.floor(base*0.99);
   const held=(B.holdings&&B.holdings[tgt]&&B.holdings[tgt].q)||0;
+  if(side==='buy'&&held+qty>1000)return toast(`📊 한 종목당 1,000주까지만 보유할 수 있어요 (현재 ${held}주 — ${Math.max(0,1000-held)}주까지 가능)`,true);
   if(side==='sell'&&held<qty)return toast(`보유 ${held}주뿐이에요 — 수량을 확인해주세요.`,true);
   const msg=side==='buy'
     ?`🧾 매수 주문 확인\n\n종목: ${tgt}${D.listed?'':' (첫 거래 — 폼 주가로 상장)'}\n수량: ${qty}주 × @${D.px}\n──────────\n주식 대금 ${fmtAPO(base)}\n+ 수수료 1% ${fmtAPO(fee)}\n+ 초상권료 2% ${fmtAPO(roy)}${isSelf?' (본인 — 면제)':''}\n= 총 ${fmtAPO(total)} APO 지불\n\n(체결가는 내 주문의 수급 영향 ±2% 내에서 확정돼요)\n\n이대로 체결할까요?`
@@ -7421,14 +7422,20 @@ function pcnPickFx(grade,apo,bonus){
 
 async function pcnPick(idx){
   if(window._pcnBusy)return;window._pcnBusy=true;
-  try{const j=await bankCall('pcnpick',{idx});if(window._bank)window._bank.bal=j.bal;
-    if(window._pcn){if(j.cells)window._pcn.cells=j.cells;window._pcn.remain=j.remain;window._pcn.done=j.done;if(j.round)window._pcn.round=j.round}
-    await pcnPickFx(j.grade,j.apo,j.bonus);
-    toast(`🎰 ${j.grade}! +${fmtAPO(j.apo)} APO`);
-    if(j.lastOne){pcnLastModal();return}
-    render()}
-  catch(e){toast('🎰 '+e.message,true)}
-  finally{window._pcnBusy=false}
+  let _tries=0;
+  while(true){
+    try{const j=await bankCall('pcnpick',{idx});if(window._bank)window._bank.bal=j.bal;
+      if(window._pcn){if(j.cells)window._pcn.cells=j.cells;window._pcn.remain=j.remain;window._pcn.done=j.done;if(j.round)window._pcn.round=j.round}
+      await pcnPickFx(j.grade,j.apo,j.bonus);
+      toast(`🎰 ${j.grade}! +${fmtAPO(j.apo)} APO`);
+      if(j.lastOne){pcnLastModal();window._pcnBusy=false;return}
+      render();window._pcnBusy=false;return}
+    catch(e){
+      if(e.status===429&&_tries<3){_tries++;await new Promise(r=>setTimeout(r,250+_tries*200));continue} // 🔁 동시 까기 락 충돌 → 짧게 재시도 (서버렉·오류 체감 제거)
+      if(e.status===409){try{await fetchPcn()}catch(_){}softRender();toast('🎰 방금 다른 분이 깐 칸이에요 — 다른 칸을 골라주세요!',true)} // 이미 깐 칸 → 보드 즉시 갱신
+      else toast('🎰 '+(e.message||'오류가 났어요'),true);
+      window._pcnBusy=false;return}
+  }
 }
 function pcnLastModal(){
   var ov=document.getElementById('pcnLastOv'); if(ov)ov.remove();
