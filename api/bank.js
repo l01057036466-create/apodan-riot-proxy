@@ -615,6 +615,38 @@ module.exports = async function handler(req, res) {
       for (var pk0 in S0.base) premOut[pk0] = premCap(S0.base[pk0], S0.prem[pk0]); // 표시용: 상한 적용된 실제 수급
       return res.status(200).json({ prices: combinePx(S0), base: S0.base, prem: premOut });
     }
+    if (req.method === 'POST' && action === 'stockRefund') { // 🏦 dev/admin — 주식 환불(APO 돌려줌)/환수(회수) · 전원 or 특정
+      var sRf = await auth(body.token);
+      if (!sRf || (sRf.role !== 'admin' && sRf.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var whoRf = String(body.who || '').trim();
+      var modeRf = body.mode === 'seize' ? 'seize' : 'refund';
+      var priceRf = (body.price === 'market') ? 'market' : 'avg';
+      var targetsRf = (whoRf === 'all' || whoRf === '전원' || whoRf === '*') ? ((await redis(['SMEMBERS', 'acct:_all'])) || []) : (whoRf ? [whoRf] : []);
+      if (!targetsRf.length) return res.status(400).json({ error: '대상(이름 또는 all)이 필요해요' });
+      var SrfPx = await loadPx(), pxNow = combinePx(SrfPx);
+      var totalRf = 0, usersRf = 0, sharesRf = 0;
+      for (var tiRf = 0; tiRf < targetsRf.length; tiRf++) {
+        var nmRf = String(targetsRf[tiRf]);
+        var hRawRf = await redis(['GET', 'hold:' + nmRf]);
+        if (!hRawRf) continue;
+        var hObjRf = JSON.parse(hRawRf), uRefund = 0, uShares = 0;
+        for (var symRf in hObjRf) {
+          var qRf = Number(hObjRf[symRf] && hObjRf[symRf].q) || 0;
+          if (qRf <= 0) continue;
+          uShares += qRf;
+          if (modeRf === 'refund') { var unitRf = (priceRf === 'market') ? (pxNow[symRf] || Number(hObjRf[symRf].avg) || 0) : (Number(hObjRf[symRf].avg) || pxNow[symRf] || 0); uRefund += unitRf * qRf; }
+        }
+        if (uShares <= 0) continue;
+        var aRf = await getAcct(nmRf);
+        if (aRf) {
+          if (modeRf === 'refund' && uRefund > 0) { aRf.bal += uRefund; await putAcct(aRf); await ledger(nmRf, '🏦 주식 환불 — 보유 ' + uShares + '주 전량 정리 (+' + uRefund + ')', uRefund, aRf.bal); }
+          else if (modeRf === 'seize') { await ledger(nmRf, '🏦 주식 환수 — 보유 ' + uShares + '주 회수 (보상 없음)', 0, aRf.bal); }
+        }
+        await redis(['DEL', 'hold:' + nmRf]);
+        totalRf += uRefund; usersRf++; sharesRf += uShares;
+      }
+      return res.status(200).json({ ok: true, mode: modeRf, users: usersRf, shares: sharesRf, refunded: totalRf });
+    }
     if (req.method === 'POST' && action === 'stockManip') { // 🔧 개발자 전용 — 주가(폼 기준가) 직접 조작
       var sMp = await auth(body.token);
       if (!sMp || sMp.role !== 'dev') return res.status(403).json({ error: '개발자 전용 기능이에요' });
@@ -1335,13 +1367,13 @@ module.exports = async function handler(req, res) {
     }
     if (req.method === 'GET' && action === 'pcnboard') {
       var sPb = await auth(q.token);
-      if (!sPb || !sPb.name) return res.status(200).json({ cost: PCN_COST, def: PCN_G, need: true });
+      // 🌐 보드는 공용 — 미로그인도 조회 가능 (가챠처럼 항상 cells 반환, 까기(pcnpick)만 로그인 필요)
       var pbRaw = await redis(['GET', 'pcn:board']);
       var pbBd = pbRaw ? JSON.parse(pbRaw) : null;
       if (!pbBd) { pbBd = pcnNewBoard(); await redis(['SET', 'pcn:board', JSON.stringify(pbBd)]); }
       if (!pbBd.by) pbBd.by = pbBd.cells.map(function () { return null; });
       var pv = pcnView(pbBd);
-      return res.status(200).json({ cost: PCN_COST, clear: PCN_CLEAR, def: PCN_G, cells: pv.cells, remain: pv.remain, done: pv.done, round: pbBd.round || 1, shared: true });
+      return res.status(200).json({ cost: PCN_COST, clear: PCN_CLEAR, def: PCN_G, cells: pv.cells, remain: pv.remain, done: pv.done, round: pbBd.round || 1, shared: true, need: !(sPb && sPb.name) });
     }
     if (req.method === 'POST' && action === 'pcnpick') {
       var sPk = await auth(body.token);
