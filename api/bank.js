@@ -729,6 +729,8 @@ module.exports = async function handler(req, res) {
       var hRaw = await redis(['GET', 'hold:' + aT.name]);
       var hold = hRaw ? JSON.parse(hRaw) : {};
       if (action === 'stockBuy') {
+        var heldB = (hold[tgt] && hold[tgt].q) || 0; // 🧱 1인 1종목 보유 상한 1,000주 (인플레·독점 방지)
+        if (heldB + qty > 1000) return res.status(400).json({ error: '한 종목당 최대 1,000주까지만 보유할 수 있어요 (현재 ' + heldB + '주 — ' + Math.max(0, 1000 - heldB) + '주까지 추가 매수 가능)' });
         // ① 내 매수 임팩트를 먼저 가격에 반영 → 그 가격으로 체결 (슬리피지)
         var impB = (tgt === aT.name) ? 0 : Math.max(1, Math.min(Math.max(1, Math.round(price * 0.04)), Math.round(qty * 1.2) || 1));
         SX.prem[tgt] = premCap(SX.base[tgt] || 100, (Number(SX.prem[tgt]) || 0) + impB);
@@ -1345,7 +1347,7 @@ module.exports = async function handler(req, res) {
       var sPk = await auth(body.token);
       if (!sPk || !sPk.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var idx = Math.floor(Number(body.idx));
-      if (!(idx >= 0 && idx < 49)) return res.status(400).json({ error: '칸 번호 오류' });
+      if (!(idx >= 0 && idx < 200)) return res.status(400).json({ error: '칸 번호 오류' }); // 느슨 상한 — 실제 칸 수는 락 안에서 보드 기준 정밀 검증
       if (!(await acctLock(sPk.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
       try {
       if (!(await acctLock('pcnboard'))) return res.status(429).json({ error: '다른 분이 까는 중 — 잠시 후 다시!' });
@@ -1356,6 +1358,7 @@ module.exports = async function handler(req, res) {
         var bRaw = await redis(['GET', 'pcn:board']);
         var bd = bRaw ? JSON.parse(bRaw) : pcnNewBoard();
         if (!bd.by) bd.by = bd.cells.map(function () { return null; });
+        if (idx >= bd.cells.length) return res.status(400).json({ error: '칸 번호 오류 (이 판은 ' + bd.cells.length + '칸)' }); // 🆕 84칸 등 보드 실제 칸 수 기준 — 49 하드코딩 제거
         if (bd.rev[idx]) return res.status(409).json({ error: '이미 깐 칸이에요 — 다른 칸을 골라주세요!' });
         bd.rev[idx] = true; bd.by[idx] = aPk.name;
         var g = bd.cells[idx], apo = pcnGapo(g);
