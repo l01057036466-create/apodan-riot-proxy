@@ -32528,9 +32528,6 @@
      "kills": 6,
      "deaths": 2,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 184,
       "goldEarned": 10813,
@@ -32538,8 +32535,6 @@
       "damageTaken": 20713,
       "visionScore": 8,
       "wardsPlaced": 4,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 20,
       "damageToObjectives": 9565,
       "damageToTurrets": 9565,
@@ -32556,9 +32551,6 @@
      "kills": 8,
      "deaths": 4,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 179,
       "goldEarned": 11863,
@@ -32567,7 +32559,6 @@
       "visionScore": 15,
       "wardsPlaced": 1,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 18,
       "damageToObjectives": 37053,
       "damageToTurrets": 4298,
@@ -32584,9 +32575,6 @@
      "kills": 3,
      "deaths": 2,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 163,
       "goldEarned": 8847,
@@ -32612,9 +32600,6 @@
      "kills": 12,
      "deaths": 1,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 214,
       "goldEarned": 15457,
@@ -32623,7 +32608,6 @@
       "visionScore": 12,
       "wardsPlaced": 5,
       "wardsKilled": 3,
-      "controlWardsBought": 0,
       "crowdControlScore": 20,
       "damageToObjectives": 16614,
       "damageToTurrets": 16139,
@@ -32640,9 +32624,6 @@
      "kills": 1,
      "deaths": 2,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 19,
       "goldEarned": 7906,
@@ -32661,16 +32642,13 @@
     },
     {
      "team": "RED",
-     "lane": "JUNGLE",
+     "lane": "TOP",
      "playerId": "p_imjto1qf_mq7nhxuq",
      "rawName": "잭 슨",
      "championId": "올라프",
      "kills": 6,
      "deaths": 9,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 135,
       "goldEarned": 9282,
@@ -32678,8 +32656,6 @@
       "damageTaken": 26449,
       "visionScore": 11,
       "wardsPlaced": 6,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 11,
       "damageToObjectives": 3127,
       "damageToTurrets": 3127,
@@ -32689,16 +32665,13 @@
     },
     {
      "team": "RED",
-     "lane": "TOP",
+     "lane": "JUNGLE",
      "playerId": "p_h7k04k4c_mq7nhxuq",
      "rawName": "이서하",
      "championId": "릴리아",
      "kills": 1,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 105,
       "goldEarned": 6595,
@@ -32709,8 +32682,6 @@
       "wardsKilled": 5,
       "controlWardsBought": 3,
       "crowdControlScore": 17,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
       "healing": 9146,
       "selfMitigatedDamage": 8667
      }
@@ -32724,9 +32695,6 @@
      "kills": 0,
      "deaths": 4,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 174,
       "goldEarned": 7161,
@@ -32752,9 +32720,6 @@
      "kills": 4,
      "deaths": 6,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 146,
       "goldEarned": 8963,
@@ -32762,11 +32727,7 @@
       "damageTaken": 15593,
       "visionScore": 5,
       "wardsPlaced": 4,
-      "wardsKilled": 0,
-      "controlWardsBought": 0,
       "crowdControlScore": 6,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
       "healing": 2169,
       "selfMitigatedDamage": 6897
      }
@@ -32780,9 +32741,6 @@
      "kills": 0,
      "deaths": 5,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 27,
       "goldEarned": 5014,
@@ -32793,8 +32751,6 @@
       "wardsKilled": 2,
       "controlWardsBought": 6,
       "crowdControlScore": 8,
-      "damageToObjectives": 0,
-      "damageToTurrets": 0,
       "healing": 3539,
       "selfMitigatedDamage": 13099
      }
@@ -32856,16 +32812,13 @@
    "participants": [
     {
      "team": "BLUE",
-     "lane": "MID",
+     "lane": "TOP",
      "playerId": "p_imjto1qf_mq7nhxuq",
      "rawName": "잭 슨",
      "championId": "애니비아",
      "kills": 10,
      "deaths": 7,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 292,
       "goldEarned": 17644,
@@ -32891,9 +32844,6 @@
      "kills": 11,
      "deaths": 7,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 251,
       "goldEarned": 19558,
@@ -32912,16 +32862,13 @@
     },
     {
      "team": "BLUE",
-     "lane": "TOP",
+     "lane": "MID",
      "playerId": "p_j93ommzd_mq7nhxuq",
      "rawName": "물방울",
      "championId": "사이온",
      "kills": 1,
      "deaths": 4,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 223,
       "goldEarned": 12340,
@@ -32947,9 +32894,6 @@
      "kills": 20,
      "deaths": 7,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 300,
       "goldEarned": 23277,
@@ -32958,7 +32902,6 @@
       "visionScore": 29,
       "wardsPlaced": 14,
       "wardsKilled": 6,
-      "controlWardsBought": 0,
       "crowdControlScore": 5,
       "damageToObjectives": 28370,
       "damageToTurrets": 5323,
@@ -32975,9 +32918,6 @@
      "kills": 0,
      "deaths": 11,
      "assists": 21,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 26,
       "goldEarned": 10280,
@@ -32989,7 +32929,6 @@
       "controlWardsBought": 17,
       "crowdControlScore": 31,
       "damageToObjectives": 1897,
-      "damageToTurrets": 0,
       "healing": 6390,
       "selfMitigatedDamage": 12265
      }
@@ -33003,9 +32942,6 @@
      "kills": 2,
      "deaths": 9,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 248,
       "goldEarned": 15790,
@@ -33014,7 +32950,6 @@
       "visionScore": 36,
       "wardsPlaced": 14,
       "wardsKilled": 2,
-      "controlWardsBought": 0,
       "crowdControlScore": 21,
       "damageToObjectives": 28826,
       "damageToTurrets": 24236,
@@ -33031,9 +32966,6 @@
      "kills": 14,
      "deaths": 5,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 322,
       "goldEarned": 24159,
@@ -33042,7 +32974,6 @@
       "visionScore": 37,
       "wardsPlaced": 3,
       "wardsKilled": 7,
-      "controlWardsBought": 0,
       "crowdControlScore": 21,
       "damageToObjectives": 52140,
       "damageToTurrets": 1720,
@@ -33059,9 +32990,6 @@
      "kills": 2,
      "deaths": 9,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 320,
       "goldEarned": 14645,
@@ -33087,9 +33015,6 @@
      "kills": 18,
      "deaths": 9,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 298,
       "goldEarned": 20858,
@@ -33115,9 +33040,6 @@
      "kills": 0,
      "deaths": 10,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
      "stats": {
       "cs": 43,
       "goldEarned": 10423,
@@ -33304,8 +33226,8 @@
    ]
   }
  ],
- "rev": 370,
- "updatedAt": "2026-06-19T14:40:31.925Z",
+ "rev": 372,
+ "updatedAt": "2026-06-19T14:51:26.557Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
