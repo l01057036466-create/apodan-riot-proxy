@@ -9934,7 +9934,16 @@ function pgBank(){
         <button class="btn sm gold" onclick="aiTrade()">🤖 AI 기관/외국인 수급 이벤트 (주 1회)</button>
         <button class="btn sm" onclick="bankStockRescue()">💰 종목 구제 (붕괴종목 환불·재상장)</button>
       </div>
-      <p class="mini dim" style="margin-top:8px">💡 유령 세션엔 지갑이 없어요 — 베팅·주식 거래는 본인 멤버 계정으로 로그인해서!</p>
+      <div class="hr"></div>
+      <h3 style="font-size:14px">🔧 주가 조작 <span class="mini dim" style="font-weight:600">(즉시 반영 · 멤버 화면 시세에 바로 적용)</span></h3>
+      <div class="grid c2" style="margin-top:6px">
+        <div class="f"><label>대상 이름</label><input id="manipName" list="dlBank" placeholder="멤버 이름"></div>
+        <div class="f"><label>설정 주가 (APO)</label><input id="manipPrice" type="number" placeholder="예: 250"></div>
+      </div>
+      <div class="row" style="gap:6px;margin-top:8px">
+        <button class="btn" onclick="stockManip()" style="border-color:#9b5de5;color:#9b5de5;font-weight:800">🔧 주가 강제 설정</button>
+      </div>
+      <p class="mini dim" style="margin-top:8px">💡 유령 세션엔 지갑이 없어요 — 베팅·주식 거래는 본인 멤버 계정으로! 🔧 주가 조작은 여기서 바로 가능해요.</p>
     </div>
     ${(()=>{ // 🎰 베팅 판 관리 — 대시보드 안 가도 마감/정산
       fetchMarkets(false);
@@ -10018,14 +10027,6 @@ function pgBank(){
       <div class="row" style="gap:5px;flex-wrap:wrap;margin-bottom:8px">
         <button class="btn sm ghost" onclick="setQty(10)">+10</button><button class="btn sm ghost" onclick="setQty(50)">+50</button><button class="btn sm ghost" onclick="setQty(100)">+100</button><button class="btn sm ghost" onclick="setQty(500)">+500</button><button class="btn sm ghost" onclick="setQtyMax()">📦 보유 전량</button><button class="btn sm ghost" onclick="setQty(0,1)">초기화</button>
       </div>
-      ${(window._bank&&window._bank.role==='dev')?`<div style="margin-bottom:10px;padding:10px;background:rgba(155,93,229,.1);border:1px dashed #9b5de5;border-radius:10px">
-        <p class="mini" style="margin:0 0 6px;font-weight:800;color:#9b5de5">🔧 개발자 전용 — 주가 조작 <span class="dim" style="font-weight:600">(즉시 반영 · 운영자에겐 안 보임)</span></p>
-        <div class="row" style="gap:6px;flex-wrap:wrap">
-          <input id="manipName" list="dlManip" placeholder="멤버 이름" style="flex:1;min-width:90px;padding:6px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink)">
-          <datalist id="dlManip">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist>
-          <input id="manipPrice" type="number" placeholder="가격" style="width:84px;padding:6px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink)">
-          <button class="btn sm" onclick="stockManip()" style="border-color:#9b5de5;color:#9b5de5;font-weight:800">조작</button>
-        </div></div>`:''}
       <div id="tradeEst" style="margin-bottom:9px;padding:9px 12px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:9px;min-height:16px">${(()=>{const tgt=(window._stTgt||'').trim();const qty=Math.round(Number(window._stQty)||0);if(!tgt||qty<1)return'<span class="mini dim">종목과 수량을 입력하면 예상 금액이 떠요</span>';try{const px=displayPx(tgt).px||0;if(!px)return'<span class="mini dim">시세판에서 종목을 골라주세요</span>';const base=px*qty,fee=Math.round(base*0.01),roy=Math.round(base*0.02);return`<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;align-items:center"><span>📈 매수 <b style="color:var(--lose);font-size:14px">${fmt(base+fee+roy)}</b> <span class="dim">지불</span></span><span>📉 매도 <b style="color:#5b8cff;font-size:14px">${fmt(base-fee)}</b> <span class="dim">입금</span></span><span class="dim">@${px} × ${qty}주</span></div>`}catch(e){return''}})()}</div>
       <div class="row" style="gap:8px"><button class="btn gold" style="flex:1;padding:11px" onclick="stockTrade('buy')">📈 매수하기</button><button class="btn" style="flex:1;padding:11px" onclick="stockTrade('sell')">📉 매도하기</button></div>
     </div>
