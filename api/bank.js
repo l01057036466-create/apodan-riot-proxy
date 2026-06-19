@@ -700,7 +700,7 @@ module.exports = async function handler(req, res) {
       if (await suspGuard(sT.name, res)) return;
       var tgt = nameOk(body.target), qty = Math.round(Number(body.qty) || 0);
       if (!tgt) return res.status(400).json({ error: '종목(멤버) 이름 확인' });
-      if (qty < 1 || qty > 9999) return res.status(400).json({ error: '수량은 1~9999주' });
+      if (qty < 1 || qty > 1000) return res.status(400).json({ error: '한 번에 최대 1,000주까지 거래할 수 있어요' });
       var haltL = JSON.parse((await redis(['GET', 'stock:halt'])) || '[]'); // 🚫 휴면·탈퇴 멤버 = 거래정지
       if (haltL.indexOf(tgt) >= 0) {
         if (action === 'stockBuy') return res.status(403).json({ error: '🚫 거래 정지 종목 (휴면·탈퇴 멤버) — 매수할 수 없어요' });
