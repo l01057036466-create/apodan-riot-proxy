@@ -4006,7 +4006,7 @@ async function pushPrices(force){ // 폼 주가 → 거래소 시세 송출. for
   const prices={};
   state.players.filter(p=>p.active).forEach(p=>{prices[p.displayName]=marketPrice(p)});
   const halted=state.players.filter(p=>!p.active).map(p=>p.displayName); // 🚫 휴면·탈퇴 = 거래정지
-  try{await bankCall('setPrices',{prices,halted})}catch(e){}
+  try{await bankCall('setPrices',{prices,halted,force:!!force})}catch(e){}
 }
 function stockPx(name){ // 화면 시세 = 체결 시세. 미상장은 폼 주가(=상장될 가격)
   const sv=window._srvPx||{};
