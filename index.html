@@ -7330,7 +7330,7 @@ function pgachaHtml(){
   const TI={A:'#f2b84b',B:'#e25555',C:'#4ade80',D:'#5b8def',E:'#b08be8',F:'#8a8a95'};
   const EM={A:'🏆',B:'🥇',C:'🥈',D:'🥉',E:'🎁',F:'🎀'};
   const rows=P.def.map(d=>{const tier=d[0],n=d[1],kind=d[2],val=d[3];const left=P.box[tier]||0;const done=left<=0;const c=TI[tier];
-    const label=kind==='pass'?'🎁 원하는 사람과 같은 팀 보장권':`${fmtAPO(val)} APO`;
+    const label=kind==='pass'?'🎁 원하는 팀원 1명 선택권':`${fmtAPO(val)} APO`;
     return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:${done?'rgba(255,92,122,.05)':'var(--inset)'};${done?'opacity:.45':''}">
       <div style="width:28px;height:28px;flex:none;border-radius:7px;background:${c};color:#1a1305;font-weight:900;display:grid;place-items:center;font-size:14px">${tier}</div>
       <div style="flex:1;font-weight:700;font-size:13px;line-height:1.3">${EM[tier]} ${label}</div>
@@ -7343,12 +7343,12 @@ function pgachaHtml(){
       <div style="font-weight:900;font-size:17px;letter-spacing:-.01em">🎴 프리미엄 이치방쿠지</div>
       <span style="background:rgba(242,184,75,.18);color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:900">✨ 정식</span>
     </div>
-    <p class="mini dim" style="margin:0 0 10px">한 장 <b style="color:var(--gold)">${fmtAPO(P.cost)} APO</b> · 등급별 한정 수량(소진 시 종료) · 박스 비면 새 박스 🎉 · <b style="color:var(--gold)">🎟 A상 = 원하는 사람과 같은 팀 보장권!</b> (뽑으면 박스 새로!)</p>
+    <p class="mini dim" style="margin:0 0 10px">한 장 <b style="color:var(--gold)">${fmtAPO(P.cost)} APO</b> · 등급별 한정 수량(소진 시 종료) · 박스 비면 새 박스 🎉 · <b style="color:var(--gold)">🎟 A상 = 원하는 팀원 1명 선택권!</b> (뽑으면 박스 새로!)</p>
     <div style="display:flex;flex-direction:column;gap:5px">${rows}</div>
-    <p class="mini" style="margin:9px 0 8px;text-align:center;color:var(--mut)">남은 경품 <b style="color:var(--gold)">${totalLeft}</b>장${P.lanePass>0?` · 내 같은팀 보장권 <b style="color:var(--gold)">${P.lanePass}장</b> 🎟`:''}</p>
+    <p class="mini" style="margin:9px 0 8px;text-align:center;color:var(--mut)">남은 경품 <b style="color:var(--gold)">${totalLeft}</b>장${P.lanePass>0?` · 내 팀원 선택권 <b style="color:var(--gold)">${P.lanePass}장</b> 🎟`:''}</p>
     <button class="btn gold" style="width:100%;font-size:15px;font-weight:900${canDraw?'':';opacity:.55'}" onclick="pgachaDraw()">🎴 ${fmtAPO(P.cost)} APO로 뽑기!</button>
     ${isAdmin()?`<button class="btn sm" onclick="pgachaReset()" style="width:100%;margin-top:8px;border-color:var(--gold);color:var(--gold)">♻ 새 박스로 교체 (운영진)</button>`:''}
-    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">🎟 <b style="color:var(--gold)">A상(같은 팀 보장권)</b>은 내전 라인업 짤 때 운영진에게 "○○와 같은 팀!"이라고 요청하면 1회 반영돼요. 잃는 돈은 🎫 <b style="color:var(--gold)">누적 복권 잭팟</b>으로 전액 적립 — 복권으로 돌려받는 구조! 거래소·배당이 메인 🏦</p>
+    <p class="mini dim" style="margin:8px 0 0;font-size:10px;line-height:1.4">🎟 <b style="color:var(--gold)">A상(팀원 선택권)</b>은 내전 라인업 짤 때 운영진에게 "○○를 내 팀에!"라고 요청하면 1회 반영돼요. 잃는 돈은 🎫 <b style="color:var(--gold)">누적 복권 잭팟</b>으로 전액 적립 — 복권으로 돌려받는 구조! 거래소·배당이 메인 🏦</p>
   </div>`;
 }
 function pgachaFx(tier,kind,apo){
@@ -7364,7 +7364,7 @@ function pgachaFx(tier,kind,apo){
     function spin(){const e=R();if(e){e.textContent=ts[(Math.random()*6)|0]+'상';e.style.transform='scale(1)'}ticks++;if(ticks>13)delay*=1.16;if(delay<330&&ticks<36){tmr=setTimeout(spin,delay)}else{reveal()}}
     function reveal(){const e=R(),p=document.getElementById('pgP');
       if(e){e.textContent=tier+'상';e.style.color=col;e.style.transition='transform .32s cubic-bezier(.2,1.8,.4,1)';e.style.transform=big?'scale(1.5)':mid?'scale(1.3)':'scale(1.18)';e.style.filter=`drop-shadow(0 0 ${big?30:mid?16:8}px ${col})`}
-      if(p)p.innerHTML=kind==='pass'?`<b style="color:#f2b84b;font-size:18px">🎟 같은 팀 보장권 획득!</b>`:`<b style="color:${col};font-size:18px">+${fmtAPO(apo)} APO</b>`;
+      if(p)p.innerHTML=kind==='pass'?`<b style="color:#f2b84b;font-size:18px">🎟 팀원 선택권 획득!</b>`:`<b style="color:${col};font-size:18px">+${fmtAPO(apo)} APO</b>`;
       const ring=document.getElementById('pgRing');if(ring)ring.animate([{transform:'scale(1)',opacity:.9},{transform:`scale(${big?9:6})`,opacity:0}],{duration:big?900:650,easing:'ease-out'});
       if(big){const fl=document.getElementById('pgFlash');if(fl)fl.animate([{opacity:.85},{opacity:0}],{duration:440,easing:'ease-out'});arcadeConfetti(el)}
       setTimeout(()=>{el.remove();done()},big?2500:mid?1500:1050);}
@@ -7382,7 +7382,7 @@ async function pgachaDraw(){
   try{const j=await bankCall('pgacha',{});if(window._bank)window._bank.bal=j.bal;
     window._pgacha=Object.assign(window._pgacha||{},{box:j.box,lanePass:j.lanePass});
     await pgachaFx(j.tier,j.kind,j.apo);
-    toast(j.pass?`🎟 ${j.tier}상!! 원하는 사람과 같은 팀 보장권 획득! 🎉 최고 등급이라 박스가 새로 채워졌어요!`:`🎴 ${j.tier}상 +${fmtAPO(j.apo)} APO${j.fresh?' (새 박스 🎉)':''}`);
+    toast(j.pass?`🎟 ${j.tier}상!! 원하는 팀원 1명 선택권 획득! 🎉 최고 등급이라 박스가 새로 채워졌어요!`:`🎴 ${j.tier}상 +${fmtAPO(j.apo)} APO${j.fresh?' (새 박스 🎉)':''}`);
     render()}
   catch(e){toast('🎴 '+e.message,true)}
   finally{window._pgBusy=false}
@@ -7818,7 +7818,7 @@ function renderTicker(){
   if(canViewFinance())(window._bankFeed||[]).slice(0,3).forEach(f=>{
     const big=Number(f.v)>=10000||f.t==='pcn'||f.t==='pg';
     const kind=f.t==='jp'?'🎫 복권 잭팟':f.t==='scr'?'🎫 복권 1등':f.t==='pcn'?`🎰 빠칭코 ${f.g||''}`:f.t==='pcnclear'?'🎰 빠칭코 풀클리어':f.t==='pcnlast'?('🎰 라스트원 '+(f.win?'당첨🎉':'꽝')):f.t==='pg'?'🎴 이치방쿠지':'🎰 룰렛 잭팟';
-    const tail=f.t==='pg'?`<b>A상 — 라인 보장권</b> 획득!`:`+${fmtAPO(f.v)} APO 획득!`;
+    const tail=f.t==='pg'?`<b>A상 — 팀원 선택권</b> 획득!`:`+${fmtAPO(f.v)} APO 획득!`;
     items.push(`<b class="${big?'tk-jack':'tk-up'}">${kind}${big?' 💥':''}</b> <b>${esc(f.n)}</b>${josa(f.n,'이','가')} ${tail}${big?' 🎉':''}`);
   });
   // 2) 당일 밴픽 보드 진행 중
