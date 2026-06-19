@@ -4042,7 +4042,7 @@ function updTradeEstimate(){
   const base=px*qty, fee=Math.round(base*0.01), roy=Math.round(base*0.02);
   el.innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;align-items:center"><span>📈 매수 <b style="color:var(--lose);font-size:14px">${fmt(base+fee+roy)}</b> <span class="dim">지불</span></span><span>📉 매도 <b style="color:#5b8cff;font-size:14px">${fmt(base-fee)}</b> <span class="dim">입금</span></span><span class="dim">@${px} × ${qty}주</span></div>`;
 }
-function setQty(add,reset){const qy=document.getElementById('stQty');if(!qy)return;let v=reset?0:(Math.round(Number(qy.value)||0)+add);v=Math.max(0,Math.min(9999,v));qy.value=v||'';window._stQty=v;updTradeEstimate()}
+function setQty(add,reset){const qy=document.getElementById('stQty');if(!qy)return;let v=reset?0:(Math.round(Number(qy.value)||0)+add);v=Math.max(0,Math.min(1000,v));qy.value=v||'';window._stQty=v;updTradeEstimate()}
 function setQtyMax(){const tgt=(window._stTgt||(document.getElementById('stTarget')||{}).value||'').trim();const B=window._bank||{};const H=B.holdings||{};const h=H[tgt];const held=h?(Number(h.q)||0):0;const qy=document.getElementById('stQty');if(qy){qy.value=held||'';window._stQty=held;updTradeEstimate()}if(!held)toast('보유한 주식이 없어요 — 전량은 매도할 때 써요',true)}
 async function stockManip(){
   const name=(($('manipName')||{}).value||'').trim();
@@ -4084,7 +4084,7 @@ async function stockTrade(side){
   if(R.err)return toast(R.err,true);
   const tgt=R.p.displayName;
   const qty=Math.round(Number($('stQty')?.value)||0);
-  if(qty<1||qty>9999)return toast('수량은 1~9999주로 입력해주세요.',true);
+  if(qty<1||qty>1000)return toast('한 번에 최대 1,000주까지 거래할 수 있어요.',true);
   // 🧾 주문 확인: 누구를, 몇 주, 얼마에, 총액까지 또박또박
   const D=displayPx(tgt);
   const base=D.px*qty;
@@ -7272,7 +7272,7 @@ function pgArcadeRepoll(){clearTimeout(window._arcPoll);window._arcPoll=setTimeo
   if(document.hidden||!document.getElementById('pcnGrid'))return;
   try{await Promise.all([fetchArcade(),fetchPgacha(),fetchPcn()])}catch(e){}
   if(typeof softRender==='function')softRender();
-},15000)}
+},20000)}
 async function fetchMissions(){
   if(!voteApiBase()||!bankToken())return;
   try{const r=await fetch(voteApiBase()+'/api/bank?action=missions&token='+encodeURIComponent(bankToken()));const j=await r.json().catch(()=>({}));if(r.ok)window._missions=j}catch(e){}
@@ -7451,7 +7451,7 @@ async function pcnPick(idx){
       if(j.lastOne){pcnLastModal();window._pcnBusy=false;return}
       render();window._pcnBusy=false;return}
     catch(e){
-      if(e.status===429&&_tries<3){_tries++;await new Promise(r=>setTimeout(r,250+_tries*200));continue} // 🔁 동시 까기 락 충돌 → 짧게 재시도 (서버렉·오류 체감 제거)
+      if(e.status===429&&_tries<5){_tries++;await new Promise(r=>setTimeout(r,180+_tries*140));continue} // 🔁 동시 까기 락 충돌 → 최대 5회 재시도 (서버렉·오류 체감 완전 제거)
       if(e.status===409){try{await fetchPcn()}catch(_){}softRender();toast('🎰 방금 다른 분이 깐 칸이에요 — 다른 칸을 골라주세요!',true)} // 이미 깐 칸 → 보드 즉시 갱신
       else toast('🎰 '+(e.message||'오류가 났어요'),true);
       window._pcnBusy=false;return}
@@ -10059,7 +10059,7 @@ function pgBank(){
     <div style="margin-bottom:10px">
       <div class="grid c2" style="gap:8px;margin-bottom:8px">
         <div class="f"><label>종목 (멤버)</label><input id="stTarget" list="dlBank" placeholder="이름 검색" value="${esc(window._stTgt||'')}" oninput="window._stTgt=this.value;updTradeEstimate()"><datalist id="dlBank">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist></div>
-        <div class="f"><label>수량 (주) <span class="dim mini">최대 9999</span></label><input id="stQty" type="number" min="1" max="9999" placeholder="예: 100" value="${window._stQty||''}" oninput="window._stQty=this.value;updTradeEstimate()"></div>
+        <div class="f"><label>수량 (주) <span class="dim mini">최대 1,000</span></label><input id="stQty" type="number" min="1" max="1000" placeholder="예: 100" value="${window._stQty||''}" oninput="window._stQty=this.value;updTradeEstimate()"></div>
       </div>
       <div class="row" style="gap:5px;flex-wrap:wrap;margin-bottom:8px">
         <button class="btn sm ghost" onclick="setQty(10)">+10</button><button class="btn sm ghost" onclick="setQty(50)">+50</button><button class="btn sm ghost" onclick="setQty(100)">+100</button><button class="btn sm ghost" onclick="setQty(500)">+500</button><button class="btn sm ghost" onclick="setQtyMax()">📦 보유 전량</button><button class="btn sm ghost" onclick="setQty(0,1)">초기화</button>
