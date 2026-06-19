@@ -926,13 +926,15 @@ function statChamps(days,lane){
     const s=map.get(canonChamp(p.championId)); if(!s)return;
     s.recent++; if(p.team===m.winnerTeam)s.recentW++;
   }));
+  const N=srcMatches.length||1;
   const arr=[...map.values()].map(s=>{
     const wr=pct(s.wins,s.picks), pickRate=pct(s.picks,totalPicks||1);
-    const bayes=(s.wins+4)/(s.picks+8); // 강한 표본 보정: 8판 50% 사전확률 (1판 1승 과대평가 차단)
+    const bayes=(s.wins+4)/(s.picks+8); // 표본 보정: 8판 50% 사전확률 (1판 1승 과대평가 차단)
+    const banRate=pct(s.bans,N); // 밴율 = 밴/경기수 (메타 영향력 신호)
     const recWr=s.recent?pct(s.recentW,s.recent):50;
-    // 🎯 APD 스코어: 50 기준 · 보정 승률(±33, 주축) + 픽률 보너스(최대 +4) + 최근 폼 (PS 스코어식)
-    const apd=Math.round((50 + (bayes-0.5)*78 + Math.min(pickRate,18)*0.14 + (recWr-50)*0.1)*100)/100;
-    return{...s,winRate:wr,pickRate,score:apd,apd,grade:null,op:false};
+    // 🎯 APD (lol.ps식): 50 기준 · 보정승률(±40,주축) + 픽률(최대+6) + 밴율(최대+6) + 최근폼
+    const apd=Math.round((50 + (bayes-0.5)*80 + Math.min(pickRate,3.5)*1.7 + Math.min(banRate,35)*0.17 + (recWr-50)*0.08)*100)/100;
+    return{...s,winRate:wr,pickRate,banRate,bayes,score:apd,apd,grade:null,op:false};
   });
   // 1~5티어: 3판 이상만 부여, APD 스코어 백분위 배치
   const graded=arr.filter(c=>c.picks>=3).sort((a,b)=>b.apd-a.apd||b.picks-a.picks);
@@ -945,6 +947,8 @@ function statChamps(days,lane){
   const t1q=graded.filter(c=>c.grade===1&&c.picks>=4&&c.winRate>=50);
   (t1q.length?t1q:graded.filter(c=>c.grade===1)).slice(0,t1q.length?2:1).forEach(c=>c.op=true);
   arr.forEach(c=>{
+    c.honey=c.picks>=3&&c.bayes>=0.55&&c.pickRate<1.3&&c.banRate<12&&!c.op; // 🍯 픽·밴 낮은데 승률 좋음
+    c.trap=c.picks>=6&&c.bayes<=0.44; // 🪤 픽 많은데 승률 낮음
     c.tier=c.grade==null?'표본 부족':c.op?'OP':c.grade===1?'S':c.grade===2?'A':c.grade<=4?'B':(c.picks>=4&&c.winRate<=30)?'봉인 검토':'C'; // champComment 호환 클래스
   });
   return arr.sort((a,b)=>(a.op?0:1)-(b.op?0:1)||(a.grade??99)-(b.grade??99)||b.apd-a.apd||b.picks-a.picks);
@@ -9309,13 +9313,13 @@ function pgChampions(){
     </div>
     ${sorted.map((c,idx)=>`<div onclick="champSel('${esc(c.champion)}')" style="display:flex;align-items:center;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer">
       <span style="width:38px;flex-shrink:0">${tierBadge(c)}</span>
-      <span style="flex:1;display:flex;align-items:center;gap:6px;min-width:0"><b style="color:#8f82b8;font-size:11px;width:15px;flex-shrink:0;text-align:right">${idx+1}</b>${champFace(c.champion,24)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px">${esc(c.champion)}</b></span>
+      <span style="flex:1;display:flex;align-items:center;gap:6px;min-width:0"><b style="color:#8f82b8;font-size:11px;width:15px;flex-shrink:0;text-align:right">${idx+1}</b>${champFace(c.champion,24)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px">${esc(c.champion)}</b>${c.honey?' <span title="꿀챔 — 픽·밴 낮은데 승률 좋음">🍯</span>':''}${c.trap?' <span title="함정픽 — 픽 높은데 승률 낮음">🪤</span>':''}</span>
       <span style="width:50px;text-align:right;font-weight:800;font-size:13px">${c.score}</span>
       <span style="width:48px;text-align:right;font-weight:700;font-size:12.5px" class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span>
       <span style="width:40px;text-align:right;color:#8f82b8;font-size:12px">${c.pickRate}%</span>
       <span style="width:30px;text-align:right;color:#8f82b8;font-size:12px">${c.bans||'-'}</span>
     </div>`).join('')}
-    <p class="mini dim" style="margin:12px 0 0">📊 <b style="color:var(--gold)">APD 스코어</b>(50 기준)는 베이지안 승률 + 픽률 + 최근 폼을 합친 아포단 전용 지표예요. 백분위로 1~5티어를 나누고 최상위는 👑 OP. <b>챔피언을 누르면 카운터·먹잇감·장인</b>이 펼쳐져요.</p>
+    <p class="mini dim" style="margin:12px 0 0">📊 <b style="color:var(--gold)">APD 스코어</b>(50 기준·lol.ps식)는 베이지안 승률을 주축으로 픽률·밴율·최근 폼을 합친 지표예요. 픽·승률이 모두 높으면 1티어, 최상위는 👑 OP. 🍯<b>꿀챔</b>=픽·밴 낮은데 승률 좋음 / 🪤<b>함정픽</b>=픽 높은데 승률 낮음. <b>챔피언을 누르면 카운터·먹잇감·장인</b>이 펼쳐져요.</p>
   </div>`:`<div class="card"><div class="empty">${lane?'이 라인에서 3판 이상 픽된 챔피언이 아직 없어요.':'경기를 기록하면 아포단만의 티어표가 만들어져요.'}</div></div>`;
   return head('챔피언 티어표','라인별 · 승률·픽률에 표본 보정을 적용한 아포단 전용 티어. 컬럼을 눌러 정렬, 챔피언을 눌러 상세를 봐요.')+laneBar+periodBar+(window._champSel?champDetailCard(window._champSel):'')+list;
 }
