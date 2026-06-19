@@ -1311,7 +1311,7 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock(sPg.name); }
     }
     var PCN_COST = 5000, PCN_CLEAR = 5000;
-    var PCN_G = [['SSS', 1, 60000], ['SS', 1, 22000], ['S', 3, 10000], ['A', 9, 3800], ['B', 18, 1600], ['C', 24, 850]];
+    var PCN_G = [['SSS', 1, 60000], ['SS', 1, 22000], ['S', 2, 10000], ['A', 9, 3800], ['B', 26, 1600], ['C', 45, 850]];
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
