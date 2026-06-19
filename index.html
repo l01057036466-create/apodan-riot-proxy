@@ -9347,7 +9347,7 @@ function pgChampions(){
   const lane=window._champLane||'';
   const sortBy=window._champSort||'score';
   const C=statChamps(period==='week'?7:null, lane||null);
-  const sorted=[...C].sort((a,b)=>{
+  const sorted=[...C].filter(c=>lane?c.grade!=null:true).sort((a,b)=>{
     if(sortBy==='winRate')return b.winRate-a.winRate||b.picks-a.picks;
     if(sortBy==='pickRate')return b.pickRate-a.pickRate||b.picks-a.picks;
     if(sortBy==='bans')return (b.bans||0)-(a.bans||0)||b.picks-a.picks;
