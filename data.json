@@ -360,8 +360,7 @@
    "flexTier": "실버",
    "riotPuuid": "QLo9jOVk38uVI7hRqmry3auvK-_j4Vi-j6ZvBdK0qo_z_b6_VB3OEc0a8MrtTphmvZbPojL17MNYGA",
    "soloPos": "",
-   "subPos": "",
-   "kicked": true
+   "subPos": ""
   },
   {
    "id": "p_faxcf4rq_mq7nhxuq",
@@ -31952,7 +31951,7 @@
    "red": [
     "p_3v5tiwk3_mq7nhxuq",
     "p_60ospv2c_mq7nhxuq",
-    "p_si39mrju_mq7nhxuq",
+    "p_hnx30qcmq7ub77q",
     "p_wqf3x0omq7ub77q",
     "p_gi86d5qmq7ub77o"
    ]
@@ -32002,8 +32001,8 @@
    ]
   }
  ],
- "rev": 362,
- "updatedAt": "2026-06-19T08:46:23.047Z",
+ "rev": 363,
+ "updatedAt": "2026-06-19T11:08:15.268Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
