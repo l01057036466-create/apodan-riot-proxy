@@ -7445,7 +7445,6 @@ function arcadeHtml(B){
   const A=window._arcade||{jackpot:5000,pcnpot:10000,news:[]};
   const M0=window._missions||{};const M={count:M0.count||{},claimed:M0.claimed||[]};
   const MD={play:['🎮 내전 출전 1회',500,1],bet:['🎲 베팅 2회',200,2],trade:['📈 주식 거래 1회',200,1],vote:['🏅 MVP/스코어 투표',100,1]};
-  const MDX={cs12:['🌱 초반 CS 12개 (15분)',300],cs19:['🌿 초반 CS 19개 (15분)',600],lossdmg:['💢 패배 속 딜 44,000',500]};
   const allDone=Object.entries(MD).every(([k,d])=>(M.count[k]||0)>=d[2]);
   const game=(emoji,name,sub,btn)=>`<div style="border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center;background:var(--panel2)">
       <div style="font-size:38px;line-height:1">${emoji}</div>
@@ -7472,18 +7471,6 @@ function arcadeHtml(B){
         ${got?'<span class="dim">✅ 수령</span>':done?`<button class="btn sm gold" onclick="missionClaim('${k}')">+${d[1]} 받기</button>`:`<span class="dim">+${d[1]}</span>`}</p>`}).join('')}
     <p class="mini" style="margin:6px 0 0;display:flex;justify-content:space-between"><span>🏆 전부 달성 보너스</span>
       ${(M.claimed||[]).includes('all')?'<span class="dim">✅ 수령</span>':allDone?`<button class="btn sm gold" onclick="missionClaim('all')">+1,000 받기</button>`:'<span class="dim">+1,000</span>'}</p>
-    <p class="mini" style="margin:13px 0 4px;font-weight:800">🎯 인증 미션 <span class="tag">운영자가 달성 확인 후 부여</span></p>
-    ${Object.entries(MDX).map(([k,d])=>{const c=M.count[k]||0,done=c>=1,got=(M.claimed||[]).includes(k);
-      return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${done?'달성 ✓':'대기 중'}</b></span>
-        ${got?'<span class="dim">✅ 수령</span>':done?`<button class="btn sm gold" onclick="missionClaim('${k}')">+${d[1]} 받기</button>`:`<span class="dim">+${d[1]}</span>`}</p>`}).join('')}
-    ${(window._bank&&(window._bank.role==='admin'||window._bank.role==='dev'))?`<div style="border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-top:10px">
-      <p class="mini" style="margin:0 0 6px;font-weight:800;color:var(--gold)">🛠 인증 미션 부여 (운영자)</p>
-      <div class="row" style="gap:6px;flex-wrap:wrap">
-        <input id="mgName" list="dlMgName" placeholder="멤버 이름" style="flex:1;min-width:100px">
-        <datalist id="dlMgName">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist>
-        <select id="mgField" style="padding:5px;border-radius:8px"><option value="cs12">초반 CS 12</option><option value="cs19">초반 CS 19</option><option value="lossdmg">패배 딜 44k</option></select>
-        <button class="btn sm gold" onclick="missionGrant()">부여</button>
-      </div></div>`:''}
   </div>`;
 }
 /* ───── 🎁 운영진 특별 이벤트 ───── */
@@ -7970,6 +7957,7 @@ function lineupCard(L){
   if(!L)return'';
   const O=lineupOdds(L),pts=lineupPoints(L),MU=lineupMatchups(L);
   if(O){ // 🎰 유저 베팅 반영 — 데이터 배당 베이스 + 베팅 몰림(금액)에 따라 변동 (풀 쌓일수록 변동 비중↑, 몰리는 팀↓·반대편↑)
+    O.oddsBlueRaw=O.oddsBlue; O.oddsRedRaw=O.oddsRed; // 📊 데이터 배당 시작값 보존 (표시용)
     const _Mk=(window._mkts||{})[voteKey(L)];
     if(_Mk){const _pA=+_Mk.alpha||0,_pB=+_Mk.beta||0,_tot=_pA+_pB;
       if(_tot>=100){const _w=Math.min(1,_tot/30000),_mA=_pA>0?Math.min(10,_tot*0.97/_pA):10,_mB=_pB>0?Math.min(10,_tot*0.97/_pB):10;
@@ -7983,17 +7971,17 @@ function lineupCard(L){
     <div style="margin:12px 0 4px">
       <div class="row" style="justify-content:space-between;font-weight:900;font-size:15px">
         <span style="color:var(--gold)">🅰 알파 ${O.probBlue}%</span>
-        <span class="mini dim" style="font-weight:700">📊 데이터 배당</span>
+        <span class="mini dim" style="font-weight:700">🎰 실시간 배당</span>
         <span style="color:var(--win)">${100-O.probBlue}% 베타 🅱</span>
       </div>
       <div style="height:12px;border-radius:8px;overflow:hidden;display:flex;border:1px solid var(--line)">
         <i style="width:${O.probBlue}%;background:linear-gradient(90deg,var(--gold),rgba(242,184,75,.6))"></i>
         <i style="flex:1;background:linear-gradient(90deg,rgba(63,217,197,.6),var(--win))"></i>
       </div>
-      <div class="row" style="justify-content:space-between;margin-top:4px">
-        <span class="pill" style="font-weight:800">${O.oddsBlue}</span>
-        <span class="mini dim">폼 60% + 통산 승률 40% 기반 예측</span>
-        <span class="pill" style="font-weight:800">${O.oddsRed}</span>
+      <div class="row" style="justify-content:space-between;margin-top:4px;align-items:center">
+        <span class="pill" style="font-weight:800${O.oddsBlueRaw!=null&&O.oddsBlue!==O.oddsBlueRaw?';border-color:var(--gold);color:var(--gold)':''}">${O.oddsBlue}${O.oddsBlueRaw!=null&&O.oddsBlue!==O.oddsBlueRaw?` <span class="dim" style="font-weight:600;font-size:10px">📊${O.oddsBlueRaw}</span>`:''}</span>
+        <span class="mini dim" style="text-align:center;line-height:1.35;font-size:10px">📊 데이터 배당으로 시작<br>🎰 베팅 몰리면 변동 → 최종 지급 배당</span>
+        <span class="pill" style="font-weight:800${O.oddsRedRaw!=null&&O.oddsRed!==O.oddsRedRaw?';border-color:var(--win);color:var(--win)':''}">${O.oddsRed}${O.oddsRedRaw!=null&&O.oddsRed!==O.oddsRedRaw?` <span class="dim" style="font-weight:600;font-size:10px">📊${O.oddsRedRaw}</span>`:''}</span>
       </div>
     </div>`:'';
   const tierTag=(inf)=>inf.king?'<span class="pill gold" style="font-size:10px;padding:1px 6px;font-weight:900">👑 최강자</span>'
@@ -8062,7 +8050,7 @@ function lineupCard(L){
           <button class="btn sm" style="border-color:rgba(242,184,75,.5);color:var(--gold);font-weight:800" ${only==='beta'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('alpha','${L.id}',${oA})">🅰 알파 x${oA}</button>
           <button class="btn sm" style="border-color:rgba(63,217,197,.5);color:var(--win);font-weight:800" ${only==='alpha'?'disabled title="본인 출전 — 자기 팀만"':''} onclick="bankBet('beta','${L.id}',${oB})">🅱 베타 x${oB}</button>
         </div>
-        <p class="mini dim" style="text-align:center;margin:5px 0 0">데이터 배당으로 지급 · 1경기 최대 20,000 APO · 배당은 베팅 순간 고정${only?` · 본인 출전 → ${only==='alpha'?'🅰 알파':'🅱 베타'}(자기 팀)만`:''}</p>`;
+        <p class="mini dim" style="text-align:center;margin:5px 0 0">배당은 베팅 순간 고정 = 그때 본 배수로 확정 지급 · 1경기 최대 20,000 APO${only?` · 본인 출전 → ${only==='alpha'?'🅰 알파':'🅱 베타'}(자기 팀)만`:''}</p>`;
       }
       const adminRow=(B&&(B.role==='admin'||B.role==='dev')&&!settled)?`
         <div class="row" style="justify-content:center;gap:6px;margin-top:8px">
@@ -8075,7 +8063,7 @@ function lineupCard(L){
         </div>`:'';
       return`<div style="border:1px solid ${ev?'rgba(242,184,75,.7)':'rgba(242,184,75,.35)'};border-radius:12px;padding:10px 12px;margin:12px 0;background:${ev?'linear-gradient(135deg,rgba(242,184,75,.14),rgba(0,0,0,.2))':'rgba(0,0,0,.15)'}">
         ${ev?`<p class="mini" style="margin:0 0 6px;text-align:center;letter-spacing:.06em;font-weight:900;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(242,184,75,.5);border-radius:8px;padding:5px 4px">🎉 판돈 2배 이벤트 내전 — 배당·주식 변동 모두 2배!</p>`:''}
-        <p class="mini" style="margin:0;text-align:center;letter-spacing:.12em;font-weight:900;color:var(--gold)">🎰 ${ev?'이벤트 ':''}고정 배당 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 데이터 배당으로 지급 · 맞히면 배수, 빗나가면 잃음</span></p>
+        <p class="mini" style="margin:0;text-align:center;letter-spacing:.12em;font-weight:900;color:var(--gold)">🎰 ${ev?'이벤트 ':''}실시간 배당 베팅 <span class="dim" style="font-weight:600;letter-spacing:0">— 데이터 배당 시작 → 유저 베팅 반영 · 맞히면 배수, 빗나가면 잃음</span></p>
         ${pools}${actions}${adminRow}
         ${(()=>{ // 🏅 이 경기 MVP 투표 (회차별)
           if(!window._mvp||window._mvp[key]===undefined){window._mvp=window._mvp||{};window._mvp[key]=null;fetchMvp(key).then(()=>softRender())}
@@ -9483,16 +9471,16 @@ function mainLaneOf(pid){
 function qRecentStats(pid,N){
   const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(b.playedAt||'').localeCompare(String(a.playedAt||''))).slice(0,N);
   let g=0,k=0,d=0,a=0,dmg=0,tk=0,vis=0,cs=0,gold=0,win=0;
-  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;g++;k+=p.kills||0;d+=p.deaths||0;a+=p.assists||0;dmg+=(p.stats&&p.stats.damageToChampions)||0;tk+=(p.stats&&p.stats.damageTaken)||0;vis+=(p.stats&&p.stats.visionScore)||0;cs+=(p.stats&&p.stats.cs)||0;gold+=(p.stats&&p.stats.goldEarned)||0;if(m.winnerTeam===p.team)win++});
+  let csmin=0;ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid);if(!p)return;g++;k+=p.kills||0;d+=p.deaths||0;a+=p.assists||0;dmg+=(p.stats&&p.stats.damageToChampions)||0;tk+=(p.stats&&p.stats.damageTaken)||0;vis+=(p.stats&&p.stats.visionScore)||0;cs+=(p.stats&&p.stats.cs)||0;gold+=(p.stats&&p.stats.goldEarned)||0;csmin+=(m.durationMin&&m.durationMin>=5)?m.durationMin:28;if(m.winnerTeam===p.team)win++});
   if(!g)return null;
-  return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
+  return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,cspm:csmin?Math.round(cs/csmin*10)/10:0,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
 }
 function qRecentStatsByLane(pid,lane,N){
   const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid&&p.lane===lane)).sort((a,b)=>String(b.playedAt||'').localeCompare(String(a.playedAt||''))).slice(0,N);
   let g=0,k=0,d=0,a=0,dmg=0,tk=0,vis=0,cs=0,gold=0,win=0;
-  ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid&&x.lane===lane);if(!p)return;g++;k+=p.kills||0;d+=p.deaths||0;a+=p.assists||0;dmg+=(p.stats&&p.stats.damageToChampions)||0;tk+=(p.stats&&p.stats.damageTaken)||0;vis+=(p.stats&&p.stats.visionScore)||0;cs+=(p.stats&&p.stats.cs)||0;gold+=(p.stats&&p.stats.goldEarned)||0;if(m.winnerTeam===p.team)win++});
+  let csmin=0;ms.forEach(m=>{const p=(m.participants||[]).find(x=>x.playerId===pid&&x.lane===lane);if(!p)return;g++;k+=p.kills||0;d+=p.deaths||0;a+=p.assists||0;dmg+=(p.stats&&p.stats.damageToChampions)||0;tk+=(p.stats&&p.stats.damageTaken)||0;vis+=(p.stats&&p.stats.visionScore)||0;cs+=(p.stats&&p.stats.cs)||0;gold+=(p.stats&&p.stats.goldEarned)||0;csmin+=(m.durationMin&&m.durationMin>=5)?m.durationMin:28;if(m.winnerTeam===p.team)win++});
   if(!g)return null;
-  return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
+  return{games:g,kda:(k+a)/Math.max(1,d),avgDmg:dmg/g,avgTaken:tk/g,avgVision:vis/g,avgCs:cs/g,cspm:csmin?Math.round(cs/csmin*10)/10:0,avgGold:gold/g,winRate:Math.round(win/g*100),kills:k/g,deaths:d/g,assists:a/g,ka:(k+a)/g};
 }
 function qTotalStats(pid){
   const ms=state.matches.filter(m=>(m.participants||[]).some(p=>p.playerId===pid)).sort((a,b)=>String(a.playedAt||'').localeCompare(String(b.playedAt||'')));
@@ -9524,6 +9512,9 @@ const QUEST_DEFS=[
   {c:'SUPPORT',u:'KDA',mt:'kda',f:'d',T:[[2.5,2000],[3.5,3000],[5,5000]]},
   {c:'ALL',u:'통산 승리',mt:'T_wins',f:'n',T:[[10,2000],[25,3000],[45,5000]]},
   {c:'ALL',u:'통산 경기',mt:'T_games',f:'n',T:[[20,2000],[45,3000],[80,5000]]},
+  {c:'TOP',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
+  {c:'MID',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
+  {c:'ADC',u:'분당 CS',mt:'cspm',f:'d',cap:9,T:[[6,2000],[7,3000],[8,5000]]},
   {c:'ALL',u:'MVP 횟수',mt:'T_mvp',f:'n',cap:12,T:[[2,2000],[5,3000],[9,5000]]},
   {c:'ALL',u:'통산 킬',mt:'T_kills',f:'n',T:[[50,2000],[150,3000],[300,5000]]},
   {c:'ALL',u:'통산 어시',mt:'T_assists',f:'n',T:[[100,2000],[250,3000],[500,5000]]},
@@ -9583,7 +9574,7 @@ function _awQuest(){
   const fmtV=(f,v)=>f==='k'?km(v):f==='p'?Math.round(v)+'%':f==='d'?(+v).toFixed(1):km(v);
   const dn=['하','중','상','최상'];const RW=[150,500,1500,3500];
   const all=[];
-  QUEST_DEFS.forEach(def=>{const _fix=def.mt==='kills'||def.mt==='T_lanes';const _rnd=v=>def.f==='n'?Math.round(v):Math.round(v*10)/10;const T2=def.T.map((t,i)=>(i===2&&!def.low&&!_fix)?[_rnd(t[0]*1.2),t[1]]:t);const last=T2[T2.length-1];let _eg=def.low?Math.max(1,Math.round(last[0]*0.7)):_rnd(last[0]*(_fix?1.3:1.5));if(def.mt==='winRate')_eg=Math.min(_eg,92);if(def.cap!=null)_eg=def.low?Math.max(_eg,def.cap):Math.min(_eg,def.cap);T2.concat([[_eg,0]]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
+  QUEST_DEFS.forEach(def=>{const _fix=def.mt==='kills'||def.mt==='T_lanes'||def.mt==='cspm';const _rnd=v=>def.f==='n'?Math.round(v):Math.round(v*10)/10;const T2=def.T.map((t,i)=>(i===2&&!def.low&&!_fix)?[_rnd(t[0]*1.2),t[1]]:t);const last=T2[T2.length-1];let _eg=def.low?Math.max(1,Math.round(last[0]*0.7)):_rnd(last[0]*(_fix?1.3:1.5));if(def.mt==='winRate')_eg=Math.min(_eg,92);if(def.cap!=null)_eg=def.low?Math.max(_eg,def.cap):Math.min(_eg,def.cap);T2.concat([[_eg,0]]).forEach((t,i)=>all.push({c:def.c,u:def.u,mt:def.mt,f:def.f,low:def.low,d:dn[i],gl:t[0],rw:RW[i]}))});
   const valOf=m=>m.c==='ALL'?(ts?(ts[m.mt]||0):0):(rsByLane[m.c]?(rsByLane[m.c][m.mt]||0):0);
   const hasData=m=>m.c==='ALL'?!!ts:!!rsByLane[m.c];
   let totalEarn=0,doneN=0;
