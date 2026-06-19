@@ -1923,7 +1923,7 @@ function makeAwards(){
   // 🏅 수동 영구 칭호 — 이름/별명 매칭 → displayName 타겟 (프로필·랭킹 표시)
   for(const _nm in FORCED_TITLES){const _fp=state.players.find(pl=>pl.displayName===_nm||pl.kakaoName===_nm||(pl.aliases||[]).includes(_nm));const _tg=_fp?_fp.displayName:_nm;FORCED_TITLES[_nm].forEach(_t=>{if(!out.some(a=>a.title===_t&&a.target===_tg))push(_t,_tg,'🏅 명예 영구 칭호');});}
   // ===== 챔피언 장인 칭호 (실제 장인 오마주, 챔피언당 1명) =====
-  const CHAMP_MASTER={'자이라':'닝겐자이라','자크':'박종하','잔나':'아라미','잭스':'샤이','제드':'온제','제라스':'엔마','제리':'괴물쥐','제이스':'제우스','조이':'명조이','직스':'헤징','진':'프레이','질리언':'가재맨','징크스':'고수달','초가스':'Cho God','카르마':'막눈','카밀':'갓키형','카사딘':'도파','카서스':'이석희','카시오페아':'백크','카이사':'땅우양','카직스':'미니언 고립','카타리나':'크림몬','칼리스타':'뜨뜨뜨뜨','케넨':'케넨장관','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'돌카사','크산테':'깨돌이','클레드':'좀비클레드','키아나':'재만이','킨드레드':'표식','타릭':'애디','탈론':'과로사','탐 켄치':'탐탐이','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'항심','파이크':'Davemon','판테온':'나라카일','피들스틱':'테디스틱','피오라':'피오라킹','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'유웨이'};
+  const CHAMP_MASTER={'자이라':'닝겐자이라','자크':'박종하','잔나':'아라미','잭스':'샤이','제드':'온재','제라스':'엔마','제리':'괴물쥐','제이스':'제우스','조이':'명조이','직스':'헤징','진':'프레이','질리언':'가재맨','징크스':'고수달','초가스':'Cho God','카르마':'막눈','카밀':'갓키형','카사딘':'도파','카서스':'이석희','카시오페아':'백크','카이사':'땅우양','카직스':'미니언 고립','카타리나':'크림몬','칼리스타':'뜨뜨뜨뜨','케넨':'케넨장관','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'돌카사','크산테':'깨돌이','클레드':'좀비클레드','키아나':'재만이','킨드레드':'표식','타릭':'애디','탈론':'과로사','탐 켄치':'탐탐이','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'항심','파이크':'Davemon','판테온':'나라카일','피들스틱':'테디스틱','피오라':'피오라킹','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'유웨이'};
   Object.keys(CHAMP_MASTER).forEach(ch=>{
     const cands=PC.filter(x=>x.champion===ch&&x.games>=2);
     if(!cands.length)return;
@@ -7194,6 +7194,12 @@ async function fetchMissions(){
   if(!voteApiBase()||!bankToken())return;
   try{const r=await fetch(voteApiBase()+'/api/bank?action=missions&token='+encodeURIComponent(bankToken()));const j=await r.json().catch(()=>({}));if(r.ok)window._missions=j}catch(e){}
 }
+async function missionGrant(){
+  const name=($('mgName')?.value||'').trim(), field=$('mgField')?.value;
+  if(!name)return toast('멤버 이름을 입력해주세요',true);
+  try{const j=await bankCall('missionGrant',{name,field});toast(`📋 ${j.name}님 인증 미션 부여 완료!`);const mn=$('mgName');if(mn)mn.value='';await fetchMissions();render()}
+  catch(e){toast('부여 실패: '+e.message,true)}
+}
 async function missionClaim(field){
   try{const j=await bankCall('missionClaim',{field});if(window._bank)window._bank.bal=j.bal;toast(`📋 미션 보상 +${fmtAPO(j.pay)} APO!`);await fetchMissions();render()}
   catch(e){toast(e.message,true)}
@@ -7403,6 +7409,7 @@ function arcadeHtml(B){
   const A=window._arcade||{jackpot:5000,pcnpot:10000,news:[]};
   const M0=window._missions||{};const M={count:M0.count||{},claimed:M0.claimed||[]};
   const MD={play:['🎮 내전 출전 1회',500,1],bet:['🎲 베팅 2회',200,2],trade:['📈 주식 거래 1회',200,1],vote:['🏅 MVP/스코어 투표',100,1]};
+  const MDX={cs12:['🌱 초반 CS 12개 (15분)',300],cs19:['🌿 초반 CS 19개 (15분)',600],lossdmg:['💢 패배 속 딜 44,000',500]};
   const allDone=Object.entries(MD).every(([k,d])=>(M.count[k]||0)>=d[2]);
   const game=(emoji,name,sub,btn)=>`<div style="border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center;background:var(--panel2)">
       <div style="font-size:38px;line-height:1">${emoji}</div>
@@ -7422,13 +7429,25 @@ function arcadeHtml(B){
       ${game('🎫','누적 복권','한 장 500 APO · 꽝 없음(최저 200 환급) · 2% 풀 전액 잭팟 · 하루 한도 5만',`<button class="btn" style="width:100%;font-size:14px;border-color:var(--gold);color:var(--gold)" onclick="arcadeScratch()">500 APO로 긁기</button>`)}
       ${game('🎰','빠칭코 넘버','참가비 5,000 · 꽝 없음 · 🛡 7연속 손해 시 본전 보장 · 적중 시 잭팟(최소 3만)',`<div class="row" style="gap:4px;justify-content:center"><input id="pcPick" type="number" min="1" max="100" placeholder="1~100" style="width:70px;text-align:center;font-weight:900;font-size:15px;color:var(--text);background:var(--inset);border:1px solid var(--gold)"><button class="btn ghost" style="padding:6px 9px" onclick="pcRandom()">🎲</button><button class="btn lose" style="font-weight:900" onclick="arcadePachinko()">베팅!</button></div>`)}
     </div>
-    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(꽝 없음) · 🎫 누적 복권: 한 장 500, <b>꽝 없이 최저 200 환급</b>, 2% 확률로 풀 전액 독식 · 🎰 빠칭코: 5,000 참가, <b>꽝 없음</b>(최저 1,400 환급), 내 번호(1~100) 적중 시 1등=잭팟(최소 3만 보장), 아니면 2~9등 차등. 🛡 <b>꽝방지 게이지</b> — 7판 연속 본전(5,000) 미만이면 다음 판 본전 보장. <b>환급률 ~84% — 집(아포단)이 살짝 이기는 구조</b>라 길게 하면 조금씩 잃어요. 큰 한 방(잭팟)을 노리는 재미용이에요! 💰 복권·빠칭코는 하루 합쳐 <b>50,000 APO</b>까지(통합 한도). 거래소·배당이 메인이고 게임은 양념입니다 🏦</p></details>
+    <details class="fold" style="margin-top:8px"><summary class="mini dim">ℹ 확률·환급률 안내</summary><p class="mini dim" style="margin:6px 0 0">🎴 이치방쿠지: 무료 등급뽑기(꽝 없음) · 🎫 누적 복권: 한 장 500, <b>꽝 없이 최저 200 환급</b>, 2% 확률로 풀 전액 독식 · 🎰 빠칭코: 5,000 참가, <b>꽝 없음</b>(최저 1,400 환급), 내 번호(1~100) 적중 시 1등=잭팟(최소 3만 보장), 아니면 2~9등 차등. 🛡 <b>꽝방지 게이지</b> — 7판 연속 본전(5,000) 미만이면 다음 판 본전 보장. <b>환급률 ~84% — 집(아포단)이 살짝 이기는 구조</b>라 길게 하면 조금씩 잃어요. 큰 한 방(잭팟)을 노리는 재미용이에요! 💰 복권·빠칭코는 <b>각각</b> 하루 <b>50,000 APO</b>까지. 거래소·배당이 메인이고 게임은 양념입니다 🏦</p></details>
     <p class="mini" style="margin:12px 0 4px;font-weight:800">📋 주간 미션 <span class="tag">자동 집계 · 달성 후 '받기' 눌러 수령</span></p>
     ${Object.entries(MD).map(([k,d])=>{const c=M.count[k]||0,done=c>=d[2],got=(M.claimed||[]).includes(k);
       return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${Math.min(c,d[2])}/${d[2]}</b></span>
         ${got?'<span class="dim">✅ 수령</span>':done?`<button class="btn sm gold" onclick="missionClaim('${k}')">+${d[1]} 받기</button>`:`<span class="dim">+${d[1]}</span>`}</p>`}).join('')}
     <p class="mini" style="margin:6px 0 0;display:flex;justify-content:space-between"><span>🏆 전부 달성 보너스</span>
       ${(M.claimed||[]).includes('all')?'<span class="dim">✅ 수령</span>':allDone?`<button class="btn sm gold" onclick="missionClaim('all')">+1,000 받기</button>`:'<span class="dim">+1,000</span>'}</p>
+    <p class="mini" style="margin:13px 0 4px;font-weight:800">🎯 인증 미션 <span class="tag">운영자가 달성 확인 후 부여</span></p>
+    ${Object.entries(MDX).map(([k,d])=>{const c=M.count[k]||0,done=c>=1,got=(M.claimed||[]).includes(k);
+      return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span>${d[0]} <b class="${done?'priceUp':'dim'}">${done?'달성 ✓':'대기 중'}</b></span>
+        ${got?'<span class="dim">✅ 수령</span>':done?`<button class="btn sm gold" onclick="missionClaim('${k}')">+${d[1]} 받기</button>`:`<span class="dim">+${d[1]}</span>`}</p>`}).join('')}
+    ${(window._bank&&(window._bank.role==='admin'||window._bank.role==='dev'))?`<div style="border:1px dashed var(--gold);border-radius:10px;padding:10px;margin-top:10px">
+      <p class="mini" style="margin:0 0 6px;font-weight:800;color:var(--gold)">🛠 인증 미션 부여 (운영자)</p>
+      <div class="row" style="gap:6px;flex-wrap:wrap">
+        <input id="mgName" list="dlMgName" placeholder="멤버 이름" style="flex:1;min-width:100px">
+        <datalist id="dlMgName">${state.players.filter(p=>p.active).map(p=>`<option value="${esc(p.displayName)}">`).join('')}</datalist>
+        <select id="mgField" style="padding:5px;border-radius:8px"><option value="cs12">초반 CS 12</option><option value="cs19">초반 CS 19</option><option value="lossdmg">패배 딜 44k</option></select>
+        <button class="btn sm gold" onclick="missionGrant()">부여</button>
+      </div></div>`:''}
   </div>`;
 }
 /* ───── 🎁 운영진 특별 이벤트 ───── */
