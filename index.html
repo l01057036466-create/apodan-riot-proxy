@@ -469,7 +469,7 @@ body.space .arow.legend::before{content:'★ ';color:#ffd98a;font-size:11px}
     <div class="mark">🏆</div>
     <div class="brand">
       <h1>아포단 내전실록</h1>
-      <p>APODAN CIVIL WAR ARCHIVE · <b>v5.2</b></p>
+      <p>APODAN CIVIL WAR ARCHIVE · <b>v6.0</b></p>
     </div>
     <nav class="tabs" id="nav"></nav>
   </div>
@@ -487,7 +487,7 @@ body.space .arow.legend::before{content:'★ ';color:#ffd98a;font-size:11px}
 <script>
 'use strict';
 /* ============================================================
-   아포단 내전실록 v5.2 — 단일 파일 로컬 앱
+   아포단 내전실록 v6.0 — 단일 파일 로컬 앱
    데이터는 이 브라우저 localStorage에 저장됩니다.
    ============================================================ */
 
@@ -930,22 +930,24 @@ function statChamps(days,lane){
     const wr=pct(s.wins,s.picks), pickRate=pct(s.picks,totalPicks||1);
     const bayes=(s.wins+4)/(s.picks+8); // 강한 표본 보정: 8판 50% 사전확률 (1판 1승 과대평가 차단)
     const recWr=s.recent?pct(s.recentW,s.recent):50;
-    const score=Math.round(((bayes-.5)*100 + Math.min(pickRate,20)*.4 + (recWr-50)*.1)*10)/10;
-    return{...s,winRate:wr,pickRate,score,grade:null};
+    // 🎯 APD 스코어: 50 기준 · 보정 승률(±33, 주축) + 픽률 보너스(최대 +4) + 최근 폼 (PS 스코어식)
+    const apd=Math.round((50 + (bayes-0.5)*78 + Math.min(pickRate,18)*0.14 + (recWr-50)*0.1)*100)/100;
+    return{...s,winRate:wr,pickRate,score:apd,apd,grade:null,op:false};
   });
-  // 한국 등급표식 1~9등급: 3판 이상만 등급 부여, 백분위 배치 + 1등급 정원 2
-  const graded=arr.filter(c=>c.picks>=3).sort((a,b)=>b.score-a.score||b.picks-a.picks);
+  // 1~5티어: 3판 이상만 부여, APD 스코어 백분위 배치
+  const graded=arr.filter(c=>c.picks>=3).sort((a,b)=>b.apd-a.apd||b.picks-a.picks);
   graded.forEach((c,i)=>{
     const p=(i+0.5)/graded.length;
-    c.grade=p<.05?1:p<.15?2:p<.30?3:p<.50?4:p<.70?5:p<.85?6:p<.93?7:p<.98?8:9;
+    c.grade=p<.12?1:p<.30?2:p<.55?3:p<.80?4:5;
   });
-  if(graded.length&&!graded.some(c=>c.grade===1))graded[0].grade=1;
-  graded.filter(c=>c.grade===1).slice(2).forEach(c=>c.grade=2); // 1등급 최대 2개
-  graded.forEach(c=>{if(c.picks>=4&&c.winRate<=30)c.grade=9}); // 확실한 부진은 봉인 강등
+  graded.forEach(c=>{if(c.picks>=4&&c.winRate<=30)c.grade=5}); // 확실한 부진은 5티어
+  // 👑 OP 마크: 1티어 최상위 (픽 4+ & 승률 50%+ 정원 2; 없으면 1티어 최상위 1)
+  const t1q=graded.filter(c=>c.grade===1&&c.picks>=4&&c.winRate>=50);
+  (t1q.length?t1q:graded.filter(c=>c.grade===1)).slice(0,t1q.length?2:1).forEach(c=>c.op=true);
   arr.forEach(c=>{
-    c.tier=c.grade==null?'표본 부족':c.grade===1?'OP':c.grade<=2?'S':c.grade<=3?'A':c.grade<=6?'B':c.grade<=8?'C':'봉인 검토';
+    c.tier=c.grade==null?'표본 부족':c.op?'OP':c.grade===1?'S':c.grade===2?'A':c.grade<=4?'B':(c.picks>=4&&c.winRate<=30)?'봉인 검토':'C'; // champComment 호환 클래스
   });
-  return arr.sort((a,b)=>(a.grade??99)-(b.grade??99)||b.score-a.score||b.picks-a.picks);
+  return arr.sort((a,b)=>(a.op?0:1)-(b.op?0:1)||(a.grade??99)-(b.grade??99)||b.apd-a.apd||b.picks-a.picks);
 }
 function statSides(){
   let blue=0,red=0;
@@ -8193,7 +8195,8 @@ function pgDashboard(){
     ${dashTmi()}
   </div>
   <div class="grid c2" style="margin-top:14px;align-items:start">
-  <div class="card"><h3>최근 경기 <span class="tag">🔥 가장 치열했던 한 판</span></h3>${recent?dashMatchSummary(recent):'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
+  <div><div class="card"><h3>최근 경기 <span class="tag">🔥 가장 치열했던 한 판</span></h3>${recent?dashMatchSummary(recent):'<div class="empty">아직 기록된 경기가 없어요.<br>기록하기 탭에서 스크린샷을 올려보세요.</div>'}</div>
+    ${(()=>{const sd=statSides();if(!sd.total)return'';return`<div class="card" style="margin-top:14px"><h3 style="margin:0 0 9px">⚖ 진영 밸런스</h3><div class="row" style="gap:10px;align-items:center"><div style="flex:1;text-align:center"><div style="font-size:24px;font-weight:900;color:#5b8cff">${sd.blueRate}%</div><div class="mini dim">🔵 블루 ${sd.blue}승</div></div><div style="font-size:12px;color:var(--mut)">vs</div><div style="flex:1;text-align:center"><div style="font-size:24px;font-weight:900;color:var(--lose)">${sd.redRate}%</div><div class="mini dim">🔴 레드 ${sd.red}승</div></div></div><p class="mini dim" style="margin:9px 0 0;text-align:center">총 ${sd.total}판 · ${Math.abs(sd.blueRate-sd.redRate)<=6?'균형 잡힌 협곡 ⚖':sd.blueRate>sd.redRate?'블루 진영이 살짝 유리 🔵':'레드 진영이 살짝 유리 🔴'}</p></div>`})()}</div>
     <div class="card"><h3>오늘의 칭호 <span class="tag">AUTO</span></h3>
       ${A.length?`<div class="awards">${A.map(awardCard).join('')}</div>`:'<div class="empty">경기를 몇 판 기록하면 칭호가 자동으로 생겨요.</div>'}
     </div>
@@ -9211,29 +9214,32 @@ function pgChampions(){
     if(sortBy==='bans')return (b.bans||0)-(a.bans||0)||b.picks-a.picks;
     return (a.grade==null?99:a.grade)-(b.grade==null?99:b.grade)||b.score-a.score||b.picks-a.picks;
   });
-  const LANES=[['','전체'],['탑','탑'],['정글','정글'],['미드','미드'],['원딜','원딜'],['서폿','서폿']];
+  const LANES=[['','전체'],['TOP','탑'],['JUNGLE','정글'],['MID','미드'],['ADC','원딜'],['SUPPORT','서폿']];
   const laneBar=`<div class="row" style="gap:5px;margin-bottom:10px;flex-wrap:wrap">${LANES.map(([v,l])=>`<button class="btn sm ${lane===v?'gold':''}" onclick="window._champLane='${v}';render()">${l}</button>`).join('')}</div>`;
   const periodBar=`<div class="row" style="gap:6px;margin-bottom:14px"><button class="btn sm ${period==='all'?'gold':''}" onclick="window._champPeriod='all';render()">전체 메타</button><button class="btn sm ${period==='week'?'gold':''}" onclick="window._champPeriod='week';render()">📅 최근 7일</button>${period==='week'?'<span class="mini dim" style="align-self:center">표본 적으면 보류 많음 (정상)</span>':''}</div>`;
-  const TB={1:['#a970ff','OP'],2:['#ff5c7a','S'],3:['#ff9d4d','A'],4:['#5ea0ff','B'],5:['#5ea0ff','B'],6:['#37c978','B'],7:['#b9c8d8','C'],8:['#b9c8d8','C'],9:['#8f9aa8','봉인']};
-  const tierBadge=c=>{const t=TB[c.grade]||['#8f9aa8','—'];return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:7px;background:${t[0]}1f;color:${t[0]};font-weight:900;font-size:12px;border:1px solid ${t[0]}55">${t[1]}</span>`};
+  const TB={1:['#ff4d6b','1'],2:['#ff9d4d','2'],3:['#ffd24a','3'],4:['#5ea0ff','4'],5:['#8f9aa8','5']};
+  const tierBadge=c=>{
+    if(c.grade==null)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:7px;background:#8f9aa81f;color:#8f9aa8;font-weight:900;font-size:12px;border:1px solid #8f9aa855">—</span>`;
+    if(c.op)return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:28px;border-radius:7px;background:linear-gradient(135deg,#a970ff,#ff5c7a);color:#fff;font-weight:900;font-size:11px;letter-spacing:.02em;box-shadow:0 0 9px rgba(169,112,229,.55)">OP</span>`;
+    const t=TB[c.grade];return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;border-radius:7px;background:${t[0]}1f;color:${t[0]};font-weight:900;font-size:13px;border:1px solid ${t[0]}55">${t[1]}</span>`};
   const sortBtn=(k,l)=>`<span onclick="window._champSort='${k}';render()" style="cursor:pointer;${sortBy===k?'color:var(--gold);font-weight:800':'color:#8f82b8'}">${l}${sortBy===k?' ▾':''}</span>`;
   const list=sorted.length?`<div class="card">
-    <div style="display:flex;align-items:center;padding:0 2px 10px;border-bottom:1px solid var(--line);font-size:12px">
-      <span style="width:44px;color:#8f82b8">티어</span><span style="flex:1;color:#8f82b8">챔피언</span>
-      <span style="width:52px;text-align:right">${sortBtn('score','점수')}</span>
-      <span style="width:60px;text-align:right">${sortBtn('winRate','승률')}</span>
-      <span style="width:58px;text-align:right">${sortBtn('pickRate','픽률')}</span>
-      <span style="width:46px;text-align:right">${sortBtn('bans','밴')}</span>
+    <div style="display:flex;align-items:center;padding:0 2px 9px;border-bottom:1px solid var(--line);font-size:11.5px">
+      <span style="width:38px;color:#8f82b8">티어</span><span style="flex:1;color:#8f82b8">챔피언</span>
+      <span style="width:50px;text-align:right">${sortBtn('score','APD')}</span>
+      <span style="width:48px;text-align:right">${sortBtn('winRate','승률')}</span>
+      <span style="width:40px;text-align:right">${sortBtn('pickRate','픽률')}</span>
+      <span style="width:30px;text-align:right">${sortBtn('bans','밴')}</span>
     </div>
     ${sorted.map((c,idx)=>`<div onclick="champSel('${esc(c.champion)}')" style="display:flex;align-items:center;padding:9px 2px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer">
-      <span style="width:44px">${tierBadge(c)}</span>
-      <span style="flex:1;display:flex;align-items:center;gap:7px;min-width:0"><b style="color:#8f82b8;font-size:11px;width:16px;flex-shrink:0">${idx+1}</b>${champFace(c.champion,28)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.champion)}</b></span>
-      <span style="width:52px;text-align:right;font-weight:800">${c.score}</span>
-      <span style="width:60px;text-align:right;font-weight:700" class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span>
-      <span style="width:58px;text-align:right;color:#8f82b8">${c.pickRate}%</span>
-      <span style="width:46px;text-align:right;color:#8f82b8">${c.bans||'-'}</span>
+      <span style="width:38px;flex-shrink:0">${tierBadge(c)}</span>
+      <span style="flex:1;display:flex;align-items:center;gap:6px;min-width:0"><b style="color:#8f82b8;font-size:11px;width:15px;flex-shrink:0;text-align:right">${idx+1}</b>${champFace(c.champion,24)}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px">${esc(c.champion)}</b></span>
+      <span style="width:50px;text-align:right;font-weight:800;font-size:13px">${c.score}</span>
+      <span style="width:48px;text-align:right;font-weight:700;font-size:12.5px" class="${c.winRate>=50?'up':'dn'}">${c.winRate}%</span>
+      <span style="width:40px;text-align:right;color:#8f82b8;font-size:12px">${c.pickRate}%</span>
+      <span style="width:30px;text-align:right;color:#8f82b8;font-size:12px">${c.bans||'-'}</span>
     </div>`).join('')}
-    <p class="mini dim" style="margin:12px 0 0">티어 뱃지는 표본 보정(8판 50% 사전확률)을 적용한 아포단 내전 기준이에요. OP는 정원 2개. 챔피언을 누르면 카운터·상세가 펼쳐져요.</p>
+    <p class="mini dim" style="margin:12px 0 0">📊 <b style="color:var(--gold)">APD 스코어</b>(50 기준)는 베이지안 승률 + 픽률 + 최근 폼을 합친 아포단 전용 지표예요. 백분위로 1~5티어를 나누고 최상위는 👑 OP. <b>챔피언을 누르면 카운터·먹잇감·장인</b>이 펼쳐져요.</p>
   </div>`:`<div class="card"><div class="empty">${lane?'이 라인에서 3판 이상 픽된 챔피언이 아직 없어요.':'경기를 기록하면 아포단만의 티어표가 만들어져요.'}</div></div>`;
   return head('챔피언 티어표','라인별 · 승률·픽률에 표본 보정을 적용한 아포단 전용 티어. 컬럼을 눌러 정렬, 챔피언을 눌러 상세를 봐요.')+laneBar+periodBar+(window._champSel?champDetailCard(window._champSel):'')+list;
 }
