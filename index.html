@@ -4561,6 +4561,42 @@ async function scoreLock(date,open){
   try{await bankCall('scoreLock',{date,open:!!open});toast(open?'예측 재개':'🎯 예측 마감');await fetchScore(date);render()}
   catch(e){toast('실패: '+e.message,true)}
 }
+/* ───── 🎯 토토 (용/퍼블/킬총합) — 라인업 공지 시 매치데이 카드에 자동 표시 ───── */
+const TOTO_KINDS={dragon:{label:'🐉 첫 용 사냥',opts:['1팀','2팀','비슷']},fb:{label:'🩸 퍼스트 블러드',opts:['1팀','2팀']},killsum:{label:'⚔️ 총 킬수',opts:['~25','26~35','36~45','46+']}};
+async function fetchToto(date,kind){
+  if(!voteApiBase()||!date||!TOTO_KINDS[kind])return;
+  try{
+    const r=await fetch(voteApiBase()+'/api/bank?action=totoTally&date='+encodeURIComponent(date)+'&kind='+kind+(bankToken()?'&token='+encodeURIComponent(bankToken()):''));
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){window._toto=window._toto||{};window._toto[date+'|'+kind]=j}
+  }catch(e){}
+}
+async function castToto(date,kind,pick){
+  const B=bankSession();
+  if(B&&B.role==='dev'&&!B.name)return toast('🛠 유령 세션은 참여 못 해요 — 멤버 계정으로!',true);
+  if(!B||!B.name)return toast('💰 거래소 로그인 후 참여 가능!',true);
+  try{const _L=(typeof allLineups==='function')?allLineups().find(l=>voteKey(l)===date):null; if(_L&&myTeamIn(_L))return toast('본인 출전 경기예요 — 토토 참여 불가 (승부조작 방지 🙅)',true);}catch(e){}
+  const amt=Math.round(Number(prompt(`🎯 "${pick}"에 베팅할 금액? (최소 100 APO)\n정답자끼리 전체 풀을 나눠 가져요`,'500'))||0);
+  if(amt<100)return amt&&toast('최소 100 APO',true);
+  try{
+    const j=await bankCall('totoBet',{date,kind,pick,amount:amt});
+    window._bank&&(window._bank.bal=j.bal);
+    toast(`🎯 ${pick} 참여 완료! ${fmtAPO(amt)} APO`);
+    await fetchToto(date,kind);render();
+  }catch(e){toast(e.status===409?'이미 참여했어요 (1인 1픽)':'실패: '+e.message,true)}
+}
+async function totoSettle(date,kind,win){
+  if(!confirm(`${TOTO_KINDS[kind].label} 결과를 "${win}"(으)로 정산할까요?\n정답자들에게 전체 풀(수수료 3% 제외)이 분배됩니다.`))return;
+  try{
+    const j=await bankCall('totoSettle',{date,kind,win});
+    toast(`🎯 ${win} 정산 — ${j.winners}명 적중, ${fmtAPO(j.paid)} APO 분배`);
+    await fetchToto(date,kind);await bankRefresh(true);
+  }catch(e){toast('실패: '+e.message,true)}
+}
+async function totoLock(date,kind,open){
+  try{await bankCall('totoLock',{date,kind,open:!!open});toast(open?'토토 재개':'🎯 토토 마감');await fetchToto(date,kind);render()}
+  catch(e){toast('실패: '+e.message,true)}
+}
 async function aiTrade(){
   if(!confirm('🤖 AI 기관/외국인 수급 이벤트를 지금 실행할까요?\n폼 상위 종목엔 매수세, 하위엔 매도세 (가격만 ±8~16% 출렁 — 포인트를 직접 주거나 뺏지 않아요. 주 1회 권장)'))return;
   try{
@@ -7933,6 +7969,12 @@ function seriesScoreProb(scoreStr,p){
 function lineupCard(L){
   if(!L)return'';
   const O=lineupOdds(L),pts=lineupPoints(L),MU=lineupMatchups(L);
+  if(O){ // 🎰 유저 베팅 반영 — 데이터 배당 베이스 + 베팅 몰림(금액)에 따라 변동 (풀 쌓일수록 변동 비중↑, 몰리는 팀↓·반대편↑)
+    const _Mk=(window._mkts||{})[voteKey(L)];
+    if(_Mk){const _pA=+_Mk.alpha||0,_pB=+_Mk.beta||0,_tot=_pA+_pB;
+      if(_tot>=100){const _w=Math.min(1,_tot/30000),_mA=_pA>0?Math.min(10,_tot*0.97/_pA):10,_mB=_pB>0?Math.min(10,_tot*0.97/_pB):10;
+        O.oddsBlue=Math.max(1.05,Math.min(10,Math.round((O.oddsBlue*(1-_w)+_mA*_w)*100)/100));
+        O.oddsRed=Math.max(1.05,Math.min(10,Math.round((O.oddsRed*(1-_w)+_mB*_w)*100)/100));}}}
   const names=ids=>ids.map(id=>esc(nameOf(id))).join(', ');
   const FO=fanOdds(L.id);
   const myV=myFanVote(voteKey(L));
@@ -8000,7 +8042,7 @@ function lineupCard(L){
       const only=B&&B.name?myTeamIn(L):null;
       const pools=`
         <p class="mini dim" style="text-align:center;margin:8px 0 0">${tot?`참전 <span style="color:var(--gold)">🅰 ${fmtAPO(a)}</span> · <span style="color:var(--win)">🅱 ${fmtAPO(b)}</span> APO · ${M.bettors||0}명`:'첫 베팅의 주인공이 되어보세요'}</p>
-        ${tot?`<div style="height:7px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line);margin-top:4px"><i style="width:${Math.round(a/tot*100)}%;background:rgba(242,184,75,.5)"></i><i style="flex:1;background:rgba(63,217,197,.5)"></i></div>`:''}`;
+        ${tot?`<div style="height:7px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line);margin-top:4px"><i style="width:${Math.round(a/tot*100)}%;background:rgba(242,184,75,.5)"></i><i style="flex:1;background:rgba(63,217,197,.5)"></i></div><p class="mini dim" style="text-align:center;margin:4px 0 0;font-size:10px;opacity:.65">🎰 베팅이 쌓이면 배당이 실시간 변동 (몰린 팀↓·반대편↑)</p>`:''}`;
       let actions='';
       if(refunded)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🚫 취소된 판 — 베팅 전액 환불 완료 (빵꾸/대타). 새 판은 다른 회차로 공지해주세요!</p>`;
       else if(settled)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--gold)">💸 정산 완료 — ${winSide==='alpha'?'🅰 알파':'🅱 베타'} 승리. 적중자들 지갑을 확인하세요!</p>${B&&(B.role==='admin'||B.role==='dev')?`<p class="mini" style="text-align:center;margin:6px 0 0"><button class="btn sm ghost" style="border-color:rgba(255,92,122,.4);color:var(--lose)" onclick="bankUnsettle('${L.id}')">↩️ 정산 되돌리기 (실수로 눌렀을 때)</button></p>`:''}`;
@@ -8074,6 +8116,28 @@ function lineupCard(L){
             </div>
             <p class="mini dim" style="text-align:center;margin:6px 0 0">${BS&&BS.name?(SC.my?`내 예측: <b>${esc(SC.my.split('|')[0])}</b> (${fmtAPO(Number(SC.my.split('|')[1])||0)} APO)`:(only?`🙅 본인 출전 경기 — 스코어 예측을 할 수 없어요 (승부조작 방지)`:'정확한 세트 스코어를 맞히면 대박!')):'💰 로그인 후 예측'}
             ${(BS&&(BS.role==='admin'||BS.role==='dev')&&!SC.win)?` · <button class="btn sm ${lockedS?'':'lose'}" onclick="scoreLock('${esc(key)}',${lockedS?'true':'false'})">${lockedS?'재개':'마감'}</button>${lockedS?opts.map(o=>`<button class="btn sm gold" onclick="scoreSettle('${esc(key)}','${o}')">${o}✓</button>`).join(''):''}`:''}</p>
+          </div>`})()}
+        ${(()=>{ // 🎯 토토 (용/퍼블/킬총합)
+          const BT=bankSession();
+          const onlyT=!!only;
+          return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
+            <p class="mini" style="margin:0 0 6px;text-align:center;font-weight:900;letter-spacing:.1em;color:var(--win)">🎯 내전 토토 <span class="dim" style="font-weight:600;letter-spacing:0">— 정답자끼리 풀 분배 · 1인 1픽</span></p>
+            ${Object.keys(TOTO_KINDS).map(kind=>{
+              const TK=(window._toto&&window._toto[key+'|'+kind]);
+              if(TK===undefined){window._toto=window._toto||{};window._toto[key+'|'+kind]=null;fetchToto(key,kind).then(()=>softRender())}
+              const T=window._toto[key+'|'+kind]||{tally:{},status:'open',win:'',my:null};
+              const opts=TOTO_KINDS[kind].opts;
+              const totT=Object.values(T.tally||{}).reduce((a,b)=>a+b,0);
+              const lockedT=T.status!=='open';
+              return`<div style="margin:0 0 7px">
+                <p class="mini dim" style="margin:0 0 3px;text-align:center;font-weight:800">${TOTO_KINDS[kind].label}${T.win?` — 결과 <b style="color:var(--gold)">${T.win}</b>`:lockedT?' — 마감':''}${totT?` <span style="opacity:.55">· ${totT}명</span>`:''}</p>
+                <div class="row" style="flex-wrap:wrap;gap:5px;justify-content:center">
+                  ${opts.map(o=>{const v=(T.tally||{})[o]||0;const isWin=T.win===o;const mine=T.my&&T.my.split('|')[0]===o;
+                    return`<button class="btn sm ${isWin?'gold':''}" ${lockedT||T.my||onlyT?'disabled':''} ${onlyT?'title="본인 출전 — 토토 불가"':''} onclick="castToto('${esc(key)}','${kind}','${o}')" style="${mine?'border-color:var(--win);color:var(--win);font-weight:900':''}${onlyT?';opacity:.4':''}">${isWin?'👑 ':''}${o}${v?` <b>${v}</b>`:''}${mine?' ✓':''}</button>`}).join('')}
+                </div>
+                ${(BT&&(BT.role==='admin'||BT.role==='dev')&&!T.win)?`<p class="mini" style="text-align:center;margin:3px 0 0">${lockedT?`<button class="btn sm" onclick="totoLock('${esc(key)}','${kind}',true)">재개</button> `+opts.map(o=>`<button class="btn sm gold" onclick="totoSettle('${esc(key)}','${kind}','${o}')">${o}✓</button>`).join(''):`<button class="btn sm lose" onclick="totoLock('${esc(key)}','${kind}',false)">마감</button>`}</p>`:''}
+              </div>`}).join('')}
+            <p class="mini dim" style="text-align:center;margin:2px 0 0">${BT&&BT.name?(onlyT?'🙅 본인 출전 경기 — 토토 불가 (승부조작 방지)':'용·퍼블·킬수를 맞혀보세요!'):'💰 로그인 후 참여'}</p>
           </div>`})()}
         ${(()=>{const bets=(window._mktBets||{})[key];
           if(bets===undefined)return tot?`<p class="mini" style="text-align:center;margin:8px 0 0"><button class="btn sm ghost" onclick="loadBets('${L.id}')">👀 누가 어디에 걸었나 보기</button></p>`:'';
@@ -8919,22 +8983,26 @@ function pgCompare(){
 }
 
 /* ───── ⚖️ 빅데이터 팀 짜주기 (운영진 전용) ───── */
-function balRating(pid,lane){ // 선수×라인 점수: 폼 + 라인 숙련(표본 보정)
+function balRating(pid,lane){ // 선수×라인 점수: 체급(티어) + 내전 라인실력(베이지안 승률+KDA, 표본 보정)
   const key=pid+'|'+lane;
   if(!window._balCache)window._balCache={};
   if(window._balCache[key]!==undefined)return window._balCache[key];
-  let g=0,w=0,tg=0,tw=0;
+  let g=0,w=0,tg=0,tw=0,lk=0,ld=0,la=0;
   state.matches.forEach(m=>m.participants.forEach(p2=>{
     if(p2.playerId!==pid)return;
     tg++;if(p2.team===m.winnerTeam)tw++;
-    if(p2.lane===lane){g++;if(p2.team===m.winnerTeam)w++}
+    if(p2.lane===lane){g++;if(p2.team===m.winnerTeam)w++;lk+=num(p2.kills);ld+=num(p2.deaths);la+=num(p2.assists);}
   }));
-  const conf=Math.min(1,g/6);
-  const laneFit=g?((w/g*100-50)*0.5*conf+conf*8):0;
-  const overall=tg?((tw/tg*100-50)*0.3*Math.min(1,tg/10)):0;
+  const conf=Math.min(1,g/5); // 5경기에서 신뢰도 최대
+  const bayes=(w+4)/(g+8); // 베이지안 라인 승률 — 표본 적은 100% 승률 과대평가 방지
+  const kda=(lk+la)/Math.max(1,ld);
+  const lanePerf=(bayes*0.7+Math.min(1,kda/5)*0.3-0.5)*100; // 라인 퍼포먼스 편차(승률 70%+KDA 30%)
+  const laneFit=lanePerf*conf*0.9+conf*7; // 표본 보정 + 라인 경험 보너스
+  const tBayes=(tw+4)/(tg+8); // 베이지안 통산 승률
+  const overall=(tBayes-0.5)*100*Math.min(1,tg/8)*0.5; // 통산 편차(체급 보조)
   const base=tierBaseScore(pid);
   let r;
-  if(base!=null){ r=base+laneFit*0.6+overall*0.5; } // 솔랭/자랭 기준 + 라인숙련·통산 약간
+  if(base!=null){ r=base+laneFit*0.7+overall; } // 솔랭/자랭 체급 + 내전 라인실력 + 통산
   else{ const{arr}=formSeries(pid); const form=arr.length?(arr[arr.length-1]-stockBase(pid))*0.15:0; r=50+laneFit+overall+form; }
   window._balCache[key]=r;
   return r;
