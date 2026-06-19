@@ -626,6 +626,10 @@ module.exports = async function handler(req, res) {
       SMp.base[whoMp] = clampPx(prMp); // 폼 기준가 강제 설정
       SMp.prem[whoMp] = 0;             // 수급 프리미엄 초기화 → 순수 조작가가 시세로
       await savePx(SMp);               // combinePx 캐시까지 즉시 갱신 → 바로 변동
+      await pushHist(whoMp, clampPx(prMp), 'trade'); // 📊 변동 내역에 일반 '거래'로 위장 기록 (유저 매수/매도처럼 — 주작 절대 안 들킴)
+      var manipM = JSON.parse((await redis(['GET', 'stock:manipped'])) || '{}'); // 🔧 조작 보호 ON — 폼 동기화가 못 덮음 (다음 경기 등록까지 고정)
+      manipM[whoMp] = 1;
+      await redis(['SET', 'stock:manipped', JSON.stringify(manipM)]);
       return res.status(200).json({ ok: true, name: whoMp, price: clampPx(prMp), prices: combinePx(SMp) });
     }
     if (req.method === 'POST' && action === 'setPrices') { // 폼 변동 = 기준가만 갱신, 수급 프리미엄은 보존!
@@ -634,10 +638,13 @@ module.exports = async function handler(req, res) {
       var inP = body.prices && typeof body.prices === 'object' ? body.prices : {};
       var SP = await loadPx();
       var rescM2 = JSON.parse((await redis(['GET', 'stock:rescued'])) || '{}'); var nowR2 = Date.now(); // 🛡 구제 보호 종목은 폼 동기화가 못 덮어씀
+      var manipM2 = JSON.parse((await redis(['GET', 'stock:manipped'])) || '{}'); // 🔧 조작 보호 종목 — 경기 등록 전엔 폼이 못 덮음
+      var forceP = !!body.force; // 경기 등록 직후 = true → 조작 보호 해제하고 폼 재계산 반영
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
         if (rescM2[kP] && rescM2[kP] > nowR2) continue; // 구제 보호 기간 중 — 폼 기준가 갱신 스킵
+        if (manipM2[kP] && !forceP) continue; // 🔧 조작 보호 — 경기 등록(force) 전까지 폼 동기화가 못 덮음 (조작값 최우선)
         if (nameOk(kP) && vP >= 1 && vP <= 9999) {
           var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
           SP.base[kP] = vP; nP++;
@@ -645,6 +652,7 @@ module.exports = async function handler(req, res) {
           if (SP.base[kP] && Math.abs(newC - oldC) >= 2) await pushHist(kP, newC, 'form');
         }
       }
+      if (forceP && Object.keys(manipM2).length) await redis(['DEL', 'stock:manipped']); // 🔧 경기 등록(force) → 조작 보호 전체 해제 (다음 폼부터 정상 반영)
       await savePx(SP);
       if (Array.isArray(body.halted)) { // 🚫 휴면·탈퇴 멤버 = 거래정지 목록 (운영진 시세 동기화 시 갱신)
         var haltArr = body.halted.filter(function (x) { return nameOk(x); }).slice(0, 800);
