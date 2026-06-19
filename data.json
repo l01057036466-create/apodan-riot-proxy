@@ -33943,10 +33943,32 @@
     "p_wqf3x0omq7ub77q",
     "p_hdu5pzwf_mq7nhxup"
    ]
+  },
+  {
+   "id": "lu_ju1qzuwmql6wnx7",
+   "date": "2026-06-19",
+   "round": "4차",
+   "series": "3판 2선승",
+   "note": "",
+   "event": false,
+   "blue": [
+    "p_9813bijx_mq7nhxup",
+    "p_svkv85m9_mq7nhxuq",
+    "p_60ospv2c_mq7nhxuq",
+    "p_ybyb79mg_mq7nhxup",
+    "p_imjto1qf_mq7nhxuq"
+   ],
+   "red": [
+    "p_jlc2q699_mq7nhxup",
+    "p_4siqelqmq7ub77p",
+    "p_jot48yoa_mq7nhxuq",
+    "p_wqf3x0omq7ub77q",
+    "p_53io5pq0_mq7nhxuq"
+   ]
   }
  ],
- "rev": 379,
- "updatedAt": "2026-06-19T16:38:39.009Z",
+ "rev": 380,
+ "updatedAt": "2026-06-19T17:15:42.235Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
