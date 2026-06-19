@@ -1304,7 +1304,7 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock(sPc.name); }
     }
     var PG_COST = 3000;
-    var PG_BOX = [['A', 1, 'pass', '원하는 사람과 같은 팀 보장권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1500], ['F', 13, 'apo', 800]];
+    var PG_BOX = [['A', 1, 'pass', '원하는 팀원 1명 선택권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1500], ['F', 13, 'apo', 800]];
     function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
     function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
     if (req.method === 'GET' && action === 'pgacha') {
@@ -1347,7 +1347,7 @@ module.exports = async function handler(req, res) {
           await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPg.name, t: 'pg', g: 'A', ts: new Date().toISOString() })]);
           await redis(['LTRIM', 'arcade:news', '0', '9']);
         }
-        await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🎟 같은 팀 보장권 획득!' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
+        await ledger(aPg.name, '🎴 프리미엄 이치방쿠지 ' + drawn + '상 — ' + (gotPass ? '🎟 팀원 선택권 획득!' : '+' + gotApo + ' APO') + ' (−' + PG_COST + ')', gotApo - PG_COST, aPg.bal);
         return res.status(200).json({ ok: true, tier: drawn, kind: meta.kind, apo: gotApo, pass: gotPass, bal: aPg.bal, box: box, fresh: fresh, boxReset: boxReset, lanePass: Number(aPg.lanePass) || 0 });
       } finally { await acctUnlock('pgacha'); }
       } finally { await acctUnlock(sPg.name); }
