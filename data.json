@@ -34552,52 +34552,30 @@
  },
  "lineups": [
   {
-   "id": "lu_r8k5yycmqkizv4f",
-   "date": "2026-06-19",
-   "round": "3차",
+   "id": "lu_qdi0nj5mqm3yl0v",
+   "date": "2026-06-20",
+   "round": "1차",
    "series": "3판 2선승",
    "note": "",
    "event": false,
    "blue": [
-    "p_5fj5souo_mq7nhxuq",
-    "p_4siqelqmq7ub77p",
+    "p_bqvhy1r3_mq7nhxuq",
     "p_h7k04k4c_mq7nhxuq",
-    "p_53io5pq0_mq7nhxuq",
-    "p_so05ompmq7ub77q"
+    "p_jlc2q699_mq7nhxup",
+    "p_j93ommzd_mq7nhxuq",
+    "p_hdu5pzwf_mq7nhxup"
    ],
    "red": [
     "p_1v451ep9_mq7nhxuq",
     "p_60ospv2c_mq7nhxuq",
-    "p_imjto1qf_mq7nhxuq",
-    "p_wqf3x0omq7ub77q",
-    "p_hdu5pzwf_mq7nhxup"
-   ]
-  },
-  {
-   "id": "lu_ju1qzuwmql6wnx7",
-   "date": "2026-06-19",
-   "round": "4차",
-   "series": "3판 2선승",
-   "note": "",
-   "event": false,
-   "blue": [
-    "p_9813bijx_mq7nhxup",
-    "p_svkv85m9_mq7nhxuq",
-    "p_60ospv2c_mq7nhxuq",
-    "p_ybyb79mg_mq7nhxup",
-    "p_imjto1qf_mq7nhxuq"
-   ],
-   "red": [
-    "p_jlc2q699_mq7nhxup",
-    "p_4siqelqmq7ub77p",
-    "p_jot48yoa_mq7nhxuq",
-    "p_wqf3x0omq7ub77q",
-    "p_53io5pq0_mq7nhxuq"
+    "p_si39mrju_mq7nhxuq",
+    "p_wtiaq7m1_mq7nhxuq",
+    "p_29ndxd5j_mq7nhxuq"
    ]
   }
  ],
- "rev": 394,
- "updatedAt": "2026-06-20T00:33:26.044Z",
+ "rev": 397,
+ "updatedAt": "2026-06-20T08:41:03.480Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
