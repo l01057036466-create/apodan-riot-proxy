@@ -3547,20 +3547,37 @@ function _spMap(){ const ck=state.matches.length; if(_spMap._k!==ck){_spMap._k=c
 function playerStatus(pid,oppPid,L){ // → {t:'태그', c:'up|dn|gold|'}
   const S=_spMap().get(pid), g=S?S.games:0;
   if(!g)return{t:'🆕 데뷔전',c:'gold'};
-  const wl=formSeries(pid).wl;
+  const fs=formSeries(pid), wl=fs.wl, arr=fs.arr;
   let streak=0; for(let i=wl.length-1;i>=0;i--){ if(streak===0)streak=wl[i]?1:-1; else if(wl[i]===(streak>0))streak+=streak>0?1:-1; else break; }
-  if(oppPid){ const rv=rivalOf(pid); if(rv&&rv.id===oppPid)return{t:'🔥 숙적전',c:'dn'}; } // 상대가 라이벌이면 최우선
+  const slope=arr.length>=4?(arr[arr.length-1]-arr[Math.max(0,arr.length-5)]):0; // 최근 폼 추세
+  // ── 맞대결 우선 (상대가 있을 때) ──
+  if(oppPid){
+    const rv=rivalOf(pid); if(rv&&rv.id===oppPid)return{t:'🔥 숙적전',c:'dn'};
+    const h=headToHead(pid,oppPid); // pid 기준 oppPid 상대전적
+    if(h.meet>=3&&h.aw-h.bw>=2)return{t:'😈 우위 상대',c:'up'};
+    if(h.meet>=3&&h.bw-h.aw>=2)return{t:'💀 천적 만남',c:'dn'};
+  }
+  // ── 강한 연속 ──
   if(streak<=-3)return{t:'🧊 '+Math.abs(streak)+'연패',c:'dn'};
   if(streak>=3)return{t:'🔥 '+streak+'연승',c:'up'};
+  // ── 캐리·폼 흐름 ──
   if(playerHistory(pid).slice(-3).some(m=>{const pp=(m.participants||[]).find(x=>x.playerId===pid);return pp&&isTeamCarry(m,pp)}))return{t:'⭐ 캐리후보',c:'up'};
+  if(slope>=18)return{t:'⚡ 폼 급상승',c:'up'};
+  if(slope<=-18)return{t:'📉 폼 하락세',c:'dn'};
+  // ── 듀오 ──
   if(L){ const mt=L.blue&&L.blue.includes(pid)?L.blue:(L.red&&L.red.includes(pid)?L.red:null);
-    if(mt){ const b=bestieOf(pid); if(b&&b.wr>=60&&mt.includes(b.id))return{t:'💞 '+nameOf(b.id)+' 듀오',c:'gold'}; } } // 같은 팀에 단짝이 있으면
+    if(mt){ const b=bestieOf(pid); if(b&&b.wr>=60&&mt.includes(b.id))return{t:'💞 '+nameOf(b.id)+' 듀오',c:'gold'}; } }
   if(streak===2)return{t:'2연승 중',c:'up'};
   if(streak===-2)return{t:'2연패 중',c:'dn'};
+  // ── 역할·스타일 트레잇 ──
   if(g>=5&&S.winRate>=58&&S.assists>=S.kills*1.4)return{t:'🎙 오더왕',c:'gold'}; // 고승률 + 어시 위주 = 플레이메이커
   if(S.mvp>=2&&S.mvp>=g*0.22)return{t:'🏅 MVP 단골',c:'gold'};
+  if(g>=4&&(S.soloKills||0)/g>=1.2)return{t:'🎯 솔킬러',c:'up'};
+  if(g>=4&&(S.avgDmg||0)>=22000)return{t:'🌋 딜몰빵',c:'up'};
+  if(g>=4&&(S.avgTaken||0)>=28000&&(S.avgDmg||0)<18000)return{t:'🧱 단단함',c:''};
   if(g>=4&&(S.avgVision||0)>=45)return{t:'👁 시야장악',c:''};
   if(S.kda>=4)return{t:'🛡 안정러',c:'up'};
+  if(g<=3&&S.winRate>=67)return{t:'🐎 다크호스',c:'up'};
   if(S.winRate>=62)return{t:'📈 폼 절정',c:'up'};
   if(S.winRate<=38)return{t:'🔧 반등 노림',c:'dn'};
   return{t:`통산 ${S.wins}승 ${S.losses}패`,c:''};
@@ -9099,6 +9116,21 @@ function pgCompare(){
 }
 
 /* ───── ⚖️ 빅데이터 팀 짜주기 (운영진 전용) ───── */
+// 🎭 챔프폭 — 다양하고 숙련된 챔프가 많을수록 가산 (밴픽·메타 적응력). 최대 +14.
+function champPoolBonus(pid){
+  if(champPoolBonus._k!==state.matches.length){champPoolBonus._k=state.matches.length;champPoolBonus._m={}}
+  if(champPoolBonus._m[pid]===undefined){ const cs=playerChamps(pid); const deep=cs.filter(c=>c.games>=2).length; champPoolBonus._m[pid]=Math.min(14, cs.length*1.2+deep*1.0); }
+  return champPoolBonus._m[pid];
+}
+// 🤝 페어 시너지 — 두 선수가 같은 팀이었을 때 승률(베이지안·표본보정) 편차. 함께 안 뛰었으면 0(중립).
+function _synMap(){ if(_synMap._k!==state.matches.length){_synMap._k=state.matches.length; const m=new Map(); statDuos(2).forEach(d=>m.set(d.ids.slice().sort().join('|'),d)); _synMap._m=m;} return _synMap._m; }
+function pairSynergy(a,b){ if(!a||!b||a===b)return 0; const d=_synMap().get([a,b].sort().join('|')); if(!d||d.games<2)return 0; const bayes=(d.wins+3)/(d.games+6); const conf=Math.min(1,d.games/5); return (bayes-0.5)*100*conf; }
+function teamSynergy(perm){ // perm: [탑,정글,미드,원딜,서폿]
+  return pairSynergy(perm[3],perm[4])*0.5    // 🟣 바텀 듀오(원딜·서폿)
+       + pairSynergy(perm[1],perm[2])*0.45   // 🟢 미드-정글
+       + pairSynergy(perm[1],perm[0])*0.4    // 🔴 탑-정글
+       + pairSynergy(perm[1],perm[4])*0.35;  // 🔵 서폿-정글
+}
 function balRating(pid,lane){ // 선수×라인 점수: 체급(티어) + 내전 라인실력(베이지안 승률+KDA, 표본 보정)
   const key=pid+'|'+lane;
   if(!window._balCache)window._balCache={};
@@ -9120,6 +9152,7 @@ function balRating(pid,lane){ // 선수×라인 점수: 체급(티어) + 내전 
   let r;
   if(base!=null){ r=base+laneFit*0.7+overall; } // 솔랭/자랭 체급 + 내전 라인실력 + 통산
   else{ const{arr}=formSeries(pid); const form=arr.length?(arr[arr.length-1]-stockBase(pid))*0.15:0; r=50+laneFit+overall+form; }
+  r+=champPoolBonus(pid); // 🎭 챔프폭(다양성·숙련) 가산
   window._balCache[key]=r;
   return r;
 }
@@ -9161,9 +9194,10 @@ function balImbalance(A,B){ // ⚖️ 종합 불균형(작을수록 공평): 전
     const gap=Math.abs(ra-rb); laneAbs+=gap; if(gap>maxGap)maxGap=gap;
     if(ra>maxA)maxA=ra; if(rb>maxB)maxB=rb;
   }
-  const teamDiff=Math.abs(A.score-B.score), carryGap=Math.abs(maxA-maxB);
-  // 전체 균형(0.8) + 라인 고른 정도(0.5) + 한 라인 일방학살 방지(0.7) + 한쪽 캐리 몰림 방지(0.35)
-  return { imb: teamDiff*0.8 + laneAbs*0.5 + maxGap*0.7 + carryGap*0.35, maxGap, carryGap, laneAbs };
+  const synA=teamSynergy(A.perm), synB=teamSynergy(B.perm); // 🤝 팀 내부 시너지(바텀듀오·정글-라인) → 유효 전력에 반영
+  const teamDiff=Math.abs((A.score+synA)-(B.score+synB)), carryGap=Math.abs(maxA-maxB);
+  // 유효전력 균형(0.8) + 라인 고른 정도(0.5) + 한 라인 일방학살 방지(0.7) + 한쪽 캐리 몰림 방지(0.35)
+  return { imb: teamDiff*0.8 + laneAbs*0.5 + maxGap*0.7 + carryGap*0.35, maxGap, carryGap, laneAbs, synA, synB };
 }
 function balCompute(sel,prefs,pins){ // 10명 → 분할 전수 탐색 (밸런스 1순위 · 매치업 고정 반영)
   window._balCache={};
@@ -9189,7 +9223,7 @@ function balCompute(sel,prefs,pins){ // 10명 → 분할 전수 탐색 (밸런�
       if(!aF||!bF||aF.pen>=EX_PEN||bF.pen>=EX_PEN)return; // 제외 라인 배치 불가 → 무효
       const A=teamScore(Object.assign({},pmA,aF.map),prefs,pinnedLanes), B=teamScore(Object.assign({},pmB,bF.map),prefs,pinnedLanes);
       const M=balImbalance(A,B);
-      opts.push({A,B,diff:Math.abs(A.score-B.score),imb:M.imb,maxGap:M.maxGap,carryGap:M.carryGap,pen:A.pen+B.pen});
+      opts.push({A,B,diff:Math.abs((A.score+M.synA)-(B.score+M.synB)),imb:M.imb,maxGap:M.maxGap,carryGap:M.carryGap,synA:M.synA,synB:M.synB,pen:A.pen+B.pen});
     });
   });
   opts.sort((x,y)=>(x.imb-y.imb)||(x.pen-y.pen)); // ⚖️ 종합 균형(전체+라인별+캐리) 1순위 → 그다음 신청 라인
@@ -9286,20 +9320,20 @@ function pgBalance(){
     <button class="btn gold" onclick="balRun()" ${selN===10?'':'disabled'}>⚖️ ${selN===10?'빅데이터로 팀 짜기!':`10명을 채워주세요 (${selN}/10)`}</button>
   </div>
   ${R?R.map((o,i)=>{
-    const wA=Math.round(100/(1+Math.pow(10,(o.B.score-o.A.score)/120)));
+    const wA=Math.round(100/(1+Math.pow(10,((o.B.score+(o.synB||0))-(o.A.score+(o.synA||0)))/120)));
     return`<div class="card" style="margin-top:12px;border:1px solid ${i===0?'rgba(242,184,75,.5)':'var(--line)'}">
     <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
       <h3 style="margin:0">${i===0?'🥇 추천 1안 — 가장 팽팽':i===1?'🥈 2안':'🥉 3안'} <span class="tag">예상 ${wA}% : ${100-wA}%${o.maxGap!=null?` · 라인 최대격차 ${Math.round(o.maxGap)}`:''}${o.pen?` · 신청 일부 조정`:' · 신청 100% 반영'}</span></h3>
       <button class="btn sm" onclick="balCopy(${i})">📋 복사</button>
     </div>
     <div class="grid c2" style="gap:10px;margin-top:8px">
-      ${[['🅰 알파',o.A],['🅱 베타',o.B]].map(([t,a])=>`<div style="border:1px solid var(--line);border-radius:12px;padding:9px 12px">
-        <p class="mini" style="margin:0 0 5px;font-weight:900">${t}</p>
+      ${[['🅰 알파',o.A,o.synA],['🅱 베타',o.B,o.synB]].map(([t,a,syn])=>`<div style="border:1px solid var(--line);border-radius:12px;padding:9px 12px">
+        <p class="mini" style="margin:0 0 5px;font-weight:900">${t}${syn!=null&&Math.abs(syn)>=2?` <span class="dim" style="font-weight:700;font-size:10px">🤝 시너지 ${syn>0?'+':''}${Math.round(syn)}</span>`:''}</p>
         ${a.perm.map((pid,j)=>{const lane=BAL_LANES[j];const pinned=(window._balPins||[]).some(pn=>pn.a===pid||pn.b===pid);const _pf=window._balSel[pid];const pn=balPen(_pf,lane);const fl=pinned?' <span style="color:var(--gold)">📌</span>':(_pf&&_pf.m==='lock')?' <span style="color:var(--gold)">🔒</span>':pn===8?' <span style="color:var(--gold)">🔸부</span>':(pn>0&&pn<EX_PEN)?' <span style="color:var(--lose)">⚠ 조정</span>':'';return`<p class="mini" style="margin:3px 0;display:flex;justify-content:space-between"><span><b>${laneKo[lane]}</b> ${esc(nameOf(pid))}${fl}</span><span class="dim">${Math.round(balRating(pid,lane))}점</span></p>`;}).join('')}
       </div>`).join('')}
     </div>
   </div>`}).join(''):''}
-  <div class="card" style="margin-top:12px"><p class="mini dim" style="margin:0">💡 점수 = 솔랭 티어 기준(체급) + 그 라인 승률·판수 숙련 + 통산 성적 + 최근 폼. 252가지 팀 분할 × 라인 배치를 전부 따져, 이제 <b>① 전체 합 ② 라인별 1:1 맞대결 ③ 한 라인 일방학살 방지 ④ 양 팀 캐리(최강자) 균형</b>을 종합한 <b>한 단계 높은 밸런스</b>로 정렬해요. "라인 최대격차"가 작을수록 어느 라인도 안 터지는 공평한 판이에요. 신청 라인(주0순위·부차순위·제외 금지)은 그다음으로 반영됩니다.</p></div>`;
+  <div class="card" style="margin-top:12px"><p class="mini dim" style="margin:0">💡 점수 = 솔랭 티어 기준(체급) + 그 라인 승률·판수 숙련 + 통산 성적 + 최근 폼 + <b>🎭 챔프폭</b>. 252가지 팀 분할 × 라인 배치를 전부 따져, <b>① 유효전력(개인합+🤝팀 시너지) ② 라인별 1:1 맞대결 ③ 한 라인 일방학살 방지 ④ 양 팀 캐리 균형</b>을 종합한 <b>한 단계 높은 밸런스</b>로 정렬해요. 🤝 시너지 = 바텀 듀오·미드/탑/서폿–정글이 함께 뛴 승률. "라인 최대격차"가 작을수록 어느 라인도 안 터지는 공평한 판이에요. 신청 라인은 그다음으로 반영됩니다.</p></div>`;
 }
 
 /* ───── 당일 밴픽 (하드 피어리스 보드) ───── */
