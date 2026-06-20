@@ -957,8 +957,8 @@
    ],
    "active": true,
    "memo": "",
-   "soloTier": "플래티넘",
-   "flexTier": "에메랄드",
+   "soloTier": "다이아",
+   "flexTier": "다이아",
    "riotPuuid": "MfhkP-d0Wr3lnG3WmCkV0YQMzySJ7XmEMOS9oDExMRB9_1sPA2kherBb9eedbZtnmXZQEc9vSuE4Hg",
    "soloPos": "",
    "subPos": ""
@@ -35250,8 +35250,8 @@
    ]
   }
  ],
- "rev": 407,
- "updatedAt": "2026-06-20T16:27:55.205Z",
+ "rev": 408,
+ "updatedAt": "2026-06-20T17:56:49.037Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
