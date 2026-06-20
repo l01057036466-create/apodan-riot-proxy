@@ -32835,7 +32835,7 @@
    "setNumber": 7,
    "winnerTeam": "RED",
    "memo": "클라이언트 추출 입력",
-   "mvpId": null,
+   "mvpId": "p_imjto1qf_mq7nhxuq",
    "gameId": "8265217795",
    "durationMin": 40,
    "createdAt": "2026-06-19T14:40:31.913Z",
@@ -34596,8 +34596,8 @@
    ]
   }
  ],
- "rev": 388,
- "updatedAt": "2026-06-19T18:30:31.715Z",
+ "rev": 392,
+ "updatedAt": "2026-06-20T00:29:39.708Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
@@ -34612,7 +34612,9 @@
   "2026-06-17": true,
   "2026-06-17#2": true,
   "2026-06-19": true,
-  "2026-06-19#2": true
+  "2026-06-19#2": true,
+  "2026-06-19#3": true,
+  "2026-06-19#4": true
  },
  "season": {
   "no": 1,
