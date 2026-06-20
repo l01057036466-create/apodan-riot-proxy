@@ -194,7 +194,7 @@
    "active": true,
    "memo": "",
    "soloTier": "에메랄드",
-   "flexTier": "에메랄드",
+   "flexTier": "다이아",
    "riotPuuid": "pKdPKLE5-N3z4a_193rcLX9LXPd87WON4M-pcpxucSv-2j0saBjuKKyD8EUsmg4U5inQ7kdfStQkOw",
    "soloPos": "",
    "subPos": ""
@@ -942,6 +942,23 @@
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "마스터",
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
+  },
+  {
+   "id": "p_klbcfmmmqmklg3a",
+   "displayName": "04 코코",
+   "kakaoName": "04 코코",
+   "riotName": "키 코",
+   "riotTag": "meow",
+   "aliases": [
+    "코코"
+   ],
+   "active": true,
+   "memo": "",
+   "soloTier": "플래티넘",
+   "flexTier": "에메랄드",
    "riotPuuid": "",
    "soloPos": "",
    "subPos": ""
@@ -35210,8 +35227,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 402,
- "updatedAt": "2026-06-20T15:25:37.538Z",
+ "rev": 403,
+ "updatedAt": "2026-06-20T16:26:39.671Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
