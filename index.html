@@ -4103,14 +4103,22 @@ async function stockTrade(side){
   if(window._tradeBusy)return toast('주문 처리 중 — 잠시만요!',true);
   window._tradeBusy=true; // 🐛fix: 더블클릭 이중 주문 방지
   try{
+    const _h0=(window._bank&&window._bank.holdings&&window._bank.holdings[tgt])||{q:0,avg:0}; // 체결 전 보유 (즉시 반영 계산용)
     const j=await bankCall(side==='buy'?'stockBuy':'stockSell',{target:tgt,qty,hint:marketPrice(R.p)});
-    window._bank&&(window._bank.bal=j.bal);
+    if(window._bank){ // ⚡ 즉시 반영: 서버 응답(잔액·보유)을 로컬에 바로 적용 — 추가 서버 왕복 없이
+      window._bank.bal=j.bal;
+      window._bank.holdings=window._bank.holdings||{};
+      if(side==='buy'){window._bank.holdings[tgt]=j.holding||{q:_h0.q+qty,avg:_h0.avg};}
+      else{const _left=_h0.q-qty;if(_left<=0)delete window._bank.holdings[tgt];else window._bank.holdings[tgt]={q:_left,avg:_h0.avg};}
+    }
     if(j.newPrice){window._srvPx=window._srvPx||{};window._srvPx[tgt]=j.newPrice;
       if(j.base!==undefined){window._srvBase=window._srvBase||{};window._srvBase[tgt]=j.base;window._srvPrem=window._srvPrem||{};window._srvPrem[tgt]=j.prem||0}} // 거래 즉시 시세+분해 반영
     window._lastTrade={side,tgt,qty,price:j.price,newPrice:j.newPrice,royalty:j.royalty||0,base:j.base,prem:j.prem,ts:Date.now()}; // 체결 영수증
     loadTrades(); // LIVE 속보 즉시 갱신
     toast(side==='buy'?`✅ 체결 완료! ${tgt} ${qty}주 매수 @${j.price}${j.newPrice&&j.newPrice!==j.price?` → 시세 ${j.newPrice}▲`:''}${j.royalty?` · 초상권료 ${fmtAPO(j.royalty)} 즉시 입금 💸`:''}`:`✅ 체결 완료! ${tgt} ${qty}주 매도 @${j.price} → 지갑 입금${j.newPrice&&j.newPrice!==j.price?` · 시세 ${j.newPrice}▼`:''}`);
-    await bankRefresh(true);
+    try{render()}catch(e){}           // ⚡ 화면 즉시 갱신 — 서버 왕복 없이 잔액·보유·시세 반영
+    clearTimeout(window._tradeSync);  // 🔄 랭킹·타인 잔액·초상권 입금 등은 잠시 뒤 백그라운드 동기화 (거래자는 안 기다림)
+    window._tradeSync=setTimeout(()=>{try{bankRefresh(true)}catch(e){}},1500);
   }catch(e){toast('거래 실패: '+e.message,true)}
   finally{window._tradeBusy=false}
 }
