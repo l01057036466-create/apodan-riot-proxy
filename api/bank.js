@@ -615,9 +615,12 @@ module.exports = async function handler(req, res) {
       var p = JSON.parse((await redis(['GET', 'stock:prem'])) || '{}');
       return { base: b, prem: p };
     }
-    function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±45%
-      var cap = Math.round((base || 100) * 0.25); // 수급 프리미엄 한도 = 기준가의 ±25% (상한가/하한가). 바닥 없음 → 기준가 1짜리는 프리미엄 0 → 진짜 1 APO
-      return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
+    function premCap(base, prem) { // 수급 프리미엄 한도 — 하락 25% / 상승은 저가주일수록 강하게 조임 (떡상·줍줍 방지)
+      base = base || 100;
+      var down = Math.round(base * 0.25); // 할인(하락) 한도 = 기준가의 25%
+      var up = base >= 100 ? Math.round(base * 0.25)               // 100 이상: 상승도 25%
+                           : Math.floor(base * 0.2 * (base / 100)); // 🧊 100 미만: (base/100)으로 더 조임 → 1원=0(동결), 저가일수록 상승 거의 막힘
+      return Math.max(-down, Math.min(up, Math.round(Number(prem) || 0)));
     }
     function combinePx(S) {
       var out = {};
