@@ -33,6 +33,24 @@ module.exports = async function handler(req, res) {
       if (j && j.error) throw new Error('Upstash: ' + j.error);
       return j ? j.result : null;
     }
+    // ⚡ 파이프라인: 여러 Redis 명령을 단일 HTTP 요청으로 — 순차 왕복(렉) 제거. 명령은 보낸 순서대로 실행됨.
+    async function pipe(cmds) {
+      if (!cmds || !cmds.length) return [];
+      if (cmds.length === 1) return [await redis(cmds[0])];
+      var r = await fetch(URL_ + '/pipeline', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify(cmds),
+      });
+      var j = await r.json();
+      if (j && j.error) throw new Error('Upstash: ' + j.error);
+      var out = [];
+      for (var i = 0; i < (j || []).length; i++) {
+        if (j[i] && j[i].error) throw new Error('Upstash: ' + j[i].error);
+        out.push(j[i] ? j[i].result : null);
+      }
+      return out;
+    }
 
     var SEC90 = String(60 * 60 * 24 * 90), SEC30 = String(60 * 60 * 24 * 30);
     function hash(pin, salt) { return crypto.createHash('sha256').update(salt + '|' + pin).digest('hex'); }
@@ -56,8 +74,7 @@ module.exports = async function handler(req, res) {
     }
     async function ledger(name, d, v, bal) {
       var e = JSON.stringify({ t: new Date().toISOString(), d: d, v: v, bal: bal });
-      await redis(['LPUSH', 'ledger:' + name, e]);
-      await redis(['LTRIM', 'ledger:' + name, '0', '199']);
+      await pipe([['LPUSH', 'ledger:' + name, e], ['LTRIM', 'ledger:' + name, '0', '199']]);
     }
     async function auth(token) { // 세션 → {role, name} | null
       if (!token) return null;
@@ -310,14 +327,18 @@ module.exports = async function handler(req, res) {
     // ═══════════ Phase 2: 승부 예측 베팅 (패리뮤추얼) ═══════════
     function mktOk(m) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(m || '')); }
     async function pushHist(nm, px, why) { // 가격 히스토리 + 변동 사유 태그 (trade/form/ai/list)
-      await redis(['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px, w: why || 'trade' })]);
-      await redis(['LTRIM', 'pxh:' + nm, '0', '59']);
-      await redis(['EXPIRE', 'pxh:' + nm, SEC90]);
+      await pipe([
+        ['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px, w: why || 'trade' })],
+        ['LTRIM', 'pxh:' + nm, '0', '59'],
+        ['EXPIRE', 'pxh:' + nm, SEC90],
+      ]);
     }
     async function pushTape(e) { // 체결 테이프 (전원 공개 실시간 피드, 최근 30건)
-      await redis(['LPUSH', 'trades:recent', JSON.stringify(e)]);
-      await redis(['LTRIM', 'trades:recent', '0', '29']);
-      await redis(['EXPIRE', 'trades:recent', SEC90]);
+      await pipe([
+        ['LPUSH', 'trades:recent', JSON.stringify(e)],
+        ['LTRIM', 'trades:recent', '0', '29'],
+        ['EXPIRE', 'trades:recent', SEC90],
+      ]);
     }
     async function busted(a) { // 파산: 잔액 0 + 보유 주식도 0일 때만 (자산가는 파산 아님)
       if (a.bal > 0) return a;
@@ -605,9 +626,11 @@ module.exports = async function handler(req, res) {
       return out;
     }
     async function savePx(S) {
-      await redis(['SET', 'stock:base', JSON.stringify(S.base)]);
-      await redis(['SET', 'stock:prem', JSON.stringify(S.prem)]);
-      await redis(['SET', 'stock:px', JSON.stringify(combinePx(S))]); // 호환 캐시
+      await pipe([
+        ['SET', 'stock:base', JSON.stringify(S.base)],
+        ['SET', 'stock:prem', JSON.stringify(S.prem)],
+        ['SET', 'stock:px', JSON.stringify(combinePx(S))], // 호환 캐시
+      ]);
     }
     if (req.method === 'GET' && action === 'prices') {
       var S0 = await loadPx();
