@@ -2257,6 +2257,116 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, char: cCW });
     }
 
+    // ═══════════════ 멸망전 실시간 블라인드 경매 (서버 강제 차단) ═══════════════
+    // 상태: doom:auc (JSON) · 입찰: doom:auc:bids (HASH, 라운드마다 DEL)
+    function aucIsOp(s) { return !!(s && (s.role === 'dev' || s.rank === 'chairman')); } // 개발자·물방울(회장)만 운영
+    async function aucGet() { var r = await redis(['GET', 'doom:auc']); return r ? JSON.parse(r) : null; }
+    async function aucPut(a) { a.updatedAt = Date.now(); await redis(['SET', 'doom:auc', JSON.stringify(a)]); }
+    async function aucBids() {
+      var arr = await redis(['HGETALL', 'doom:auc:bids']); var b = {};
+      if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) b[arr[i]] = Number(arr[i + 1]); }
+      else if (arr && typeof arr === 'object') { for (var k in arr) b[k] = Number(arr[k]); }
+      return b;
+    }
+    function aucTeam(a, name) { if (a && a.teams) for (var i = 0; i < a.teams.length; i++) if (a.teams[i].acct === name) return a.teams[i]; return null; }
+    function aucElig(a) {
+      var out = []; if (!a) return out;
+      var tied = (a.phase === 'tie') ? (a.tied || []) : null;
+      for (var i = 0; i < a.teams.length; i++) { var t = a.teams[i];
+        if (tied && tied.indexOf(t.acct) < 0) continue;
+        if ((t.roster || []).length >= 5) continue;
+        if (t.points < a.prior + a.minBid) continue;
+        out.push(t.acct);
+      }
+      return out;
+    }
+    function aucLoadNext(a) { a.prior = 0; a.minBid = 10; a.capOff = false; a.tied = null; if (!a.queue || a.queue.length === 0) { a.current = null; a.phase = 'done'; } else { a.current = a.queue.shift(); a.phase = 'bidding'; } }
+
+    if (action === 'aucState') {
+      var sAS = await auth(body.token); if (!sAS || !sAS.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aAS = await aucGet();
+      if (!aAS || !aAS.active) return res.status(200).json({ active: false, role: aucIsOp(sAS) ? 'op' : 'spectator' });
+      var opAS = aucIsOp(sAS), myAS = aucTeam(aAS, sAS.name), bAS = await aucBids(), eAS = aucElig(aAS);
+      var pub = {
+        active: true, phase: aAS.phase, current: aAS.current, prior: aAS.prior, minBid: aAS.minBid, capOff: aAS.capOff,
+        teams: aAS.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
+        queueLeft: (aAS.queue || []).length, lastResult: aAS.lastResult || null, unsold: aAS.unsold || [],
+        eligibleCount: eAS.length, submittedCount: Object.keys(bAS).length
+      };
+      if (opAS) { pub.role = 'op'; pub.bids = bAS; pub.eligible = eAS; pub.nextName = (aAS.queue && aAS.queue[0]) ? aAS.queue[0].name : null; pub.acctTeam = {}; aAS.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
+      else if (myAS) { pub.role = 'leader'; pub.myTeamId = myAS.id; pub.iEligible = eAS.indexOf(sAS.name) >= 0; pub.iSubmitted = bAS[sAS.name] != null; pub.myBid = (bAS[sAS.name] != null ? bAS[sAS.name] : null); }
+      else { pub.role = 'spectator'; }
+      return res.status(200).json(pub);
+    }
+    if (action === 'aucStart') {
+      var sST = await auth(body.token); if (!aucIsOp(sST)) return res.status(403).json({ error: '개발자·물방울만 시작할 수 있어요' });
+      if (!Array.isArray(body.teams) || !body.teams.length) return res.status(400).json({ error: '팀 정보가 필요해요' });
+      if (!Array.isArray(body.queue) || !body.queue.length) return res.status(400).json({ error: '경매 매물이 필요해요' });
+      var aST = {
+        active: true,
+        teams: body.teams.map(function (t, i) { return { id: i, name: String(t.name || ('팀' + (i + 1))), leader: String(t.leader || ''), acct: String(t.acct || ''), color: String(t.color || '#888888'), points: Math.max(0, parseInt(t.points, 10) || 0), roster: [] }; }),
+        queue: body.queue.map(function (p) { return { name: String(p.name), position: String(p.position || ''), tier: String(p.tier || ''), cap: (p.cap == null ? 0 : parseInt(p.cap, 10) || 0) }; }),
+        prior: 0, minBid: 10, capOff: false, tied: null, current: null, phase: 'bidding', lastResult: null, unsold: [], startedAt: Date.now()
+      };
+      aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await aucPut(aST);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucBid') {
+      var sBD = await auth(body.token); if (!sBD || !sBD.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aBD = await aucGet(); if (!aBD || !aBD.active) return res.status(400).json({ error: '진행 중인 경매가 없어요' });
+      if (aBD.phase !== 'bidding' && aBD.phase !== 'tie') return res.status(400).json({ error: '지금은 입찰 시간이 아니에요' });
+      var tBD = aucTeam(aBD, sBD.name); if (!tBD) return res.status(403).json({ error: '팀장만 입찰할 수 있어요' });
+      if (aucElig(aBD).indexOf(sBD.name) < 0) return res.status(400).json({ error: '이번 매물엔 입찰할 수 없어요 (로스터 마감 또는 포인트 부족)' });
+      var vBD = parseInt(body.amount, 10);
+      if (isNaN(vBD) || vBD < aBD.minBid) return res.status(400).json({ error: '최소 ' + aBD.minBid + 'P 이상이어야 해요' });
+      if (vBD % 10 !== 0) return res.status(400).json({ error: '10P 단위로 입력해주세요' });
+      if (!aBD.capOff && aBD.current && aBD.current.cap > 0 && vBD > aBD.current.cap) return res.status(400).json({ error: '상한 ' + aBD.current.cap + 'P 초과예요' });
+      if (aBD.prior + vBD > tBD.points) return res.status(400).json({ error: '포인트 부족 — 낙찰가 ' + (aBD.prior + vBD) + 'P (잔여 ' + tBD.points + 'P)' });
+      await redis(['HSET', 'doom:auc:bids', sBD.name, String(vBD)]);
+      return res.status(200).json({ ok: true, bid: vBD, total: aBD.prior + vBD });
+    }
+    if (action === 'aucUnbid') {
+      var sUB = await auth(body.token); if (!sUB || !sUB.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      await redis(['HDEL', 'doom:auc:bids', sUB.name]); return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucReveal') {
+      var sRV = await auth(body.token); if (!aucIsOp(sRV)) return res.status(403).json({ error: '권한 없음' });
+      var aRV = await aucGet(); if (!aRV || !aRV.active) return res.status(400).json({ error: '경매 없음' });
+      if (aRV.phase !== 'bidding' && aRV.phase !== 'tie') return res.status(400).json({ error: '공개 단계가 아니에요' });
+      var bRV = await aucBids(), eRV = aucElig(aRV), valid = [];
+      for (var kRV in bRV) if (eRV.indexOf(kRV) >= 0) valid.push({ acct: kRV, bid: bRV[kRV] }); // 자격 있는 입찰만
+      if (!valid.length) return res.status(200).json({ ok: true, result: 'none' });
+      var maxRV = 0; for (var i = 0; i < valid.length; i++) if (valid[i].bid > maxRV) maxRV = valid[i].bid;
+      var winRV = valid.filter(function (x) { return x.bid === maxRV; });
+      if (winRV.length === 1) {
+        var wT = aucTeam(aRV, winRV[0].acct), cost = aRV.prior + maxRV;
+        wT.points -= cost; wT.roster.push({ name: aRV.current.name, cost: cost, position: aRV.current.position, tier: aRV.current.tier });
+        aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: wT.name, leader: wT.leader, color: wT.color, cost: cost, prior: aRV.prior, bid: maxRV, n: valid.length };
+        aRV.phase = 'revealed'; await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+        return res.status(200).json({ ok: true, result: 'sold', winner: wT.name, cost: cost });
+      }
+      aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie';
+      await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+      return res.status(200).json({ ok: true, result: 'tie', tied: aRV.tied.length, prior: aRV.prior, minBid: aRV.minBid });
+    }
+    if (action === 'aucNext') {
+      var sNX = await auth(body.token); if (!aucIsOp(sNX)) return res.status(403).json({ error: '권한 없음' });
+      var aNX = await aucGet(); if (!aNX || !aNX.active) return res.status(400).json({ error: '경매 없음' });
+      aucLoadNext(aNX); await redis(['DEL', 'doom:auc:bids']); await aucPut(aNX);
+      return res.status(200).json({ ok: true, phase: aNX.phase });
+    }
+    if (action === 'aucPass') {
+      var sPS = await auth(body.token); if (!aucIsOp(sPS)) return res.status(403).json({ error: '권한 없음' });
+      var aPS = await aucGet(); if (!aPS || !aPS.active) return res.status(400).json({ error: '경매 없음' });
+      if (aPS.current) { aPS.unsold.push(aPS.current.name); aPS.lastResult = { player: aPS.current.name, passed: true }; }
+      aucLoadNext(aPS); await redis(['DEL', 'doom:auc:bids']); await aucPut(aPS);
+      return res.status(200).json({ ok: true, phase: aPS.phase });
+    }
+    if (action === 'aucReset') {
+      var sRS = await auth(body.token); if (!aucIsOp(sRS)) return res.status(403).json({ error: '권한 없음' });
+      await redis(['DEL', 'doom:auc']); await redis(['DEL', 'doom:auc:bids']); return res.status(200).json({ ok: true });
+    }
+
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
   } catch (e) {
     return res.status(500).json({ error: '서버 오류: ' + (e && e.message ? e.message : String(e)) });
