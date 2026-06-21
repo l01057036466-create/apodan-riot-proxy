@@ -2538,11 +2538,6 @@ async function champImgInit(){ // 🖼 챔피언 초상화: ko이름→영문ID 
     if(!isTyping())render();
   }catch(e){}
 }
-function champFace(name,size){ // 어디서든: champFace('아리') → 초상화 <img> (매핑 전·오프라인이면 빈 문자열)
-  const M=window._champImg;if(!M||!M.map||!name)return'';
-  const id=M.map[String(name)]||M.map[canonChamp(name)];if(!id)return'';
-  return`<img class="champFace" loading="lazy" style="width:${size||24}px;height:${size||24}px" src="https://ddragon.leagueoflegends.com/cdn/${M.ver}/img/champion/${id}.png" alt="" onerror="this.remove()">`;
-}
 async function ddragonMap(){
   if(ddMapKo)return ddMapKo;
   const vers=await fetch('https://ddragon.leagueoflegends.com/api/versions.json').then(r=>r.json());
@@ -4156,7 +4151,9 @@ async function recvLoadHist(){
   const rows=[...H].reverse().map(e=>`<div class="row" style="justify-content:space-between;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;margin-bottom:5px">
       <span class="mini"><b style="font-size:14px">${e.p} APO</b> <span class="dim">· ${whyKo[e.w]||e.w||''} · ${agoKo(e.t)}</span></span>
       <button class="btn sm" style="border-color:#22d3ee;color:#22d3ee;white-space:nowrap" onclick="recvToPrice(${e.p})">이 가격으로</button></div>`).join('');
-  box.innerHTML=`<div class="mini dim" style="margin:2px 0 8px">${esc(name)} 가격 내역 (최신순) — 되돌릴 시점을 고르세요</div>${rows}
+  const peak=Math.max.apply(null,H.map(e=>Number(e.p)||0));
+  box.innerHTML=`<div class="mini dim" style="margin:2px 0 8px">${esc(name)} 가격 내역 (최신순) — 직전 고점으로 한 번에, 또는 특정 시점을 고르세요</div>
+    <button class="btn sm" style="border-color:#2ec27e;color:#2ec27e;font-weight:800;width:100%;margin-bottom:8px" onclick="recvToPrice(${peak})">↩️ 직전 고점 (${peak} APO)으로 복구</button>${rows}
     <div class="row" style="gap:6px;margin-top:6px">
       <input id="recvManualPx" type="number" placeholder="직접 가격 입력" style="flex:1;background:var(--inset);border:1px solid var(--line);border-radius:9px;padding:8px 10px;color:var(--ink)">
       <button class="btn sm" style="border-color:#9b5de5;color:#9b5de5;white-space:nowrap" onclick="recvToPrice()">입력값으로 복구</button></div>`;
@@ -4169,20 +4166,11 @@ function recvToPrice(px){
   if(!confirm(`${name}의 주가를 ${v} APO로 되돌릴까요?\n(이 시점/가격으로 기준가를 맞춰요)`))return;
   bankCall('stockRecover',{names:[name],toPrice:v}).then(j=>{if(j&&j.ok){toast(`🚑 ${name} → ${v} APO 복구 완료!`);bankRefresh(true).then(()=>render())}}).catch(e=>toast('실패: '+(e.message||e),true));
 }
-async function stockRecover(mode){
-  let body, label;
-  if(mode==='sel'){
-    const names=[...document.querySelectorAll('.recvChk:checked')].map(c=>c.value);
-    if(!names.length)return toast('복구할 멤버를 한 명 이상 체크해주세요',true);
-    body={names}; label=`체크한 ${names.length}명`;
-    if(!confirm(`🚑 ${label}의 주가를 직전 고점으로 복구할까요?\n(선택한 사람은 폭락 여부와 상관없이 복구돼요)`))return;
-  }else{
-    const thr=Number(($('recoverThr')||{}).value)||0.6;
-    body={who:'all',thr}; label='전원(폭락 종목만)';
-    if(!confirm(`🚑 폭락한 종목 전원을 직전 고점으로 복구할까요?\n(직전 고점의 ${Math.round(thr*100)}% 미만으로 떨어진 종목만)`))return;
-  }
+async function stockRecover(){ // 전원 폭락 일괄 복구(직전 고점). 개별 복구는 recvToPrice 사용.
+  const thr=Number(($('recoverThr')||{}).value)||0.6;
+  if(!confirm(`🚑 폭락한 종목 전원을 직전 고점으로 복구할까요?\n(직전 고점의 ${Math.round(thr*100)}% 미만으로 떨어진 종목만)`))return;
   try{
-    const j=await bankCall('stockRecover',body);
+    const j=await bankCall('stockRecover',{who:'all',thr});
     if(j&&j.ok){
       toast(`🚑 ${j.count}개 종목 복구 완료!`+((j.fixed&&j.fixed.length)?(' 예) '+j.fixed.slice(0,3).map(f=>`${f.name} ${f.from}→${f.to}`).join(', ')):''));
       await bankRefresh(true);render();
@@ -10148,7 +10136,12 @@ function aucTick(){
     renderAuc(st);
     var ms=(st&&st.role==='spectator')?5000:2200;
     window._aucPoll=setTimeout(aucTick,ms);
-  }).catch(function(){ window._aucPoll=setTimeout(aucTick,3200); });
+  }).catch(function(e){
+    var r=document.getElementById('aucRoot');
+    if(r&&!window._aucSt){ window._aucSig='err';
+      r.innerHTML='<div class="card" style="text-align:center;padding:20px;border:1px solid var(--lose)"><p class="mini" style="margin:0 0 6px;color:var(--lose);font-weight:700">경매 정보를 못 불러왔어요</p><p class="mini dim" style="margin:0;word-break:break-all">'+esc(String((e&&e.message)||e))+'</p><p class="mini dim" style="margin:8px 0 0">· bank.js를 배포했는지<br>· 💰 지갑에서 로그인했는지 확인해주세요</p><button class="btn ghost" style="margin-top:10px" onclick="aucManualRefresh()">🔄 다시 시도</button></div>'; }
+    window._aucPoll=setTimeout(aucTick,3500);
+  });
 }
 function aucManualRefresh(){ window._aucSig=null; aucStartPoll(); }
 
@@ -10527,27 +10520,16 @@ function pgBank(){
         <button class="btn" onclick="stockManip()" style="border-color:#9b5de5;color:#9b5de5;font-weight:800">🔧 주가 강제 설정</button>
       </div>
       <div class="hr"></div>
-      <h3 style="font-size:14px">🚑 폭락 주가 복구 <span class="mini dim" style="font-weight:600">(직전 고점으로 되돌림)</span></h3>
-      <div class="grid c2" style="margin-top:6px">
-        <div class="f"><label>전원 복구 기준 (체크 안 했을 때)</label><select id="recoverThr" style="padding:7px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink)"><option value="0.6">고점의 60% 미만</option><option value="0.5">50% 미만</option><option value="0.8">80% 미만 (공격적)</option></select></div>
-        <div class="f"><label>&nbsp;</label><button class="btn sm" onclick="stockRecover('all')" style="border-color:#22d3ee;color:#22d3ee;font-weight:800;width:100%">🚑 폭락 종목 전원 일괄 복구</button></div>
+      <h3 style="font-size:14px">🚑 주가 복구 <span class="mini dim" style="font-weight:600">(운영 비상 도구 · 직전 고점/특정 시점/직접 입력)</span></h3>
+      <label class="mini dim" style="display:block;margin-top:6px;font-weight:700">① 전원 폭락 일괄 복구 — 직전 고점으로</label>
+      <div class="grid c2" style="margin-top:4px">
+        <div class="f"><label>폭락 기준 (이 % 미만만)</label><select id="recoverThr" style="padding:7px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink)"><option value="0.6">고점의 60% 미만</option><option value="0.5">50% 미만</option><option value="0.8">80% 미만 (공격적)</option></select></div>
+        <div class="f"><label>&nbsp;</label><button class="btn sm" onclick="stockRecover()" style="border-color:#22d3ee;color:#22d3ee;font-weight:800;width:100%">🚑 폭락 종목 전원 복구</button></div>
       </div>
-      <label class="mini dim" style="display:block;margin-top:10px;font-weight:700">또는 — 복구할 멤버만 체크 (선택한 사람은 무조건 직전 고점으로 복구)</label>
-      <div class="row" style="gap:6px;margin:6px 0">
-        <button class="btn sm ghost" onclick="document.querySelectorAll('.recvChk').forEach(c=>c.checked=true)">전체 선택</button>
-        <button class="btn sm ghost" onclick="document.querySelectorAll('.recvChk').forEach(c=>c.checked=false)">전체 해제</button>
-      </div>
-      <div style="max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--inset);display:grid;grid-template-columns:1fr 1fr;gap:4px">
-        ${state.players.filter(p=>p.active).map(p=>`<label class="mini" style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:7px;cursor:pointer"><input type="checkbox" class="recvChk" value="${esc(p.displayName)}" style="width:15px;height:15px;accent-color:#22d3ee"> ${esc(p.displayName)}</label>`).join('')}
-      </div>
-      <div class="row" style="gap:6px;margin-top:8px">
-        <button class="btn" onclick="stockRecover('sel')" style="border-color:#22d3ee;color:#22d3ee;font-weight:800">🚑 체크한 멤버만 복구</button>
-      </div>
-      <div class="hr"></div>
-      <h3 style="font-size:14px">📜 특정 선수 · 특정 시점 복구 <span class="mini dim" style="font-weight:600">(내역 확인 후 그 가격으로)</span></h3>
-      <div class="grid c2" style="margin-top:6px">
+      <label class="mini dim" style="display:block;margin-top:12px;font-weight:700">② 개별 복구 — 한 명을 직전 고점 · 특정 시점 · 직접 입력 중 선택</label>
+      <div class="grid c2" style="margin-top:4px">
         <div class="f"><label>선수 이름</label><input id="recvHistName" list="dlBank" placeholder="멤버 이름"></div>
-        <div class="f"><label>&nbsp;</label><button class="btn sm" onclick="recvLoadHist()" style="border-color:#22d3ee;color:#22d3ee;font-weight:800;width:100%">📜 가격 내역 불러오기</button></div>
+        <div class="f"><label>&nbsp;</label><button class="btn sm" onclick="recvLoadHist()" style="border-color:#22d3ee;color:#22d3ee;font-weight:800;width:100%">📜 내역 불러오기</button></div>
       </div>
       <div id="recvHistBox" style="margin-top:10px"></div>
       <div class="hr"></div>
