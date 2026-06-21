@@ -10133,7 +10133,7 @@ function aucPosEmo(p){p=String(p||'');if(/탑|top/i.test(p))return'🛡️';if(/
 function aucLImg(t){var l=DOOM_LEADERS.filter(function(x){return x.leader===(t&&t.leader);})[0];return l&&l.img?l.img:'';}
 function aucCardsGallery(){return '<details style="margin-top:10px"'+(window._aucGalOpen?' open':'')+'><summary class="mini dim" onclick="window._aucGalOpen=!window._aucGalOpen">🃏 팀장 카드 보기</summary><div style="display:flex;gap:10px;overflow-x:auto;padding:10px 2px;-webkit-overflow-scrolling:touch">'+DOOM_LEADERS.map(function(l){return '<figure style="flex:none;width:168px;margin:0;border:2px solid '+l.color+';border-radius:10px;overflow:hidden;background:#1a1206"><img src="'+l.img+'" alt="'+esc(l.leader)+'" loading="lazy" style="width:100%;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div style="display:none;width:100%;aspect-ratio:140/198;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(160deg,#241a08,#0f0b04)">'+aucChampFaceHtml(l.leader,l.sub||'',70)+'<div style="font-weight:900;color:'+l.color+'">'+esc(l.leader)+'</div></div><figcaption style="text-align:center;padding:6px;font-weight:800;color:'+l.color+'">'+esc(l.leader)+'<br><span class="mini dim">'+esc(l.sub||'')+' · '+l.points+'P</span></figcaption></figure>';}).join('')+'</div></details>';}
 
-function afterDoom(){ aucStartPoll(); }
+function afterDoom(){ if(!window._doomTab)window._doomTab='home'; doomAfter(); }
 function aucStartPoll(){ if(window._aucPoll){clearTimeout(window._aucPoll);} if(window._aucSt){window._aucSig=null;renderAuc(window._aucSt);} aucTick(); }
 function aucTick(){
   var root=document.getElementById('aucRoot');
@@ -10177,7 +10177,7 @@ function renderAuc(st){
 
 /* ===== 🖼 챔피언 초상화 + 🎬 매물 등장 연출(터널 불꽃) — 멸망전 경매 ===== */
 function aucChampImg(ko){try{var ci=window._champImg;if(!ci||!ci.map||!ko)return'';var k=ci.map[ko]||ci.map[String(ko).replace(/\s/g,'')];return k?'https://ddragon.leagueoflegends.com/cdn/'+ci.ver+'/img/champion/'+k+'.png':'';}catch(e){return'';}}
-function aucSigChamp(name){try{if(!name)return'';var pl=(state.players||[]).find(function(p){return p.displayName===name||p.kakaoName===name||(p.aliases||[]).indexOf(name)>=0;});if(!pl)return'';var cnt={},best='',bn=0;(state.matches||[]).forEach(function(m){(m.participants||[]).forEach(function(p){if(p.playerId===pl.id&&p.championId){cnt[p.championId]=(cnt[p.championId]||0)+1;}});});for(var c in cnt){if(cnt[c]>bn){bn=cnt[c];best=c;}}return best;}catch(e){return'';}}
+function aucSigChamp(name){try{if(!name)return'';var pl=(state.players||[]).find(function(p){return p.displayName===name||p.kakaoName===name||(p.aliases||[]).indexOf(name)>=0;});if(!pl)return'';var lane=pl.soloPos||'';var cM={},cA={};(state.matches||[]).forEach(function(m){(m.participants||[]).forEach(function(p){if(p.playerId===pl.id&&p.championId){cA[p.championId]=(cA[p.championId]||0)+1;if(lane&&p.lane===lane)cM[p.championId]=(cM[p.championId]||0)+1;}});});function top(o){var b='',n=0;for(var k in o){if(o[k]>n){n=o[k];b=k;}}return b;}return top(cM)||top(cA);}catch(e){return'';}}
 function aucChampFaceHtml(name,position,size){var s=size||64;var ch=aucSigChamp(name);var url=aucChampImg(ch);var emo=aucPosEmo(position);
   if(url)return '<div style="width:'+s+'px;height:'+s+'px;margin:4px auto;border-radius:14px;overflow:hidden;border:2px solid var(--gold);background:#1a1206;box-shadow:0 4px 14px rgba(0,0,0,.35)"><img src="'+url+'" alt="'+esc(ch)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.style.cssText=\'font-size:'+Math.round(s*0.55)+'px;text-align:center;line-height:'+s+'px;width:'+s+'px;height:'+s+'px;margin:4px auto\';this.parentNode.textContent=\''+emo+'\'"></div>';
   return '<div style="font-size:'+Math.round(s*0.5)+'px;margin:4px 0">'+emo+'</div>';}
@@ -10523,15 +10523,113 @@ async function aucDoPass(){ if(!confirm('이 선수를 유찰 처리할까요?')
 async function aucDoReset(){ if(!confirm('경매를 완전히 초기화할까요? 모든 진행/낙찰이 사라져요.'))return; try{await auctionCall('aucReset',{});window._aucSel={};toast('경매를 초기화했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
 
 function pgDoom(){
-  const slides=[1,2,3,4,5,6,7,8,9,10,11,12,13];
-  return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')+`
-  <div id="aucRoot" style="max-width:880px;margin:0 auto 18px"><div class="card" style="text-align:center;padding:20px"><p class="mini dim" style="margin:0">경매 정보를 불러오는 중…</p></div></div>
-  <div style="display:flex;flex-direction:column;gap:14px;max-width:880px;margin:0 auto">
-    ${slides.map(n=>`<img src="/doom${n}.jpg" alt="멸망전 공지 ${n}페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display='none';var w=document.getElementById('doomWarn');if(w)w.style.display='block'">`).join('')}
-  </div>
-  <p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom13.jpg를 확인해주세요!</p>
-  <p class="mini dim" style="margin:16px 0 0;text-align:center">멸망전 관련 질문·문의는 편하게 얘기해주세요!</p>`;
+  if(!window._doomTab)window._doomTab='home';
+  return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')
+    +'<div id="doomNav">'+doomNav()+'</div>'
+    +'<div id="doomBody" style="max-width:880px;margin:0 auto">'+doomBody()+'</div>';
 }
+function doomNav(){
+  var tabs=[['home','🏠 홈'],['auction','🔨 경매'],['schedule','📅 경기 일정'],['rating','⭐ 레이팅'],['betting','🎰 배팅']];
+  return '<div style="display:flex;gap:6px;overflow-x:auto;max-width:880px;margin:0 auto 16px;padding-bottom:4px;-webkit-overflow-scrolling:touch">'
+    +tabs.map(function(t){var on=window._doomTab===t[0];
+      return '<button onclick="doomGo(\''+t[0]+'\')" class="btn '+(on?'gold':'ghost')+'" style="flex:none;font-size:13px;padding:8px 14px;white-space:nowrap'+(on?'':';opacity:.78')+'">'+t[1]+'</button>';
+    }).join('')+'</div>';
+}
+function doomGo(t){
+  window._doomTab=t;
+  var n=document.getElementById('doomNav');if(n)n.innerHTML=doomNav();
+  var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();
+  try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}
+  doomAfter();
+}
+function doomBody(){
+  var t=window._doomTab;
+  if(t==='auction')return '<div id="aucRoot"><div class="card" style="text-align:center;padding:20px"><p class="mini dim" style="margin:0">경매 정보를 불러오는 중…</p></div></div>';
+  if(t==='schedule')return doomScheduleTab();
+  if(t==='rating')return doomRatingTab();
+  if(t==='betting')return doomBettingTab();
+  return doomHomeTab();
+}
+function doomAfter(){
+  if(window._doomTab==='auction'){aucStartPoll();return;}
+  if((window._doomTab==='rating'||window._doomTab==='schedule')&&voteApiBase()){
+    auctionCall('aucState',{}).then(function(st){window._aucSt=st;if(window._doomTab==='rating'||window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+  }
+}
+function doomHomeTab(){
+  var slides=[1,2,3,4,5,6,7,8,9,10,11,12,13];
+  return '<div style="display:flex;flex-direction:column;gap:14px">'
+    +slides.map(function(n){return '<img src="/doom'+n+'.jpg" alt="멸망전 공지 '+n+'페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display=\'none\';var w=document.getElementById(\'doomWarn\');if(w)w.style.display=\'block\'">';}).join('')
+    +'</div><p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom13.jpg를 확인해주세요!</p>'
+    +'<p class="mini dim" style="margin:16px 0 0;text-align:center">멸망전 관련 질문·문의는 편하게 얘기해주세요!</p>';
+}
+/* ===== ⭐ 선수 & 팀 레이팅 ===== */
+function doomPowByName(name){var p=(state.players||[]).find(function(x){return x.displayName===name||x.kakaoName===name||(x.aliases||[]).indexOf(name)>=0;});return p?playerPower(p.id):50;}
+function doomRatingRow(p,pow,rank){
+  var pct=Math.max(4,Math.min(100,pow));var col=ratingColor(pow/10);
+  return '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)">'
+    +'<span class="mini dim" style="width:18px;text-align:center;flex:none;font-weight:800">'+rank+'</span>'
+    +'<div style="flex:none;width:44px">'+aucChampFaceHtml(p.displayName,p.soloPos,44)+'</div>'
+    +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:6px;align-items:baseline"><b style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.displayName)+'</b><span style="font-family:var(--mono);font-weight:900;color:'+col+';flex:none">'+pow+'</span></div>'
+    +'<div style="height:5px;border-radius:3px;background:var(--bg2);overflow:hidden;margin-top:3px"><i style="display:block;height:100%;width:'+pct+'%;background:'+col+'"></i></div>'
+    +'<div class="mini dim" style="margin-top:2px">'+esc(p.soloTier||'?')+'</div></div></div>';
+}
+function doomTeamRatingCard(o,rank){
+  var t=o.t;var medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank+'위';
+  var roster=[{name:t.leader,pow:o.lp,pos:'',lead:true}].concat(o.mem);
+  return '<div style="border:1px solid var(--line);border-left:4px solid '+t.color+';border-radius:12px;padding:12px;margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">'+medal+'</span><b style="color:'+t.color+';font-size:16px">'+esc(t.name)+'</b><span class="mini dim">'+roster.length+'명</span></div><div style="text-align:right"><div style="font-family:var(--mono);font-weight:900;font-size:19px;color:'+t.color+'">'+o.tot+'</div><div class="mini dim" style="margin-top:-2px">팀 체급</div></div></div>'
+    +'<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">'
+      +roster.map(function(m){return '<div style="flex:none;text-align:center;width:56px">'+aucChampFaceHtml(m.name,m.pos||'',48)+'<div class="mini" style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(m.lead?'👑':'')+esc(m.name)+'</div><div class="mini dim" style="font-family:var(--mono)">'+m.pow+'</div></div>';}).join('')
+    +'</div></div>';
+}
+function doomRatingTab(){
+  var LANES=[['TOP','🛡️ 탑'],['JUNGLE','🌳 정글'],['MID','⚡ 미드'],['ADC','🏹 원딜'],['SUPPORT','🛟 서폿']];
+  var active=(state.players||[]).filter(function(p){return p.active!==false;});
+  var laneHtml=LANES.map(function(L){
+    var ps=active.filter(function(p){return p.soloPos===L[0];}).map(function(p){return {p:p,pow:playerPower(p.id)};}).sort(function(a,b){return b.pow-a.pow;});
+    if(!ps.length)return '';
+    return '<div style="margin-bottom:18px"><div style="font-weight:900;font-size:15px;margin-bottom:6px;color:var(--gold)">'+L[1]+' <span class="mini dim">('+ps.length+'명)</span></div>'
+      +ps.map(function(o,i){return doomRatingRow(o.p,o.pow,i+1);}).join('')+'</div>';
+  }).join('');
+  var st=window._aucSt;var teamHtml='';
+  if(st&&st.teams&&st.teams.some(function(t){return (t.roster||[]).length;})){
+    var ts=st.teams.map(function(t){
+      var mem=(t.roster||[]).map(function(r){return {name:r.name,pow:doomPowByName(r.name),pos:r.position||''};});
+      var lp=doomPowByName(t.leader);var tot=mem.reduce(function(a,m){return a+m.pow;},0)+lp;
+      return {t:t,mem:mem,tot:tot,lp:lp};
+    }).sort(function(a,b){return b.tot-a.tot;});
+    teamHtml='<h3 style="margin:24px 0 12px">🏆 팀 레이팅 <span class="mini dim">· 체급 합산</span></h3>'+ts.map(function(o,i){return doomTeamRatingCard(o,i+1);}).join('');
+  } else {
+    teamHtml='<div class="card" style="text-align:center;padding:20px;margin-top:20px"><div style="font-size:30px">🏆</div><p class="mini dim" style="margin:6px 0 0">팀 레이팅은 <b>경매에서 팀이 꾸려지면</b> 자동으로 계산돼요.</p></div>';
+  }
+  return '<div style="background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:14px;padding:14px 14px 6px;margin-bottom:18px"><h3 style="margin:0 0 14px">⭐ 선수 레이팅 <span class="mini dim">· 주라인별</span></h3>'+(laneHtml||'<p class="mini dim">선수 데이터가 없어요.</p>')+'</div>'+teamHtml
+    +'<p class="mini dim" style="margin:14px 2px 0;line-height:1.7">※ 체급 = 내전 성적(스탯·승률) + 솔랭/자랭 티어 기반(0~100).<br>※ 챔프 얼굴은 각 선수의 <b>주라인 시그니처 픽</b>(내전 주라인 최다 픽)이에요.</p>';
+}
+/* ===== 📅 경기 일정 (대진 준비) ===== */
+function doomScheduleTab(){
+  var st=window._aucSt;
+  var teams=(st&&st.teams&&st.teams.some(function(t){return (t.roster||[]).length;}))?st.teams:DOOM_LEADERS.map(function(l){return {name:l.name,leader:l.leader,color:l.color,roster:[]};});
+  return '<div class="card" style="padding:18px;text-align:center"><div style="font-size:40px">📅</div><h3 style="margin:8px 0 4px">경기 일정</h3>'
+    +'<p class="mini dim" style="margin:0">제2회 아포단 멸망전 · 2026.07.01 ~ 07.30</p>'
+    +'<p class="mini" style="margin:10px 0 0;color:var(--gold);font-weight:700">대진표는 경매 종료 후 공개됩니다</p></div>'
+    +'<div style="margin-top:14px"><div class="mini dim" style="margin-bottom:8px">참가 팀 ('+teams.length+')</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">'
+      +teams.map(function(t){return '<div style="border:1px solid var(--line);border-left:4px solid '+t.color+';border-radius:10px;padding:10px"><b style="color:'+t.color+'">'+esc(t.name)+'</b><div class="mini dim">팀장 '+esc(t.leader)+(t.roster&&t.roster.length?' · '+t.roster.length+'/5명':'')+'</div></div>';}).join('')
+    +'</div></div>'
+    +'<p class="mini dim" style="margin:16px 2px 0">※ 대진 방식(풀리그·싱글토너먼트·더블 엘리미 등)이 정해지면 일정표를 자동으로 짜드릴게요. 원하는 방식 알려주세요!</p>';
+}
+/* ===== 🎰 APO 배팅 (준비 중) ===== */
+function doomBettingTab(){
+  return '<div class="card" style="padding:18px;text-align:center"><div style="font-size:40px">🎰</div><h3 style="margin:8px 0 4px">APO 배팅</h3>'
+    +'<p class="mini dim" style="margin:0 0 12px">경기 결과에 APO를 걸고 맞히면 배당을 받아요</p>'
+    +'<div style="text-align:left;max-width:340px;margin:0 auto;background:var(--bg2);border-radius:10px;padding:12px"><div class="mini" style="line-height:2">'
+      +'• 경기별 <b>승리 팀 예측</b><br>• 팀 레이팅 기반 <b>자동 배당</b> 계산<br>• 적중 시 APO 지급 · 빗나가면 차감<br>• 경기당 베팅 한도 설정'
+    +'</div></div>'
+    +'<p class="mini" style="margin:12px 0 0;color:var(--gold);font-weight:700">곧 공개됩니다</p></div>'
+    +'<p class="mini dim" style="margin:14px 2px 0">※ 배팅 규칙(배당 방식·한도·정산 시점)을 정해주시면 바로 붙여드릴게요!</p>';
+}
+
 function pgAwards(){
   const _t=window._awTab||'list';
   if(_t==='prog')return pgAwardProgress();
