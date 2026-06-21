@@ -83,7 +83,7 @@ module.exports = async function handler(req, res) {
       if (v === '__dev__') return { role: 'dev', name: null }; // 유령 개발자
       var a = await getAcct(v);
       if (!a || a.status !== 'active') return null;
-      return { role: a.role || 'member', name: a.name, acct: a };
+      return { role: a.role || 'member', name: a.name, rank: a.rank || '', acct: a };
     }
     function tok() { return crypto.randomBytes(24).toString('hex'); }
     async function acctLock(name) { // 🐛fix: 더블클릭·동시 요청 이중지출 방지 (5초 자동 해제)
@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
       var raws = names.length ? (await redis(['MGET'].concat(names.map(function (n) { return 'acct:' + n; })))) || [] : []; // 🐛fix: N+1 → MGET (서버 렉 해소)
       for (var i = 0; i < names.length; i++) {
         var a = raws[i] ? JSON.parse(raws[i]) : null;
-        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {}, bio: a.bio || '', madMovie: a.madMovie || '' });
+        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', rank: a.rank || '', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {}, bio: a.bio || '', madMovie: a.madMovie || '' });
       }
       out.sort(function (x, y) { return y.bal - x.bal; });
       var onRaws = out.length ? (await redis(['MGET'].concat(out.map(function (r) { return 'online:' + r.name; })))) || [] : [];
@@ -179,7 +179,7 @@ module.exports = async function handler(req, res) {
       var led = (await redis(['LRANGE', 'ledger:' + a3.name, '0', '29'])) || [];
       var hRawMe = await redis(['GET', 'hold:' + a3.name]);
       var pxRawMe = await redis(['GET', 'stock:px']);
-      return res.status(200).json({ name: a3.name, role: a3.role, bal: a3.bal, bust: a3.bust || 0, suspendUntil: a3.suspendUntil || 0,
+      return res.status(200).json({ name: a3.name, role: a3.role, rank: a3.rank || '', bal: a3.bal, bust: a3.bust || 0, suspendUntil: a3.suspendUntil || 0,
         items: a3.items || {}, equip: a3.equip || {}, // 🐛fix: 새로고침하면 보유·장착 정보를 잃어 "장착" 버튼이 사라지던 버그
         holdings: hRawMe ? JSON.parse(hRawMe) : {}, prices: pxRawMe ? JSON.parse(pxRawMe) : {},
         ledger: led.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean) });
@@ -323,8 +323,18 @@ module.exports = async function handler(req, res) {
       var tn2 = nameOk(body.name);
       var ta2 = tn2 ? await getAcct(tn2) : null;
       if (!ta2) return res.status(404).json({ error: '계정을 못 찾았어요' });
-      if (action === 'promote') { ta2.role = 'admin'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
-      if (action === 'demote') { ta2.role = 'member'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
+      if (action === 'promote') {
+        var newRank = (body.rank === 'chairman' || body.rank === 'vicechair') ? body.rank : '';
+        ta2.role = 'admin'; ta2.rank = newRank;
+        if (newRank) { // 🏆 유일 계급 — 같은 계급의 기존 보유자는 일반 운영자로 강등
+          var allN = (await redis(['SMEMBERS', 'acct:_all'])) || [];
+          var allR = allN.length ? (await redis(['MGET'].concat(allN.map(function (n) { return 'acct:' + n; })))) || [] : [];
+          for (var ri = 0; ri < allN.length; ri++) { var ra = allR[ri] ? JSON.parse(allR[ri]) : null;
+            if (ra && ra.name !== ta2.name && ra.rank === newRank) { ra.rank = ''; await putAcct(ra); } }
+        }
+        await putAcct(ta2); return res.status(200).json({ ok: true, rank: newRank });
+      }
+      if (action === 'demote') { ta2.role = 'member'; ta2.rank = ''; await putAcct(ta2); return res.status(200).json({ ok: true }); }
       var amt = Math.round(Number(body.amount) || 0);
       var cap = isDev ? 1000000 : 50000; // 운영자 발권 한도 ±5만
       if (!amt || Math.abs(amt) > cap) return res.status(400).json({ error: '금액 확인 (±' + cap.toLocaleString() + ' 이내)' });
