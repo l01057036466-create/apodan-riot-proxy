@@ -33512,7 +33512,7 @@
    "setNumber": 2,
    "winnerTeam": "RED",
    "memo": "클라이언트 추출 입력",
-   "mvpId": null,
+   "mvpId": "p_60ospv2c_mq7nhxuq",
    "gameId": "8265462975",
    "durationMin": 32,
    "createdAt": "2026-06-19T16:33:07.713Z",
@@ -35226,32 +35226,9 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [
-  {
-   "id": "lu_308mvmamqmkmjhs",
-   "date": "2026-06-20",
-   "round": "2차",
-   "series": "3판 2선승",
-   "note": "",
-   "event": false,
-   "blue": [
-    "p_jlc2q699_mq7nhxup",
-    "p_60ospv2c_mq7nhxuq",
-    "p_07v55ab9_mq7nhxuq",
-    "p_wqf3x0omq7ub77q",
-    "p_klbcfmmmqmklg3a"
-   ],
-   "red": [
-    "p_fdytblemqjnflc4",
-    "p_4siqelqmq7ub77p",
-    "p_j93ommzd_mq7nhxuq",
-    "p_wtiaq7m1_mq7nhxuq",
-    "p_53io5pq0_mq7nhxuq"
-   ]
-  }
- ],
- "rev": 409,
- "updatedAt": "2026-06-20T17:56:59.308Z",
+ "lineups": [],
+ "rev": 412,
+ "updatedAt": "2026-06-21T02:24:16.128Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
@@ -35268,7 +35245,8 @@
   "2026-06-19": true,
   "2026-06-19#2": true,
   "2026-06-19#3": true,
-  "2026-06-19#4": true
+  "2026-06-19#4": true,
+  "2026-06-20#2": true
  },
  "season": {
   "no": 1,
