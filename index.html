@@ -8111,9 +8111,20 @@ function go(id){try{if(id==='games'){if(lsGet('apodan_bgm')==='1')BGM.start();}e
 const ADMIN_ONLY_PAGES=new Set(['record','notice']);
 const FINANCE_PAGES=new Set(['bank','form','games','shop']); // 💰 도박·주식·상점 — 외부인(비로그인) 노출 차단
 function canViewFinance(){const B=bankSession();return !!(B&&(B.name||B.role==='dev'))||isAdmin()} // 로그인 멤버·개발자·운영자만
+function doomCanSee(){ // 🔒 멸망전 — 물방울(개발자)에게만. 그 외 전원 차단
+  var B=(window._bank)||(typeof bankSession==='function'?bankSession():null);
+  if(!B)return false;
+  if(B.role==='dev')return true;
+  var nm=String(B.name||'');
+  if(nm.indexOf('물방울')>=0)return true;
+  if(B.rank==='chairman')return true;
+  try{var R=window._bankRoster||[];for(var i=0;i<R.length;i++){if(R[i].name===nm&&R[i].rank==='chairman')return true;}}catch(e){}
+  return false;
+}
 function visiblePages(){
   let ps=isAdmin()?PAGES:PAGES.filter(([id])=>!ADMIN_ONLY_PAGES.has(id));
   if(!canViewFinance())ps=ps.filter(([id])=>!FINANCE_PAGES.has(id)); // 비로그인 외부인에겐 도박·주식 숨김
+  ps=ps.filter(([id])=>id!=='doom'||doomCanSee()); // 🔒 멸망전 탭은 물방울(개발자)에게만 노출
   return ps;
 }
 function renderNav(){
@@ -8292,6 +8303,7 @@ function render(opt){
   if(window._ime){window._renderQueued=1;return} // 한글 조합 중엔 화면 교체 보류 (글자 깨짐 방지)
   if(opt!=='force'&&isTypingText()){window._renderQueued=1;return} // ⌨ 텍스트 입력 중에만 화면 교체 보류 (로그인 PIN 등 보호 · select 변경은 즉시 반영)
   if(!isAdmin()&&ADMIN_ONLY_PAGES.has(tab))tab='dashboard';
+  if(tab==='doom'&&!doomCanSee())tab='dashboard'; // 🔒 멸망전 — 물방울만
   if(!state.season)state.season={no:1,startDate:''};
   syncArtCatalog();renderNav();renderTicker();fillDatalists();
   if(state.settings&&state.settings.maintenance&&!isAdmin()){
@@ -10590,6 +10602,7 @@ async function aucDoPass(){ if(!confirm('이 선수를 유찰 처리할까요?')
 async function aucDoReset(){ if(!confirm('경매를 완전히 초기화할까요? 모든 진행/낙찰이 사라져요.'))return; try{await auctionCall('aucReset',{});window._aucSel={};toast('경매를 초기화했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
 
 function pgDoom(){
+  if(!doomCanSee())return '<div class="card" style="max-width:560px;margin:40px auto;text-align:center;padding:36px 24px"><div style="font-size:40px">🔒</div><h3 style="margin:10px 0 6px">아직 준비 중이에요</h3><p class="mini dim" style="margin:0">이 페이지는 곧 공개될 예정이에요!</p></div>';
   if(!window._doomTab)window._doomTab='home';
   return head('🏆 제2회 아포단 멸망전','2026.07.01 ~ 07.30 · APD · League of Legends')
     +'<div id="doomNav">'+doomNav()+'</div>'
