@@ -36522,20 +36522,20 @@
   },
   {
    "id": "m_a7v9p60mqnut2y4",
-   "createdAt": "2026-06-21T14:00:18.220Z",
    "playedAt": "2026-06-14",
    "setNumber": 6,
    "winnerTeam": "BLUE",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8258976943",
    "durationMin": 17,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-21T14:00:18.220Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "딜폿하면원딜안함",
      "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "rawName": "딜폿하면원딜안함",
      "championId": "크산테",
      "kills": 4,
      "deaths": 5,
@@ -36563,8 +36563,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "세혀닝",
      "playerId": "p_gi86d5qmq7ub77o",
+     "rawName": "세혀닝",
      "championId": "사이온",
      "kills": 5,
      "deaths": 4,
@@ -36594,20 +36594,20 @@
   },
   {
    "id": "m_q8w3mi5mqnut2yo",
-   "createdAt": "2026-06-21T14:00:18.240Z",
    "playedAt": "2026-06-21",
    "setNumber": 3,
    "winnerTeam": "RED",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8268190137",
    "durationMin": 32,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-21T14:00:18.240Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "Rom",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "Rom",
      "championId": "크산테",
      "kills": 7,
      "deaths": 6,
@@ -36635,8 +36635,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "바이",
      "kills": 3,
      "deaths": 4,
@@ -36664,8 +36664,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "DoYeon",
      "playerId": "p_si39mrju_mq7nhxuq",
+     "rawName": "DoYeon",
      "championId": "카시오페아",
      "kills": 7,
      "deaths": 5,
@@ -36693,8 +36693,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "Killer Tune",
      "playerId": "p_ujjbme0y_mq7nhxuq",
+     "rawName": "Killer Tune",
      "championId": "자야",
      "kills": 1,
      "deaths": 5,
@@ -36722,8 +36722,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "블리츠크랭크",
      "kills": 2,
      "deaths": 4,
@@ -36751,8 +36751,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "죄 인",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "요네",
      "kills": 2,
      "deaths": 7,
@@ -36780,8 +36780,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "경 민",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "사일러스",
      "kills": 5,
      "deaths": 5,
@@ -36809,8 +36809,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "코르키",
      "kills": 10,
      "deaths": 3,
@@ -36838,8 +36838,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "카이사",
      "kills": 6,
      "deaths": 2,
@@ -36867,8 +36867,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "세혀닝",
      "playerId": "p_gi86d5qmq7ub77o",
+     "rawName": "세혀닝",
      "championId": "갈리오",
      "kills": 1,
      "deaths": 3,
@@ -36939,20 +36939,20 @@
   },
   {
    "id": "m_efz99wjmqnut2z6",
-   "createdAt": "2026-06-21T14:00:18.258Z",
    "playedAt": "2026-06-21",
    "setNumber": 4,
    "winnerTeam": "RED",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": null,
    "gameId": "8268256839",
    "durationMin": 28,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-21T14:00:18.258Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "죄 인",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "이렐리아",
      "kills": 1,
      "deaths": 9,
@@ -36980,8 +36980,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "경 민",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "샤코",
      "kills": 4,
      "deaths": 6,
@@ -37009,8 +37009,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "카타리나",
      "kills": 2,
      "deaths": 7,
@@ -37038,8 +37038,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "빅토르",
      "kills": 1,
      "deaths": 3,
@@ -37067,8 +37067,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "세혀닝",
      "playerId": "p_gi86d5qmq7ub77o",
+     "rawName": "세혀닝",
      "championId": "카밀",
      "kills": 3,
      "deaths": 7,
@@ -37096,8 +37096,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "Rom",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "Rom",
      "championId": "볼리베어",
      "kills": 15,
      "deaths": 5,
@@ -37125,8 +37125,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "자르반 4세",
      "kills": 10,
      "deaths": 1,
@@ -37154,8 +37154,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "DoYeon",
      "playerId": "p_si39mrju_mq7nhxuq",
+     "rawName": "DoYeon",
      "championId": "아칼리",
      "kills": 5,
      "deaths": 3,
@@ -37183,8 +37183,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "Killer Tune",
      "playerId": "p_ujjbme0y_mq7nhxuq",
+     "rawName": "Killer Tune",
      "championId": "세나",
      "kills": 2,
      "deaths": 1,
@@ -37212,8 +37212,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "노틸러스",
      "kills": 0,
      "deaths": 1,
@@ -37284,20 +37284,20 @@
   },
   {
    "id": "m_ypq4g5nmqnut2zp",
-   "createdAt": "2026-06-21T14:00:18.277Z",
    "playedAt": "2026-06-21",
    "setNumber": 5,
    "winnerTeam": "RED",
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "p_si39mrju_mq7nhxuq",
    "gameId": "8268332869",
    "durationMin": 34,
-   "memo": "클라이언트 추출 입력",
-   "mvpId": "",
+   "createdAt": "2026-06-21T14:00:18.277Z",
    "participants": [
     {
      "team": "BLUE",
      "lane": "TOP",
-     "rawName": "Rom",
      "playerId": "p_2dlhnzwn_mq7nhxuq",
+     "rawName": "Rom",
      "championId": "암베사",
      "kills": 4,
      "deaths": 3,
@@ -37325,8 +37325,8 @@
     {
      "team": "BLUE",
      "lane": "JUNGLE",
-     "rawName": "여 썬",
      "playerId": "p_37h5qp33_mq7nhxuq",
+     "rawName": "여 썬",
      "championId": "마오카이",
      "kills": 1,
      "deaths": 4,
@@ -37354,8 +37354,8 @@
     {
      "team": "BLUE",
      "lane": "MID",
-     "rawName": "DoYeon",
      "playerId": "p_si39mrju_mq7nhxuq",
+     "rawName": "DoYeon",
      "championId": "사이온",
      "kills": 2,
      "deaths": 3,
@@ -37383,8 +37383,8 @@
     {
      "team": "BLUE",
      "lane": "ADC",
-     "rawName": "Killer Tune",
      "playerId": "p_ujjbme0y_mq7nhxuq",
+     "rawName": "Killer Tune",
      "championId": "아펠리오스",
      "kills": 5,
      "deaths": 2,
@@ -37412,8 +37412,8 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "rawName": "Lucky Grasp",
      "playerId": "p_29ndxd5j_mq7nhxuq",
+     "rawName": "Lucky Grasp",
      "championId": "쓰레쉬",
      "kills": 0,
      "deaths": 2,
@@ -37441,8 +37441,8 @@
     {
      "team": "RED",
      "lane": "TOP",
-     "rawName": "죄 인",
      "playerId": "p_1v451ep9_mq7nhxuq",
+     "rawName": "죄 인",
      "championId": "그라가스",
      "kills": 0,
      "deaths": 1,
@@ -37470,8 +37470,8 @@
     {
      "team": "RED",
      "lane": "JUNGLE",
-     "rawName": "경 민",
      "playerId": "p_53io5pq0_mq7nhxuq",
+     "rawName": "경 민",
      "championId": "오공",
      "kills": 4,
      "deaths": 5,
@@ -37499,8 +37499,8 @@
     {
      "team": "RED",
      "lane": "MID",
-     "rawName": "twitch소혁",
      "playerId": "p_wqf3x0omq7ub77q",
+     "rawName": "twitch소혁",
      "championId": "진",
      "kills": 3,
      "deaths": 0,
@@ -37528,8 +37528,8 @@
     {
      "team": "RED",
      "lane": "ADC",
-     "rawName": "봄의꽃",
      "playerId": "p_wtiaq7m1_mq7nhxuq",
+     "rawName": "봄의꽃",
      "championId": "멜",
      "kills": 6,
      "deaths": 1,
@@ -37557,8 +37557,8 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "rawName": "세혀닝",
      "playerId": "p_gi86d5qmq7ub77o",
+     "rawName": "세혀닝",
      "championId": "스카너",
      "kills": 1,
      "deaths": 5,
@@ -37707,32 +37707,9 @@
   ],
   "2026-06-12#0": []
  },
- "lineups": [
-  {
-   "id": "lu_23djuqdmqnj21f7",
-   "date": "2026-06-21",
-   "round": "1차",
-   "series": "3판 2선승",
-   "note": "",
-   "event": false,
-   "blue": [
-    "p_1v451ep9_mq7nhxuq",
-    "p_53io5pq0_mq7nhxuq",
-    "p_wqf3x0omq7ub77q",
-    "p_wtiaq7m1_mq7nhxuq",
-    "p_gi86d5qmq7ub77o"
-   ],
-   "red": [
-    "p_2dlhnzwn_mq7nhxuq",
-    "p_37h5qp33_mq7nhxuq",
-    "p_si39mrju_mq7nhxuq",
-    "p_ujjbme0y_mq7nhxuq",
-    "p_29ndxd5j_mq7nhxuq"
-   ]
-  }
- ],
- "rev": 424,
- "updatedAt": "2026-06-21T14:00:18.291Z",
+ "lineups": [],
+ "rev": 427,
+ "updatedAt": "2026-06-21T15:36:11.151Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
@@ -37750,7 +37727,8 @@
   "2026-06-19#2": true,
   "2026-06-19#3": true,
   "2026-06-19#4": true,
-  "2026-06-20#2": true
+  "2026-06-20#2": true,
+  "2026-06-21": true
  },
  "season": {
   "no": 1,
