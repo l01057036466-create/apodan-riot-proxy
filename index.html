@@ -10163,7 +10163,7 @@ function renderAuc(st){
   if(window._aucSig===sig && root.children.length)return;
   window._aucSig=sig; window._aucSt=st;
   var html;
-  if(!st||!st.active){ html=(st&&st.role==='op')?aucSetupHtml():('<div class="card" style="text-align:center;padding:28px"><div style="font-size:34px">🏆</div><h3 style="margin:8px 0 4px">팀 경매 대기 중</h3><p class="mini dim" style="margin:0">아직 시작 전이에요. 시작되면 자동으로 떠요!</p>'+((st&&!st.loggedIn)?'<p class="mini dim" style="margin:8px 0 0">💡 팀장·운영진은 💰 지갑에서 로그인하세요</p>':'')+'</div>'+aucCardsGallery()); }
+  if(!st||!st.active){ html=(st&&st.role==='op')?aucSetupHtml():('<div class="card" style="text-align:center;padding:28px"><div style="font-size:34px">🏆</div><h3 style="margin:8px 0 4px">팀 경매 대기 중</h3><p class="mini dim" style="margin:0">아직 시작 전이에요. 시작되면 자동으로 떠요!</p>'+((st&&!st.loggedIn)?'<p class="mini dim" style="margin:8px 0 0">💡 팀장·운영진은 💰 지갑에서 로그인하세요</p>':'')+'</div>'+'<div style="text-align:center;margin:12px 0 0"><button class="btn ghost" onclick="aucPreviewReveal()">🎬 등장 연출 미리보기</button></div>'+doomWaitShow()); }
   else if(st.role==='op'){
     if(st.test && window._aucViewAs!=null){ var dv=aucDerive(st);
       html='<button class="btn ghost" style="width:100%;margin-bottom:8px;border-color:#e67e22;color:#e67e22;font-weight:800" onclick="aucViewAs(null)">← 운영 콘솔로 돌아가기</button>'+(dv.role==='leader'?aucLeaderHtml(dv):aucSpecHtml(dv));
@@ -10173,6 +10173,7 @@ function renderAuc(st){
   else html=aucSpecHtml(st);
   root.innerHTML=html;
   if(keepVal!=null){var ni=document.getElementById('aucBidInput');if(ni){ni.value=keepVal;if(keepFocus){ni.focus();}}}
+  if(document.getElementById('doomWaitWrap'))doomWaitStart();
 }
 
 /* ===== 🖼 챔피언 초상화 + 🎬 매물 등장 연출(터널 불꽃) — 멸망전 경매 ===== */
@@ -10209,7 +10210,7 @@ var AUC_RV_CSS=`
 #rvOv .rvseq{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.1);font-family:var(--mono);font-size:clamp(64px,20vw,120px);font-weight:900;color:var(--gc);text-shadow:0 0 34px var(--gc);opacity:0;z-index:20;white-space:nowrap;letter-spacing:2px}
 @keyframes rvFly{0%{transform:translate(-50%,-50%) scale(.1);opacity:0}20%{opacity:1;transform:translate(-50%,-50%) scale(.5)}80%{opacity:1;transform:translate(-50%,-50%) scale(1.5)}100%{transform:translate(-50%,-50%) scale(4);opacity:0;filter:blur(10px)}}
 #rvOv .rvfly{animation:rvFly 1.3s cubic-bezier(.25,.46,.45,.94) forwards}
-#rvStage{width:min(252px,76vw);height:calc(min(252px,76vw)*1.5);position:relative;display:flex;align-items:center;justify-content:center;z-index:2;perspective:1000px}
+#rvStage{width:clamp(240px,42vw,400px);height:calc(clamp(240px,42vw,400px)*1.5);position:relative;display:flex;align-items:center;justify-content:center;z-index:2;perspective:1000px}
 #rvOv .rvcard{width:100%;height:100%;position:relative;border-radius:14px;overflow:hidden;opacity:0;z-index:4;transform:translateY(-300px) rotateX(45deg) scale(.5)}
 #rvOv .rvcard.drop{animation:rvDrop 1.4s cubic-bezier(.175,.885,.32,1.275) forwards}
 @keyframes rvDrop{0%{transform:translateY(-300px) rotateX(45deg) scale(.5);opacity:0}60%{transform:translateY(16px) rotateX(-10deg) scale(1.08);opacity:1}100%{transform:translateY(0) rotateX(0) scale(1);opacity:1}}
@@ -10316,6 +10317,61 @@ function aucPlayReveal(c){try{
   setTimeout(function(){ov.classList.remove('show');window._rvBusy=false;},5500);
 }catch(e){var ov2=document.getElementById('rvOv');if(ov2)ov2.classList.remove('show');window._rvBusy=false;}}
 
+/* ===== 🃏 대기 화면 팀장 카드 자동 슬라이드 (TCG 카드) ===== */
+var DOOM_TCG_CSS=`
+.tcg{width:100%;aspect-ratio:5/7;border-radius:14px;position:relative;transform-origin:center;opacity:0}
+.tcg.in{animation:tcgIn .55s cubic-bezier(.2,.9,.3,1.2) forwards}
+@keyframes tcgIn{0%{opacity:0;transform:translateY(40px) rotateY(-26deg) scale(.9)}100%{opacity:1;transform:none}}
+.tcg-frame{position:absolute;inset:0;border-radius:14px;padding:14px 14px 10px;display:flex;flex-direction:column;background:linear-gradient(160deg,#a9743f,#8a5a2e 55%,#6f471f);box-shadow:0 26px 60px -22px #000,inset 0 0 0 2px #c79355,inset 0 0 0 5px #5e3d1c;font-family:var(--mono,ui-monospace,monospace)}
+.tcg-title{background:linear-gradient(#5e3d1c,#714a22);border:2px solid #c79355;border-radius:7px;text-align:center;color:#1a1206;font-weight:900;font-size:clamp(17px,5.4vw,23px);letter-spacing:1px;padding:9px 6px;text-shadow:0 1px 0 #d8a866}
+.tcg-age{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 4px 7px;color:#1a1206;font-weight:900;font-size:clamp(15px,4.6vw,20px);letter-spacing:1px}
+.tcg-orbs{display:flex;gap:3px}
+.tcg-orb{width:clamp(13px,3.6vw,17px);height:clamp(13px,3.6vw,17px);border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff,#9fd0ff 38%,#2f7fd6 78%,#0d3f7a);box-shadow:0 0 0 1.5px #0d3f7a,0 1px 2px rgba(0,0,0,.4)}
+.tcg-window{position:relative;flex:1;border-radius:5px;overflow:hidden;border:3px solid #4f3318;box-shadow:inset 0 0 0 2px #c79355;background:linear-gradient(#79c7ee 0%,#9ad7f3 55%,#9ad7f3 62%);display:flex;align-items:flex-end;justify-content:center}
+.tcg-ground{position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(#5fb14a 0%,#4e9c3c 30%,#7a4a24 30%,#6b3f1d 100%);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 8px,transparent 8px 16px);box-shadow:inset 0 3px 0 #3c7a2c}
+.tcg-cloud{position:absolute;background:#fff;border-radius:3px;opacity:.92;box-shadow:14px 0 0 #fff,28px 0 0 -3px #fff,-12px 4px 0 -2px #fff}
+.tcg-ava{position:relative;z-index:2;width:62%;height:78%;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.tcg-ava .emo{font-size:clamp(74px,22vw,120px);line-height:1}
+.tcg-ava img{width:100%;height:100%;object-fit:contain}
+.tcg-desc{margin-top:9px;background:linear-gradient(#9a6633,#8a5a2e);border:2px solid #d2a368;border-radius:6px;padding:9px 11px;color:#1c1308;font-family:var(--mono,ui-monospace,monospace);line-height:1.5}
+.tcg-desc .tl{font-weight:900;font-size:clamp(13px,3.8vw,16px);letter-spacing:.5px;margin-bottom:5px}
+.tcg-desc .hl{font-weight:900;font-size:clamp(12px,3.5vw,14px);display:inline;background:linear-gradient(transparent 55%,#f4d03f 55%);padding:0 2px}
+.tcg-desc .fl{font-size:clamp(11.5px,3.3vw,13.5px);font-weight:700;margin-top:4px;opacity:.92}
+.tcg-foot{display:flex;justify-content:space-between;align-items:center;padding:7px 3px 1px;color:#3a2510;font-family:var(--mono,ui-monospace,monospace);font-weight:800;font-size:clamp(9px,2.7vw,11px);letter-spacing:.5px}
+.tcg-dot{width:8px;height:8px;border-radius:50%;background:#39435a;transition:.2s}
+.tcg-dot.on{background:var(--gold);transform:scale(1.3)}
+`;
+function doomTcgInit(){if(document.getElementById('doomTcgCss'))return;var s=document.createElement('style');s.id='doomTcgCss';s.textContent=DOOM_TCG_CSS;document.head.appendChild(s);}
+var DOOM_LCARD_META={
+ '미르':{handle:'미르수리|#000',age:'00',foot:'20001025',copy:'APD-MIRSURI',emo:'🐉',flavor:['아포단 멸망전 초대 우승팀 팀장','이기면 팀장 덕, 지면 팀원 탓','복종 할 것','자아 뺄 것']},
+ '잭슨':{handle:'잭 슨#고양이',age:'99',foot:'19990430',copy:'APD-JACKSON',emo:'🐱',flavor:['1차 때 팀 분위기 좋다는 말 듣고','2차까지 온 팀장','지면 팀장 탓, 이기면 팀원 덕','못한 장면보다 잘한 장면 위주로 봄','범인 찾으면 경고, 항상 친절히']},
+ '메비':{handle:'MEVIUS 01#KR1',age:'00',foot:'20000619',copy:'APD-MEVIUS',emo:'🐮',flavor:['오더 잘 들을 것','자아 뺄 것','한번 할 때 미련 없이 하기','지더라도 즐겁게']},
+ '세혀닝':{handle:'세혀닝#먹먹파',age:'96',foot:'19960108',copy:'APD-SEHYEONING',emo:'🐷',flavor:['아포단 멸망전 초대 우승팀 미드','싸우지 말고 웃으며 잘 지내봅시다','(싸울거면 계급장 떼고 현피)','자아충돌 및 내로남불 금지, 서로 존중하기','우승해도 회식, 못해도 회식']},
+ '콜라':{handle:'저주받은콜라#KR666',age:'96',foot:'19960603',copy:'APD-COLA',emo:'🐻‍❄️',flavor:['나이쨔!X99','사이좋게','즐겁게 !(지면 즐겁지 않음)','불만 있으면 현피 ㄱㄱ']},
+ '구구':{handle:'Rom#kr3',age:'01',foot:'20011216',copy:'APD-GUGU',emo:'🐤',flavor:['내가 미안해 우리팀....']}
+};
+function doomTcgCard(l){
+  var m=DOOM_LCARD_META[l.leader]||{};
+  var orbs='';for(var i=0;i<7;i++)orbs+='<span class="tcg-orb"></span>';
+  var fl=(m.flavor||[]).slice(1).map(function(f){return '<div class="fl">'+esc(f)+'</div>';}).join('');
+  var cssCard='<div class="tcg-frame" style="display:none"><div class="tcg-title">'+esc(m.handle||l.leader)+'</div><div class="tcg-age"><span>Age : '+esc(m.age||'00')+'</span><span class="tcg-orbs">'+orbs+'</span></div><div class="tcg-window"><div class="tcg-cloud" style="top:14%;left:18%;width:22px;height:9px"></div><div class="tcg-cloud" style="top:26%;left:60%;width:18px;height:8px"></div><div class="tcg-ground"></div><div class="tcg-ava"><span class="emo">'+(m.emo||'🎮')+'</span></div></div><div class="tcg-desc"><div class="tl">['+esc(l.sub||'')+']</div>'+((m.flavor&&m.flavor[0])?'<span class="hl">'+esc(m.flavor[0])+'</span>':'')+fl+'</div><div class="tcg-foot"><span>'+esc(m.foot||'2026.07')+'</span><span>© 2026 '+esc(m.copy||('APD-'+l.leader))+'</span></div></div>';
+  return '<div class="tcg in" style="cursor:pointer" onclick="doomWaitNext()"><img src="'+esc(l.img||'')+'" alt="'+esc(l.leader)+' 팀장 카드" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;z-index:2" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'+cssCard+'</div>';
+}
+function doomWaitShow(){
+  return '<div style="display:flex;flex-direction:column;align-items:center;gap:11px;padding:6px 0 2px"><div style="font-weight:900;font-size:15px;color:var(--gold)">🃏 팀장 카드</div><div style="width:min(330px,82vw)" id="doomWaitWrap"></div><div id="doomWaitDots" style="display:flex;gap:7px"></div><div class="mini dim">탭하면 다음 카드 →</div></div>';
+}
+function doomWaitRender(){
+  var wrap=document.getElementById('doomWaitWrap');if(!wrap)return;
+  var idx=window._doomWaitIdx||0;var l=DOOM_LEADERS[idx];if(!l)return;
+  wrap.innerHTML=doomTcgCard(l);
+  var dots=document.getElementById('doomWaitDots');
+  if(dots)dots.innerHTML=DOOM_LEADERS.map(function(_,i){return '<span class="tcg-dot'+(i===idx?' on':'')+'"></span>';}).join('');
+}
+function doomWaitNext(){window._doomWaitIdx=((window._doomWaitIdx||0)+1)%DOOM_LEADERS.length;doomWaitRender();doomWaitRestart();}
+function doomWaitRestart(){clearInterval(window._doomWaitTimer);window._doomWaitTimer=setInterval(function(){if(!document.getElementById('doomWaitWrap')){clearInterval(window._doomWaitTimer);window._doomWaitTimer=null;return;}window._doomWaitIdx=((window._doomWaitIdx||0)+1)%DOOM_LEADERS.length;doomWaitRender();},4200);}
+function doomWaitStart(){doomTcgInit();if(window._doomWaitIdx==null)window._doomWaitIdx=0;doomWaitRender();doomWaitRestart();}
+/* 🎬 등장 연출 미리보기 — PC/모바일 어디서나 확인용 */
+function aucPreviewReveal(){window._rvBusy=false;window._aucRevealed=null;var demo={name:(DOOM_LEADERS[0]&&DOOM_LEADERS[0].leader)||'미르',position:'ADC',tier:'마스터'};aucPlayReveal(demo);}
 function aucCurrentCard(st){
   var c=st.current; if(!c)return'';
   return '<div style="text-align:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(212,175,55,.10),transparent);margin-bottom:12px">'
@@ -10449,10 +10505,10 @@ function aucSetupHtml(){
     +'<p class="mini dim" style="margin:4px 0 0">계정명은 사이트 표시 이름과 정확히 같아야 해요.</p></details>'
     +'<button class="btn gold" style="width:100%;font-size:15px;padding:12px" onclick="aucDoStart(false)">🚀 실전 경매 시작</button>'
     +'<div style="display:flex;gap:6px;margin-top:8px"><button class="btn ghost" style="flex:1;font-size:13px" onclick="aucDoStart(true)">🧪 테스트로 시작</button><button class="btn ghost" style="flex:1;font-size:13px" onclick="aucQuickTest()">⚡ 빠른 테스트(랜덤8명)</button></div>'
-    +'<p class="mini dim" style="margin:8px 0 0;text-align:center">상한: 언랭·실버 100 / 골드 150 / 플래 200 / 에메↑ 무제한 · 테스트는 운영자가 6팀 대신 입찰해봐요</p></div>';
+    +'<p class="mini dim" style="margin:8px 0 0;text-align:center">상한: 언랭·실버 100 / 골드 150 / 플래 200 / 에메↑ 무제한 · 테스트는 운영자가 6팀 대신 입찰해봐요</p></div>'+'<div style="text-align:center;margin:12px 0 0"><button class="btn ghost" onclick="aucPreviewReveal()">🎬 등장 연출 미리보기</button></div>'+doomWaitShow();
 }
 function aucToggle(id,on){window._aucSel=window._aucSel||{};if(on)window._aucSel[id]=1;else delete window._aucSel[id];var n=document.getElementById('aucSelN');if(n)n.textContent=Object.keys(window._aucSel).length;}
-function aucSelAll(on){window._aucSel=window._aucSel||{};var la=DOOM_LEADERS.map(function(l){return l.acct;});var pool=(state.players||[]).filter(function(p){return p.active!==false&&la.indexOf(p.displayName)<0;});window._aucSel={};if(on)pool.forEach(function(p){window._aucSel[p.id]=1;});var root=document.getElementById('aucRoot');if(root)root.innerHTML=aucSetupHtml();}
+function aucSelAll(on){window._aucSel=window._aucSel||{};var la=DOOM_LEADERS.map(function(l){return l.acct;});var pool=(state.players||[]).filter(function(p){return p.active!==false&&la.indexOf(p.displayName)<0;});window._aucSel={};if(on)pool.forEach(function(p){window._aucSel[p.id]=1;});var root=document.getElementById('aucRoot');if(root){root.innerHTML=aucSetupHtml();if(document.getElementById('doomWaitWrap'))doomWaitStart();}}
 
 async function aucDoStart(test){
   var sel=window._aucSel||{};
