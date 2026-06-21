@@ -740,7 +740,25 @@ module.exports = async function handler(req, res) {
       var whoRc = String(body.who || 'all').trim();
       var thrRc = Number(body.thr); if (!(thrRc > 0 && thrRc < 1)) thrRc = 0.6; // 현재가가 직전 고점의 thr 미만이면 '폭락'으로 보고 복구
       var SRc = await loadPx();
-      var namesRc = (whoRc === 'all' || whoRc === '전원' || whoRc === '*') ? Object.keys(SRc.base) : (whoRc ? [whoRc] : []);
+      var selRc = Array.isArray(body.names) ? body.names.filter(function (x) { return nameOk(x); }).slice(0, 400) : null; // ✅ 체크된 특정 멤버들
+      // 🎯 특정 가격(특정 시점)으로 복구 — 선택 선수들의 시세를 toPrice에 맞춤
+      var toPx = Math.round(Number(body.toPrice) || 0);
+      if (selRc && selRc.length && toPx >= 30 && toPx <= 9999) {
+        var fx = [], nf = 0;
+        for (var iT = 0; iT < selRc.length; iT++) {
+          var nmT = selRc[iT];
+          var oldCT = clampPx((SRc.base[nmT] || 0) + premCap(SRc.base[nmT] || 0, SRc.prem[nmT]));
+          var bT = clampPx(toPx - premCap(toPx, SRc.prem[nmT])); // 합산가 ≈ toPx 가 되도록 기준가 설정
+          SRc.base[nmT] = bT;
+          var ncT = clampPx(bT + premCap(bT, SRc.prem[nmT]));
+          await pushHist(nmT, ncT, 'form');
+          fx.push({ name: nmT, from: oldCT, to: ncT }); nf++;
+        }
+        await savePx(SRc);
+        return res.status(200).json({ ok: true, count: nf, fixed: fx });
+      }
+      var forceSel = selRc && selRc.length > 0; // 직접 선택 시 → 임계값 무시하고 무조건 복구
+      var namesRc = forceSel ? selRc : ((whoRc === 'all' || whoRc === '전원' || whoRc === '*') ? Object.keys(SRc.base) : (whoRc ? [whoRc] : []));
       var fixedRc = [], nRc = 0;
       for (var iRc = 0; iRc < namesRc.length; iRc++) {
         var nmRc = namesRc[iRc];
@@ -750,7 +768,7 @@ module.exports = async function handler(req, res) {
         for (var hRc = 0; hRc < histRc.length; hRc++) { try { var peRc = JSON.parse(histRc[hRc]); if (peRc && peRc.p > peakRc) peakRc = peRc.p; } catch (e) {} }
         if (peakRc < 30) continue;
         var curRc = clampPx((SRc.base[nmRc] || 0) + premCap(SRc.base[nmRc] || 0, SRc.prem[nmRc]));
-        if (curRc >= Math.round(peakRc * thrRc)) continue; // 폭락 아님 → 건너뜀 (멀쩡한 종목 보존)
+        if (!forceSel && curRc >= Math.round(peakRc * thrRc)) continue; // (전원 모드만) 폭락 아님 → 건너뜀
         var tgtBRc = clampPx(peakRc - premCap(peakRc, SRc.prem[nmRc])); // 합산가 ≈ 직전 고점이 되도록 기준가 설정
         SRc.base[nmRc] = tgtBRc;
         var newCRc = clampPx(tgtBRc + premCap(tgtBRc, SRc.prem[nmRc]));
