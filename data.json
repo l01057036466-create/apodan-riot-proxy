@@ -36489,7 +36489,7 @@
   "lastBackupAt": "2026-06-21T04:23:40.004Z",
   "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
-  "maintenance": false,
+  "maintenance": true,
   "bustNews": true,
   "artShop": {
    "umqb5i3d1": {
@@ -36584,8 +36584,8 @@
    ]
   }
  ],
- "rev": 419,
- "updatedAt": "2026-06-21T08:31:20.755Z",
+ "rev": 420,
+ "updatedAt": "2026-06-21T13:11:08.103Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
