@@ -10163,7 +10163,11 @@ function renderAuc(st){
   window._aucSig=sig; window._aucSt=st;
   var html;
   if(!st||!st.active){ html=(st&&st.role==='op')?aucSetupHtml():('<div class="card" style="text-align:center;padding:28px"><div style="font-size:34px">🏆</div><h3 style="margin:8px 0 4px">팀 경매 대기 중</h3><p class="mini dim" style="margin:0">아직 시작 전이에요. 시작되면 자동으로 떠요!</p>'+((st&&!st.loggedIn)?'<p class="mini dim" style="margin:8px 0 0">💡 팀장·운영진은 💰 지갑에서 로그인하세요</p>':'')+'</div>'+aucCardsGallery()); }
-  else if(st.role==='op')html=aucOpHtml(st);
+  else if(st.role==='op'){
+    if(st.test && window._aucViewAs!=null){ var dv=aucDerive(st);
+      html='<button class="btn ghost" style="width:100%;margin-bottom:8px;border-color:#e67e22;color:#e67e22;font-weight:800" onclick="aucViewAs(null)">← 운영 콘솔로 돌아가기</button>'+(dv.role==='leader'?aucLeaderHtml(dv):aucSpecHtml(dv));
+    } else html=aucOpHtml(st);
+  }
   else if(st.role==='leader')html=aucLeaderHtml(st);
   else html=aucSpecHtml(st);
   root.innerHTML=html;
@@ -10193,6 +10197,29 @@ function aucTeamsPanel(st,showRoster){
         +'</div>';
     }).join('')+'</div>';
 }
+function aucOpManagePanel(st){ // 운영 — 팀별 선수 빼기/재경매/팀 비우기
+  return (st.teams||[]).map(function(t){
+    var roster=(t.roster||[]).map(function(r,ri){
+      return '<div style="display:flex;gap:6px;align-items:center;justify-content:space-between;padding:4px 0;border-top:1px solid var(--line)"><span class="mini" style="min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(r.name)+' <span class="dim">('+r.cost+'P)</span></span><span style="display:flex;gap:4px;flex:none"><button class="btn sm ghost" style="font-size:10px;padding:2px 6px;border-color:#e67e22;color:#e67e22" onclick="aucDoRemove('+t.id+','+ri+',true)">↩재경매</button><button class="btn sm ghost" style="font-size:10px;padding:2px 6px;border-color:var(--lose);color:var(--lose)" onclick="aucDoRemove('+t.id+','+ri+',false)">✕</button></span></div>';
+    }).join('');
+    return '<div style="border:1px solid var(--line);border-left:4px solid '+t.color+';border-radius:10px;padding:8px 10px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="color:'+t.color+'">'+esc(t.name)+'</b><span class="mini" style="font-weight:800">'+t.points+'P · '+(t.roster.length)+'/5</span></div>'+roster+(t.roster.length?'<button class="btn sm ghost" style="font-size:10px;padding:2px 8px;margin-top:6px;border-color:var(--lose);color:var(--lose)" onclick="aucDoClearTeam('+t.id+')">🗑 팀 비우기(환불)</button>':'<div class="mini dim" style="margin-top:4px">아직 선수 없음</div>')+'</div>';
+  }).join('');
+}
+async function aucDoRemove(teamId,ri,requeue){
+  var st=window._aucSt||{}; var team=(st.teams||[]).filter(function(t){return t.id===teamId;})[0]; if(!team)return;
+  var p=(team.roster||[])[ri]; if(!p)return;
+  if(!confirm((requeue?'↩ 재경매: ':'✕ 제거: ')+p.name+' 선수를 '+team.name+'에서 빼고 '+p.cost+'P 환불할까요?'+(requeue?'\n→ 다시 경매 대기열로 올라가요':'')))return;
+  try{var r=await auctionCall('aucRemovePlayer',{teamId:teamId,name:p.name,requeue:!!requeue});toast('✅ '+p.name+' 빠짐 · '+r.refunded+'P 환불'+(r.requeued?' · 재경매 대기':''));aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
+async function aucDoClearTeam(teamId){
+  var st=window._aucSt||{}; var team=(st.teams||[]).filter(function(t){return t.id===teamId;})[0]; if(!team)return;
+  if(!confirm(team.name+' 로스터를 전부 비울까요? ('+(team.roster||[]).length+'명 환불)'))return;
+  try{var r=await auctionCall('aucClearTeam',{teamId:teamId});toast('🗑 '+team.name+' 비움 · '+r.refunded+'P 환불');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
+async function aucDoFinalize(){
+  if(!confirm('지금 로스터로 경매를 확정·종료할까요?\n(남은 매물이 있어도 종료 — 나중에 재경매로 다시 열 수 있어요)'))return;
+  try{await auctionCall('aucFinalize',{});toast('✅ 경매 확정!');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
 function aucResultBanner(st){
   var r=st.lastResult; if(!r)return'';
   if(r.passed)return '<div class="card" style="text-align:center;padding:10px;margin-bottom:10px"><span class="mini dim">직전: <b>'+esc(r.player)+'</b> 유찰</span></div>';
@@ -10205,10 +10232,12 @@ function aucOpHead(st){return '<div style="display:flex;justify-content:space-be
 function aucOpHtml(st){
   if(st.phase==='done'){
     return '<div class="card" style="border:2px solid var(--gold)">'+aucOpHead(st)
-      +'<div style="text-align:center;padding:10px"><div style="font-size:34px">🏁</div><h3 style="margin:6px 0 10px">경매 종료!</h3></div>'+aucTeamsPanel(st,true)
-      +'<button class="btn ghost" style="width:100%;margin-top:12px" onclick="aucDoReset()">🗑 경매 초기화</button></div>';
+      +'<div style="text-align:center;padding:10px"><div style="font-size:34px">'+(st.confirmed?'✅':'🏁')+'</div><h3 style="margin:6px 0 10px">'+(st.confirmed?'경매 확정 완료!':'경매 종료')+'</h3></div>'
+      +'<details open style="margin-bottom:8px"><summary class="mini dim">최종 로스터 · 수정 (도망간 선수 빼기/재경매)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'</div></details>'
+      +'<button class="btn ghost" style="width:100%" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div>';
   }
-  var inner=aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
+  if(st.test){ inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span class="mini dim">👁 미리보기:</span>'+(st.teams||[]).map(function(t){return '<button class="btn sm ghost" style="font-size:11px;padding:3px 7px;border-color:'+t.color+';color:'+t.color+'" onclick="aucViewAs('+t.id+')">'+esc(t.name)+'</button>';}).join('')+'<button class="btn sm ghost" style="font-size:11px;padding:3px 7px" onclick="aucViewAs(&quot;spec&quot;)">🍿 관전</button></div>'; }
   var elig=st.eligible||[],bids=st.bids||{},at=st.acctTeam||{};
   inner+='<div style="margin-bottom:10px"><div class="mini dim" style="margin-bottom:6px">입찰 현황 — 제출 <b>'+(st.submittedCount||0)+'</b> / 입찰가능 '+elig.length+'팀</div>';
   if(!elig.length)inner+='<p class="mini dim">입찰 가능한 팀이 없어요 (로스터 마감/포인트 부족).</p>';
@@ -10218,7 +10247,15 @@ function aucOpHtml(st){
   inner+='</div>';
   if(st.phase==='revealed'){inner+='<button class="btn gold" style="width:100%;font-size:16px;padding:13px" onclick="aucDoNext()">다음 매물 →</button>';}
   else{inner+='<div style="display:flex;gap:8px"><button class="btn gold" style="flex:2;font-size:16px;padding:13px" onclick="aucDoReveal()">🔓 공개 & 낙찰</button><button class="btn ghost" style="flex:1" onclick="aucDoPass()">유찰</button></div>';}
-  inner+='<details style="margin-top:12px"><summary class="mini dim">팀 현황 · 관리</summary><div style="margin-top:8px">'+aucTeamsPanel(st,true)+'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="aucDoReset()">🗑 경매 초기화</button></div></details>';
+  if(st.test&&(st.phase==='bidding'||st.phase==='tie')){
+    var eligT=st.eligible||[],atT=st.acctTeam||{},bidsT=st.bids||{};
+    inner+='<div style="margin-top:10px;border:1px dashed #e67e22;border-radius:10px;padding:10px;background:rgba(230,126,34,.06)">'
+      +'<div class="mini" style="font-weight:800;color:#e67e22;margin-bottom:6px">🧪 테스트 — 운영자가 팀 대신 입찰</div>'
+      +'<button class="btn sm" style="width:100%;border-color:#e67e22;color:#e67e22;font-weight:800;margin-bottom:8px" onclick="aucDoTestFill()">🎲 입찰가능 팀 전원 랜덤 입찰</button>'
+      +eligT.map(function(a,ei){var t=atT[a]||{name:a};return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><span class="mini" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.name||a)+(bidsT[a]!=null?(' <b style="color:var(--win)">'+bidsT[a]+'P</b>'):'')+'</span><input id="tb'+ei+'" type="number" inputmode="numeric" placeholder="'+st.minBid+'" style="width:76px;padding:5px 7px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink)"><button class="btn sm" style="border-color:#e67e22;color:#e67e22" onclick="aucDoTestBid('+ei+')">입찰</button></div>';}).join('')
+      +'</div>';
+  }
+  inner+='<details style="margin-top:12px"><summary class="mini dim">팀 관리 (선수 빼기·재경매·팀 비우기·확정)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'<button class="btn gold" style="width:100%;margin-top:6px" onclick="aucDoFinalize()">✅ 경매 확정 (로스터 잠금·종료)</button><button class="btn ghost" style="width:100%;margin-top:6px" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div></details>';
   inner+=aucCardsGallery();
   return '<div class="card" style="border:2px solid var(--gold)">'+aucOpHead(st)+inner+'</div>';
 }
@@ -10226,7 +10263,7 @@ function aucOpHtml(st){
 function aucLeaderHtml(st){
   var myTeam=(st.teams||[]).filter(function(t){return t.id===st.myTeamId;})[0];
   if(st.phase==='done'){return '<div class="card"><div style="text-align:center;padding:14px"><div style="font-size:30px">🏁</div><h3 style="margin:6px 0">경매 종료!</h3></div>'+aucTeamsPanel(st,true)+'</div>';}
-  var inner=aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
   if(st.phase==='revealed'){inner+='<p class="mini dim" style="text-align:center">공개 완료 — 다음 매물을 기다려주세요.</p>';}
   else if(!st.iEligible){inner+='<div style="text-align:center;padding:12px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">이번 매물엔 입찰할 수 없어요<br>(로스터 마감 또는 포인트 부족 🥲)</p></div>';}
   else if(st.iSubmitted){inner+='<div style="text-align:center;padding:12px;border:1px solid var(--win);border-radius:10px;margin-bottom:8px"><div style="font-size:20px;font-weight:900;color:var(--win)">✅ '+st.myBid+'P 제출 완료</div><div class="mini dim">낙찰가 '+(st.prior+st.myBid)+'P · 공개를 기다려주세요</div></div><button class="btn ghost" style="width:100%" onclick="aucDoUnbid()">입찰 취소 / 수정</button>';}
@@ -10241,7 +10278,7 @@ function aucLeaderHtml(st){
 
 function aucSpecHtml(st){
   if(st.phase==='done'){return '<div class="card"><div style="text-align:center;padding:14px"><div style="font-size:30px">🏁</div><h3 style="margin:6px 0">경매 종료!</h3></div>'+aucTeamsPanel(st,true)+'</div>';}
-  var inner=aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
   if(!st.loggedIn)inner+='<p class="mini dim" style="text-align:center;margin:0 0 8px">💡 팀장·운영진은 <b>💰 지갑에서 로그인</b>하면 입찰/콘솔이 떠요</p>';
   if(st.phase==='revealed')inner+='<p class="mini dim" style="text-align:center">공개 완료 — 다음 매물 대기 중</p>';
   else inner+='<div style="text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px"><div style="font-size:18px">🔒 입찰 진행 중…</div><div class="mini dim">'+(st.submittedCount||0)+' / '+(st.eligibleCount||0)+'팀 제출 (입찰가는 공개 시 발표)</div></div>';
@@ -10268,28 +10305,76 @@ function aucSetupHtml(){
     +'<details style="margin-bottom:10px"><summary class="mini dim">팀장 계정·예산 확인 (6팀)</summary>'
     +DOOM_LEADERS.map(function(l,i){return '<div style="display:flex;gap:6px;align-items:center;margin:6px 0"><span class="mini" style="width:50px;color:'+l.color+';font-weight:800">'+esc(l.leader)+'</span><input id="aucLA'+i+'" value="'+esc(l.acct)+'" class="mini" style="flex:2" placeholder="계정명"><input id="aucLP'+i+'" value="'+l.points+'" class="mini" style="flex:1" inputmode="numeric"></div>';}).join('')
     +'<p class="mini dim" style="margin:4px 0 0">계정명은 사이트 표시 이름과 정확히 같아야 해요.</p></details>'
-    +'<button class="btn gold" style="width:100%;font-size:15px;padding:12px" onclick="aucDoStart()">🚀 경매 시작</button>'
-    +'<p class="mini dim" style="margin:8px 0 0;text-align:center">상한: 언랭·실버 100 / 골드 150 / 플래 200 / 에메↑ 무제한 (조정 가능)</p></div>';
+    +'<button class="btn gold" style="width:100%;font-size:15px;padding:12px" onclick="aucDoStart(false)">🚀 실전 경매 시작</button>'
+    +'<div style="display:flex;gap:6px;margin-top:8px"><button class="btn ghost" style="flex:1;font-size:13px" onclick="aucDoStart(true)">🧪 테스트로 시작</button><button class="btn ghost" style="flex:1;font-size:13px" onclick="aucQuickTest()">⚡ 빠른 테스트(랜덤8명)</button></div>'
+    +'<p class="mini dim" style="margin:8px 0 0;text-align:center">상한: 언랭·실버 100 / 골드 150 / 플래 200 / 에메↑ 무제한 · 테스트는 운영자가 6팀 대신 입찰해봐요</p></div>';
 }
 function aucToggle(id,on){window._aucSel=window._aucSel||{};if(on)window._aucSel[id]=1;else delete window._aucSel[id];var n=document.getElementById('aucSelN');if(n)n.textContent=Object.keys(window._aucSel).length;}
 function aucSelAll(on){window._aucSel=window._aucSel||{};var la=DOOM_LEADERS.map(function(l){return l.acct;});var pool=(state.players||[]).filter(function(p){return p.active!==false&&la.indexOf(p.displayName)<0;});window._aucSel={};if(on)pool.forEach(function(p){window._aucSel[p.id]=1;});var root=document.getElementById('aucRoot');if(root)root.innerHTML=aucSetupHtml();}
 
-async function aucDoStart(){
+async function aucDoStart(test){
   var sel=window._aucSel||{};
   var pool=(state.players||[]).filter(function(p){return sel[p.id];});
   if(pool.length<1)return toast('선수를 1명 이상 선택해주세요.',true);
   var teams=DOOM_LEADERS.map(function(l,i){var a=(document.getElementById('aucLA'+i)||{}).value;var pt=(document.getElementById('aucLP'+i)||{}).value;return {name:l.name,leader:l.leader,acct:(a||l.acct).trim(),color:l.color,points:parseInt(pt,10)||l.points};});
   var queue=pool.map(function(p){return {name:p.displayName,position:p.soloPos||'',tier:p.soloTier||'',cap:doomCap(p.soloTier)};});
   for(var i=queue.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=queue[i];queue[i]=queue[j];queue[j]=tmp;}
-  if(!confirm(pool.length+'명으로 경매를 시작할까요?\n시작하면 모든 멤버에게 보여요.'))return;
-  try{await auctionCall('aucStart',{teams:teams,queue:queue});toast('경매 시작! 🎰');aucManualRefresh();}catch(e){toast(e.message||'시작 실패',true);}
+  var msg=test?(pool.length+'명으로 🧪 테스트 경매를 시작할까요?\n운영자가 6팀 입찰을 대신 넣어볼 수 있어요.'):(pool.length+'명으로 실전 경매를 시작할까요?\n시작하면 모든 멤버에게 보여요.');
+  if(!confirm(msg))return;
+  try{await auctionCall('aucStart',{teams:teams,queue:queue,test:!!test});toast(test?'🧪 테스트 경매 시작!':'경매 시작! 🎰');aucManualRefresh();}catch(e){toast(e.message||'시작 실패',true);}
+}
+async function aucQuickTest(){ // ⚡ 랜덤 8명으로 테스트 경매 원클릭
+  var la=DOOM_LEADERS.map(function(l){return l.acct;});
+  var pool=(state.players||[]).filter(function(p){return p.active!==false && la.indexOf(p.displayName)<0;});
+  if(pool.length<2)return toast('테스트할 선수가 부족해요',true);
+  var sh=pool.slice(); for(var i=sh.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=sh[i];sh[i]=sh[j];sh[j]=t;}
+  var pick=sh.slice(0,Math.min(8,sh.length));
+  var teams=DOOM_LEADERS.map(function(l){return {name:l.name,leader:l.leader,acct:l.acct,color:l.color,points:l.points};});
+  var queue=pick.map(function(p){return {name:p.displayName,position:p.soloPos||'',tier:p.soloTier||'',cap:doomCap(p.soloTier)};});
+  if(!confirm('랜덤 '+pick.length+'명으로 🧪 테스트 경매를 시작할까요?'))return;
+  try{await auctionCall('aucStart',{teams:teams,queue:queue,test:true});toast('🧪 테스트 경매 시작!');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
+async function aucDoTestBid(ei){
+  var st=window._aucSt||{}; var acct=(st.eligible||[])[ei]; if(!acct)return toast('대상 없음',true);
+  var v=parseInt((document.getElementById('tb'+ei)||{}).value,10);
+  if(isNaN(v))return toast('입찰가를 입력해주세요',true);
+  try{var r=await auctionCall('aucTestBid',{acct:acct,amount:v});toast('🧪 '+acct+' 입찰 '+r.bid+'P');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
+async function aucDoTestFill(){ try{var r=await auctionCall('aucTestFill',{});toast('🎲 '+((r.filled||[]).length)+'팀 랜덤 입찰!');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
+function aucTestBanner(st){ return (st&&st.test)?'<div style="text-align:center;padding:6px;margin-bottom:8px;border-radius:8px;background:#e67e22;color:#1a1206;font-weight:800;font-size:12px">🧪 테스트 모드 — 실전 전에 \'경매 초기화\'로 리셋하세요</div>':''; }
+function aucViewAs(v){ // 🧪 테스트 미리보기 역할 전환 (운영↔팀장↔관전)
+  window._aucViewAs=v;
+  if(typeof v==='number'){var st=window._aucSt||{};var at=st.acctTeam||{};window._aucPreviewAcct=Object.keys(at).filter(function(k){return at[k].id===v;})[0]||null;}
+  else window._aucPreviewAcct=null;
+  window._aucSig=null; renderAuc(window._aucSt);
+}
+function aucDerive(st){ // op 상태 → 선택한 역할(팀장/관전) 상태로 변환
+  var va=window._aucViewAs;
+  if(va==='spec'){var ds=Object.assign({},st);ds.role='spectator';ds._preview=true;return ds;}
+  var acct=window._aucPreviewAcct, bids=st.bids||{}, elig=st.eligible||[];
+  var d=Object.assign({},st); d.role='leader'; d.myTeamId=va; d._preview=true;
+  d.iEligible=acct?elig.indexOf(acct)>=0:false; d.iSubmitted=acct?(bids[acct]!=null):false;
+  d.myBid=(acct&&bids[acct]!=null)?bids[acct]:null;
+  return d;
 }
 async function aucDoBid(){
   var v=parseInt((document.getElementById('aucBidInput')||{}).value,10);
   if(isNaN(v))return toast('입찰가를 입력해주세요.',true);
+  var st=window._aucSt||{};
+  if(st.test && typeof window._aucViewAs==='number' && window._aucPreviewAcct){ // 미리보기(팀장) → 대리 입찰
+    try{var rp=await auctionCall('aucTestBid',{acct:window._aucPreviewAcct,amount:v});toast('🧪 '+window._aucPreviewAcct+' 입찰 '+rp.bid+'P');aucManualRefresh();}catch(e){toast(e.message||'입찰 실패',true);}
+    return;
+  }
   try{var r=await auctionCall('aucBid',{amount:v});toast('입찰 제출! 🔒 ('+r.bid+'P)');aucManualRefresh();}catch(e){toast(e.message||'입찰 실패',true);}
 }
-async function aucDoUnbid(){ try{await auctionCall('aucUnbid',{});toast('입찰을 취소했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
+async function aucDoUnbid(){
+  var st=window._aucSt||{};
+  if(st.test && typeof window._aucViewAs==='number' && window._aucPreviewAcct){
+    try{await auctionCall('aucTestUnbid',{acct:window._aucPreviewAcct});toast('취소함');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+    return;
+  }
+  try{await auctionCall('aucUnbid',{});toast('입찰을 취소했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
 async function aucDoReveal(){ try{var r=await auctionCall('aucReveal',{});if(r.result==='none')toast('입찰자가 없어요. 유찰하거나 더 기다려주세요.',true);else if(r.result==='tie')toast('🔁 동점! 재경매 — 누적 '+r.prior+'P부터',true);else toast('🔓 '+r.winner+' 낙찰 ('+r.cost+'P)');aucManualRefresh();}catch(e){toast(e.message||'공개 실패',true);} }
 async function aucDoNext(){ try{await auctionCall('aucNext',{});aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
 async function aucDoPass(){ if(!confirm('이 선수를 유찰 처리할까요?'))return; try{await auctionCall('aucPass',{});toast('유찰 처리했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
