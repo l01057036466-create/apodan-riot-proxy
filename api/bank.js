@@ -734,7 +734,32 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, updated: nP });
     }
 
-    // ═══ 주식 매수/매도 (서버 시세 기준, 수수료 1%) ═══
+    if (req.method === 'POST' && action === 'stockRecover') { // 🚑 dev/admin — 폭락한 주가를 직전 고점(히스토리)으로 일괄 복구
+      var sRc = await auth(body.token);
+      if (!sRc || (sRc.role !== 'admin' && sRc.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var whoRc = String(body.who || 'all').trim();
+      var thrRc = Number(body.thr); if (!(thrRc > 0 && thrRc < 1)) thrRc = 0.6; // 현재가가 직전 고점의 thr 미만이면 '폭락'으로 보고 복구
+      var SRc = await loadPx();
+      var namesRc = (whoRc === 'all' || whoRc === '전원' || whoRc === '*') ? Object.keys(SRc.base) : (whoRc ? [whoRc] : []);
+      var fixedRc = [], nRc = 0;
+      for (var iRc = 0; iRc < namesRc.length; iRc++) {
+        var nmRc = namesRc[iRc];
+        var histRc = (await redis(['LRANGE', 'pxh:' + nmRc, '0', '59'])) || [];
+        if (!histRc.length) continue;
+        var peakRc = 0;
+        for (var hRc = 0; hRc < histRc.length; hRc++) { try { var peRc = JSON.parse(histRc[hRc]); if (peRc && peRc.p > peakRc) peakRc = peRc.p; } catch (e) {} }
+        if (peakRc < 30) continue;
+        var curRc = clampPx((SRc.base[nmRc] || 0) + premCap(SRc.base[nmRc] || 0, SRc.prem[nmRc]));
+        if (curRc >= Math.round(peakRc * thrRc)) continue; // 폭락 아님 → 건너뜀 (멀쩡한 종목 보존)
+        var tgtBRc = clampPx(peakRc - premCap(peakRc, SRc.prem[nmRc])); // 합산가 ≈ 직전 고점이 되도록 기준가 설정
+        SRc.base[nmRc] = tgtBRc;
+        var newCRc = clampPx(tgtBRc + premCap(tgtBRc, SRc.prem[nmRc]));
+        await pushHist(nmRc, newCRc, 'form');
+        fixedRc.push({ name: nmRc, from: curRc, to: newCRc, peak: peakRc }); nRc++;
+      }
+      await savePx(SRc);
+      return res.status(200).json({ ok: true, count: nRc, fixed: fixedRc.slice(0, 60) });
+    }
     if (req.method === 'POST' && (action === 'stockBuy' || action === 'stockSell')) {
       var sT = await auth(body.token);
       if (!sT || !sT.name) return res.status(401).json({ error: '로그인이 필요해요' });
