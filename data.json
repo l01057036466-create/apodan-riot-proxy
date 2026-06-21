@@ -36456,10 +36456,10 @@
   "mvpMinutes": 10,
   "proxyUrl": "https://apodan-riot-proxy.vercel.app",
   "riotAnchor": "p_jlc2q699_mq7nhxup",
-  "lastBackupAt": "2026-06-20T17:56:59.308Z",
+  "lastBackupAt": "2026-06-21T03:38:20.617Z",
   "autoPublish": false,
   "voteApiUrl": "https://apodan-riot-proxy.vercel.app/api/vote?date=2026-06-12",
-  "maintenance": false,
+  "maintenance": true,
   "bustNews": true,
   "artShop": {
    "umqb5i3d1": {
@@ -36531,8 +36531,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 414,
- "updatedAt": "2026-06-21T03:37:50.877Z",
+ "rev": 416,
+ "updatedAt": "2026-06-21T03:38:52.170Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
