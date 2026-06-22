@@ -10238,6 +10238,7 @@ function renderAuc(st){
   root.innerHTML=html;
   if(keepVal!=null){var ni=document.getElementById('aucBidInput');if(ni){ni.value=keepVal;if(keepFocus){ni.focus();}}}
   if(document.getElementById('doomWaitWrap'))doomWaitStart();
+  aucTimerStart();
 }
 
 /* ===== 🖼 챔피언 초상화 + 🎬 매물 등장 연출(터널 불꽃) — 멸망전 경매 ===== */
@@ -10255,6 +10256,42 @@ var AUC_RV_PC={gold:['#ffd86b','#fff3c4','#e6b84d','#ffcc00'],rare:['#ff8fc0','#
 function aucRvGrade(bt){bt=(bt||'').toLowerCase();if(['master','grandmaster','challenger'].indexOf(bt)>=0)return'icon';if(['diamond','emerald'].indexOf(bt)>=0)return'epic';if(['platinum','gold'].indexOf(bt)>=0)return'rare';return'gold';}
 function aucRvOvr(bt){var m={challenger:97,grandmaster:95,master:92,diamond:88,emerald:84,platinum:80,gold:76,silver:70,bronze:64,iron:58,unranked:72};return m[(bt||'').toLowerCase()]||72;}
 function aucPosKo(p){p=String(p||'');if(/탑|top/i.test(p))return'탑';if(/정글|jug|jungle|jg/i.test(p))return'정글';if(/미드|mid/i.test(p))return'미드';if(/원딜|adc|bot/i.test(p))return'원딜';if(/서폿|서포|sup/i.test(p))return'서폿';return p||'?';}
+function aucBirthInfo(name){var m=String(name||'').match(/^\s*(\d{2})\b/);if(!m)return null;var yy=parseInt(m[1],10);var year=(yy<=29)?2000+yy:1900+yy;return {yy:m[1],year:year,age:2026-year,label:m[1]+'년생'};}
+/* ===== ⏱ 운영자 타이머 (토론/영입제출) — 모든 화면 동기 카운트다운 ===== */
+function aucFmtClock(s){s=Math.max(0,s|0);var m=Math.floor(s/60),ss=s%60;return m+':'+(ss<10?'0':'')+ss;}
+function aucTimerBar(st){
+  var t=st&&st.timer; if(!t||!t.endsAt)return'';
+  var rem=Math.max(0,Math.round((t.endsAt-Date.now())/1000));
+  var isBid=t.kind==='bid', label=isBid?'✍️ 영입 제출':'💬 토론', col=isBid?'#e94560':'#3498db';
+  var pct=t.dur?Math.max(0,Math.min(100,rem/t.dur*100)):0, urgent=rem<=10&&rem>0, done=rem<=0;
+  var bc=done?'#888':col, bg=done?'rgba(136,136,136,.12)':(urgent?'rgba(233,69,96,.14)':'rgba(52,152,219,.09)');
+  return '<div id="aucTimerWrap" data-endsat="'+t.endsAt+'" data-dur="'+(t.dur||0)+'" data-kind="'+t.kind+'" style="border:2px solid '+bc+';border-radius:12px;padding:10px 13px;margin-bottom:10px;background:'+bg+'">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span style="font-weight:900;font-size:15px;color:'+bc+'">'+label+'</span><span id="aucTimerVal" style="font-family:var(--mono,ui-monospace,monospace);font-weight:900;font-size:'+(isBid?'30':'26')+'px;color:'+bc+';letter-spacing:1px">'+(done?'⏱ 종료':aucFmtClock(rem))+'</span></div>'
+    +'<div style="height:7px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:7px;overflow:hidden"><i id="aucTimerBarI" style="display:block;height:100%;width:'+pct+'%;background:'+col+';transition:width .9s linear"></i></div></div>';
+}
+function aucTimerTick(){
+  var el=document.getElementById('aucTimerWrap');
+  if(!el){if(window._aucTimerInt){clearInterval(window._aucTimerInt);window._aucTimerInt=null;}return;}
+  var endsAt=parseInt(el.getAttribute('data-endsat'),10)||0, dur=parseInt(el.getAttribute('data-dur'),10)||0;
+  var rem=Math.max(0,Math.round((endsAt-Date.now())/1000));
+  var v=document.getElementById('aucTimerVal'), bar=document.getElementById('aucTimerBarI');
+  if(rem<=0){ if(v)v.textContent='⏱ 종료'; if(bar)bar.style.width='0%';
+    if(!el.getAttribute('data-done')){el.setAttribute('data-done','1');try{if(typeof aucSfx==='function')aucSfx('win','small');}catch(e){}try{if(navigator.vibrate)navigator.vibrate([120,60,120]);}catch(e){}} return; }
+  if(v)v.textContent=aucFmtClock(rem);
+  if(bar&&dur)bar.style.width=Math.max(0,Math.min(100,rem/dur*100))+'%';
+}
+function aucTimerStart(){if(window._aucTimerInt)clearInterval(window._aucTimerInt);window._aucTimerInt=setInterval(aucTimerTick,250);aucTimerTick();}
+function aucTimerOpPanel(st){
+  var has=!!(st&&st.timer&&st.timer.endsAt), dis=has?'':' disabled';
+  return '<div style="border:1px dashed var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:rgba(212,175,55,.05)">'
+    +'<div class="mini" style="font-weight:800;color:var(--gold);margin-bottom:8px">⏱ 타이머 운영 (나에게만 보임)</div>'
+    +'<div style="display:flex;gap:6px;margin-bottom:6px"><button class="btn sm" style="border-color:#3498db;color:#3498db;font-weight:800;flex:1" onclick="aucDoTimer(\'discuss\',60)">💬 토론 1분</button><button class="btn sm" style="border-color:#e94560;color:#e94560;font-weight:800;flex:1" onclick="aucDoTimer(\'bid\',10)">✍️ 영입 10초</button></div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm ghost" style="font-size:11px;padding:4px 11px"'+dis+' onclick="aucDoTimerAdjust(10)">+10초</button><button class="btn sm ghost" style="font-size:11px;padding:4px 11px"'+dis+' onclick="aucDoTimerAdjust(-10)">−10초</button><button class="btn sm ghost" style="font-size:11px;padding:4px 11px"'+dis+' onclick="aucDoTimerClear()">⏹ 정지</button></div>'
+    +'</div>';
+}
+function aucDoTimer(kind,secs){auctionCall('aucTimer',{kind:kind,seconds:secs}).then(function(){aucManualRefresh();}).catch(function(e){toast(e.message||'실패',true);});}
+function aucDoTimerAdjust(d){auctionCall('aucTimerAdjust',{delta:d}).then(function(){aucManualRefresh();}).catch(function(e){toast(e.message||'실패',true);});}
+function aucDoTimerClear(){auctionCall('aucTimerClear',{}).then(function(){aucManualRefresh();}).catch(function(e){toast(e.message||'실패',true);});}
 function aucRvFlash(d,mx){var f=document.getElementById('rvFlash');if(!f)return;f.style.transition='none';f.style.opacity=(mx==null?1:mx);setTimeout(function(){f.style.transition='opacity '+d+'ms ease';f.style.opacity='0';},40);}
 function aucRvFly(el){if(!el)return;el.classList.remove('rvfly');void el.offsetWidth;el.classList.add('rvfly');}
 function aucRvCount(el,t,d,cb){var s=performance.now();function tick(n){var k=Math.min(1,(n-s)/d);el.textContent=Math.round(t*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(tick);else cb&&cb();}requestAnimationFrame(tick);}
@@ -10285,9 +10322,14 @@ var AUC_RV_CSS=`
 #rvOv .rvseq.s1{font-size:clamp(46px,13vw,108px)}
 #rvOv .rvseq.s2{font-size:clamp(60px,17vw,148px);color:#fce100;text-shadow:0 0 34px #fce100,0 0 90px #ff8800}
 #rvOv .rvseq.s3{font-size:clamp(46px,12vw,104px);text-shadow:0 0 40px #ff0055,0 0 100px #ff0055}
+#rvOv .rvseq.s1{display:inline-flex;flex-direction:column;align-items:center;line-height:.92}
+#rvOv .rvseq.s1 .yyage{font-size:clamp(16px,4.2vw,28px);font-weight:800;opacity:.82;letter-spacing:1px;margin-top:9px}
+#rvOv .rvseq.s3{display:inline-flex;flex-direction:column;align-items:center;gap:13px}
+#rvOv .rvseq.s3 .rvface{width:clamp(160px,42vw,300px);height:clamp(160px,42vw,300px);border-radius:50%;object-fit:cover;border:6px solid #fff;box-shadow:0 0 55px #ff0055,0 0 130px -8px #ff7eb3,inset 0 0 22px rgba(0,0,0,.4);animation:rvPulse 2s infinite}
+#rvOv .rvseq.s3 .rvfacename{font-size:clamp(19px,5.2vw,32px);letter-spacing:2px}
 @keyframes rvFly{0%{transform:translate(-50%,-50%) scale(.1) rotateY(90deg);opacity:0}18%{opacity:1;transform:translate(-50%,-50%) scale(.6) rotateY(0)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotateY(0)}100%{transform:translate(-50%,-50%) scale(5) rotateY(-45deg);opacity:0;filter:blur(16px)}}
 #rvOv .rvfly{animation:rvFly 1.45s cubic-bezier(.25,.46,.45,.94) forwards}
-#rvStage{width:clamp(260px,44vw,400px);height:calc(clamp(260px,44vw,400px)*1.46);position:relative;display:flex;align-items:center;justify-content:center;z-index:50;perspective:1500px}
+#rvStage{width:clamp(290px,46vw,450px);height:calc(clamp(290px,46vw,450px)*1.46);position:relative;display:flex;align-items:center;justify-content:center;z-index:50;perspective:1500px}
 #rvOv .rvcard{width:100%;height:100%;position:relative;border-radius:20px;overflow:hidden;opacity:0;z-index:51;transform:translateY(-800px) rotateX(60deg) scale(.3)}
 #rvOv .rvcard.drop{animation:rvDrop 1.7s cubic-bezier(.175,.885,.32,1.275) forwards}
 @keyframes rvDrop{0%{transform:translateY(-800px) rotateX(60deg) scale(.3);opacity:0;filter:brightness(3)}50%{transform:translateY(40px) rotateX(-18deg) scale(1.15);opacity:1;filter:brightness(1.6)}75%{transform:translateY(-16px) rotateX(8deg) scale(.97);opacity:1;filter:brightness(1.1)}100%{transform:translateY(0) rotateX(0) scale(1);opacity:1;filter:brightness(1)}}
@@ -10360,11 +10402,31 @@ function aucPlayReveal(c){try{
   var champ=aucSigChamp(c.name),cImg=aucChampImg(champ);
   var haloA=({gold:'rgba(255,204,0,.4)',rare:'rgba(255,0,140,.4)',epic:'rgba(0,255,170,.4)',icon:'rgba(126,200,255,.45)'})[grade];
   ov.style.setProperty('--gc',gc);ov.style.setProperty('--rc',gc);ov.style.setProperty('--grad',grad);ov.style.setProperty('--rcA',haloA);
-  var labs=['라인전','딜','한타','시야','운영'];var stv=[];var sh='';
-  for(var i=0;i<labs.length;i++){var v=Math.max(45,Math.min(99,ovr+Math.round(Math.random()*10-5)));stv.push(v);sh+='<div class="rvstat"><div class="rvsk"><span>'+labs[i]+'</span><span>'+v+'</span></div><div class="rvsb"><i data-w="'+v+'"></i></div></div>';}
-  var s1=document.getElementById('rvSeq1');s1.textContent=(c.tier||'')+' 등급';s1.style.textShadow='0 0 40px '+gc+',0 0 90px '+gc;
+  // 🎯 진짜 라인 스텟 (data.json) — 기록 없으면 등급 기반 생성으로 폴백
+  var pid=null; try{var _pl=(state.players||[]).find(function(x){return x.displayName===c.name;});if(_pl)pid=_pl.id;}catch(e){}
+  var lstat=null,lLane=''; if(pid){try{var _lm=playerLaneStats(pid);var _bg=0;for(var _L in _lm){if(_lm[_L].g>_bg){_bg=_lm[_L].g;lstat=_lm[_L];lLane=_L;}}}catch(e){}}
+  var rows=[];
+  if(lstat&&lstat.g>0){
+    var _g=lstat.g,_wr=Math.round(lstat.w/_g*100),_kda=(lstat.k+lstat.a)/Math.max(1,lstat.d),_dmg=Math.round(lstat.dmg/_g),_vis=lstat.vis/_g,_kp=(lstat.k+lstat.a)/_g;
+    rows.push({l:'승률',v:_wr+'%',w:_wr});
+    rows.push({l:'KDA',v:_kda.toFixed(1),w:Math.min(99,_kda/6*100)});
+    rows.push({l:'평균 딜',v:fmt(_dmg),w:Math.min(99,_dmg/35000*100)});
+    rows.push({l:'시야',v:_vis.toFixed(0),w:Math.min(99,_vis/50*100)});
+    rows.push({l:'킬관여',v:_kp.toFixed(1),w:Math.min(99,_kp/14*100)});
+  }else{
+    var labs=['라인전','딜','한타','시야','운영'];
+    for(var i=0;i<labs.length;i++){var v=Math.max(45,Math.min(99,ovr+Math.round(Math.random()*10-5)));rows.push({l:labs[i],v:String(v),w:v});}
+  }
+  var sh=rows.map(function(r){return '<div class="rvstat"><div class="rvsk"><span>'+r.l+'</span><span>'+r.v+'</span></div><div class="rvsb"><i data-w="'+Math.round(r.w)+'"></i></div></div>';}).join('');
+  // 시퀀스 ① 출생년도/나이 ② 포지션 ③ 챔피언 얼굴
+  var bi=aucBirthInfo(c.name);
+  var s1=document.getElementById('rvSeq1');
+  if(bi){s1.innerHTML='<span>'+bi.label+'</span><span class="yyage">만 '+bi.age+'세</span>';}else{s1.textContent=(c.tier||'')+' 등급';}
+  s1.style.textShadow='0 0 40px '+gc+',0 0 90px '+gc;
   document.getElementById('rvSeq2').textContent=role;
-  document.getElementById('rvSeq3').textContent=champ||AUC_RV_GN[grade];
+  var s3=document.getElementById('rvSeq3');
+  if(cImg){s3.innerHTML='<img class="rvface" src="'+esc(cImg)+'" onerror="this.replaceWith(document.createTextNode(\''+emoji+'\'))"><span class="rvfacename">🎯 '+esc(champ||'')+'</span>';}
+  else{s3.textContent=champ||AUC_RV_GN[grade];}
   var win=document.getElementById('rvWin');win.className='';win.textContent='';
   var halo=document.getElementById('rvHalo');halo.className='';
   var stg=document.getElementById('rvStage');stg.innerHTML='';
@@ -10433,7 +10495,7 @@ function doomTcgCard(l){
   return '<div class="tcg in" style="cursor:pointer" onclick="doomWaitNext()"><img src="'+esc(l.img||'')+'" alt="'+esc(l.leader)+' 팀장 카드" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;z-index:2" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'+cssCard+'</div>';
 }
 function doomWaitShow(){
-  return '<div style="display:flex;flex-direction:column;align-items:center;gap:11px;padding:6px 0 2px"><div style="font-weight:900;font-size:15px;color:var(--gold)">🃏 팀장 카드</div><div style="width:min(330px,82vw)" id="doomWaitWrap"></div><div id="doomWaitDots" style="display:flex;gap:7px"></div><div class="mini dim">탭하면 다음 카드 →</div></div>';
+  return '<div style="display:flex;flex-direction:column;align-items:center;gap:11px;padding:6px 0 2px"><div style="font-weight:900;font-size:17px;color:var(--gold)">🃏 팀장 카드</div><div style="width:min(400px,92vw)" id="doomWaitWrap"></div><div id="doomWaitDots" style="display:flex;gap:7px"></div><div class="mini dim">탭하면 다음 카드 →</div></div>';
 }
 function doomWaitRender(){
   var wrap=document.getElementById('doomWaitWrap');if(!wrap)return;
@@ -10446,25 +10508,25 @@ function doomWaitNext(){window._doomWaitIdx=((window._doomWaitIdx||0)+1)%DOOM_LE
 function doomWaitRestart(){clearInterval(window._doomWaitTimer);window._doomWaitTimer=setInterval(function(){if(!document.getElementById('doomWaitWrap')){clearInterval(window._doomWaitTimer);window._doomWaitTimer=null;return;}window._doomWaitIdx=((window._doomWaitIdx||0)+1)%DOOM_LEADERS.length;doomWaitRender();},4200);}
 function doomWaitStart(){doomTcgInit();if(window._doomWaitIdx==null)window._doomWaitIdx=0;doomWaitRender();doomWaitRestart();}
 /* 🎬 등장 연출 미리보기 — PC/모바일 어디서나 확인용 */
-function aucPreviewReveal(){window._rvBusy=false;window._aucRevealed=null;var demo={name:(DOOM_LEADERS[0]&&DOOM_LEADERS[0].leader)||'미르',position:'ADC',tier:'마스터'};aucPlayReveal(demo);}
+function aucPreviewReveal(){window._rvBusy=false;window._aucRevealed=null;var dp=(typeof DOOM_POOL!=='undefined'&&DOOM_POOL[0])?DOOM_POOL[0]:null;var demo=dp?{name:dp.displayName,position:dp.soloPos||'ADC',tier:dp.soloTier||'마스터'}:{name:(DOOM_LEADERS[0]&&DOOM_LEADERS[0].acct)||'00 미르',position:'ADC',tier:'마스터'};aucPlayReveal(demo);}
 function aucCurrentCard(st){
   var c=st.current; if(!c)return'';
-  return '<div style="text-align:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(212,175,55,.10),transparent);margin-bottom:12px">'
+  return '<div style="text-align:center;padding:18px 16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(212,175,55,.10),transparent);margin-bottom:12px">'
     +'<div class="mini dim">현재 매물 · 남은 매물 '+(st.queueLeft||0)+'명</div>'
-    +aucChampFaceHtml(c.name,c.position,78)
-    +'<div style="font-size:22px;font-weight:900">'+esc(c.name)+'</div>'
-    +'<div class="mini dim" style="margin-top:2px">'+esc(c.position||'')+' · '+esc(c.tier||'')+' · '+capLabel(st.capOff?0:(c.cap||0))+'</div>'
+    +aucChampFaceHtml(c.name,c.position,112)
+    +'<div style="font-size:30px;font-weight:900;margin-top:6px">'+esc(c.name)+'</div>'
+    +'<div style="margin-top:5px;font-size:15px;font-weight:700;opacity:.9">'+esc(c.position||'')+' · '+esc(c.tier||'')+' · '+capLabel(st.capOff?0:(c.cap||0))+'</div>'
     +(st.prior>0?'<div class="tag" style="margin-top:8px;background:#e67e22">🔁 재경매 · 누적 '+st.prior+'P · 최소 '+st.minBid+'P</div>':'')
     +'</div>';
 }
 function aucTeamsPanel(st,showRoster){
-  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">'
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">'
     +(st.teams||[]).map(function(t){var img=aucLImg(t);
-      return '<div style="border:1px solid var(--line);border-left:4px solid '+t.color+';border-radius:10px;padding:8px 10px">'
-        +'<div style="display:flex;gap:8px;align-items:center">'
-          +(img?'<img src="'+img+'" alt="" loading="lazy" style="width:30px;height:42px;object-fit:cover;border-radius:5px;border:1px solid '+t.color+';flex:none" onerror="this.style.display=\'none\'">':'')
-          +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px"><b style="color:'+t.color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.name)+'</b><span class="mini" style="font-weight:800;flex:none">'+t.points+'P</span></div>'
-          +'<div class="mini dim">'+(t.roster.length)+'/5명'+(t.full?' ✅':'')+'</div></div>'
+      return '<div style="border:1px solid var(--line);border-left:5px solid '+t.color+';border-radius:10px;padding:10px 12px">'
+        +'<div style="display:flex;gap:10px;align-items:center">'
+          +(img?'<img src="'+img+'" alt="" loading="lazy" style="width:44px;height:60px;object-fit:cover;border-radius:6px;border:1px solid '+t.color+';flex:none" onerror="this.style.display=\'none\'">':'')
+          +'<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px"><b style="color:'+t.color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:17px">'+esc(t.name)+'</b><span style="font-weight:900;flex:none;font-size:15px">'+t.points+'P</span></div>'
+          +'<div class="dim" style="font-size:13px;font-weight:600;margin-top:2px">'+(t.roster.length)+'/5명'+(t.full?' ✅':'')+'</div></div>'
         +'</div>'
         +(showRoster&&t.roster.length?'<div class="mini" style="margin-top:5px;line-height:1.5">'+t.roster.map(function(r){return esc(r.name)+'('+r.cost+')';}).join(', ')+'</div>':'')
         +'</div>';
@@ -10509,7 +10571,8 @@ function aucOpHtml(st){
       +'<details open style="margin-bottom:8px"><summary class="mini dim">최종 로스터 · 수정 (도망간 선수 빼기/재경매)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'</div></details>'
       +'<button class="btn ghost" style="width:100%" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div>';
   }
-  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucTimerBar(st)+aucCurrentCard(st);
+  inner+=aucTimerOpPanel(st);
   if(st.test){ inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span class="mini dim">👁 미리보기:</span>'+(st.teams||[]).map(function(t){return '<button class="btn sm ghost" style="font-size:11px;padding:3px 7px;border-color:'+t.color+';color:'+t.color+'" onclick="aucViewAs('+t.id+')">'+esc(t.name)+'</button>';}).join('')+'<button class="btn sm ghost" style="font-size:11px;padding:3px 7px" onclick="aucViewAs(&quot;spec&quot;)">🍿 관전</button></div>'; }
   var elig=st.eligible||[],bids=st.bids||{},at=st.acctTeam||{};
   inner+='<div style="margin-bottom:10px"><div class="mini dim" style="margin-bottom:6px">입찰 현황 — 제출 <b>'+(st.submittedCount||0)+'</b> / 입찰가능 '+elig.length+'팀</div>';
@@ -10536,7 +10599,7 @@ function aucOpHtml(st){
 function aucLeaderHtml(st){
   var myTeam=(st.teams||[]).filter(function(t){return t.id===st.myTeamId;})[0];
   if(st.phase==='done'){return '<div class="card"><div style="text-align:center;padding:14px"><div style="font-size:30px">🏁</div><h3 style="margin:6px 0">경매 종료!</h3></div>'+aucTeamsPanel(st,true)+'</div>';}
-  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucTimerBar(st)+aucCurrentCard(st);
   if(st.phase==='revealed'){inner+='<p class="mini dim" style="text-align:center">공개 완료 — 다음 매물을 기다려주세요.</p>';}
   else if(!st.iEligible){inner+='<div style="text-align:center;padding:12px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">이번 매물엔 입찰할 수 없어요<br>(로스터 마감 또는 포인트 부족 🥲)</p></div>';}
   else if(st.iSubmitted){inner+='<div style="text-align:center;padding:12px;border:1px solid var(--win);border-radius:10px;margin-bottom:8px"><div style="font-size:20px;font-weight:900;color:var(--win)">✅ '+st.myBid+'P 제출 완료</div><div class="mini dim">낙찰가 '+(st.prior+st.myBid)+'P · 공개를 기다려주세요</div></div><button class="btn ghost" style="width:100%" onclick="aucDoUnbid()">입찰 취소 / 수정</button>';}
@@ -10551,7 +10614,7 @@ function aucLeaderHtml(st){
 
 function aucSpecHtml(st){
   if(st.phase==='done'){return '<div class="card"><div style="text-align:center;padding:14px"><div style="font-size:30px">🏁</div><h3 style="margin:6px 0">경매 종료!</h3></div>'+aucTeamsPanel(st,true)+'</div>';}
-  var inner=aucTestBanner(st)+aucResultBanner(st)+aucCurrentCard(st);
+  var inner=aucTestBanner(st)+aucResultBanner(st)+aucTimerBar(st)+aucCurrentCard(st);
   if(!st.loggedIn)inner+='<p class="mini dim" style="text-align:center;margin:0 0 8px">💡 팀장·운영진은 <b>💰 지갑에서 로그인</b>하면 입찰/콘솔이 떠요</p>';
   if(st.phase==='revealed')inner+='<p class="mini dim" style="text-align:center">공개 완료 — 다음 매물 대기 중</p>';
   else inner+='<div style="text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px"><div style="font-size:18px">🔒 입찰 진행 중…</div><div class="mini dim">'+(st.submittedCount||0)+' / '+(st.eligibleCount||0)+'팀 제출 (입찰가는 공개 시 발표)</div></div>';
