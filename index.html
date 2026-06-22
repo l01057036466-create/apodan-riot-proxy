@@ -10591,7 +10591,7 @@ async function aucDoStart(test){
   if(pool.length<1)return toast('선수를 1명 이상 선택해주세요.',true);
   var teams=DOOM_LEADERS.map(function(l,i){var a=(document.getElementById('aucLA'+i)||{}).value;var pt=(document.getElementById('aucLP'+i)||{}).value;return {name:l.name,leader:l.leader,acct:(a||l.acct).trim(),color:l.color,points:parseInt(pt,10)||l.points};});
   var queue=pool.map(function(p){return {name:p.displayName,position:p.soloPos||'',tier:p.soloTier||'',cap:doomCap(p.soloTier)};});
-  for(var i=queue.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=queue[i];queue[i]=queue[j];queue[j]=tmp;}
+  // 🎲 순서 셔플은 서버에서 처리 — 운영자 브라우저도 다음 매물 순서를 모름 (공정성)
   var msg=test?(pool.length+'명으로 🧪 테스트 경매를 시작할까요?\n운영자가 6팀 입찰을 대신 넣어볼 수 있어요.'):(pool.length+'명으로 실전 경매를 시작할까요?\n시작하면 모든 멤버에게 보여요.');
   if(!confirm(msg))return;
   try{await auctionCall('aucStart',{teams:teams,queue:queue,test:!!test});toast(test?'🧪 테스트 경매 시작!':'경매 시작! 🎰');aucManualRefresh();}catch(e){toast(e.message||'시작 실패',true);}
