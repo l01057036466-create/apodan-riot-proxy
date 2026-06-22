@@ -52,12 +52,13 @@ module.exports = async function handler(req, res) {
 
     if (action === 'aucState') { // 관전 = 로그인 불필요
       var a = await aucGet();
-      if (!a || !a.active) return res.status(200).json({ active: false, role: isOp(s) ? 'op' : (aucTeam(a, s && s.name) ? 'leader' : 'spectator'), loggedIn: !!(s && s.name) });
+      var dOpen = (await redis(['GET', 'doom:open'])) || 'closed';
+      if (!a || !a.active) return res.status(200).json({ active: false, open: dOpen, role: isOp(s) ? 'op' : (aucTeam(a, s && s.name) ? 'leader' : 'spectator'), loggedIn: !!(s && s.name) });
       var op = isOp(s), my = aucTeam(a, s && s.name), bids = await aucBids(), elig = aucElig(a);
       var pub = {
         active: true, phase: a.phase, current: a.current, prior: a.prior, minBid: a.minBid, capOff: a.capOff, loggedIn: !!(s && s.name),
         teams: a.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
-        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed
+        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen
       };
       if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
       else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); }
@@ -196,6 +197,11 @@ module.exports = async function handler(req, res) {
       aFN.phase = 'done'; aFN.confirmed = true; aFN.queue = []; aFN.current = null;
       await redis(['DEL', 'doom:auc:bids']); await aucPut(aFN);
       return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucPublish') { // 운영 — 멸망전 페이지를 다른 팀장·관전자에게 공개/숨김
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      await redis(['SET', 'doom:open', String(body.level || 'closed')]);
+      return res.status(200).json({ ok: true, open: String(body.level || 'closed') });
     }
     if (action === 'aucReset') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
