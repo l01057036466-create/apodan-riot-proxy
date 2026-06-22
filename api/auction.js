@@ -58,10 +58,10 @@ module.exports = async function handler(req, res) {
       var pub = {
         active: true, phase: a.phase, current: a.current, prior: a.prior, minBid: a.minBid, capOff: a.capOff, loggedIn: !!(s && s.name),
         teams: a.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
-        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null
+        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null, tiedCount: (a.tied || []).length
       };
-      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
-      else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); }
+      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.tied = a.tied || null; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
+      else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); pub.iTied = !!(a.tied && a.tied.indexOf(s.name) >= 0); }
       else pub.role = 'spectator';
       return res.status(200).json(pub);
     }
@@ -86,6 +86,7 @@ module.exports = async function handler(req, res) {
       if (aBD.phase !== 'bidding' && aBD.phase !== 'tie') return res.status(400).json({ error: '지금은 입찰 시간이 아니에요' });
       var tBD = aucTeam(aBD, s.name); if (!tBD) return res.status(403).json({ error: '팀장만 입찰할 수 있어요' });
       if (aucElig(aBD).indexOf(s.name) < 0) return res.status(400).json({ error: '이번 매물엔 입찰할 수 없어요 (로스터 마감 또는 포인트 부족)' });
+      if (aBD.phase === 'tie' && Array.isArray(aBD.tied) && aBD.tied.indexOf(s.name) < 0) return res.status(400).json({ error: '동점자만 재입찰할 수 있어요' });
       var vBD = parseInt(body.amount, 10);
       if (isNaN(vBD) || vBD < aBD.minBid) return res.status(400).json({ error: '최소 ' + aBD.minBid + 'P 이상이어야 해요' });
       if (vBD % 10 !== 0) return res.status(400).json({ error: '10P 단위로 입력해주세요' });
@@ -102,6 +103,16 @@ module.exports = async function handler(req, res) {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aRV = await aucGet(); if (!aRV || !aRV.active) return res.status(400).json({ error: '경매 없음' });
       if (aRV.phase !== 'bidding' && aRV.phase !== 'tie') return res.status(400).json({ error: '공개 단계가 아니에요' });
+      if (aRV.phase === 'tie' && Array.isArray(aRV.tied) && aRV.tied.length === 1) { // 동점 → 한 명만 남음: 경쟁 없으니 현재가(prior)에 단독 낙찰
+        var soloNm = aRV.tied[0], soloT = aucTeam(aRV, soloNm);
+        if (soloT && (soloT.roster || []).length < 5 && soloT.points >= aRV.prior) {
+          soloT.points -= aRV.prior; soloT.roster.push({ name: aRV.current.name, cost: aRV.prior, position: aRV.current.position, tier: aRV.current.tier, cap: aRV.current.cap });
+          aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: soloT.name, leader: soloT.leader, color: soloT.color, cost: aRV.prior, prior: aRV.prior, bid: 0, n: 1, sole: true };
+          aRV.phase = 'revealed'; aRV.tied = null; aRV.timer = null;
+          await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+          return res.status(200).json({ ok: true, result: 'sold', winner: soloT.name, cost: aRV.prior, sole: true });
+        }
+      }
       var bRV = await aucBids(), eRV = aucElig(aRV), valid = [];
       for (var kRV in bRV) if (eRV.indexOf(kRV) >= 0) valid.push({ acct: kRV, bid: bRV[kRV] });
       if (!valid.length) return res.status(200).json({ ok: true, result: 'none' });
@@ -118,6 +129,24 @@ module.exports = async function handler(req, res) {
       await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
       return res.status(200).json({ ok: true, result: 'tie', tied: aRV.tied.length, prior: aRV.prior, minBid: aRV.minBid });
     }
+    if (action === 'aucGiveUp') { // 🏳️ 동점 재입찰 중 포기 선언
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aGU = await aucGet(); if (!aGU || !aGU.active) return res.status(400).json({ error: '경매 없음' });
+      if (aGU.phase !== 'tie') return res.status(400).json({ error: '동점 재입찰 중에만 포기할 수 있어요' });
+      if (!Array.isArray(aGU.tied) || aGU.tied.indexOf(s.name) < 0) return res.status(403).json({ error: '동점자만 포기할 수 있어요' });
+      aGU.tied = aGU.tied.filter(function (x) { return x !== s.name; });
+      await redis(['HDEL', 'doom:auc:bids', s.name]);
+      if (aGU.tied.length === 0) { // 전원 포기 → 유찰
+        aGU.unsold = aGU.unsold || []; aGU.unsold.push(aGU.current.name);
+        aGU.lastResult = { player: aGU.current.name, passed: true, allGaveUp: true };
+        aGU.phase = 'revealed'; aGU.tied = null; aGU.timer = null;
+        await redis(['DEL', 'doom:auc:bids']); await aucPut(aGU);
+        return res.status(200).json({ ok: true, result: 'none', allGaveUp: true });
+      }
+      await aucPut(aGU); // 1명 이상 남음 → 공개(낙찰) 때 정산 (한 명이면 현재가 단독 낙찰)
+      return res.status(200).json({ ok: true, result: 'continue', remaining: aGU.tied.length });
+    }
+
     if (action === 'aucNext') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aNX = await aucGet(); if (!aNX || !aNX.active) return res.status(400).json({ error: '경매 없음' });
