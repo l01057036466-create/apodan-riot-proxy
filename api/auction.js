@@ -154,6 +154,63 @@ module.exports = async function handler(req, res) {
       aTC.timer = null; await aucPut(aTC);
       return res.status(200).json({ ok: true });
     }
+    // ===== 📅 경기 일정 + 🙋 대타 구인 =====
+    if (action === 'aucSchedList') {
+      var schedL = []; try { schedL = JSON.parse((await redis(['GET', 'doom:sched'])) || '[]'); } catch (e) { schedL = []; }
+      var recruitL = []; try { recruitL = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recruitL = []; }
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL });
+    }
+    if (action === 'aucSchedAdd') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
+      var schA = []; try { schA = JSON.parse((await redis(['GET', 'doom:sched'])) || '[]'); } catch (e) { schA = []; }
+      var typeA = ['available', 'scrim', 'match'].indexOf(body.type) >= 0 ? body.type : 'available';
+      var dateA = String(body.date || '').slice(0, 10);
+      if (!dateA) return res.status(400).json({ error: '날짜를 선택해주세요' });
+      var entA = { id: 'S' + Date.now().toString(36) + Math.floor(Math.random() * 1000), type: typeA, teamName: String(body.teamName || '').slice(0, 40), opponent: String(body.opponent || '').slice(0, 40), date: dateA, time: String(body.time || '').slice(0, 5), note: String(body.note || '').slice(0, 120), by: s.name, at: Date.now() };
+      schA.push(entA); if (schA.length > 300) schA = schA.slice(-300);
+      await redis(['SET', 'doom:sched', JSON.stringify(schA)]);
+      return res.status(200).json({ ok: true, entry: entA });
+    }
+    if (action === 'aucSchedDel') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var schD = []; try { schD = JSON.parse((await redis(['GET', 'doom:sched'])) || '[]'); } catch (e) { schD = []; }
+      var tgtD = schD.filter(function (x) { return x.id === body.id; })[0];
+      if (!tgtD) return res.status(404).json({ error: '항목을 찾을 수 없어요' });
+      if (tgtD.by !== s.name && !isOp(s)) return res.status(403).json({ error: '본인이 등록한 항목만 지울 수 있어요' });
+      schD = schD.filter(function (x) { return x.id !== body.id; });
+      await redis(['SET', 'doom:sched', JSON.stringify(schD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucRecruitAdd') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
+      var recA = []; try { recA = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recA = []; }
+      var kindA = (body.kind === 'practice') ? 'practice' : 'scrim';
+      var postA = { id: 'R' + Date.now().toString(36) + Math.floor(Math.random() * 1000), teamName: String(body.teamName || '').slice(0, 40), kind: kindA, position: String(body.position || '').slice(0, 20), when: String(body.when || '').slice(0, 40), note: String(body.note || '').slice(0, 120), by: s.name, status: 'open', at: Date.now() };
+      recA.unshift(postA); if (recA.length > 200) recA = recA.slice(0, 200);
+      await redis(['SET', 'doom:recruit', JSON.stringify(recA)]);
+      return res.status(200).json({ ok: true, post: postA });
+    }
+    if (action === 'aucRecruitDel') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var recD = []; try { recD = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recD = []; }
+      var tgtRD = recD.filter(function (x) { return x.id === body.id; })[0];
+      if (!tgtRD) return res.status(404).json({ error: '글을 찾을 수 없어요' });
+      if (tgtRD.by !== s.name && !isOp(s)) return res.status(403).json({ error: '본인 글만 지울 수 있어요' });
+      recD = recD.filter(function (x) { return x.id !== body.id; });
+      await redis(['SET', 'doom:recruit', JSON.stringify(recD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucRecruitToggle') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var recT = []; try { recT = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recT = []; }
+      var tgtT = recT.filter(function (x) { return x.id === body.id; })[0];
+      if (!tgtT) return res.status(404).json({ error: '글을 찾을 수 없어요' });
+      if (tgtT.by !== s.name && !isOp(s)) return res.status(403).json({ error: '본인 글만 수정할 수 있어요' });
+      tgtT.status = (tgtT.status === 'open') ? 'closed' : 'open';
+      await redis(['SET', 'doom:recruit', JSON.stringify(recT)]);
+      return res.status(200).json({ ok: true, status: tgtT.status });
+    }
+
     if (action === 'aucTestBid') { // 🧪 운영자가 특정 팀 대신 입찰 (테스트 모드 전용)
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aTB = await aucGet(); if (!aTB || !aTB.active) return res.status(400).json({ error: '경매 없음' });
