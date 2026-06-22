@@ -10589,7 +10589,7 @@ function aucOpHtml(st){
   if(st.phase==='tie'&&st.tied&&st.tied.length){inner+='<div style="border:2px solid #e67e22;border-radius:10px;padding:9px 12px;margin-bottom:10px;background:rgba(230,126,34,.08)"><div style="font-weight:900;color:#e67e22">🔁 동점 재입찰 — 남은 동점자 '+st.tied.length+'팀</div><div class="mini dim" style="margin-top:2px">'+st.tied.map(function(nm){var t=(st.acctTeam||{})[nm]||{};return esc(t.name||nm);}).join(', ')+' · 현재가 '+st.prior+'P (이 팀들만 재입찰)</div></div>';}
   if(st.test){ inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span class="mini dim">👁 미리보기:</span>'+(st.teams||[]).map(function(t){return '<button class="btn sm ghost" style="font-size:11px;padding:3px 7px;border-color:'+t.color+';color:'+t.color+'" onclick="aucViewAs('+t.id+')">'+esc(t.name)+'</button>';}).join('')+'<button class="btn sm ghost" style="font-size:11px;padding:3px 7px" onclick="aucViewAs(&quot;spec&quot;)">🍿 관전</button></div>'; }
   var elig=st.eligible||[],bids=st.bids||{},at=st.acctTeam||{};
-  inner+='<div style="margin-bottom:10px"><div class="mini dim" style="margin-bottom:6px">입찰 현황 — 제출 <b>'+(st.submittedCount||0)+'</b>'+((st.passedCount||0)?(' · 패스 <b>'+st.passedCount+'</b>'):'')+' / 입찰가능 '+elig.length+'팀'+(((st.submittedCount||0)+(st.passedCount||0)>=elig.length&&elig.length)?' <span style="color:var(--win);font-weight:700">✓ 전원 결정</span>':'')+'</div>';
+  inner+='<div style="margin-bottom:10px"><div class="mini dim" style="margin-bottom:6px">입찰 현황</div>';
   if(!elig.length)inner+='<p class="mini dim">입찰 가능한 팀이 없어요 (로스터 마감/포인트 부족).</p>';
   else inner+=elig.map(function(a){var t=at[a]||{name:a,color:'#888'};var has=bids[a]!=null;var psd=(st.passed||[]).indexOf(a)>=0;
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:4px;border-left:4px solid '+(t.color||'#888')+'">'
@@ -10628,7 +10628,7 @@ function aucLeaderHtml(st){
   else if(st.iPassed){var capP=st.capOff?0:((st.current&&st.current.cap)||0);inner+='<div style="text-align:center;padding:10px;border:1px solid var(--lose);border-radius:10px;margin-bottom:8px"><div style="font-weight:800;color:var(--lose)">🙅 이 매물 패스함</div><div class="mini dim">마음 바뀌면 아래에 다시 입찰하면 돼요</div></div><div class="f"><label>입찰가 (최소 '+st.minBid+'P · 10P 단위'+(capP>0?(' · 상한 '+capP+'P'):'')+')</label><input id="aucBidInput" type="number" inputmode="numeric" min="'+st.minBid+'" step="10" placeholder="예: '+st.minBid+'"></div><button class="btn gold" style="width:100%;font-size:15px;padding:12px" onclick="aucDoBid()">🔒 그래도 입찰할래요</button>';}
   else{var cap=st.capOff?0:((st.current&&st.current.cap)||0);
     inner+='<div class="f"><label>입찰가 (최소 '+st.minBid+'P · 10P 단위'+(cap>0?(' · 상한 '+cap+'P'):'')+')</label><input id="aucBidInput" type="number" inputmode="numeric" min="'+st.minBid+'" step="10" placeholder="예: '+st.minBid+'"></div><button class="btn gold" style="width:100%;font-size:16px;padding:13px" onclick="aucDoBid()">🔒 블라인드 입찰 제출</button><button class="btn" style="width:100%;margin-top:6px;border-color:var(--lose);color:var(--lose);font-weight:700" onclick="aucDoPassBid()">🙅 패스 (이 매물 안 살래요)</button>';}
-  inner+='<div class="mini dim" style="text-align:center;margin-top:8px">제출 '+(st.submittedCount||0)+((st.passedCount||0)?(' · 패스 '+st.passedCount):'')+' / '+(st.eligibleCount||0)+'팀 · 남은 매물 '+(st.queueLeft||0)+'명</div>';
+  inner+='<div class="mini dim" style="text-align:center;margin-top:8px">남은 매물 '+(st.queueLeft||0)+'명</div>';
   inner+=aucUnsoldList(st);
   inner+='<details open style="margin-top:10px"><summary class="mini dim">📋 전체 팀 현황 — 누가 누구 샀는지</summary><div style="margin-top:8px">'+aucTeamsPanel(st,true)+'</div></details>';
   inner+=aucCardsGallery();
@@ -10641,9 +10641,9 @@ function aucSpecHtml(st){
   var inner=aucTestBanner(st)+aucResultBanner(st)+aucTimerBar(st)+aucCurrentCard(st);
   if(!st.loggedIn)inner+='<p class="mini dim" style="text-align:center;margin:0 0 8px">💡 팀장·운영진은 <b>💰 지갑에서 로그인</b>하면 입찰/콘솔이 떠요</p>';
   if(st.phase==='revealed')inner+='<p class="mini dim" style="text-align:center">공개 완료 — 다음 매물 대기 중</p>';
-  else inner+='<div style="text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px"><div style="font-size:18px">🔒 입찰 진행 중…</div><div class="mini dim">'+(st.submittedCount||0)+' / '+(st.eligibleCount||0)+'팀 제출 (입찰가는 공개 시 발표)</div></div>';
+  else inner+='<div style="text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px"><div style="font-size:18px">🔒 입찰 진행 중…</div><div class="mini dim">입찰가는 공개 때 발표돼요</div></div>';
   inner+=aucUnsoldList(st);
-  inner+=aucTeamsPanel(st,true);
+  inner+='<div class="mini dim" style="margin:4px 0 6px;font-weight:700">📋 누가 누구 영입했는지</div>'+aucTeamsPanel(st,true);
   inner+=aucCardsGallery();
   var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0">🍿 경매 관전</h3><button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="aucManualRefresh()">🔄</button></div>';
   return '<div class="card">'+head+inner+'</div>';
