@@ -10747,8 +10747,15 @@ function doomBody(){
 }
 function doomAfter(){
   if(window._doomTab==='auction'){aucStartPoll();return;}
-  if((window._doomTab==='rating'||window._doomTab==='schedule')&&voteApiBase()){
-    auctionCall('aucState',{}).then(function(st){window._aucSt=st;if(window._doomTab==='rating'||window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+  if(window._doomTab==='rating'&&voteApiBase()){
+    auctionCall('aucState',{}).then(function(st){window._aucSt=st;if(window._doomTab==='rating'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+  }
+  if(window._doomTab==='schedule'&&voteApiBase()){
+    Promise.all([auctionCall('aucState',{}).catch(function(){return null;}),auctionCall('aucSchedList',{}).catch(function(){return null;})]).then(function(res){
+      if(res[0])window._aucSt=res[0];
+      if(res[1]){window._doomSched=res[1].sched||[];window._doomRecruit=res[1].recruit||[];}
+      if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
+    });
   }
 }
 function doomHomeTab(){
@@ -10801,19 +10808,96 @@ function doomRatingTab(){
   return '<div style="background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:14px;padding:14px 14px 6px;margin-bottom:18px"><h3 style="margin:0 0 14px">⭐ 선수 레이팅 <span class="mini dim">· 주라인별</span></h3>'+(laneHtml||'<p class="mini dim">선수 데이터가 없어요.</p>')+'</div>'+teamHtml
     +'<p class="mini dim" style="margin:14px 2px 0;line-height:1.7">※ 체급 = 내전 성적(스탯·승률) + 솔랭/자랭 티어 기반(0~100).<br>※ 챔프 얼굴은 각 선수의 <b>주라인 시그니처 픽</b>(내전 주라인 최다 픽)이에요.</p>';
 }
-/* ===== 📅 경기 일정 (대진 준비) ===== */
+/* ===== 📅 경기 일정 + 🙋 대타 구인방 ===== */
+function doomSchedFmtDate(d){if(!d)return'';var p=String(d).split('-');if(p.length<3)return d;var dt=new Date(+p[0],+p[1]-1,+p[2]);if(isNaN(dt.getTime()))return d;var wd=['일','월','화','수','목','금','토'][dt.getDay()];return (+p[1])+'/'+(+p[2])+' ('+wd+')';}
+function doomSchedBadge(type){
+  if(type==='match')return '<span style="background:var(--gold);color:#1a1206;font-weight:800;font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap">🏆 본경기</span>';
+  if(type==='scrim')return '<span style="background:#3498db;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap">⚔️ 스크림</span>';
+  return '<span style="background:#27ae60;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap">✅ 가능</span>';
+}
+function doomSchedMe(){return (window._bank&&window._bank.name)||((typeof bankSession==='function'&&bankSession())?bankSession().name:'')||'';}
+function doomSchedIsOp(){return !!(window._bank&&(window._bank.role==='dev'||window._bank.rank==='chairman'||String(window._bank.name||'').indexOf('물방울')>=0));}
 function doomScheduleTab(){
   var st=window._aucSt;
-  var teams=(st&&st.teams&&st.teams.some(function(t){return (t.roster||[]).length;}))?st.teams:DOOM_LEADERS.map(function(l){return {name:l.name,leader:l.leader,color:l.color,roster:[]};});
-  return '<div class="card" style="padding:18px;text-align:center"><div style="font-size:40px">📅</div><h3 style="margin:8px 0 4px">경기 일정</h3>'
-    +'<p class="mini dim" style="margin:0">제2회 아포단 멸망전 · 2026.07.01 ~ 07.30</p>'
-    +'<p class="mini" style="margin:10px 0 0;color:var(--gold);font-weight:700">대진표는 경매 종료 후 공개됩니다</p></div>'
-    +'<div style="margin-top:14px"><div class="mini dim" style="margin-bottom:8px">참가 팀 ('+teams.length+')</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">'
-      +teams.map(function(t){return '<div style="border:1px solid var(--line);border-left:4px solid '+t.color+';border-radius:10px;padding:10px"><b style="color:'+t.color+'">'+esc(t.name)+'</b><div class="mini dim">팀장 '+esc(t.leader)+(t.roster&&t.roster.length?' · '+t.roster.length+'/5명':'')+'</div></div>';}).join('')
-    +'</div></div>'
-    +'<p class="mini dim" style="margin:16px 2px 0">※ 대진 방식(풀리그·싱글토너먼트·더블 엘리미 등)이 정해지면 일정표를 자동으로 짜드릴게요. 원하는 방식 알려주세요!</p>';
+  var teamObjs=(st&&st.teams&&st.teams.length)?st.teams:DOOM_LEADERS.map(function(l){return {name:l.name,leader:l.leader,color:l.color,roster:[]};});
+  var colorOf={};teamObjs.forEach(function(t){colorOf[t.name]=t.color||'#888';});
+  var me=doomSchedMe(),op=doomSchedIsOp(),loggedIn=!!me;
+  var sched=(window._doomSched||[]).slice(),recruit=(window._doomRecruit||[]).slice();
+  var teamOpts=teamObjs.map(function(t){return '<option value="'+esc(t.name)+'">'+esc(t.name)+'</option>';}).join('');
+  var inp='padding:8px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px';
+
+  var teamStrip='<div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:5px;margin-bottom:14px">'
+    +teamObjs.map(function(t){return '<div style="flex:none;border:1px solid var(--line);border-left:4px solid '+(t.color||'#888')+';border-radius:9px;padding:7px 11px"><b style="color:'+(t.color||'#888')+';font-size:13px;white-space:nowrap">'+esc(t.name)+'</b><div class="mini dim" style="white-space:nowrap">팀장 '+esc(t.leader||'')+(t.roster&&t.roster.length?' · '+t.roster.length+'/5':'')+'</div></div>';}).join('')+'</div>';
+
+  var schedForm = loggedIn
+    ? '<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">➕ 일정 등록 (스크림 가능·확정·본경기)</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px;display:flex;flex-direction:column;gap:7px">'
+      +'<div style="display:flex;gap:6px"><select id="schType" style="flex:1;'+inp+'"><option value="available">✅ 스크림 가능</option><option value="scrim">⚔️ 스크림 확정</option><option value="match">🏆 본경기</option></select><select id="schTeam" style="flex:1;'+inp+'">'+teamOpts+'</select></div>'
+      +'<div style="display:flex;gap:6px"><input id="schDate" type="date" style="flex:1;'+inp+'"><input id="schTime" type="time" style="flex:1;'+inp+'"></div>'
+      +'<input id="schOpp" placeholder="상대 팀 (스크림·본경기 시 선택)" style="'+inp+'">'
+      +'<input id="schNote" placeholder="메모 (예: 서폿 대타 포함 / Bo3)" maxlength="120" style="'+inp+'">'
+      +'<button class="btn gold" style="width:100%" onclick="doomSchedAdd()">📅 일정 등록</button></div></details>'
+    : '<p class="mini dim" style="text-align:center;margin:0 0 10px">💡 일정 등록은 <b>💰 지갑에서 로그인</b> 후 가능해요 (팀장·팀원 누구나)</p>';
+
+  var agenda;
+  if(!sched.length){agenda='<div style="text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">아직 등록된 일정이 없어요.<br>스크림 가능한 날짜를 등록해보세요!</p></div>';}
+  else{
+    sched.sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''));});
+    var byDate={};sched.forEach(function(e){(byDate[e.date]=byDate[e.date]||[]).push(e);});
+    agenda=Object.keys(byDate).sort().map(function(d){
+      return '<div style="margin-bottom:13px"><div style="font-weight:900;font-size:14px;color:var(--gold);border-bottom:2px solid var(--line);padding-bottom:4px;margin-bottom:5px">📆 '+doomSchedFmtDate(d)+'</div>'
+        +byDate[d].map(function(e){
+          var canDel=(e.by===me||op);
+          var vs=(e.type!=='available'&&e.opponent)?(' <span class="dim">vs</span> <b style="color:'+(colorOf[e.opponent]||'#bbb')+'">'+esc(e.opponent)+'</b>'):'';
+          return '<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px solid rgba(255,255,255,.05)">'
+            +'<div style="flex:none;width:60px;text-align:center;padding-top:1px">'+doomSchedBadge(e.type)+'</div>'
+            +'<div style="flex:1;min-width:0"><div style="font-size:14px;line-height:1.4"><b style="color:'+(colorOf[e.teamName]||'#bbb')+'">'+esc(e.teamName||'?')+'</b>'+vs+(e.time?' <span style="font-family:var(--mono);font-weight:800">'+esc(e.time)+'</span>':'')+'</div>'
+            +(e.note?'<div class="mini" style="opacity:.9;margin-top:1px">'+esc(e.note)+'</div>':'')+'<div class="mini dim" style="margin-top:1px">✍️ '+esc(e.by||'')+'</div></div>'
+            +(canDel?'<button class="btn sm ghost" style="flex:none;font-size:10px;padding:2px 7px;border-color:var(--lose);color:var(--lose)" onclick="doomSchedDel(\''+e.id+'\')">✕</button>':'')+'</div>';
+        }).join('')+'</div>';
+    }).join('');
+  }
+
+  var recruitForm = loggedIn
+    ? '<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;color:#e67e22;font-size:13px">➕ 대타 구인 글쓰기</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px;display:flex;flex-direction:column;gap:7px">'
+      +'<div style="display:flex;gap:6px"><select id="recTeam" style="flex:1;'+inp+'">'+teamOpts+'</select><select id="recKind" style="flex:1;'+inp+'"><option value="scrim">스크림</option><option value="practice">연습</option></select></div>'
+      +'<div style="display:flex;gap:6px"><select id="recPos" style="flex:1;'+inp+'"><option value="">포지션</option><option>탑</option><option>정글</option><option>미드</option><option>원딜</option><option>서폿</option></select><input id="recWhen" placeholder="언제 (예: 오늘 9시)" style="flex:1;'+inp+'"></div>'
+      +'<input id="recNote" placeholder="메모 (예: 실버 이상, 디코 필수)" maxlength="120" style="'+inp+'">'
+      +'<button class="btn" style="width:100%;border-color:#e67e22;color:#e67e22;font-weight:800" onclick="doomRecruitAdd()">🙋 구인 등록</button></div></details>'
+    : '<p class="mini dim" style="text-align:center;margin:0 0 10px">💡 구인 글은 로그인 후 작성할 수 있어요</p>';
+
+  var recList;
+  if(!recruit.length){recList='<div style="text-align:center;padding:16px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">구인 글이 없어요. 대타가 필요하면 글을 남겨보세요!</p></div>';}
+  else{
+    recruit.sort(function(a,b){if((a.status==='open')!==(b.status==='open'))return a.status==='open'?-1:1;return b.at-a.at;});
+    recList=recruit.map(function(r){
+      var canEdit=(r.by===me||op),open=r.status==='open',posTxt=(r.position?r.position+' ':'')+'대타';
+      return '<div style="border:1px solid '+(open?(colorOf[r.teamName]||'var(--line)'):'var(--line)')+';border-radius:10px;padding:10px 12px;margin-bottom:7px;opacity:'+(open?'1':'.55')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="min-width:0;font-size:14px"><b style="color:'+(colorOf[r.teamName]||'#bbb')+'">'+esc(r.teamName||'?')+'</b> <span class="mini">'+(r.kind==='practice'?'연습':'스크림')+'</span> — <b style="color:#e67e22">'+esc(posTxt)+' 구함</b>'+(open?'':' <span class="mini" style="color:var(--win)">✅ 구함완료</span>')+'</div>'
+        +(canEdit?'<span style="flex:none;display:flex;gap:4px"><button class="btn sm ghost" style="font-size:10px;padding:2px 7px" onclick="doomRecruitToggle(\''+r.id+'\')">'+(open?'구함완료':'다시열기')+'</button><button class="btn sm ghost" style="font-size:10px;padding:2px 7px;border-color:var(--lose);color:var(--lose)" onclick="doomRecruitDel(\''+r.id+'\')">✕</button></span>':'')+'</div>'
+        +((r.when||r.note)?'<div class="mini" style="margin-top:3px;opacity:.9">'+(r.when?'🕐 '+esc(r.when)+'   ':'')+(r.note?esc(r.note):'')+'</div>':'')
+        +'<div class="mini dim" style="margin-top:2px">✍️ '+esc(r.by||'')+'</div></div>';
+    }).join('');
+  }
+
+  return '<div class="card" style="padding:16px;text-align:center;margin-bottom:14px"><div style="font-size:34px">📅</div><h3 style="margin:6px 0 2px">멸망전 일정 & 구인</h3><p class="mini dim" style="margin:0">제2회 아포단 멸망전 · 2026.07.01~07.30</p></div>'
+    +teamStrip
+    +'<div style="background:rgba(52,152,219,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:16px">📅 스크림 · 경기 일정</h3>'+schedForm+agenda+'</div>'
+    +'<div style="background:rgba(230,126,34,.05);border:1px solid var(--line);border-radius:14px;padding:14px"><h3 style="margin:0 0 10px;font-size:16px">🙋 대타 구인방</h3>'+recruitForm+recList+'</div>'
+    +'<p class="mini dim" style="margin:14px 2px 0;line-height:1.6">※ 팀장·팀원 누구나 일정·구인 글을 등록할 수 있어요. 본인이 올린 글은 ✕로 지워요.</p>';
 }
+function doomSchedAdd(){
+  var v=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  if(!v('schDate')){toast('날짜를 선택해주세요',true);return;}
+  auctionCall('aucSchedAdd',{type:v('schType'),teamName:v('schTeam'),date:v('schDate'),time:v('schTime'),opponent:v('schOpp'),note:v('schNote')}).then(function(){toast('📅 일정 등록!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+}
+function doomSchedDel(id){if(!confirm('이 일정을 지울까요?'))return;auctionCall('aucSchedDel',{id:id}).then(function(){toast('지웠어요');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomRecruitAdd(){
+  var v=function(id){var e=document.getElementById(id);return e?e.value:'';};
+  auctionCall('aucRecruitAdd',{teamName:v('recTeam'),kind:v('recKind'),position:v('recPos'),when:v('recWhen'),note:v('recNote')}).then(function(){toast('🙋 구인 등록!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+}
+function doomRecruitDel(id){if(!confirm('이 글을 지울까요?'))return;auctionCall('aucRecruitDel',{id:id}).then(function(){toast('지웠어요');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomRecruitToggle(id){auctionCall('aucRecruitToggle',{id:id}).then(function(r){toast(r.status==='closed'?'✅ 구함 완료로 변경':'🙋 다시 모집중');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomReloadSched(){auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomRecruit=r.recruit||[];if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
 /* ===== 🎰 APO 배팅 (준비 중) ===== */
 function doomBettingTab(){
   return '<div class="card" style="padding:18px;text-align:center"><div style="font-size:40px">🎰</div><h3 style="margin:8px 0 4px">APO 배팅</h3>'
