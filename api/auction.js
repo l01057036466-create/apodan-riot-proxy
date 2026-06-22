@@ -69,10 +69,12 @@ module.exports = async function handler(req, res) {
       if (!isOp(s)) return res.status(403).json({ error: '개발자·물방울만 시작할 수 있어요' });
       if (!Array.isArray(body.teams) || !body.teams.length) return res.status(400).json({ error: '팀 정보가 필요해요' });
       if (!Array.isArray(body.queue) || !body.queue.length) return res.status(400).json({ error: '경매 매물이 필요해요' });
+      var qST = body.queue.map(function (p) { return { name: String(p.name), position: String(p.position || ''), tier: String(p.tier || ''), cap: (p.cap == null ? 0 : parseInt(p.cap, 10) || 0) }; });
+      for (var iST = qST.length - 1; iST > 0; iST--) { var jST = Math.floor(Math.random() * (iST + 1)); var tST = qST[iST]; qST[iST] = qST[jST]; qST[jST] = tST; } // 🎲 순서는 서버에서만 셔플 — 운영자 포함 아무도 다음 매물을 미리 못 봄
       var aST = {
         active: true,
         teams: body.teams.map(function (t, i) { return { id: i, name: String(t.name || ('팀' + (i + 1))), leader: String(t.leader || ''), acct: String(t.acct || ''), color: String(t.color || '#888888'), points: Math.max(0, parseInt(t.points, 10) || 0), roster: [] }; }),
-        queue: body.queue.map(function (p) { return { name: String(p.name), position: String(p.position || ''), tier: String(p.tier || ''), cap: (p.cap == null ? 0 : parseInt(p.cap, 10) || 0) }; }),
+        queue: qST,
         prior: 0, minBid: 10, capOff: false, tied: null, current: null, phase: 'bidding', lastResult: null, unsold: [], startedAt: Date.now(), test: !!body.test
       };
       aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await aucPut(aST);
