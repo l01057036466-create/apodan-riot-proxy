@@ -44,6 +44,7 @@ module.exports = async function handler(req, res) {
     async function aucGet() { var r = await redis(['GET', 'doom:auc']); return r ? JSON.parse(r) : null; }
     async function aucPut(a) { a.updatedAt = Date.now(); await redis(['SET', 'doom:auc', JSON.stringify(a)]); }
     async function aucBids() { var arr = await redis(['HGETALL', 'doom:auc:bids']); var b = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) b[arr[i]] = Number(arr[i + 1]); } else if (arr && typeof arr === 'object') { for (var k in arr) b[k] = Number(arr[k]); } return b; }
+    async function aucPasses() { var arr = await redis(['HGETALL', 'doom:auc:passes']); var p = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) p[arr[i]] = 1; } else if (arr && typeof arr === 'object') { for (var k in arr) p[k] = 1; } return p; }
     function aucTeam(a, name) { if (a && a.teams && name) for (var i = 0; i < a.teams.length; i++) if (a.teams[i].acct === name) return a.teams[i]; return null; }
     function aucElig(a) { var out = []; if (!a) return out; var tied = (a.phase === 'tie') ? (a.tied || []) : null; for (var i = 0; i < a.teams.length; i++) { var t = a.teams[i]; if (tied && tied.indexOf(t.acct) < 0) continue; if ((t.roster || []).length >= 5) continue; if (t.points < a.prior + a.minBid) continue; out.push(t.acct); } return out; }
     function aucLoadNext(a) { a.prior = 0; a.minBid = 10; a.capOff = false; a.tied = null; a.timer = null; if (!a.queue || !a.queue.length) { a.current = null; a.phase = 'done'; } else { a.current = a.queue.shift(); a.phase = 'bidding'; } }
@@ -54,14 +55,14 @@ module.exports = async function handler(req, res) {
       var a = await aucGet();
       var dOpen = (await redis(['GET', 'doom:open'])) || 'closed';
       if (!a || !a.active) return res.status(200).json({ active: false, open: dOpen, role: isOp(s) ? 'op' : (aucTeam(a, s && s.name) ? 'leader' : 'spectator'), loggedIn: !!(s && s.name) });
-      var op = isOp(s), my = aucTeam(a, s && s.name), bids = await aucBids(), elig = aucElig(a);
+      var op = isOp(s), my = aucTeam(a, s && s.name), bids = await aucBids(), elig = aucElig(a), passes = await aucPasses();
       var pub = {
         active: true, phase: a.phase, current: a.current, prior: a.prior, minBid: a.minBid, capOff: a.capOff, loggedIn: !!(s && s.name),
         teams: a.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
-        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null, tiedCount: (a.tied || []).length
+        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, passedCount: Object.keys(passes).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null, tiedCount: (a.tied || []).length
       };
-      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.tied = a.tied || null; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
-      else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); pub.iTied = !!(a.tied && a.tied.indexOf(s.name) >= 0); }
+      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.passed = Object.keys(passes); pub.tied = a.tied || null; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
+      else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); pub.iTied = !!(a.tied && a.tied.indexOf(s.name) >= 0); pub.iPassed = passes[s.name] != null; }
       else pub.role = 'spectator';
       return res.status(200).json(pub);
     }
@@ -77,7 +78,7 @@ module.exports = async function handler(req, res) {
         queue: qST,
         prior: 0, minBid: 10, capOff: false, tied: null, current: null, phase: 'bidding', lastResult: null, unsold: [], startedAt: Date.now(), test: !!body.test
       };
-      aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await aucPut(aST);
+      aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aST);
       return res.status(200).json({ ok: true });
     }
     if (action === 'aucBid') {
@@ -93,11 +94,20 @@ module.exports = async function handler(req, res) {
       if (!aBD.capOff && aBD.current && aBD.current.cap > 0 && vBD > aBD.current.cap) return res.status(400).json({ error: '상한 ' + aBD.current.cap + 'P 초과예요' });
       if (aBD.prior + vBD > tBD.points) return res.status(400).json({ error: '포인트 부족 — 낙찰가 ' + (aBD.prior + vBD) + 'P (잔여 ' + tBD.points + 'P)' });
       await redis(['HSET', 'doom:auc:bids', s.name, String(vBD)]);
+      await redis(['HDEL', 'doom:auc:passes', s.name]); // 입찰하면 패스 취소
       return res.status(200).json({ ok: true, bid: vBD, total: aBD.prior + vBD });
     }
     if (action === 'aucUnbid') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
       await redis(['HDEL', 'doom:auc:bids', s.name]); return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucPassBid') { // 🙅 팀장이 이 매물 패스 (입찰 안 함 선언)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var aPB = await aucGet(); if (!aPB || !aPB.active) return res.status(400).json({ error: '경매 없음' });
+      if (aPB.phase !== 'bidding') return res.status(400).json({ error: '지금은 패스할 수 없어요' });
+      var tPB = aucTeam(aPB, s.name); if (!tPB) return res.status(403).json({ error: '팀장만 패스할 수 있어요' });
+      await redis(['HDEL', 'doom:auc:bids', s.name]); await redis(['HSET', 'doom:auc:passes', s.name, '1']);
+      return res.status(200).json({ ok: true });
     }
     if (action === 'aucReveal') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
@@ -109,7 +119,7 @@ module.exports = async function handler(req, res) {
           soloT.points -= aRV.prior; soloT.roster.push({ name: aRV.current.name, cost: aRV.prior, position: aRV.current.position, tier: aRV.current.tier, cap: aRV.current.cap });
           aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: soloT.name, leader: soloT.leader, color: soloT.color, cost: aRV.prior, prior: aRV.prior, bid: 0, n: 1, sole: true };
           aRV.phase = 'revealed'; aRV.tied = null; aRV.timer = null;
-          await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+          await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
           return res.status(200).json({ ok: true, result: 'sold', winner: soloT.name, cost: aRV.prior, sole: true });
         }
       }
@@ -122,11 +132,11 @@ module.exports = async function handler(req, res) {
         var wT = aucTeam(aRV, winRV[0].acct), cost = aRV.prior + maxRV;
         wT.points -= cost; wT.roster.push({ name: aRV.current.name, cost: cost, position: aRV.current.position, tier: aRV.current.tier, cap: aRV.current.cap });
         aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: wT.name, leader: wT.leader, color: wT.color, cost: cost, prior: aRV.prior, bid: maxRV, n: valid.length };
-        aRV.phase = 'revealed'; aRV.timer = null; await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+        aRV.phase = 'revealed'; aRV.timer = null; await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
         return res.status(200).json({ ok: true, result: 'sold', winner: wT.name, cost: cost });
       }
       aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie'; aRV.timer = null;
-      await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+      await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
       return res.status(200).json({ ok: true, result: 'tie', tied: aRV.tied.length, prior: aRV.prior, minBid: aRV.minBid });
     }
     if (action === 'aucGiveUp') { // 🏳️ 동점 재입찰 중 포기 선언
@@ -140,7 +150,7 @@ module.exports = async function handler(req, res) {
         aGU.unsold = aGU.unsold || []; aGU.unsold.push({ name: aGU.current.name, position: aGU.current.position, tier: aGU.current.tier, cap: aGU.current.cap });
         aGU.lastResult = { player: aGU.current.name, passed: true, allGaveUp: true };
         aGU.phase = 'revealed'; aGU.tied = null; aGU.timer = null;
-        await redis(['DEL', 'doom:auc:bids']); await aucPut(aGU);
+        await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aGU);
         return res.status(200).json({ ok: true, result: 'none', allGaveUp: true });
       }
       await aucPut(aGU); // 1명 이상 남음 → 공개(낙찰) 때 정산 (한 명이면 현재가 단독 낙찰)
@@ -150,14 +160,14 @@ module.exports = async function handler(req, res) {
     if (action === 'aucNext') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aNX = await aucGet(); if (!aNX || !aNX.active) return res.status(400).json({ error: '경매 없음' });
-      aucLoadNext(aNX); await redis(['DEL', 'doom:auc:bids']); await aucPut(aNX);
+      aucLoadNext(aNX); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aNX);
       return res.status(200).json({ ok: true, phase: aNX.phase });
     }
     if (action === 'aucPass') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aPS = await aucGet(); if (!aPS || !aPS.active) return res.status(400).json({ error: '경매 없음' });
       if (aPS.current) { aPS.unsold.push({ name: aPS.current.name, position: aPS.current.position, tier: aPS.current.tier, cap: aPS.current.cap }); aPS.lastResult = { player: aPS.current.name, passed: true }; }
-      aucLoadNext(aPS); await redis(['DEL', 'doom:auc:bids']); await aucPut(aPS);
+      aucLoadNext(aPS); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aPS);
       return res.status(200).json({ ok: true, phase: aPS.phase });
     }
     if (action === 'aucRequeueUnsold') { // 🔁 유찰자 전원을 다시 경매 대기열로 (한 바퀴 돌고 재도전)
@@ -168,7 +178,7 @@ module.exports = async function handler(req, res) {
       for (var iRU = backRU.length - 1; iRU > 0; iRU--) { var jRU = Math.floor(Math.random() * (iRU + 1)); var tRU = backRU[iRU]; backRU[iRU] = backRU[jRU]; backRU[jRU] = tRU; } // 다시 셔플
       aRU.queue = (aRU.queue || []).concat(backRU); aRU.unsold = [];
       if (aRU.phase === 'done' || !aRU.current) { aRU.active = true; aRU.confirmed = false; aucLoadNext(aRU); } // 끝났으면 다시 진행
-      await redis(['DEL', 'doom:auc:bids']); await aucPut(aRU);
+      await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRU);
       return res.status(200).json({ ok: true, requeued: backRU.length, queueLeft: aRU.queue.length });
     }
     if (action === 'aucTimer') { // ⏱ 운영자 타이머 시작 (discuss=토론 / bid=영입제출)
@@ -317,7 +327,7 @@ module.exports = async function handler(req, res) {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aFN = await aucGet(); if (!aFN || !aFN.active) return res.status(400).json({ error: '경매 없음' });
       aFN.phase = 'done'; aFN.confirmed = true; aFN.queue = []; aFN.current = null;
-      await redis(['DEL', 'doom:auc:bids']); await aucPut(aFN);
+      await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aFN);
       return res.status(200).json({ ok: true });
     }
     if (action === 'aucPublish') { // 운영 — 멸망전 페이지를 다른 팀장·관전자에게 공개/숨김
@@ -327,7 +337,7 @@ module.exports = async function handler(req, res) {
     }
     if (action === 'aucReset') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
-      await redis(['DEL', 'doom:auc']); await redis(['DEL', 'doom:auc:bids']); return res.status(200).json({ ok: true });
+      await redis(['DEL', 'doom:auc']); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); return res.status(200).json({ ok: true });
     }
 
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
