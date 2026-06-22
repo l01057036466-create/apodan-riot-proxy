@@ -137,7 +137,7 @@ module.exports = async function handler(req, res) {
       aGU.tied = aGU.tied.filter(function (x) { return x !== s.name; });
       await redis(['HDEL', 'doom:auc:bids', s.name]);
       if (aGU.tied.length === 0) { // 전원 포기 → 유찰
-        aGU.unsold = aGU.unsold || []; aGU.unsold.push(aGU.current.name);
+        aGU.unsold = aGU.unsold || []; aGU.unsold.push({ name: aGU.current.name, position: aGU.current.position, tier: aGU.current.tier, cap: aGU.current.cap });
         aGU.lastResult = { player: aGU.current.name, passed: true, allGaveUp: true };
         aGU.phase = 'revealed'; aGU.tied = null; aGU.timer = null;
         await redis(['DEL', 'doom:auc:bids']); await aucPut(aGU);
@@ -156,9 +156,20 @@ module.exports = async function handler(req, res) {
     if (action === 'aucPass') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aPS = await aucGet(); if (!aPS || !aPS.active) return res.status(400).json({ error: '경매 없음' });
-      if (aPS.current) { aPS.unsold.push(aPS.current.name); aPS.lastResult = { player: aPS.current.name, passed: true }; }
+      if (aPS.current) { aPS.unsold.push({ name: aPS.current.name, position: aPS.current.position, tier: aPS.current.tier, cap: aPS.current.cap }); aPS.lastResult = { player: aPS.current.name, passed: true }; }
       aucLoadNext(aPS); await redis(['DEL', 'doom:auc:bids']); await aucPut(aPS);
       return res.status(200).json({ ok: true, phase: aPS.phase });
+    }
+    if (action === 'aucRequeueUnsold') { // 🔁 유찰자 전원을 다시 경매 대기열로 (한 바퀴 돌고 재도전)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aRU = await aucGet(); if (!aRU || !aRU.active) return res.status(400).json({ error: '경매 없음' });
+      var usRU = aRU.unsold || []; if (!usRU.length) return res.status(400).json({ error: '유찰된 선수가 없어요' });
+      var backRU = usRU.map(function (u) { return (typeof u === 'string') ? { name: u, position: '', tier: '', cap: 0 } : { name: u.name, position: u.position || '', tier: u.tier || '', cap: (u.cap == null ? 0 : u.cap) }; });
+      for (var iRU = backRU.length - 1; iRU > 0; iRU--) { var jRU = Math.floor(Math.random() * (iRU + 1)); var tRU = backRU[iRU]; backRU[iRU] = backRU[jRU]; backRU[jRU] = tRU; } // 다시 셔플
+      aRU.queue = (aRU.queue || []).concat(backRU); aRU.unsold = [];
+      if (aRU.phase === 'done' || !aRU.current) { aRU.active = true; aRU.confirmed = false; aucLoadNext(aRU); } // 끝났으면 다시 진행
+      await redis(['DEL', 'doom:auc:bids']); await aucPut(aRU);
+      return res.status(200).json({ ok: true, requeued: backRU.length, queueLeft: aRU.queue.length });
     }
     if (action === 'aucTimer') { // ⏱ 운영자 타이머 시작 (discuss=토론 / bid=영입제출)
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
