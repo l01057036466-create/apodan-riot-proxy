@@ -10532,6 +10532,11 @@ function aucTeamsPanel(st,showRoster){
         +'</div>';
     }).join('')+'</div>';
 }
+function aucUnsoldBox(st){
+  if(!st.unsold||!st.unsold.length)return '';
+  var names=st.unsold.map(function(u){return esc(typeof u==='string'?u:u.name);}).join(', ');
+  return '<div style="border:2px solid #e67e22;border-radius:10px;padding:10px;margin-bottom:10px;background:rgba(230,126,34,.08)"><div class="mini" style="font-weight:800;color:#e67e22;margin-bottom:6px">🔁 유찰 '+st.unsold.length+'명: '+names+'</div><button class="btn" style="width:100%;border-color:#e67e22;color:#e67e22;font-weight:800" onclick="aucDoRequeueUnsold()">유찰자 '+st.unsold.length+'명 다시 경매에 올리기</button></div>';
+}
 function aucOpManagePanel(st){ // 운영 — 팀별 선수 빼기/재경매/팀 비우기
   return aucPublishToggle()+(st.teams||[]).map(function(t){
     var roster=(t.roster||[]).map(function(r,ri){
@@ -10569,6 +10574,7 @@ function aucOpHtml(st){
     return '<div class="card" style="border:2px solid var(--gold)">'+aucOpHead(st)
       +'<div style="text-align:center;padding:10px"><div style="font-size:34px">'+(st.confirmed?'✅':'🏁')+'</div><h3 style="margin:6px 0 10px">'+(st.confirmed?'경매 확정 완료!':'경매 종료')+'</h3></div>'
       +'<details open style="margin-bottom:8px"><summary class="mini dim">최종 로스터 · 수정 (도망간 선수 빼기/재경매)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'</div></details>'
+      +aucUnsoldBox(st)
       +'<button class="btn ghost" style="width:100%" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div>';
   }
   var inner=aucTestBanner(st)+aucResultBanner(st)+aucTimerBar(st)+aucCurrentCard(st);
@@ -10592,6 +10598,7 @@ function aucOpHtml(st){
       +eligT.map(function(a,ei){var t=atT[a]||{name:a};return '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><span class="mini" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(t.name||a)+(bidsT[a]!=null?(' <b style="color:var(--win)">'+bidsT[a]+'P</b>'):'')+'</span><input id="tb'+ei+'" type="number" inputmode="numeric" placeholder="'+st.minBid+'" style="width:76px;padding:5px 7px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink)"><button class="btn sm" style="border-color:#e67e22;color:#e67e22" onclick="aucDoTestBid('+ei+')">입찰</button></div>';}).join('')
       +'</div>';
   }
+  inner+=aucUnsoldBox(st);
   inner+='<details style="margin-top:12px"><summary class="mini dim">팀 관리 (선수 빼기·재경매·팀 비우기·확정)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'<button class="btn ghost" style="width:100%;margin-top:6px" onclick="aucToggleReveal()">'+(aucRevealOn()?'🚫 이 기기 등장연출 끄기':'🎬 이 기기 등장연출 켜기')+'</button><button class="btn gold" style="width:100%;margin-top:6px" onclick="aucDoFinalize()">✅ 경매 확정 (로스터 잠금·종료)</button><button class="btn ghost" style="width:100%;margin-top:6px" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div></details>';
   inner+=aucCardsGallery();
   return '<div class="card" style="border:2px solid var(--gold)">'+aucOpHead(st)+inner+'</div>';
@@ -10730,6 +10737,10 @@ function aucDoGiveUp(){
   }).catch(function(e){toast(e.message||'실패',true);});
 }
 async function aucDoNext(){ try{await auctionCall('aucNext',{});aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
+async function aucDoRequeueUnsold(){
+  if(!confirm('유찰된 선수들을 다시 경매 대기열에 올릴까요?\n→ 다시 셔플돼서 한 명씩 재경매돼요.'))return;
+  try{var r=await auctionCall('aucRequeueUnsold',{});toast('🔁 유찰 '+r.requeued+'명 다시 경매 대기열로!');aucManualRefresh();}catch(e){toast(e.message||'실패',true);}
+}
 async function aucDoPass(){ if(!confirm('이 선수를 유찰 처리할까요?'))return; try{await auctionCall('aucPass',{});toast('유찰 처리했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
 async function aucDoReset(){ if(!confirm('경매를 완전히 초기화할까요? 모든 진행/낙찰이 사라져요.'))return; try{await auctionCall('aucReset',{});window._aucSel={};toast('경매를 초기화했어요.');aucManualRefresh();}catch(e){toast(e.message||'실패',true);} }
 
