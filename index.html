@@ -10179,8 +10179,8 @@ const DOOM_POOL=[
  {id:'dp14',displayName:'99 건이',soloTier:'에메랄드',soloPos:'탑',active:true},
  {id:'dp15',displayName:'01 국물',soloTier:'에메랄드',soloPos:'탑',active:true},
  {id:'dp16',displayName:'01 사과',soloTier:'에메랄드',soloPos:'정글',active:true},
- {id:'dp17',displayName:'98 Lucky Grasp',soloTier:'플래티넘',soloPos:'탑',active:true},
- {id:'dp18',displayName:'96 스티븐',soloTier:'플래티넘',soloPos:'원딜',active:true},
+ {id:'dp17',displayName:'98 Lucky Grasp',soloTier:'플래티넘 1',soloPos:'탑',active:true},
+ {id:'dp18',displayName:'96 스티븐',soloTier:'플래티넘 2',soloPos:'원딜',active:true},
  {id:'dp19',displayName:'99 유메',soloTier:'골드',soloPos:'미드',active:true},
  {id:'dp20',displayName:'98 물방울',soloTier:'골드',soloPos:'미드',active:true},
  {id:'dp21',displayName:'05 루덴',soloTier:'골드',soloPos:'원딜',active:true},
@@ -10190,7 +10190,7 @@ const DOOM_POOL=[
 function doomCap(tier){tier=String(tier||'').replace(/\s/g,'');
   if(/언랭|아이언|브론즈|실버/.test(tier))return 100;
   if(/골드/.test(tier))return 150;
-  if(/플래티넘|플레/.test(tier))return 200;
+  if(/플래티넘|플래|플레/.test(tier)){var mD=tier.match(/(\d)/);var dV=mD?parseInt(mD[1],10):3;return dV<=2?250:200;} // 플래 1·2→250, 3·4→200
   return 0;}
 function capLabel(c){return c>0?(c+'P 상한'):'무제한';}
 function aucPosEmo(p){p=String(p||'');if(/탑|top/i.test(p))return'🛡️';if(/정글|jg|jungle/i.test(p))return'🌳';if(/미드|mid/i.test(p))return'⚡';if(/원딜|adc|바텀|bot/i.test(p))return'🏹';if(/서폿|서포|sup/i.test(p))return'🛟';return'🎮';}
