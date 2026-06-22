@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     async function aucBids() { var arr = await redis(['HGETALL', 'doom:auc:bids']); var b = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) b[arr[i]] = Number(arr[i + 1]); } else if (arr && typeof arr === 'object') { for (var k in arr) b[k] = Number(arr[k]); } return b; }
     function aucTeam(a, name) { if (a && a.teams && name) for (var i = 0; i < a.teams.length; i++) if (a.teams[i].acct === name) return a.teams[i]; return null; }
     function aucElig(a) { var out = []; if (!a) return out; var tied = (a.phase === 'tie') ? (a.tied || []) : null; for (var i = 0; i < a.teams.length; i++) { var t = a.teams[i]; if (tied && tied.indexOf(t.acct) < 0) continue; if ((t.roster || []).length >= 5) continue; if (t.points < a.prior + a.minBid) continue; out.push(t.acct); } return out; }
-    function aucLoadNext(a) { a.prior = 0; a.minBid = 10; a.capOff = false; a.tied = null; if (!a.queue || !a.queue.length) { a.current = null; a.phase = 'done'; } else { a.current = a.queue.shift(); a.phase = 'bidding'; } }
+    function aucLoadNext(a) { a.prior = 0; a.minBid = 10; a.capOff = false; a.tied = null; a.timer = null; if (!a.queue || !a.queue.length) { a.current = null; a.phase = 'done'; } else { a.current = a.queue.shift(); a.phase = 'bidding'; } }
 
     var s = await auth(token);
 
@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
       var pub = {
         active: true, phase: a.phase, current: a.current, prior: a.prior, minBid: a.minBid, capOff: a.capOff, loggedIn: !!(s && s.name),
         teams: a.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
-        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen
+        queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null
       };
       if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
       else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); }
@@ -111,10 +111,10 @@ module.exports = async function handler(req, res) {
         var wT = aucTeam(aRV, winRV[0].acct), cost = aRV.prior + maxRV;
         wT.points -= cost; wT.roster.push({ name: aRV.current.name, cost: cost, position: aRV.current.position, tier: aRV.current.tier, cap: aRV.current.cap });
         aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: wT.name, leader: wT.leader, color: wT.color, cost: cost, prior: aRV.prior, bid: maxRV, n: valid.length };
-        aRV.phase = 'revealed'; await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
+        aRV.phase = 'revealed'; aRV.timer = null; await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
         return res.status(200).json({ ok: true, result: 'sold', winner: wT.name, cost: cost });
       }
-      aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie';
+      aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie'; aRV.timer = null;
       await redis(['DEL', 'doom:auc:bids']); await aucPut(aRV);
       return res.status(200).json({ ok: true, result: 'tie', tied: aRV.tied.length, prior: aRV.prior, minBid: aRV.minBid });
     }
@@ -130,6 +130,29 @@ module.exports = async function handler(req, res) {
       if (aPS.current) { aPS.unsold.push(aPS.current.name); aPS.lastResult = { player: aPS.current.name, passed: true }; }
       aucLoadNext(aPS); await redis(['DEL', 'doom:auc:bids']); await aucPut(aPS);
       return res.status(200).json({ ok: true, phase: aPS.phase });
+    }
+    if (action === 'aucTimer') { // ⏱ 운영자 타이머 시작 (discuss=토론 / bid=영입제출)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aTM = await aucGet(); if (!aTM || !aTM.active) return res.status(400).json({ error: '경매 없음' });
+      var kindTM = (body.kind === 'bid') ? 'bid' : 'discuss';
+      var secTM = Math.max(1, Math.min(3600, parseInt(body.seconds, 10) || (kindTM === 'bid' ? 10 : 60)));
+      aTM.timer = { kind: kindTM, endsAt: Date.now() + secTM * 1000, dur: secTM };
+      await aucPut(aTM);
+      return res.status(200).json({ ok: true, timer: aTM.timer });
+    }
+    if (action === 'aucTimerAdjust') { // ⏱ 타이머 정정 (+/- 초)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aTA = await aucGet(); if (!aTA || !aTA.active || !aTA.timer) return res.status(400).json({ error: '진행 중인 타이머가 없어요' });
+      var dTA = parseInt(body.delta, 10) || 0;
+      aTA.timer.endsAt = Math.max(Date.now(), (aTA.timer.endsAt || Date.now()) + dTA * 1000);
+      await aucPut(aTA);
+      return res.status(200).json({ ok: true, timer: aTA.timer });
+    }
+    if (action === 'aucTimerClear') { // ⏹ 타이머 정지
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aTC = await aucGet(); if (!aTC || !aTC.active) return res.status(400).json({ error: '경매 없음' });
+      aTC.timer = null; await aucPut(aTC);
+      return res.status(200).json({ ok: true });
     }
     if (action === 'aucTestBid') { // 🧪 운영자가 특정 팀 대신 입찰 (테스트 모드 전용)
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
