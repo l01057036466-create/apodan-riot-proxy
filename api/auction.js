@@ -45,6 +45,16 @@ module.exports = async function handler(req, res) {
     async function aucPut(a) { a.updatedAt = Date.now(); await redis(['SET', 'doom:auc', JSON.stringify(a)]); }
     async function aucBids() { var arr = await redis(['HGETALL', 'doom:auc:bids']); var b = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) b[arr[i]] = Number(arr[i + 1]); } else if (arr && typeof arr === 'object') { for (var k in arr) b[k] = Number(arr[k]); } return b; }
     async function aucPasses() { var arr = await redis(['HGETALL', 'doom:auc:passes']); var p = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) p[arr[i]] = 1; } else if (arr && typeof arr === 'object') { for (var k in arr) p[k] = 1; } return p; }
+    function aucNorm(x) { return String(x || '').replace(/\s+/g, '').toLowerCase(); }
+    function aucNick(x) { return String(x || '').replace(/\s+/g, '').replace(/^\d+/, '').toLowerCase(); }
+    function aucNameMatch(x, y) { var nx = aucNorm(x), ny = aucNorm(y); if (nx && nx === ny) return true; var kx = aucNick(x), ky = aucNick(y); return !!kx && kx === ky; }
+    function aucResolveMyTeam(teams, s, bodyAcct) {
+      if (!teams || !teams.length) return null;
+      if (isOp(s) && bodyAcct) { for (var iR = 0; iR < teams.length; iR++) if (teams[iR].acct === bodyAcct) return teams[iR]; return null; }
+      var nmR = s && s.name;
+      for (var jR = 0; jR < teams.length; jR++) { var tR = teams[jR]; if (aucNameMatch(tR.acct, nmR)) return tR; if ((tR.roster || []).some(function (r) { return aucNameMatch(r.name, nmR); })) return tR; }
+      return null;
+    }
     async function aucLogBids(a, bids, outcome, winnerAcct, cost) {
       var log = []; try { log = JSON.parse((await redis(['GET', 'doom:auc:bidlog'])) || '[]'); } catch (e) { log = []; }
       var entries = [];
@@ -352,6 +362,48 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'doom:teams', JSON.stringify(lkPos)]);
       return res.status(200).json({ ok: true });
     }
+    if (action === 'aucTeamPage') { // 👥 팀 페이지 — 팀원(팀장+로스터)/운영자만
+      var opTP = isOp(s);
+      var lkTP = []; try { lkTP = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkTP = []; }
+      var tTP = null;
+      if (opTP && body.acct) { for (var iTP = 0; iTP < lkTP.length; iTP++) if (lkTP[iTP].acct === body.acct) tTP = lkTP[iTP]; }
+      else if (s && s.name) tTP = aucResolveMyTeam(lkTP, s, null);
+      if (!tTP && opTP && lkTP.length) tTP = lkTP[0];
+      if (!tTP) return res.status(200).json({ ok: true, team: null, isOp: opTP });
+      return res.status(200).json({ ok: true, isOp: opTP, allTeams: opTP ? lkTP.map(function (x) { return { acct: x.acct, name: x.name, leader: x.leader, color: x.color }; }) : null, team: { acct: tTP.acct, name: tTP.name, leader: tTP.leader, color: tTP.color, roster: tTP.roster || [], weekly: tTP.weekly || {}, drafts: tTP.drafts || [], practice: tTP.practice || [], sched: tTP.sched || '' } });
+    }
+    if (action === 'aucSetWeekly') { // 📆 주간 가능 시간 (팀원/운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var lkW = []; try { lkW = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkW = []; }
+      var tW = aucResolveMyTeam(lkW, s, body.acct);
+      if (!tW) return res.status(403).json({ error: '팀원만 입력할 수 있어요' });
+      var DAYS = ['월', '화', '수', '목', '금', '토', '일'], w = {};
+      var srcW = (body.weekly && typeof body.weekly === 'object') ? body.weekly : {};
+      DAYS.forEach(function (d) { if (srcW[d]) w[d] = String(srcW[d]).slice(0, 40); });
+      tW.weekly = w;
+      await redis(['SET', 'doom:teams', JSON.stringify(lkW)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucDraftAdd') { // ⚔️ 밴픽/전적 기록 (팀원/운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var lkD = []; try { lkD = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkD = []; }
+      var tD = aucResolveMyTeam(lkD, s, body.acct);
+      if (!tD) return res.status(403).json({ error: '팀원만 입력할 수 있어요' });
+      if (!Array.isArray(tD.drafts)) tD.drafts = [];
+      tD.drafts.push({ id: 'dr' + Date.now() + Math.floor(Math.random() * 1000), date: String(body.date || '').slice(0, 10), vs: String(body.vs || '').slice(0, 30), ourPick: String(body.ourPick || '').slice(0, 120), theirPick: String(body.theirPick || '').slice(0, 120), ban: String(body.ban || '').slice(0, 120), result: String(body.result || '').slice(0, 10), note: String(body.note || '').slice(0, 200), at: Date.now() });
+      if (tD.drafts.length > 100) tD.drafts = tD.drafts.slice(-100);
+      await redis(['SET', 'doom:teams', JSON.stringify(lkD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucDraftDel') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var lkDD = []; try { lkDD = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkDD = []; }
+      var tDD = aucResolveMyTeam(lkDD, s, body.acct);
+      if (!tDD) return res.status(403).json({ error: '권한 없음' });
+      if (Array.isArray(tDD.drafts)) tDD.drafts = tDD.drafts.filter(function (x) { return x.id !== body.id; });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkDD)]);
+      return res.status(200).json({ ok: true });
+    }
     if (action === 'aucTeamPracAdd') { // 📅 비공개 팀 연습 날짜 추가 (팀장/운영)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var dtP = String(body.date || '').slice(0, 10); if (!dtP) return res.status(400).json({ error: '날짜를 선택해주세요' });
@@ -417,7 +469,7 @@ module.exports = async function handler(req, res) {
       var aLK = await aucGet(); if (!aLK || !aLK.teams || !aLK.teams.length) return res.status(400).json({ error: '확정할 팀이 없어요' });
       var prevLK = []; try { prevLK = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { prevLK = []; }
       var prevByA = {}; prevLK.forEach(function (t) { prevByA[t.acct] = t; });
-      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '', practice: p.practice || [] }; });
+      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '', practice: p.practice || [], weekly: p.weekly || {}, drafts: p.drafts || [] }; });
       await redis(['SET', 'doom:teams', JSON.stringify(locked)]);
       aLK.phase = 'done'; aLK.confirmed = true; aLK.queue = []; aLK.current = null;
       await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aLK);
