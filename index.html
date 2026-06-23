@@ -10607,8 +10607,13 @@ function aucBidLogHtml(log){
 function aucOpHtml(st){
   var bidLogWrap='<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">📜 입찰 기록 <span class="mini dim">(운영자 전용 · '+((st.bidLog||[]).length)+'건)</span></summary><div style="margin-top:8px">'+aucBidLogHtml(st.bidLog||[])+'</div></details>';
   if(st.phase==='done'){
+    var nL=st.teamsLocked||0;
+    var lockSection=nL>0
+      ? '<div style="background:rgba(46,204,113,.07);border:1px solid var(--win);border-radius:14px;padding:13px;margin-bottom:12px;text-align:center"><div style="font-weight:800;color:var(--win);margin-bottom:3px">✅ 팀 명단 확정됨 ('+nL+'팀)</div><div class="mini dim" style="margin-bottom:9px">팀 페이지·일정·순위·배팅이 열렸어요. 로스터를 바꿨으면 다시 눌러 갱신하세요.</div><button class="btn ghost" style="width:100%" onclick="doomLockTeams()">🔄 다시 못 박기 (갱신)</button></div>'
+      : '<div style="background:rgba(212,175,55,.1);border:2px solid var(--gold);border-radius:14px;padding:15px;margin-bottom:12px;text-align:center"><div style="font-size:24px">📌</div><div style="font-weight:900;color:var(--gold);margin:4px 0 3px;font-size:16px">팀을 확정하세요 — 못 박기!</div><div class="mini dim" style="margin-bottom:11px">경매는 끝났지만 아직 <b>팀 페이지·순위·배팅</b>이 안 열렸어요.<br>이 로스터로 팀을 확정하려면 아래 버튼을 누르세요.</div><button class="btn gold" style="width:100%;font-size:15px;padding:12px" onclick="doomLockTeams()">🔒 팀 명단 확정 (못 박기)</button></div>';
     return '<div class="card" style="border:2px solid var(--gold)">'+aucOpHead(st)
       +'<div style="text-align:center;padding:10px"><div style="font-size:34px">'+(st.confirmed?'✅':'🏁')+'</div><h3 style="margin:6px 0 10px">'+(st.confirmed?'경매 확정 완료!':'경매 종료')+'</h3></div>'
+      +lockSection
       +'<details open style="margin-bottom:8px"><summary class="mini dim">최종 로스터 · 수정 (도망간 선수 빼기/재경매)</summary><div style="margin-top:8px">'+aucOpManagePanel(st)+'</div></details>'
       +aucUnsoldBox(st)
       +'<button class="btn ghost" style="width:100%" onclick="aucDoReset()">🗑 경매 전체 초기화</button></div>'+bidLogWrap;
@@ -11085,7 +11090,7 @@ function doomScheduleTab(){
 }
 function doomLockTeams(){
   if(!confirm('현재 경매 로스터로 팀 명단을 영구 확정(못 박기)할까요?\n이후 팀명·팀 일정 기능이 열려요.'))return;
-  auctionCall('aucLockTeams',{}).then(function(r){toast('🔒 팀 명단 확정! ('+r.teams+'팀)');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+  auctionCall('aucLockTeams',{}).then(function(r){toast('🔒 팀 명단 확정! ('+r.teams+'팀) — 팀 페이지·배팅 열렸어요');doomReloadSched();if(typeof aucStartPoll==='function'&&document.getElementById('aucRoot'))aucStartPoll();}).catch(function(e){toast(e.message||'실패',true);});
 }
 function doomSetTeamName(){
   var el=document.getElementById('myTeamName');var nm=el?el.value:'';
