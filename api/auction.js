@@ -208,7 +208,13 @@ module.exports = async function handler(req, res) {
     if (action === 'aucSchedList') {
       var schedL = []; try { schedL = JSON.parse((await redis(['GET', 'doom:sched'])) || '[]'); } catch (e) { schedL = []; }
       var recruitL = []; try { recruitL = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recruitL = []; }
-      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL });
+      var lockedT = []; try { lockedT = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lockedT = []; }
+      var availL = []; try { availL = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { availL = []; }
+      var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [] }; });
+      var myAcctS = (s && s.name) || '', mySchedS = null, allSchedS = null, opSchedS = isOp(s);
+      if (opSchedS) allSchedS = {};
+      lockedT.forEach(function (t) { if (t.acct === myAcctS) mySchedS = t.sched || ''; if (opSchedS) allSchedS[t.acct] = t.sched || ''; });
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL });
     }
     if (action === 'aucSchedAdd') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
@@ -322,6 +328,59 @@ module.exports = async function handler(req, res) {
       tCT.points += refCT; tCT.roster = [];
       await aucPut(aCT);
       return res.status(200).json({ ok: true, refunded: refCT });
+    }
+    if (action === 'aucAvailAdd') { // 🟢 연습 가능 날짜 등록 (로그인 누구나)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var dtAv = String(body.date || '').slice(0, 10); if (!dtAv) return res.status(400).json({ error: '날짜를 선택해주세요' });
+      var avA = []; try { avA = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { avA = []; }
+      if (avA.some(function (x) { return x.by === s.name && x.date === dtAv; })) return res.status(400).json({ error: '이미 등록한 날짜예요' });
+      var lkAv = []; try { lkAv = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkAv = []; }
+      var myTeamAv = null;
+      lkAv.forEach(function (t) { if (t.acct === s.name) myTeamAv = t; (t.roster || []).forEach(function (r) { if (r.name === s.name) myTeamAv = t; }); });
+      avA.push({ id: 'av' + Date.now() + Math.floor(Math.random() * 1000), date: dtAv, by: s.name, teamName: myTeamAv ? myTeamAv.name : '', color: myTeamAv ? myTeamAv.color : '', note: String(body.note || '').slice(0, 80), at: Date.now() });
+      await redis(['SET', 'doom:avail', JSON.stringify(avA)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucAvailDel') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var avD = []; try { avD = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { avD = []; }
+      var opAvD = isOp(s);
+      avD = avD.filter(function (x) { return !(x.id === body.id && (x.by === s.name || opAvD)); });
+      await redis(['SET', 'doom:avail', JSON.stringify(avD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucLockTeams') { // 🔒 현재 로스터를 영구 확정(못 박기)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aLK = await aucGet(); if (!aLK || !aLK.teams || !aLK.teams.length) return res.status(400).json({ error: '확정할 팀이 없어요' });
+      var prevLK = []; try { prevLK = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { prevLK = []; }
+      var prevByA = {}; prevLK.forEach(function (t) { prevByA[t.acct] = t; });
+      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '' }; });
+      await redis(['SET', 'doom:teams', JSON.stringify(locked)]);
+      aLK.phase = 'done'; aLK.confirmed = true; aLK.queue = []; aLK.current = null;
+      await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aLK);
+      return res.status(200).json({ ok: true, teams: locked.length });
+    }
+    if (action === 'aucSetTeamName') { // ✏️ 팀명 변경 (팀장 본인 or 운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var nmN = String(body.name || '').trim().slice(0, 20); if (!nmN) return res.status(400).json({ error: '팀명을 입력해주세요' });
+      var lkN = []; try { lkN = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkN = []; }
+      if (!lkN.length) return res.status(400).json({ error: '먼저 팀 명단을 확정(못 박기)해주세요' });
+      var tgtN = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundN = false;
+      lkN.forEach(function (t) { if (t.acct === tgtN) { t.name = nmN; foundN = true; } });
+      if (!foundN) return res.status(403).json({ error: '본인 팀만 바꿀 수 있어요' });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkN)]);
+      return res.status(200).json({ ok: true, name: nmN });
+    }
+    if (action === 'aucSetTeamSched') { // 📋 팀 비공개 일정 메모 (팀장 본인 or 운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var txtS = String(body.sched || '').slice(0, 1500);
+      var lkS = []; try { lkS = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkS = []; }
+      if (!lkS.length) return res.status(400).json({ error: '먼저 팀 명단을 확정해주세요' });
+      var tgtS = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundS = false;
+      lkS.forEach(function (t) { if (t.acct === tgtS) { t.sched = txtS; foundS = true; } });
+      if (!foundS) return res.status(403).json({ error: '본인 팀만 쓸 수 있어요' });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkS)]);
+      return res.status(200).json({ ok: true });
     }
     if (action === 'aucFinalize') { // 운영 — 현재 로스터로 확정·종료
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
