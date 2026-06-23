@@ -11175,33 +11175,46 @@ function doomReloadStandings(){auctionCall('aucSchedList',{}).then(function(r){w
 function doomTeamPageTab(){
   var tp=window._doomTP;
   if(!tp)return '<div class="card" style="text-align:center;padding:20px"><p class="mini dim" style="margin:0">불러오는 중…</p></div>';
-  if(tp.error)return '<div class="card" style="text-align:center;padding:24px"><div style="font-size:30px">⚠️</div><h3 style="margin:8px 0 4px">팀 페이지를 불러오지 못했어요</h3><p class="mini dim" style="margin:0 0 8px">'+esc(tp.error)+'</p><p class="mini" style="margin:0;color:var(--gold);font-weight:700">서버(api/auction.js)를 최신 버전으로 다시 배포했는지 확인해주세요!</p></div>';
-  if(!tp.team){
-    return '<div class="card" style="max-width:560px;margin:30px auto;text-align:center;padding:30px 24px"><div style="font-size:36px">🔒</div><h3 style="margin:10px 0 6px">팀원 전용 페이지</h3><p class="mini dim" style="margin:0">이 페이지는 <b>해당 팀의 팀장·팀원</b>만 볼 수 있어요.'+((bankSession()&&bankSession().name)?'<br>현재 계정은 어느 팀에도 속해있지 않아요.':'<br>먼저 💰 지갑에서 로그인해주세요.')+'</p></div>';
-  }
-  var t=tp.team, col=t.color||'var(--gold)', op=!!tp.isOp;
+  if(tp.error)return '<div class="card" style="text-align:center;padding:24px"><div style="font-size:30px">⚠️</div><h3 style="margin:8px 0 4px">팀 페이지를 불러오지 못했어요</h3><p class="mini dim" style="margin:0 0 8px">'+esc(tp.error)+'</p><p class="mini" style="margin:0;color:var(--gold);font-weight:700">서버(api/auction.js)를 최신으로 다시 배포했는지 확인해주세요!</p></div>';
+  var teams=tp.teams||[];
+  if(!teams.length)return '<div class="card" style="text-align:center;padding:24px"><div style="font-size:30px">📋</div><h3 style="margin:8px 0 4px">아직 확정된 팀이 없어요</h3><p class="mini dim" style="margin:0">경매 후 운영자가 <b>못 박기</b>로 팀을 확정하면<br>여기에 각 팀 페이지가 생겨요.</p></div>';
+  var sel=tp.sel,op=!!tp.isOp;
   var inp='padding:8px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px;box-sizing:border-box';
-  var selUI='';
-  if(op&&tp.allTeams&&tp.allTeams.length){
-    var selOpts=tp.allTeams.map(function(x){return '<option value="'+esc(x.acct)+'"'+(x.acct===t.acct?' selected':'')+'>'+esc(x.name)+' · '+esc(x.leader||'')+'</option>';}).join('');
-    selUI='<div style="margin-bottom:12px"><div class="mini dim" style="margin-bottom:4px">🎛 팀 선택 (운영자는 모든 팀)</div><select onchange="doomPickTPTeam(this.value)" style="width:100%;'+inp+'">'+selOpts+'</select></div>';
-  }
+  var head='<div class="card" style="padding:15px;text-align:center;margin-bottom:12px"><div style="font-size:28px">👥</div><h3 style="margin:5px 0 2px">팀 페이지</h3><p class="mini dim" style="margin:0">팀을 골라 보세요 · 가능시간·밴픽은 그 팀원만 편집</p></div>';
+  var selAcct=sel?sel.acct:'';
+  var chips='<div style="display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px">'+teams.map(function(t){
+    var on=t.acct===selAcct,mine=t.acct===tp.myAcct;
+    return '<button onclick="doomPickTPTeam(\''+esc(t.acct)+'\')" style="flex:none;border:2px solid '+(on?(t.color||'var(--gold)'):'var(--line)')+';background:'+(on?((t.color||'#888')+'22'):'transparent')+';color:'+(on?(t.color||'var(--ink)'):'var(--ink)')+';border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:'+(on?'800':'600')+';font-size:13px;white-space:nowrap">'+esc(t.name)+(mine?' ⭐':'')+'</button>';
+  }).join('')+'</div>';
+  if(!sel)return head+chips+'<p class="mini dim" style="text-align:center">팀을 선택해주세요.</p>';
+  var col=sel.color||'var(--gold)';
   var POSI={'탑':'🛡️','정글':'🌳','미드':'⚡','원딜':'🏹','서폿':'🛟'};
-  var rosterHtml=(t.roster||[]).map(function(r){return '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border-radius:7px;padding:3px 9px;font-size:13px;margin:0 4px 4px 0">'+(r.position?(POSI[r.position]||'')+' ':'')+'<b>'+esc(r.name)+'</b>'+(r.position?' <span class="mini dim">'+esc(r.position)+'</span>':'')+'</span>';}).join('');
-  var header='<div style="border:2px solid '+col+';border-radius:14px;padding:14px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2 style="margin:0;font-size:20px;color:'+col+'">🛡️ '+esc(t.name)+'</h2><span class="mini dim">팀장 '+esc(t.leader||'')+'</span></div><div>'+(rosterHtml||'<span class="mini dim">로스터 없음</span>')+'</div></div>';
-  var DAYS=['월','화','수','목','금','토','일'];var wk=t.weekly||{};
+  var rosterHtml=(sel.roster||[]).map(function(r){return '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border-radius:7px;padding:3px 9px;font-size:13px;margin:0 4px 4px 0">'+(r.position?(POSI[r.position]||'')+' ':'')+'<b>'+esc(r.name)+'</b>'+(r.position?' <span class="mini dim">'+esc(r.position)+'</span>':'')+'</span>';}).join('');
+  var canEdit=!!sel.canEdit;
+  var nameEdit=canEdit?('<button onclick="doomTPSetName(\''+esc(sel.acct)+'\',\''+esc(sel.name).replace(/\x27/g,"\\x27")+'\')" style="background:transparent;border:1px solid '+col+';color:'+col+';border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer;font-weight:700;white-space:nowrap">✏️ 팀명 변경</button>'):'';
+  var teamHeader='<div style="border:2px solid '+col+';border-radius:14px;padding:14px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:20px;color:'+col+'">🛡️ '+esc(sel.name)+'</h2><div style="display:flex;align-items:center;gap:8px"><span class="mini dim">팀장 '+esc(sel.leader||'')+'</span>'+nameEdit+'</div></div><div>'+(rosterHtml||'<span class="mini dim">로스터 없음</span>')+'</div></div>';
+  if(!sel.priv){
+    var hint='<p class="mini dim" style="margin:10px 0 0">현재 로그인: <b>'+esc(tp.myName||'(비로그인)')+'</b>'+(tp.myName?' · 이 팀 소속으로 인식 안 됐어요':'')+'</p>';
+    return head+chips+teamHeader+'<div style="border:1px dashed var(--line);border-radius:14px;padding:24px;text-align:center"><div style="font-size:28px">🔒</div><p style="margin:8px 0 0;font-weight:700">이 팀의 가능시간·밴픽은<br><b style="color:'+col+'">'+esc(sel.name)+' 팀원</b>만 볼 수 있어요</p>'+hint+'</div>';
+  }
+  var DAYS=['월','화','수','목','금','토','일'],wk=sel.weekly||{};
   var weeklyRows=DAYS.map(function(d){var v=wk[d]||'';var dc=(d==='토')?'#5dade2':(d==='일')?'var(--lose)':'var(--ink)';return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="flex:none;width:22px;text-align:center;color:'+dc+'">'+d+'</b><input id="wk_'+d+'" value="'+esc(v)+'" placeholder="예: 21시~24시 (비우면 불가)" style="flex:1;'+inp+'"></div>';}).join('');
   var weeklySec='<div style="background:rgba(46,204,113,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 4px;font-size:16px">📆 주간 가능 시간 <span style="color:var(--lose);font-size:12px">(비공개)</span></h3><p class="mini dim" style="margin:0 0 10px">요일별 가능한 시간을 적어주세요 — 우리 팀만 봐요.</p>'+weeklyRows+'<button class="btn gold" style="width:100%;margin-top:8px" onclick="doomSetWeekly()">💾 가능 시간 저장</button></div>';
-  var drafts=(t.drafts||[]).slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||b.at-a.at;});
+  var drafts=(sel.drafts||[]).slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||b.at-a.at;});
   var draftList=drafts.length?drafts.map(function(d){var w=d.result==='승',l=d.result==='패';return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:7px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><b>'+(d.vs?('vs '+esc(d.vs)):'스크림')+'</b><span class="mini">'+(d.date?doomSchedFmtDate(d.date):'')+(d.result?(' · <b style="color:'+(w?'var(--win)':l?'var(--lose)':'var(--ink)')+'">'+esc(d.result)+'</b>'):'')+' <a onclick="doomDraftDel(\''+d.id+'\')" style="cursor:pointer;color:var(--lose);font-weight:900;margin-left:4px">×</a></span></div>'+(d.ban?'<div class="mini" style="margin-bottom:2px"><span class="dim">밴:</span> '+esc(d.ban)+'</div>':'')+(d.ourPick?'<div class="mini" style="margin-bottom:2px"><span style="color:'+col+'">우리:</span> '+esc(d.ourPick)+'</div>':'')+(d.theirPick?'<div class="mini" style="margin-bottom:2px"><span class="dim">상대:</span> '+esc(d.theirPick)+'</div>':'')+(d.note?'<div class="mini dim" style="margin-top:3px">📝 '+esc(d.note)+'</div>':'')+'</div>';}).join(''):'<p class="mini dim" style="text-align:center;margin:0 0 8px">아직 밴픽 기록이 없어요.</p>';
   var draftForm='<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700;color:var(--gold);font-size:13px">➕ 밴픽 기록 추가</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:7px;display:flex;flex-direction:column;gap:7px"><div style="display:flex;gap:6px"><input id="drVs" placeholder="상대 팀" maxlength="30" style="flex:1;min-width:0;'+inp+'"><input id="drDate" type="date" style="flex:none;'+inp+'"><select id="drResult" style="flex:none;'+inp+'"><option value="">결과</option><option value="승">승</option><option value="패">패</option></select></div><input id="drBan" placeholder="밴 (예: 야스오, 제드)" maxlength="120" style="'+inp+'"><input id="drOur" placeholder="우리 픽 (예: 오른/리신/아리/진/쓰레쉬)" maxlength="120" style="'+inp+'"><input id="drTheir" placeholder="상대 픽" maxlength="120" style="'+inp+'"><input id="drNote" placeholder="메모 (전략·복기)" maxlength="200" style="'+inp+'"><button class="btn gold" style="width:100%" onclick="doomDraftAdd()">⚔️ 기록 추가</button></div></details>';
   var draftSec='<div style="background:rgba(155,89,182,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 4px;font-size:16px">⚔️ 밴픽 / 전적 기록 <span style="color:var(--lose);font-size:12px">(비공개)</span></h3><p class="mini dim" style="margin:0 0 10px">스크림·경기 밴픽과 결과를 남겨 복기에 써요.</p>'+draftList+draftForm+'</div>';
-  var prac=(t.practice||[]).slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+  var prac=(sel.practice||[]).slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
   var pracHtml=prac.length?('<div>'+prac.map(function(pp){return '<span style="display:inline-block;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 9px;font-size:12.5px;margin:0 4px 4px 0">📅 '+doomSchedFmtDate(pp.date)+(pp.note?' · '+esc(pp.note):'')+'</span>';}).join('')+'</div>'):'<p class="mini dim" style="margin:0">등록된 연습 날짜 없음</p>';
-  var extra='<div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><div class="mini dim" style="margin-bottom:6px">📅 연습 날짜 <span style="opacity:.65">· 추가/수정은 일정 탭</span></div>'+pracHtml+(t.sched?('<div class="mini dim" style="margin:9px 0 4px">📝 팀 메모</div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:9px;font-size:13px;white-space:pre-wrap">'+esc(t.sched)+'</div>'):'')+'</div>';
-  return '<div class="card" style="padding:16px;text-align:center;margin-bottom:14px"><div style="font-size:30px">👥</div><h3 style="margin:6px 0 2px">팀 페이지</h3><p class="mini dim" style="margin:0">우리 팀만 보는 비공개 공간</p></div>'+selUI+header+weeklySec+draftSec+extra;
+  var extra='<div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><div class="mini dim" style="margin-bottom:6px">📅 연습 날짜 <span style="opacity:.65">· 추가/수정은 일정 탭</span></div>'+pracHtml+(sel.sched?('<div class="mini dim" style="margin:9px 0 4px">📝 팀 메모</div><div style="background:rgba(255,255,255,.04);border-radius:8px;padding:9px;font-size:13px;white-space:pre-wrap">'+esc(sel.sched)+'</div>'):'')+'</div>';
+  return head+chips+teamHeader+weeklySec+draftSec+extra;
 }
-function doomTPAcct(){return (window._doomTP&&window._doomTP.team&&window._doomTP.team.acct)||'';}
+function doomTPSetName(acct,cur){
+  var nm=prompt('새 팀 이름을 입력하세요 (최대 20자)',cur||'');
+  if(nm===null)return;nm=nm.trim();if(!nm)return toast('팀명을 입력해주세요',true);
+  auctionCall('aucSetTeamName',{name:nm,acct:acct}).then(function(){toast('✏️ 팀명 변경: '+nm);doomReloadTeamPage();}).catch(function(e){toast(e.message||'실패',true);});
+}
+function doomTPAcct(){return (window._doomTP&&window._doomTP.sel&&window._doomTP.sel.acct)||'';}
 function doomReloadTeamPage(){var acct=window._doomTPSel||'';auctionCall('aucTeamPage',acct?{acct:acct}:{}).then(function(r){window._doomTP=r;if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
 function doomPickTPTeam(acct){window._doomTPSel=acct;doomReloadTeamPage();}
 function doomSetWeekly(){
