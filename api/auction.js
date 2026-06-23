@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
       if (!teams || !teams.length) return null;
       if (isOp(s) && bodyAcct) { for (var iR = 0; iR < teams.length; iR++) if (teams[iR].acct === bodyAcct) return teams[iR]; return null; }
       var nmR = s && s.name;
-      for (var jR = 0; jR < teams.length; jR++) { var tR = teams[jR]; if (aucNameMatch(tR.acct, nmR)) return tR; if ((tR.roster || []).some(function (r) { return aucNameMatch(r.name, nmR); })) return tR; }
+      for (var jR = 0; jR < teams.length; jR++) { var tR = teams[jR]; if (aucNameMatch(tR.acct, nmR) || aucNameMatch(tR.leader, nmR)) return tR; if ((tR.roster || []).some(function (r) { return aucNameMatch(r.name, nmR); })) return tR; }
       return null;
     }
     async function aucLogBids(a, bids, outcome, winnerAcct, cost) {
@@ -362,15 +362,20 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'doom:teams', JSON.stringify(lkPos)]);
       return res.status(200).json({ ok: true });
     }
-    if (action === 'aucTeamPage') { // 👥 팀 페이지 — 팀원(팀장+로스터)/운영자만
+    if (action === 'aucTeamPage') { // 👥 팀 페이지 — 전체 팀 목록 + 선택 팀(비공개는 팀원/운영만)
       var opTP = isOp(s);
       var lkTP = []; try { lkTP = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkTP = []; }
-      var tTP = null;
-      if (opTP && body.acct) { for (var iTP = 0; iTP < lkTP.length; iTP++) if (lkTP[iTP].acct === body.acct) tTP = lkTP[iTP]; }
-      else if (s && s.name) tTP = aucResolveMyTeam(lkTP, s, null);
-      if (!tTP && opTP && lkTP.length) tTP = lkTP[0];
-      if (!tTP) return res.status(200).json({ ok: true, team: null, isOp: opTP });
-      return res.status(200).json({ ok: true, isOp: opTP, allTeams: opTP ? lkTP.map(function (x) { return { acct: x.acct, name: x.name, leader: x.leader, color: x.color }; }) : null, team: { acct: tTP.acct, name: tTP.name, leader: tTP.leader, color: tTP.color, roster: tTP.roster || [], weekly: tTP.weekly || {}, drafts: tTP.drafts || [], practice: tTP.practice || [], sched: tTP.sched || '' } });
+      var myT = (s && s.name) ? aucResolveMyTeam(lkTP, s, null) : null;
+      var selAcctTP = (body.acct && lkTP.some(function (t) { return t.acct === body.acct; })) ? body.acct : (myT ? myT.acct : (lkTP.length ? lkTP[0].acct : ''));
+      var selTP = null; for (var iTP = 0; iTP < lkTP.length; iTP++) if (lkTP[iTP].acct === selAcctTP) selTP = lkTP[iTP];
+      var canPrivTP = !!(opTP || (myT && selTP && myT.acct === selTP.acct));
+      var pubTP = lkTP.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, roster: (t.roster || []).map(function (r) { return { name: r.name, position: r.position, cost: r.cost, tier: r.tier }; }) }; });
+      var selData = null;
+      if (selTP) {
+        selData = { acct: selTP.acct, name: selTP.name, leader: selTP.leader, color: selTP.color, roster: selTP.roster || [], priv: canPrivTP };
+        if (canPrivTP) { selData.weekly = selTP.weekly || {}; selData.drafts = selTP.drafts || []; selData.practice = selTP.practice || []; selData.sched = selTP.sched || ''; selData.canEdit = true; }
+      }
+      return res.status(200).json({ ok: true, isOp: opTP, myAcct: myT ? myT.acct : '', myName: (s && s.name) || '', teams: pubTP, sel: selData });
     }
     if (action === 'aucSetWeekly') { // 📆 주간 가능 시간 (팀원/운영)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -480,9 +485,9 @@ module.exports = async function handler(req, res) {
       var nmN = String(body.name || '').trim().slice(0, 20); if (!nmN) return res.status(400).json({ error: '팀명을 입력해주세요' });
       var lkN = []; try { lkN = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkN = []; }
       if (!lkN.length) return res.status(400).json({ error: '먼저 팀 명단을 확정(못 박기)해주세요' });
-      var tgtN = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundN = false;
-      lkN.forEach(function (t) { if (t.acct === tgtN) { t.name = nmN; foundN = true; } });
-      if (!foundN) return res.status(403).json({ error: '본인 팀만 바꿀 수 있어요' });
+      var tN = aucResolveMyTeam(lkN, s, body.acct);
+      if (!tN) return res.status(403).json({ error: '본인 팀만 바꿀 수 있어요' });
+      tN.name = nmN;
       await redis(['SET', 'doom:teams', JSON.stringify(lkN)]);
       return res.status(200).json({ ok: true, name: nmN });
     }
