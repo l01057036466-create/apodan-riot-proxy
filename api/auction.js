@@ -45,6 +45,16 @@ module.exports = async function handler(req, res) {
     async function aucPut(a) { a.updatedAt = Date.now(); await redis(['SET', 'doom:auc', JSON.stringify(a)]); }
     async function aucBids() { var arr = await redis(['HGETALL', 'doom:auc:bids']); var b = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) b[arr[i]] = Number(arr[i + 1]); } else if (arr && typeof arr === 'object') { for (var k in arr) b[k] = Number(arr[k]); } return b; }
     async function aucPasses() { var arr = await redis(['HGETALL', 'doom:auc:passes']); var p = {}; if (Array.isArray(arr)) { for (var i = 0; i < arr.length; i += 2) p[arr[i]] = 1; } else if (arr && typeof arr === 'object') { for (var k in arr) p[k] = 1; } return p; }
+    async function aucLogBids(a, bids, outcome, winnerAcct, cost) {
+      var log = []; try { log = JSON.parse((await redis(['GET', 'doom:auc:bidlog'])) || '[]'); } catch (e) { log = []; }
+      var entries = [];
+      for (var kLg in bids) { var tb = aucTeam(a, kLg); entries.push({ bidder: kLg, team: tb ? tb.name : '', color: tb ? tb.color : '', amount: a.prior + bids[kLg], won: (kLg === winnerAcct) }); }
+      entries.sort(function (x, y) { return y.amount - x.amount; });
+      var wtb = winnerAcct ? aucTeam(a, winnerAcct) : null;
+      log.push({ player: a.current ? a.current.name : '', position: a.current ? a.current.position : '', tier: a.current ? a.current.tier : '', outcome: outcome, winner: wtb ? wtb.name : '', cost: cost || 0, bids: entries, at: Date.now() });
+      if (log.length > 300) log = log.slice(-300);
+      await redis(['SET', 'doom:auc:bidlog', JSON.stringify(log)]);
+    }
     function aucTeam(a, name) { if (a && a.teams && name) for (var i = 0; i < a.teams.length; i++) if (a.teams[i].acct === name) return a.teams[i]; return null; }
     function aucElig(a) { var out = []; if (!a) return out; var tied = (a.phase === 'tie') ? (a.tied || []) : null; for (var i = 0; i < a.teams.length; i++) { var t = a.teams[i]; if (tied && tied.indexOf(t.acct) < 0) continue; if ((t.roster || []).length >= 5) continue; if (t.points < a.prior + a.minBid) continue; out.push(t.acct); } return out; }
     function aucLoadNext(a) { a.prior = 0; a.minBid = 10; a.capOff = false; a.tied = null; a.timer = null; if (!a.queue || !a.queue.length) { a.current = null; a.phase = 'done'; } else { a.current = a.queue.shift(); a.phase = 'bidding'; } }
@@ -61,7 +71,7 @@ module.exports = async function handler(req, res) {
         teams: a.teams.map(function (t) { return { id: t.id, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [], full: (t.roster || []).length >= 5 }; }),
         queueLeft: (a.queue || []).length, lastResult: a.lastResult || null, unsold: a.unsold || [], eligibleCount: elig.length, submittedCount: Object.keys(bids).length, passedCount: Object.keys(passes).length, test: !!a.test, confirmed: !!a.confirmed, open: dOpen, timer: a.timer || null, tiedCount: (a.tied || []).length
       };
-      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.passed = Object.keys(passes); pub.tied = a.tied || null; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); }
+      if (op) { pub.role = 'op'; pub.bids = bids; pub.eligible = elig; pub.passed = Object.keys(passes); pub.tied = a.tied || null; pub.acctTeam = {}; a.teams.forEach(function (t) { pub.acctTeam[t.acct] = { id: t.id, name: t.name, color: t.color, leader: t.leader }; }); try { pub.bidLog = JSON.parse((await redis(['GET', 'doom:auc:bidlog'])) || '[]'); } catch (e) { pub.bidLog = []; } }
       else if (my) { pub.role = 'leader'; pub.myTeamId = my.id; pub.iEligible = elig.indexOf(s.name) >= 0; pub.iSubmitted = bids[s.name] != null; pub.myBid = (bids[s.name] != null ? bids[s.name] : null); pub.iTied = !!(a.tied && a.tied.indexOf(s.name) >= 0); pub.iPassed = passes[s.name] != null; }
       else pub.role = 'spectator';
       return res.status(200).json(pub);
@@ -78,7 +88,7 @@ module.exports = async function handler(req, res) {
         queue: qST,
         prior: 0, minBid: 10, capOff: false, tied: null, current: null, phase: 'bidding', lastResult: null, unsold: [], startedAt: Date.now(), test: !!body.test
       };
-      aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aST);
+      aucLoadNext(aST); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await redis(['DEL', 'doom:auc:bidlog']); await aucPut(aST);
       return res.status(200).json({ ok: true });
     }
     if (action === 'aucBid') {
@@ -125,17 +135,17 @@ module.exports = async function handler(req, res) {
       }
       var bRV = await aucBids(), eRV = aucElig(aRV), valid = [];
       for (var kRV in bRV) if (eRV.indexOf(kRV) >= 0) valid.push({ acct: kRV, bid: bRV[kRV] });
-      if (!valid.length) return res.status(200).json({ ok: true, result: 'none' });
+      if (!valid.length) { await aucLogBids(aRV, bRV, 'none', null, 0); return res.status(200).json({ ok: true, result: 'none' }); }
       var maxRV = 0; for (var i = 0; i < valid.length; i++) if (valid[i].bid > maxRV) maxRV = valid[i].bid;
       var winRV = valid.filter(function (x) { return x.bid === maxRV; });
       if (winRV.length === 1) {
         var wT = aucTeam(aRV, winRV[0].acct), cost = aRV.prior + maxRV;
         wT.points -= cost; wT.roster.push({ name: aRV.current.name, cost: cost, position: aRV.current.position, tier: aRV.current.tier, cap: aRV.current.cap });
         aRV.lastResult = { player: aRV.current.name, position: aRV.current.position, winner: wT.name, leader: wT.leader, color: wT.color, cost: cost, prior: aRV.prior, bid: maxRV, n: valid.length };
-        aRV.phase = 'revealed'; aRV.timer = null; await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
+        await aucLogBids(aRV, bRV, 'sold', winRV[0].acct, cost); aRV.phase = 'revealed'; aRV.timer = null; await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
         return res.status(200).json({ ok: true, result: 'sold', winner: wT.name, cost: cost });
       }
-      aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie'; aRV.timer = null;
+      await aucLogBids(aRV, bRV, 'tie', null, 0); aRV.prior = aRV.prior + maxRV; aRV.minBid = maxRV + 10; aRV.capOff = true; aRV.tied = winRV.map(function (x) { return x.acct; }); aRV.phase = 'tie'; aRV.timer = null;
       await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aRV);
       return res.status(200).json({ ok: true, result: 'tie', tied: aRV.tied.length, prior: aRV.prior, minBid: aRV.minBid });
     }
@@ -449,7 +459,7 @@ module.exports = async function handler(req, res) {
     }
     if (action === 'aucReset') {
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
-      await redis(['DEL', 'doom:auc']); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); return res.status(200).json({ ok: true });
+      await redis(['DEL', 'doom:auc']); await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await redis(['DEL', 'doom:auc:bidlog']); return res.status(200).json({ ok: true });
     }
 
     return res.status(400).json({ error: '알 수 없는 요청: ' + action });
