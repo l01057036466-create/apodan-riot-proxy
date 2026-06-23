@@ -212,10 +212,10 @@ module.exports = async function handler(req, res) {
       var availL = []; try { availL = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { availL = []; }
       var resultsL = []; try { resultsL = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resultsL = []; }
       var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [] }; });
-      var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, opSchedS = isOp(s);
-      if (opSchedS) allSchedS = {};
-      lockedT.forEach(function (t) { if (t.acct === myAcctS) { mySchedS = t.sched || ''; myPracticeS = t.practice || []; } if (opSchedS) allSchedS[t.acct] = t.sched || ''; });
-      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL, results: resultsL, myPractice: myPracticeS });
+      var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, allPracticeS = null, opSchedS = isOp(s);
+      if (opSchedS) { allSchedS = {}; allPracticeS = {}; }
+      lockedT.forEach(function (t) { if (t.acct === myAcctS) { mySchedS = t.sched || ''; myPracticeS = t.practice || []; } if (opSchedS) { allSchedS[t.acct] = t.sched || ''; allPracticeS[t.acct] = t.practice || []; } });
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, allPractice: allPracticeS, avail: availL, results: resultsL, myPractice: myPracticeS });
     }
     if (action === 'aucSchedAdd') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
@@ -329,6 +329,18 @@ module.exports = async function handler(req, res) {
       tCT.points += refCT; tCT.roster = [];
       await aucPut(aCT);
       return res.status(200).json({ ok: true, refunded: refCT });
+    }
+    if (action === 'aucSetPosition') { // 🎯 로스터 선수 포지션 확정 (팀장/운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var plPos = String(body.player || '').trim(); if (!plPos) return res.status(400).json({ error: '선수를 지정해주세요' });
+      var posPos = String(body.position || '').slice(0, 10);
+      var lkPos = []; try { lkPos = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkPos = []; }
+      if (!lkPos.length) return res.status(400).json({ error: '먼저 팀 명단을 확정해주세요' });
+      var tgtPos = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundPos = false;
+      lkPos.forEach(function (t) { if (t.acct === tgtPos) { (t.roster || []).forEach(function (r) { if (r.name === plPos) { r.position = posPos; foundPos = true; } }); } });
+      if (!foundPos) return res.status(404).json({ error: '선수를 찾을 수 없거나 권한이 없어요' });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkPos)]);
+      return res.status(200).json({ ok: true });
     }
     if (action === 'aucTeamPracAdd') { // 📅 비공개 팀 연습 날짜 추가 (팀장/운영)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
