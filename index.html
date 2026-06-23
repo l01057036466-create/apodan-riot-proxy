@@ -8120,7 +8120,8 @@ function go(id){try{if(id==='games'){if(lsGet('apodan_bgm')==='1')BGM.start();}e
 const ADMIN_ONLY_PAGES=new Set(['record','notice']);
 const FINANCE_PAGES=new Set(['bank','form','games','shop']); // 💰 도박·주식·상점 — 외부인(비로그인) 노출 차단
 function canViewFinance(){const B=bankSession();return !!(B&&(B.name||B.role==='dev'))||isAdmin()} // 로그인 멤버·개발자·운영자만
-function doomCanSee(){ // 🔒 멸망전 — 개발자/물방울/회장 상시 + 공개단계(팀장/전체)
+function doomCanSee(){ return true; // 📢 멸망전 전체 공유 — 항상 공개
+  // (이하 구버전 게이팅: 도달 안 함)
   var B=(window._bank)||(typeof bankSession==='function'?bankSession():null);
   var nm=B?String(B.name||''):'';
   if(B){ // 항상 보임: 개발자·물방울·회장 (99 잭슨 등 팀장은 여기 해당 X)
@@ -10803,7 +10804,7 @@ function doomAfter(){
   if(window._doomTab==='schedule'&&voteApiBase()){
     Promise.all([auctionCall('aucState',{}).catch(function(){return null;}),auctionCall('aucSchedList',{}).catch(function(){return null;})]).then(function(res){
       if(res[0])window._aucSt=res[0];
-      if(res[1]){window._doomSched=res[1].sched||[];window._doomRecruit=res[1].recruit||[];window._doomTeams=res[1].teams||[];window._doomMyAcct=res[1].myAcct||'';window._doomMySched=res[1].mySched;window._doomAllSched=res[1].allSched;window._doomAvail=res[1].avail||[];window._doomMyPractice=res[1].myPractice||[];}
+      if(res[1]){window._doomSched=res[1].sched||[];window._doomRecruit=res[1].recruit||[];window._doomTeams=res[1].teams||[];window._doomMyAcct=res[1].myAcct||'';window._doomMySched=res[1].mySched;window._doomAllSched=res[1].allSched;window._doomAvail=res[1].avail||[];window._doomMyPractice=res[1].myPractice||[];window._doomAllPractice=res[1].allPractice;}
       if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
     });
   }
@@ -10880,6 +10881,32 @@ function doomSchedBadge(type){
 }
 function doomSchedMe(){return (window._bank&&window._bank.name)||((typeof bankSession==='function'&&bankSession())?bankSession().name:'')||'';}
 function doomSchedIsOp(){return !!(window._bank&&(window._bank.role==='dev'||window._bank.rank==='chairman'||String(window._bank.name||'').indexOf('물방울')>=0));}
+function doomMgmtSection(lockedTeams,op,inp){
+  if(!lockedTeams||!lockedTeams.length)return '';
+  if(op){
+    var selAcct=window._doomMgmtAcct;
+    if(!lockedTeams.some(function(t){return t.acct===selAcct;}))selAcct=lockedTeams[0].acct;
+    window._doomMgmtAcct=selAcct;
+    var selTeam=lockedTeams.filter(function(t){return t.acct===selAcct;})[0];
+    var selOpts=lockedTeams.map(function(t){return '<option value="'+esc(t.acct)+'"'+(t.acct===selAcct?' selected':'')+'>'+esc(t.name)+' · '+esc(t.leader||'')+'</option>';}).join('');
+    var selUI='<div style="margin-bottom:12px"><div class="mini dim" style="margin-bottom:4px">🎛 관리할 팀 선택 (운영자는 모든 팀 관리 가능)</div><select onchange="doomPickMgmtTeam(this.value)" style="width:100%;'+inp+'">'+selOpts+'</select></div>';
+    var sched=(window._doomAllSched&&window._doomAllSched[selAcct])||'';
+    var prac=(window._doomAllPractice&&window._doomAllPractice[selAcct])||[];
+    return doomTeamMgmtCard(selTeam,sched,prac,true,selUI,inp);
+  }
+  var myTeam=lockedTeams.filter(function(t){return t.acct===(window._doomMyAcct||'');})[0];
+  if(!myTeam)return '';
+  window._doomMgmtAcct=myTeam.acct;
+  return doomTeamMgmtCard(myTeam,(window._doomMySched!=null?window._doomMySched:''),window._doomMyPractice||[],false,'',inp);
+}
+function doomTeamMgmtCard(t,sched,practice,asOp,selUI,inp){
+  var POS=[['탑','🛡️ 탑'],['정글','🌳 정글'],['미드','⚡ 미드'],['원딜','🏹 원딜'],['서폿','🛟 서폿']];
+  var myPrac=(practice||[]).slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+  var pracList=myPrac.length?myPrac.map(function(pp){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:7px;padding:6px 10px;margin-bottom:4px;font-size:13px"><span>📅 <b>'+doomSchedFmtDate(pp.date)+'</b>'+(pp.note?' <span style="opacity:.65">· '+esc(pp.note)+'</span>':'')+'</span><a onclick="doomTeamPracDel(\''+pp.id+'\')" style="cursor:pointer;color:var(--lose);font-weight:900;font-size:16px">×</a></div>';}).join(''):'<p class="mini dim" style="margin:0 0 6px">아직 등록한 연습 날짜가 없어요</p>';
+  var posRows=(t.roster||[]).length?(t.roster||[]).map(function(r){var pnm=String(r.name).replace(/['"\\]/g,'');return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.name)+'</b><select onchange="doomSetPosition(\''+pnm+'\',this.value)" style="flex:none;width:108px;'+inp+'"><option value="">미정</option>'+POS.map(function(p){return '<option value="'+p[0]+'"'+(r.position===p[0]?' selected':'')+'>'+p[1]+'</option>';}).join('')+'</select></div>';}).join(''):'<p class="mini dim" style="margin:0">로스터가 없어요</p>';
+  var col=t.color||'var(--gold)';
+  return '<div style="background:rgba(155,89,182,.05);border:2px solid '+col+';border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:15px;color:'+col+'">🛠 '+(asOp?'팀 관리 (운영자)':'내 팀 관리')+' — '+esc(t.name)+'</h3>'+selUI+'<div class="mini dim" style="margin-bottom:4px">✏️ 팀명 변경</div><div style="display:flex;gap:6px;margin-bottom:14px"><input id="myTeamName" value="'+esc(t.name)+'" maxlength="20" style="flex:1;'+inp+'"><button class="btn" style="flex:none;padding:8px 14px;font-weight:700" onclick="doomSetTeamName()">저장</button></div><div class="mini dim" style="margin-bottom:6px">🎯 포지션 확정 <span style="opacity:.6">(선수별 라인 지정)</span></div><div style="margin-bottom:14px">'+posRows+'</div><div class="mini dim" style="margin-bottom:4px">📅 우리 팀 연습 날짜 <span style="color:var(--lose)">(비공개 · 우리 팀만)</span></div><div style="display:flex;gap:6px;margin-bottom:8px"><input id="tpDate" type="date" style="flex:1;'+inp+'"><input id="tpNote" placeholder="메모 (예: 21시 스크림)" maxlength="80" style="flex:1.3;'+inp+'"><button class="btn gold" style="flex:none;padding:8px 13px;font-weight:800" onclick="doomTeamPracAdd()">+</button></div>'+pracList+'<div class="mini dim" style="margin:14px 0 4px">📋 우리 팀 메모 <span style="color:var(--lose)">(다른 팀엔 안 보여요)</span></div><textarea id="myTeamSched" maxlength="1500" rows="4" style="width:100%;box-sizing:border-box;resize:vertical;'+inp+'" placeholder="예: 미드 라인전 연습 집중 / 물방울 디코 필참">'+esc(sched)+'</textarea><button class="btn gold" style="width:100%;margin-top:7px" onclick="doomSetTeamSched()">💾 메모 저장</button></div>';
+}
 function doomScheduleTab(){
   var st=window._aucSt;
   var lockedTeams=(window._doomTeams&&window._doomTeams.length)?window._doomTeams:null;
@@ -10947,9 +10974,7 @@ function doomScheduleTab(){
   if(op){ lockBtn='<div style="background:rgba(212,175,55,.06);border:1px solid var(--gold);border-radius:14px;padding:12px;margin-bottom:14px;text-align:center"><div class="mini dim" style="margin-bottom:7px">'+(lockedTeams?('✅ 팀 명단 확정됨 ('+lockedTeams.length+'팀). 로스터 바뀌면 다시 눌러 갱신'):'경매 최종 로스터를 영구 확정하세요 (못 박기)')+'</div><button class="btn gold" style="width:100%" onclick="doomLockTeams()">🔒 팀 명단 확정 (못 박기)</button></div>'; }
   var lockedRoster='';
   if(lockedTeams){ lockedRoster='<details open style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:14px">📋 확정 팀 명단 — 누가 누구 영입했는지</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;margin-top:8px">'+lockedTeams.map(function(t){return '<div style="border:1px solid var(--line);border-left:5px solid '+(t.color||'#888')+';border-radius:10px;padding:10px 12px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px"><b style="color:'+(t.color||'#888')+';font-size:16px">'+esc(t.name)+'</b><span class="mini dim">팀장 '+esc(t.leader||'')+'</span></div><div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">'+((t.roster||[]).length?t.roster.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 7px;background:rgba(255,255,255,.05);border-radius:5px"><span style="font-weight:600">'+esc(r.name)+'</span><span style="flex:none;color:'+(t.color||'#888')+';font-weight:800">'+r.cost+'P</span></div>';}).join(''):'<span class="mini dim">영입 없음</span>')+'</div></div>';}).join('')+'</div></details>'; }
-  var myTeam=lockedTeams?lockedTeams.filter(function(t){return t.acct===(window._doomMyAcct||'');})[0]:null;
-  var myMgmt='';
-  if(myTeam){ var mySchedV=(window._doomMySched!=null?window._doomMySched:''); var myPrac=(window._doomMyPractice||[]).slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'');}); var pracList=myPrac.length?myPrac.map(function(pp){return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:7px;padding:6px 10px;margin-bottom:4px;font-size:13px"><span>📅 <b>'+doomSchedFmtDate(pp.date)+'</b>'+(pp.note?' <span style="opacity:.65">· '+esc(pp.note)+'</span>':'')+'</span><a onclick="doomTeamPracDel(\''+pp.id+'\')" style="cursor:pointer;color:var(--lose);font-weight:900;font-size:16px">×</a></div>';}).join(''):'<p class="mini dim" style="margin:0 0 6px">아직 등록한 연습 날짜가 없어요</p>'; myMgmt='<div style="background:rgba(155,89,182,.05);border:2px solid '+(myTeam.color||'var(--gold)')+';border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:15px;color:'+(myTeam.color||'var(--gold)')+'">🛠 내 팀 관리 — '+esc(myTeam.name)+'</h3><div class="mini dim" style="margin-bottom:4px">✏️ 팀명 변경</div><div style="display:flex;gap:6px;margin-bottom:12px"><input id="myTeamName" value="'+esc(myTeam.name)+'" maxlength="20" style="flex:1;'+inp+'"><button class="btn" style="flex:none;padding:8px 14px;font-weight:700" onclick="doomSetTeamName()">저장</button></div><div class="mini dim" style="margin-bottom:4px">📅 우리 팀 연습 날짜 <span style="color:var(--lose)">(비공개 · 우리 팀만)</span></div><div style="display:flex;gap:6px;margin-bottom:8px"><input id="tpDate" type="date" style="flex:1;'+inp+'"><input id="tpNote" placeholder="메모 (예: 21시 스크림)" maxlength="80" style="flex:1.3;'+inp+'"><button class="btn gold" style="flex:none;padding:8px 13px;font-weight:800" onclick="doomTeamPracAdd()">+</button></div>'+pracList+'<div class="mini dim" style="margin:13px 0 4px">📋 우리 팀 메모 <span style="color:var(--lose)">(다른 팀엔 안 보여요)</span></div><textarea id="myTeamSched" maxlength="1500" rows="5" style="width:100%;box-sizing:border-box;resize:vertical;'+inp+'" placeholder="예: 7/3 21:00 스크림 vs 콜라팀 / 미드 연습 집중">'+esc(mySchedV)+'</textarea><button class="btn gold" style="width:100%;margin-top:7px" onclick="doomSetTeamSched()">💾 메모 저장</button></div>'; }
+  var myMgmt=doomMgmtSection(lockedTeams,op,inp);
   var avail=(window._doomAvail||[]).slice();
   var availForm = loggedIn
     ? '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><input id="avDate" type="date" style="flex:1;min-width:130px;'+inp+'"><input id="avNote" placeholder="메모 (예: 저녁 9시 이후)" maxlength="80" style="flex:1.4;min-width:130px;'+inp+'"><button class="btn gold" style="flex:none;padding:8px 16px;font-weight:800" onclick="doomAvailAdd()">+ 추가</button></div>'
@@ -10980,19 +11005,21 @@ function doomLockTeams(){
 function doomSetTeamName(){
   var el=document.getElementById('myTeamName');var nm=el?el.value:'';
   if(!nm||!nm.trim()){toast('팀명을 입력해주세요',true);return;}
-  auctionCall('aucSetTeamName',{name:nm}).then(function(){toast('✏️ 팀명 변경됨: '+nm);doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+  auctionCall('aucSetTeamName',{name:nm,acct:window._doomMgmtAcct||''}).then(function(){toast('✏️ 팀명 변경됨: '+nm);doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
 }
 function doomSetTeamSched(){
   var el=document.getElementById('myTeamSched');var tx=el?el.value:'';
-  auctionCall('aucSetTeamSched',{sched:tx}).then(function(){toast('💾 우리 팀 메모 저장!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+  auctionCall('aucSetTeamSched',{sched:tx,acct:window._doomMgmtAcct||''}).then(function(){toast('💾 메모 저장!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
 }
 function doomTeamPracAdd(){
   var d=(document.getElementById('tpDate')||{}).value||'';
   if(!d){toast('날짜를 선택해주세요',true);return;}
   var nt=(document.getElementById('tpNote')||{}).value||'';
-  auctionCall('aucTeamPracAdd',{date:d,note:nt}).then(function(){toast('📅 연습 날짜 추가!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
+  auctionCall('aucTeamPracAdd',{date:d,note:nt,acct:window._doomMgmtAcct||''}).then(function(){toast('📅 연습 날짜 추가!');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});
 }
-function doomTeamPracDel(id){auctionCall('aucTeamPracDel',{id:id}).then(function(){doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomTeamPracDel(id){auctionCall('aucTeamPracDel',{id:id,acct:window._doomMgmtAcct||''}).then(function(){doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomSetPosition(player,pos){auctionCall('aucSetPosition',{player:player,position:pos,acct:window._doomMgmtAcct||''}).then(function(){toast('🎯 '+player+(pos?(' → '+pos):' 미정'));doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
+function doomPickMgmtTeam(acct){window._doomMgmtAcct=acct;var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
 function doomSchedAdd(){
   var v=function(id){var e=document.getElementById(id);return e?e.value:'';};
   if(!v('schDate')){toast('날짜를 선택해주세요',true);return;}
@@ -11005,7 +11032,7 @@ function doomRecruitAdd(){
 }
 function doomRecruitDel(id){if(!confirm('이 글을 지울까요?'))return;auctionCall('aucRecruitDel',{id:id}).then(function(){toast('지웠어요');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
 function doomRecruitToggle(id){auctionCall('aucRecruitToggle',{id:id}).then(function(r){toast(r.status==='closed'?'✅ 구함 완료로 변경':'🙋 다시 모집중');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
-function doomReloadSched(){auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomRecruit=r.recruit||[];window._doomTeams=r.teams||[];window._doomMyAcct=r.myAcct||'';window._doomMySched=r.mySched;window._doomAllSched=r.allSched;window._doomAvail=r.avail||[];window._doomResults=r.results||[];window._doomMyPractice=r.myPractice||[];if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
+function doomReloadSched(){auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomRecruit=r.recruit||[];window._doomTeams=r.teams||[];window._doomMyAcct=r.myAcct||'';window._doomMySched=r.mySched;window._doomAllSched=r.allSched;window._doomAvail=r.avail||[];window._doomResults=r.results||[];window._doomMyPractice=r.myPractice||[];window._doomAllPractice=r.allPractice;if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
 function doomSchedSub(s){window._doomSchedSub=s;var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
 function doomAvailAdd(){
   var d=(document.getElementById('avDate')||{}).value||'';
