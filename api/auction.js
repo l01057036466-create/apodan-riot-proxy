@@ -212,10 +212,10 @@ module.exports = async function handler(req, res) {
       var availL = []; try { availL = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { availL = []; }
       var resultsL = []; try { resultsL = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resultsL = []; }
       var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [] }; });
-      var myAcctS = (s && s.name) || '', mySchedS = null, allSchedS = null, opSchedS = isOp(s);
+      var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, opSchedS = isOp(s);
       if (opSchedS) allSchedS = {};
-      lockedT.forEach(function (t) { if (t.acct === myAcctS) mySchedS = t.sched || ''; if (opSchedS) allSchedS[t.acct] = t.sched || ''; });
-      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL, results: resultsL });
+      lockedT.forEach(function (t) { if (t.acct === myAcctS) { mySchedS = t.sched || ''; myPracticeS = t.practice || []; } if (opSchedS) allSchedS[t.acct] = t.sched || ''; });
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL, results: resultsL, myPractice: myPracticeS });
     }
     if (action === 'aucSchedAdd') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
@@ -330,6 +330,25 @@ module.exports = async function handler(req, res) {
       await aucPut(aCT);
       return res.status(200).json({ ok: true, refunded: refCT });
     }
+    if (action === 'aucTeamPracAdd') { // 📅 비공개 팀 연습 날짜 추가 (팀장/운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var dtP = String(body.date || '').slice(0, 10); if (!dtP) return res.status(400).json({ error: '날짜를 선택해주세요' });
+      var lkP = []; try { lkP = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkP = []; }
+      if (!lkP.length) return res.status(400).json({ error: '먼저 팀 명단을 확정해주세요' });
+      var tgtP = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundP = false;
+      lkP.forEach(function (t) { if (t.acct === tgtP) { if (!Array.isArray(t.practice)) t.practice = []; t.practice.push({ id: 'tp' + Date.now() + Math.floor(Math.random() * 1000), date: dtP, note: String(body.note || '').slice(0, 80) }); foundP = true; } });
+      if (!foundP) return res.status(403).json({ error: '본인 팀만 쓸 수 있어요' });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkP)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucTeamPracDel') {
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var lkPD = []; try { lkPD = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkPD = []; }
+      var tgtPD = (isOp(s) && body.acct) ? String(body.acct) : s.name;
+      lkPD.forEach(function (t) { if (t.acct === tgtPD && Array.isArray(t.practice)) t.practice = t.practice.filter(function (x) { return x.id !== body.id; }); });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkPD)]);
+      return res.status(200).json({ ok: true });
+    }
     if (action === 'aucResultAdd') { // 🏆 경기 결과 기록 (운영)
       if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
       var aN = String(body.aName || '').trim(), bN = String(body.bName || '').trim();
@@ -376,7 +395,7 @@ module.exports = async function handler(req, res) {
       var aLK = await aucGet(); if (!aLK || !aLK.teams || !aLK.teams.length) return res.status(400).json({ error: '확정할 팀이 없어요' });
       var prevLK = []; try { prevLK = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { prevLK = []; }
       var prevByA = {}; prevLK.forEach(function (t) { prevByA[t.acct] = t; });
-      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '' }; });
+      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '', practice: p.practice || [] }; });
       await redis(['SET', 'doom:teams', JSON.stringify(locked)]);
       aLK.phase = 'done'; aLK.confirmed = true; aLK.queue = []; aLK.current = null;
       await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aLK);
