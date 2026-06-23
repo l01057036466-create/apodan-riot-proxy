@@ -210,11 +210,12 @@ module.exports = async function handler(req, res) {
       var recruitL = []; try { recruitL = JSON.parse((await redis(['GET', 'doom:recruit'])) || '[]'); } catch (e) { recruitL = []; }
       var lockedT = []; try { lockedT = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lockedT = []; }
       var availL = []; try { availL = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { availL = []; }
+      var resultsL = []; try { resultsL = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resultsL = []; }
       var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [] }; });
       var myAcctS = (s && s.name) || '', mySchedS = null, allSchedS = null, opSchedS = isOp(s);
       if (opSchedS) allSchedS = {};
       lockedT.forEach(function (t) { if (t.acct === myAcctS) mySchedS = t.sched || ''; if (opSchedS) allSchedS[t.acct] = t.sched || ''; });
-      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL });
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, avail: availL, results: resultsL });
     }
     if (action === 'aucSchedAdd') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
@@ -328,6 +329,27 @@ module.exports = async function handler(req, res) {
       tCT.points += refCT; tCT.roster = [];
       await aucPut(aCT);
       return res.status(200).json({ ok: true, refunded: refCT });
+    }
+    if (action === 'aucResultAdd') { // 🏆 경기 결과 기록 (운영)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var aN = String(body.aName || '').trim(), bN = String(body.bName || '').trim();
+      if (!aN || !bN) return res.status(400).json({ error: '두 팀을 선택해주세요' });
+      if (aN === bN) return res.status(400).json({ error: '같은 팀끼리는 안 돼요' });
+      var sA = parseInt(body.scoreA, 10), sB = parseInt(body.scoreB, 10);
+      if (isNaN(sA) || isNaN(sB) || sA < 0 || sB < 0) return res.status(400).json({ error: '점수를 입력해주세요' });
+      var lkR = []; try { lkR = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkR = []; }
+      var colOf = {}; lkR.forEach(function (t) { colOf[t.name] = t.color; });
+      var resR = []; try { resR = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resR = []; }
+      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), at: Date.now() });
+      await redis(['SET', 'doom:results', JSON.stringify(resR)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucResultDel') {
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var resD = []; try { resD = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resD = []; }
+      resD = resD.filter(function (x) { return x.id !== body.id; });
+      await redis(['SET', 'doom:results', JSON.stringify(resD)]);
+      return res.status(200).json({ ok: true });
     }
     if (action === 'aucAvailAdd') { // 🟢 연습 가능 날짜 등록 (로그인 누구나)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
