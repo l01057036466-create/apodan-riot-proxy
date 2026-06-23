@@ -258,19 +258,20 @@
    "id": "p_b0ryjti5_mq7nhxuq",
    "displayName": "01 준표",
    "kakaoName": "01 준표",
-   "riotName": "nriah",
-   "riotTag": "kr2",
+   "riotName": "키 위",
+   "riotTag": "조 아",
    "aliases": [
     "준표",
     "01준표"
    ],
-   "active": false,
+   "active": true,
    "memo": "",
-   "soloTier": "",
-   "flexTier": "",
+   "soloTier": "다이아",
+   "flexTier": "언랭",
    "riotPuuid": "",
    "soloPos": "",
-   "subPos": ""
+   "subPos": "",
+   "kicked": false
   },
   {
    "id": "p_1v451ep9_mq7nhxuq",
@@ -37708,8 +37709,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 430,
- "updatedAt": "2026-06-22T13:04:58.824Z",
+ "rev": 432,
+ "updatedAt": "2026-06-23T04:25:28.221Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
