@@ -10823,7 +10823,7 @@ function doomAfter(){
   if(window._doomTab==='auction'){aucStartPoll();return;}
   if(window._doomTab==='teampage'&&voteApiBase()){
     var acctTP=window._doomTPSel||'';
-    auctionCall('aucTeamPage',acctTP?{acct:acctTP}:{}).then(function(r){window._doomTP=r;if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+    auctionCall('aucTeamPage',acctTP?{acct:acctTP}:{}).then(function(r){window._doomTP=r;if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(e){window._doomTP={error:(e&&e.message)||'불러오기 실패'};if(window._doomTab==='teampage'){var b2=document.getElementById('doomBody');if(b2)b2.innerHTML=doomBody();}});
   }
   if(window._doomTab==='standings'&&voteApiBase()){
     auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
@@ -10846,6 +10846,7 @@ function doomAfter(){
     auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='home'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
   }
   if(window._doomTab==='betting'&&voteApiBase()){
+    if(typeof bankRefresh==='function')bankRefresh(true).then(function(){if(window._doomTab==='betting'){var bb=document.getElementById('doomBody');if(bb)bb.innerHTML=doomBody();}}).catch(function(){});
     auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomTeams=r.teams||[];if(window._doomTab==='betting'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();doomFetchBetMarkets();}}).catch(function(){});
   }
 }
@@ -10939,7 +10940,7 @@ function doomSchedBadge(type){
   return '<span style="background:#27ae60;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap">✅ 가능</span>';
 }
 function doomSchedMe(){return (window._bank&&window._bank.name)||((typeof bankSession==='function'&&bankSession())?bankSession().name:'')||'';}
-function doomSchedIsOp(){return !!(window._bank&&(window._bank.role==='dev'||window._bank.rank==='chairman'||String(window._bank.name||'').indexOf('물방울')>=0));}
+function doomSchedIsOp(){var S=(window._bank)||(typeof bankSession==='function'?bankSession():null);return !!(S&&(S.role==='dev'||S.rank==='chairman'||String(S.name||'').indexOf('물방울')>=0));}
 function doomMgmtSection(lockedTeams,op,inp){
   if(!lockedTeams||!lockedTeams.length)return '';
   if(op){
@@ -11174,8 +11175,9 @@ function doomReloadStandings(){auctionCall('aucSchedList',{}).then(function(r){w
 function doomTeamPageTab(){
   var tp=window._doomTP;
   if(!tp)return '<div class="card" style="text-align:center;padding:20px"><p class="mini dim" style="margin:0">불러오는 중…</p></div>';
+  if(tp.error)return '<div class="card" style="text-align:center;padding:24px"><div style="font-size:30px">⚠️</div><h3 style="margin:8px 0 4px">팀 페이지를 불러오지 못했어요</h3><p class="mini dim" style="margin:0 0 8px">'+esc(tp.error)+'</p><p class="mini" style="margin:0;color:var(--gold);font-weight:700">서버(api/auction.js)를 최신 버전으로 다시 배포했는지 확인해주세요!</p></div>';
   if(!tp.team){
-    return '<div class="card" style="max-width:560px;margin:30px auto;text-align:center;padding:30px 24px"><div style="font-size:36px">🔒</div><h3 style="margin:10px 0 6px">팀원 전용 페이지</h3><p class="mini dim" style="margin:0">이 페이지는 <b>해당 팀의 팀장·팀원</b>만 볼 수 있어요.'+((window._bank&&window._bank.name)?'<br>현재 계정은 어느 팀에도 속해있지 않아요.':'<br>먼저 💰 지갑에서 로그인해주세요.')+'</p></div>';
+    return '<div class="card" style="max-width:560px;margin:30px auto;text-align:center;padding:30px 24px"><div style="font-size:36px">🔒</div><h3 style="margin:10px 0 6px">팀원 전용 페이지</h3><p class="mini dim" style="margin:0">이 페이지는 <b>해당 팀의 팀장·팀원</b>만 볼 수 있어요.'+((bankSession()&&bankSession().name)?'<br>현재 계정은 어느 팀에도 속해있지 않아요.':'<br>먼저 💰 지갑에서 로그인해주세요.')+'</p></div>';
   }
   var t=tp.team, col=t.color||'var(--gold)', op=!!tp.isOp;
   var inp='padding:8px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px;box-sizing:border-box';
@@ -11217,7 +11219,7 @@ function doomNorm(x){return String(x||'').replace(/\s+/g,'').toLowerCase();}
 function doomNick(x){return String(x||'').replace(/\s+/g,'').replace(/^\d+/,'').toLowerCase();}
 function doomNameMatch(x,y){var nx=doomNorm(x),ny=doomNorm(y);if(nx&&nx===ny)return true;var kx=doomNick(x),ky=doomNick(y);return !!kx&&kx===ky;}
 function doomUserInTeam(teamName){
-  var me=(window._bank&&window._bank.name)||'';if(!me)return false;
+  var S=bankSession();var me=(S&&S.name)||'';if(!me)return false;
   var t=(window._doomTeams||[]).find(function(x){return x.name===teamName;});if(!t)return false;
   if(doomNameMatch(t.acct,me)||doomNameMatch(t.leader,me))return true;
   return (t.roster||[]).some(function(r){return doomNameMatch(r.name,me);});
@@ -11239,7 +11241,7 @@ function doomFetchBetMarkets(){
   })).then(function(){if(window._doomTab==='betting'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}});
 }
 function doomBet(id,team){
-  var B=window._bank;if(!B||!B.name)return toast('💰 지갑에서 먼저 로그인해주세요!',true);
+  var B=bankSession();if(!B||!B.name)return toast('💰 지갑에서 먼저 로그인해주세요!',true);
   var e=(window._doomSched||[]).find(function(x){return x.id===id;});if(!e)return;
   if(doomUserInTeam(e.teamName)||doomUserInTeam(e.opponent))return toast('본인 팀 경기예요 — 베팅 불가 (승부조작 방지 🙅)',true);
   var key=doomMktKey(e);var M=(window._doomMkts||{})[key]||{};
@@ -11253,7 +11255,7 @@ function doomBet(id,team){
   if(allin&&!confirm('🚨 전 재산 '+fmtAPO(amt)+' APO 올인!\n빗나가면 파산할 수 있어요. 정말 가시나요?'))return;
   if(window._betBusy)return toast('처리 중이에요!',true);window._betBusy=true;
   bankCall('bet',{market:key,team:team,amount:amt,odds:2}).then(function(j){
-    window._betBusy=false;if(j&&typeof j.bal==='number')window._bank.bal=j.bal;
+    window._betBusy=false;if(j&&typeof j.bal==='number'){if(!window._bank)window._bank=B;window._bank.bal=j.bal;}
     toast('🎰 '+fmtAPO(amt)+' APO → '+teamName+' (x2)! 적중 시 '+fmtAPO(amt*2)+' APO');
     doomFetchBetMarkets();
   }).catch(function(err){window._betBusy=false;toast(err.message||'베팅 실패',true);});
@@ -11274,7 +11276,7 @@ function doomBetUnsettle(id){
   bankCall('unsettle',{market:doomMktKey(e)}).then(function(){toast('↩️ 정산 되돌림');doomFetchBetMarkets();}).catch(function(err){toast(err.message||'실패',true);});
 }
 function doomBettingTab(){
-  var B=window._bank,op=doomSchedIsOp();
+  var B=bankSession(),op=doomSchedIsOp();
   var teams=(window._doomTeams&&window._doomTeams.length)?window._doomTeams:[];
   var colorOf={};teams.forEach(function(t){colorOf[t.name]=t.color||'#888';});
   var matches=(window._doomSched||[]).filter(function(e){return (e.type==='match'||e.type==='scrim')&&e.opponent;}).sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''));});
