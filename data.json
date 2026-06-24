@@ -270,8 +270,7 @@
    "flexTier": "언랭",
    "riotPuuid": "",
    "soloPos": "",
-   "subPos": "",
-   "kicked": false
+   "subPos": ""
   },
   {
    "id": "p_1v451ep9_mq7nhxuq",
@@ -31891,9 +31890,9 @@
      "kills": 15,
      "deaths": 5,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2661,
+     "csd15": 48,
+     "xpd15": 4516,
      "stats": {
       "cs": 319,
       "goldEarned": 18888,
@@ -31920,9 +31919,9 @@
      "kills": 8,
      "deaths": 1,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 833,
+     "csd15": 18,
+     "xpd15": 647,
      "stats": {
       "cs": 297,
       "goldEarned": 17206,
@@ -31948,9 +31947,9 @@
      "kills": 2,
      "deaths": 5,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1285,
+     "csd15": 61,
+     "xpd15": 1796,
      "stats": {
       "cs": 235,
       "goldEarned": 12139,
@@ -31977,9 +31976,9 @@
      "kills": 14,
      "deaths": 6,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 909,
+     "csd15": 19,
+     "xpd15": 85,
      "stats": {
       "cs": 296,
       "goldEarned": 20468,
@@ -32005,9 +32004,9 @@
      "kills": 3,
      "deaths": 6,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1365,
+     "csd15": 10,
+     "xpd15": 1645,
      "stats": {
       "cs": 29,
       "goldEarned": 10769,
@@ -32034,9 +32033,9 @@
      "kills": 6,
      "deaths": 13,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1285,
+     "csd15": -61,
+     "xpd15": -1796,
      "stats": {
       "cs": 218,
       "goldEarned": 12862,
@@ -32061,9 +32060,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2661,
+     "csd15": -48,
+     "xpd15": -4516,
      "stats": {
       "cs": 205,
       "goldEarned": 12256,
@@ -32089,9 +32088,9 @@
      "kills": 8,
      "deaths": 3,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1569,
+     "csd15": 11,
+     "xpd15": 940,
      "stats": {
       "cs": 308,
       "goldEarned": 17068,
@@ -32118,9 +32117,9 @@
      "kills": 7,
      "deaths": 10,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -909,
+     "csd15": -19,
+     "xpd15": -85,
      "stats": {
       "cs": 329,
       "goldEarned": 18616,
@@ -32146,9 +32145,9 @@
      "kills": 0,
      "deaths": 9,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1365,
+     "csd15": -10,
+     "xpd15": -1645,
      "stats": {
       "cs": 27,
       "goldEarned": 8818,
@@ -32221,9 +32220,9 @@
      "kills": 2,
      "deaths": 11,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1285,
+     "csd15": -37,
+     "xpd15": -1369,
      "stats": {
       "cs": 153,
       "goldEarned": 9075,
@@ -32250,9 +32249,9 @@
      "kills": 3,
      "deaths": 10,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3596,
+     "csd15": -60,
+     "xpd15": -2920,
      "stats": {
       "cs": 150,
       "goldEarned": 11044,
@@ -32279,9 +32278,9 @@
      "kills": 9,
      "deaths": 4,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1443,
+     "csd15": 33,
+     "xpd15": 1033,
      "stats": {
       "cs": 203,
       "goldEarned": 11921,
@@ -32308,9 +32307,9 @@
      "kills": 15,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 211,
+     "csd15": 3,
+     "xpd15": -132,
      "stats": {
       "cs": 226,
       "goldEarned": 14873,
@@ -32337,9 +32336,9 @@
      "kills": 1,
      "deaths": 7,
      "assists": 17,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -151,
+     "csd15": -7,
+     "xpd15": 390,
      "stats": {
       "cs": 25,
       "goldEarned": 8092,
@@ -32366,9 +32365,9 @@
      "kills": 7,
      "deaths": 12,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1285,
+     "csd15": 37,
+     "xpd15": 1369,
      "stats": {
       "cs": 167,
       "goldEarned": 10221,
@@ -32395,9 +32394,9 @@
      "kills": 16,
      "deaths": 3,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 3596,
+     "csd15": 60,
+     "xpd15": 2920,
      "stats": {
       "cs": 270,
       "goldEarned": 18373,
@@ -32424,9 +32423,9 @@
      "kills": 7,
      "deaths": 3,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -162,
+     "csd15": 17,
+     "xpd15": -196,
      "stats": {
       "cs": 241,
       "goldEarned": 12885,
@@ -32453,9 +32452,9 @@
      "kills": 5,
      "deaths": 5,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -211,
+     "csd15": -3,
+     "xpd15": 132,
      "stats": {
       "cs": 245,
       "goldEarned": 15285,
@@ -32482,9 +32481,9 @@
      "kills": 2,
      "deaths": 7,
      "assists": 16,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 151,
+     "csd15": 7,
+     "xpd15": -390,
      "stats": {
       "cs": 35,
       "goldEarned": 8643,
@@ -32566,9 +32565,9 @@
      "kills": 6,
      "deaths": 2,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2376,
+     "csd15": 60,
+     "xpd15": 4849,
      "stats": {
       "cs": 184,
       "goldEarned": 10813,
@@ -32580,7 +32579,8 @@
       "damageToObjectives": 9565,
       "damageToTurrets": 9565,
       "healing": 5325,
-      "selfMitigatedDamage": 28385
+      "selfMitigatedDamage": 28385,
+      "soloKills": 3
      }
     },
     {
@@ -32592,9 +32592,9 @@
      "kills": 8,
      "deaths": 4,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1275,
+     "csd15": 36,
+     "xpd15": 1413,
      "stats": {
       "cs": 179,
       "goldEarned": 11863,
@@ -32607,7 +32607,8 @@
       "damageToObjectives": 37053,
       "damageToTurrets": 4298,
       "healing": 9387,
-      "selfMitigatedDamage": 17676
+      "selfMitigatedDamage": 17676,
+      "soloKills": 2
      }
     },
     {
@@ -32619,9 +32620,9 @@
      "kills": 3,
      "deaths": 2,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 323,
+     "csd15": -10,
+     "xpd15": -722,
      "stats": {
       "cs": 163,
       "goldEarned": 8847,
@@ -32635,7 +32636,8 @@
       "damageToObjectives": 6142,
       "damageToTurrets": 5803,
       "healing": 3209,
-      "selfMitigatedDamage": 4308
+      "selfMitigatedDamage": 4308,
+      "soloKills": 0
      }
     },
     {
@@ -32647,9 +32649,9 @@
      "kills": 12,
      "deaths": 1,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2734,
+     "csd15": 31,
+     "xpd15": 1307,
      "stats": {
       "cs": 214,
       "goldEarned": 15457,
@@ -32662,7 +32664,8 @@
       "damageToObjectives": 16614,
       "damageToTurrets": 16139,
       "healing": 9923,
-      "selfMitigatedDamage": 8378
+      "selfMitigatedDamage": 8378,
+      "soloKills": 0
      }
     },
     {
@@ -32674,9 +32677,9 @@
      "kills": 1,
      "deaths": 2,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1489,
+     "csd15": -8,
+     "xpd15": 415,
      "stats": {
       "cs": 19,
       "goldEarned": 7906,
@@ -32690,7 +32693,8 @@
       "damageToObjectives": 4585,
       "damageToTurrets": 4585,
       "healing": 3957,
-      "selfMitigatedDamage": 5995
+      "selfMitigatedDamage": 5995,
+      "soloKills": 0
      }
     },
     {
@@ -32702,9 +32706,9 @@
      "kills": 6,
      "deaths": 9,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2376,
+     "csd15": -60,
+     "xpd15": -4849,
      "stats": {
       "cs": 135,
       "goldEarned": 9282,
@@ -32716,7 +32720,8 @@
       "damageToObjectives": 3127,
       "damageToTurrets": 3127,
       "healing": 10533,
-      "selfMitigatedDamage": 22401
+      "selfMitigatedDamage": 22401,
+      "soloKills": 2
      }
     },
     {
@@ -32728,9 +32733,9 @@
      "kills": 1,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3217,
+     "csd15": -52,
+     "xpd15": -4918,
      "stats": {
       "cs": 105,
       "goldEarned": 6595,
@@ -32742,7 +32747,8 @@
       "controlWardsBought": 3,
       "crowdControlScore": 17,
       "healing": 9146,
-      "selfMitigatedDamage": 8667
+      "selfMitigatedDamage": 8667,
+      "soloKills": 0
      }
     },
     {
@@ -32754,9 +32760,9 @@
      "kills": 0,
      "deaths": 4,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -323,
+     "csd15": 10,
+     "xpd15": 722,
      "stats": {
       "cs": 174,
       "goldEarned": 7161,
@@ -32770,7 +32776,8 @@
       "damageToObjectives": 1324,
       "damageToTurrets": 995,
       "healing": 1827,
-      "selfMitigatedDamage": 6646
+      "selfMitigatedDamage": 6646,
+      "soloKills": 0
      }
     },
     {
@@ -32782,9 +32789,9 @@
      "kills": 4,
      "deaths": 6,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2734,
+     "csd15": -31,
+     "xpd15": -1307,
      "stats": {
       "cs": 146,
       "goldEarned": 8963,
@@ -32794,7 +32801,8 @@
       "wardsPlaced": 4,
       "crowdControlScore": 6,
       "healing": 2169,
-      "selfMitigatedDamage": 6897
+      "selfMitigatedDamage": 6897,
+      "soloKills": 0
      }
     },
     {
@@ -32806,9 +32814,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1489,
+     "csd15": 8,
+     "xpd15": -415,
      "stats": {
       "cs": 27,
       "goldEarned": 5014,
@@ -32820,7 +32828,8 @@
       "controlWardsBought": 6,
       "crowdControlScore": 8,
       "healing": 3539,
-      "selfMitigatedDamage": 13099
+      "selfMitigatedDamage": 13099,
+      "soloKills": 0
      }
     }
    ],
@@ -32887,9 +32896,9 @@
      "kills": 10,
      "deaths": 7,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1099,
+     "csd15": 6,
+     "xpd15": 3322,
      "stats": {
       "cs": 292,
       "goldEarned": 17644,
@@ -32903,7 +32912,8 @@
       "damageToObjectives": 13018,
       "damageToTurrets": 8489,
       "healing": 16094,
-      "selfMitigatedDamage": 35676
+      "selfMitigatedDamage": 35676,
+      "soloKills": 5
      }
     },
     {
@@ -32915,9 +32925,9 @@
      "kills": 11,
      "deaths": 7,
      "assists": 8,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 588,
+     "csd15": -6,
+     "xpd15": 715,
      "stats": {
       "cs": 251,
       "goldEarned": 19558,
@@ -32931,7 +32941,8 @@
       "damageToObjectives": 37903,
       "damageToTurrets": 531,
       "healing": 15700,
-      "selfMitigatedDamage": 25662
+      "selfMitigatedDamage": 25662,
+      "soloKills": 5
      }
     },
     {
@@ -32943,9 +32954,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -960,
+     "csd15": -33,
+     "xpd15": -795,
      "stats": {
       "cs": 223,
       "goldEarned": 12340,
@@ -32959,7 +32970,8 @@
       "damageToObjectives": 2831,
       "damageToTurrets": 1398,
       "healing": 9851,
-      "selfMitigatedDamage": 113073
+      "selfMitigatedDamage": 113073,
+      "soloKills": 0
      }
     },
     {
@@ -32971,9 +32983,9 @@
      "kills": 20,
      "deaths": 7,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 559,
+     "csd15": -2,
+     "xpd15": 257,
      "stats": {
       "cs": 300,
       "goldEarned": 23277,
@@ -32986,7 +32998,8 @@
       "damageToObjectives": 28370,
       "damageToTurrets": 5323,
       "healing": 14777,
-      "selfMitigatedDamage": 27663
+      "selfMitigatedDamage": 27663,
+      "soloKills": 2
      }
     },
     {
@@ -32998,9 +33011,9 @@
      "kills": 0,
      "deaths": 11,
      "assists": 21,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -49,
+     "csd15": -3,
+     "xpd15": 270,
      "stats": {
       "cs": 26,
       "goldEarned": 10280,
@@ -33013,7 +33026,8 @@
       "crowdControlScore": 31,
       "damageToObjectives": 1897,
       "healing": 6390,
-      "selfMitigatedDamage": 12265
+      "selfMitigatedDamage": 12265,
+      "soloKills": 0
      }
     },
     {
@@ -33025,9 +33039,9 @@
      "kills": 2,
      "deaths": 9,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3353,
+     "csd15": -58,
+     "xpd15": -3164,
      "stats": {
       "cs": 248,
       "goldEarned": 15790,
@@ -33040,7 +33054,8 @@
       "damageToObjectives": 28826,
       "damageToTurrets": 24236,
       "healing": 35471,
-      "selfMitigatedDamage": 143196
+      "selfMitigatedDamage": 143196,
+      "soloKills": 1
      }
     },
     {
@@ -33052,9 +33067,9 @@
      "kills": 14,
      "deaths": 5,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1099,
+     "csd15": -6,
+     "xpd15": -3322,
      "stats": {
       "cs": 322,
       "goldEarned": 24159,
@@ -33067,7 +33082,8 @@
       "damageToObjectives": 52140,
       "damageToTurrets": 1720,
       "healing": 23566,
-      "selfMitigatedDamage": 28073
+      "selfMitigatedDamage": 28073,
+      "soloKills": 2
      }
     },
     {
@@ -33079,9 +33095,9 @@
      "kills": 2,
      "deaths": 9,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 960,
+     "csd15": 33,
+     "xpd15": 795,
      "stats": {
       "cs": 320,
       "goldEarned": 14645,
@@ -33095,7 +33111,8 @@
       "damageToObjectives": 9389,
       "damageToTurrets": 5692,
       "healing": 5620,
-      "selfMitigatedDamage": 21026
+      "selfMitigatedDamage": 21026,
+      "soloKills": 0
      }
     },
     {
@@ -33107,9 +33124,9 @@
      "kills": 18,
      "deaths": 9,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -559,
+     "csd15": 2,
+     "xpd15": -257,
      "stats": {
       "cs": 298,
       "goldEarned": 20858,
@@ -33123,7 +33140,8 @@
       "damageToObjectives": 24099,
       "damageToTurrets": 8975,
       "healing": 7783,
-      "selfMitigatedDamage": 23459
+      "selfMitigatedDamage": 23459,
+      "soloKills": 1
      }
     },
     {
@@ -33135,9 +33153,9 @@
      "kills": 0,
      "deaths": 10,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 49,
+     "csd15": 3,
+     "xpd15": -270,
      "stats": {
       "cs": 43,
       "goldEarned": 10423,
@@ -33151,7 +33169,8 @@
       "damageToObjectives": 4264,
       "damageToTurrets": 3453,
       "healing": 7147,
-      "selfMitigatedDamage": 57971
+      "selfMitigatedDamage": 57971,
+      "soloKills": 0
      }
     }
    ],
@@ -33218,9 +33237,9 @@
      "kills": 5,
      "deaths": 7,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1341,
+     "csd15": 7,
+     "xpd15": 1327,
      "stats": {
       "cs": 220,
       "goldEarned": 11736,
@@ -33233,7 +33252,8 @@
       "damageToObjectives": 9611,
       "damageToTurrets": 9611,
       "healing": 6824,
-      "selfMitigatedDamage": 19663
+      "selfMitigatedDamage": 19663,
+      "soloKills": 3
      }
     },
     {
@@ -33245,9 +33265,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 9,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 788,
+     "csd15": 5,
+     "xpd15": -594,
      "stats": {
       "cs": 216,
       "goldEarned": 11714,
@@ -33261,7 +33281,8 @@
       "damageToObjectives": 45841,
       "damageToTurrets": 3188,
       "healing": 12662,
-      "selfMitigatedDamage": 18848
+      "selfMitigatedDamage": 18848,
+      "soloKills": 0
      }
     },
     {
@@ -33273,9 +33294,9 @@
      "kills": 5,
      "deaths": 1,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 732,
+     "csd15": 21,
+     "xpd15": -161,
      "stats": {
       "cs": 250,
       "goldEarned": 13435,
@@ -33289,7 +33310,8 @@
       "damageToObjectives": 19973,
       "damageToTurrets": 11716,
       "healing": 7342,
-      "selfMitigatedDamage": 12894
+      "selfMitigatedDamage": 12894,
+      "soloKills": 1
      }
     },
     {
@@ -33301,9 +33323,9 @@
      "kills": 10,
      "deaths": 2,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 1560,
+     "csd15": 37,
+     "xpd15": 374,
      "stats": {
       "cs": 238,
       "goldEarned": 15607,
@@ -33317,7 +33339,8 @@
       "damageToObjectives": 18731,
       "damageToTurrets": 9320,
       "healing": 9323,
-      "selfMitigatedDamage": 11658
+      "selfMitigatedDamage": 11658,
+      "soloKills": 2
      }
     },
     {
@@ -33329,9 +33352,9 @@
      "kills": 0,
      "deaths": 3,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -176,
+     "csd15": 8,
+     "xpd15": 655,
      "stats": {
       "cs": 31,
       "goldEarned": 7354,
@@ -33345,7 +33368,8 @@
       "damageToObjectives": 1943,
       "damageToTurrets": 663,
       "healing": 7406,
-      "selfMitigatedDamage": 5330
+      "selfMitigatedDamage": 5330,
+      "soloKills": 0
      }
     },
     {
@@ -33357,9 +33381,9 @@
      "kills": 2,
      "deaths": 9,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1341,
+     "csd15": -7,
+     "xpd15": -1327,
      "stats": {
       "cs": 208,
       "goldEarned": 9332,
@@ -33373,7 +33397,8 @@
       "damageToObjectives": 6512,
       "damageToTurrets": 6512,
       "healing": 12047,
-      "selfMitigatedDamage": 25470
+      "selfMitigatedDamage": 25470,
+      "soloKills": 0
      }
     },
     {
@@ -33385,9 +33410,9 @@
      "kills": 7,
      "deaths": 3,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -559,
+     "csd15": -5,
+     "xpd15": -2153,
      "stats": {
       "cs": 210,
       "goldEarned": 13218,
@@ -33400,7 +33425,8 @@
       "damageToObjectives": 7152,
       "damageToTurrets": 1109,
       "healing": 15867,
-      "selfMitigatedDamage": 28436
+      "selfMitigatedDamage": 28436,
+      "soloKills": 2
      }
     },
     {
@@ -33412,9 +33438,9 @@
      "kills": 4,
      "deaths": 4,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -732,
+     "csd15": -21,
+     "xpd15": 161,
      "stats": {
       "cs": 209,
       "goldEarned": 10471,
@@ -33427,7 +33453,8 @@
       "damageToObjectives": 13512,
       "damageToTurrets": 10875,
       "healing": 4105,
-      "selfMitigatedDamage": 13385
+      "selfMitigatedDamage": 13385,
+      "soloKills": 1
      }
     },
     {
@@ -33439,9 +33466,9 @@
      "kills": 1,
      "deaths": 6,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -1560,
+     "csd15": -37,
+     "xpd15": -374,
      "stats": {
       "cs": 189,
       "goldEarned": 9715,
@@ -33454,7 +33481,8 @@
       "damageToObjectives": 2896,
       "damageToTurrets": 899,
       "healing": 2146,
-      "selfMitigatedDamage": 8670
+      "selfMitigatedDamage": 8670,
+      "soloKills": 0
      }
     },
     {
@@ -33466,9 +33494,9 @@
      "kills": 1,
      "deaths": 2,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 176,
+     "csd15": -8,
+     "xpd15": -655,
      "stats": {
       "cs": 28,
       "goldEarned": 6683,
@@ -33480,7 +33508,8 @@
       "controlWardsBought": 13,
       "crowdControlScore": 13,
       "healing": 7659,
-      "selfMitigatedDamage": 9051
+      "selfMitigatedDamage": 9051,
+      "soloKills": 1
      }
     }
    ],
@@ -33547,9 +33576,9 @@
      "kills": 6,
      "deaths": 5,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 902,
+     "csd15": 10,
+     "xpd15": 1020,
      "stats": {
       "cs": 215,
       "goldEarned": 13029,
@@ -33563,7 +33592,8 @@
       "damageToObjectives": 9877,
       "damageToTurrets": 9877,
       "healing": 23679,
-      "selfMitigatedDamage": 50142
+      "selfMitigatedDamage": 50142,
+      "soloKills": 2
      }
     },
     {
@@ -33575,9 +33605,9 @@
      "kills": 11,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2546,
+     "csd15": 7,
+     "xpd15": -989,
      "stats": {
       "cs": 231,
       "goldEarned": 17187,
@@ -33589,7 +33619,8 @@
       "damageToObjectives": 23599,
       "damageToTurrets": 2634,
       "healing": 10117,
-      "selfMitigatedDamage": 21880
+      "selfMitigatedDamage": 21880,
+      "soloKills": 0
      }
     },
     {
@@ -33601,9 +33632,9 @@
      "kills": 4,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -620,
+     "csd15": -34,
+     "xpd15": 497,
      "stats": {
       "cs": 212,
       "goldEarned": 10840,
@@ -33617,7 +33648,8 @@
       "damageToObjectives": 5706,
       "damageToTurrets": 5706,
       "healing": 3780,
-      "selfMitigatedDamage": 17566
+      "selfMitigatedDamage": 17566,
+      "soloKills": 1
      }
     },
     {
@@ -33629,9 +33661,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 341,
+     "csd15": -10,
+     "xpd15": -262,
      "stats": {
       "cs": 237,
       "goldEarned": 12899,
@@ -33644,7 +33676,8 @@
       "damageToObjectives": 6830,
       "damageToTurrets": 6830,
       "healing": 6865,
-      "selfMitigatedDamage": 13296
+      "selfMitigatedDamage": 13296,
+      "soloKills": 0
      }
     },
     {
@@ -33656,9 +33689,9 @@
      "kills": 0,
      "deaths": 5,
      "assists": 13,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 356,
+     "csd15": 11,
+     "xpd15": 725,
      "stats": {
       "cs": 41,
       "goldEarned": 7840,
@@ -33671,7 +33704,8 @@
       "crowdControlScore": 35,
       "damageToObjectives": 111,
       "healing": 21813,
-      "selfMitigatedDamage": 6945
+      "selfMitigatedDamage": 6945,
+      "soloKills": 0
      }
     },
     {
@@ -33683,9 +33717,9 @@
      "kills": 4,
      "deaths": 9,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -902,
+     "csd15": -10,
+     "xpd15": -1020,
      "stats": {
       "cs": 197,
       "goldEarned": 10938,
@@ -33698,7 +33732,8 @@
       "damageToObjectives": 7191,
       "damageToTurrets": 4029,
       "healing": 6286,
-      "selfMitigatedDamage": 27931
+      "selfMitigatedDamage": 27931,
+      "soloKills": 1
      }
     },
     {
@@ -33710,9 +33745,9 @@
      "kills": 4,
      "deaths": 1,
      "assists": 18,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -119,
+     "csd15": -8,
+     "xpd15": -3047,
      "stats": {
       "cs": 209,
       "goldEarned": 13446,
@@ -33726,7 +33761,8 @@
       "damageToObjectives": 34927,
       "damageToTurrets": 1588,
       "healing": 14873,
-      "selfMitigatedDamage": 36199
+      "selfMitigatedDamage": 36199,
+      "soloKills": 1
      }
     },
     {
@@ -33738,9 +33774,9 @@
      "kills": 7,
      "deaths": 5,
      "assists": 12,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 620,
+     "csd15": 34,
+     "xpd15": -497,
      "stats": {
       "cs": 279,
       "goldEarned": 14322,
@@ -33754,7 +33790,8 @@
       "damageToObjectives": 14557,
       "damageToTurrets": 5026,
       "healing": 11794,
-      "selfMitigatedDamage": 17251
+      "selfMitigatedDamage": 17251,
+      "soloKills": 1
      }
     },
     {
@@ -33766,9 +33803,9 @@
      "kills": 12,
      "deaths": 3,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -341,
+     "csd15": 10,
+     "xpd15": 262,
      "stats": {
       "cs": 269,
       "goldEarned": 18499,
@@ -33782,7 +33819,8 @@
       "damageToObjectives": 19711,
       "damageToTurrets": 12236,
       "healing": 6259,
-      "selfMitigatedDamage": 10132
+      "selfMitigatedDamage": 10132,
+      "soloKills": 0
      }
     },
     {
@@ -33794,9 +33832,9 @@
      "kills": 0,
      "deaths": 4,
      "assists": 16,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -356,
+     "csd15": -11,
+     "xpd15": -725,
      "stats": {
       "cs": 33,
       "goldEarned": 7871,
@@ -33810,7 +33848,8 @@
       "damageToObjectives": 3735,
       "damageToTurrets": 1296,
       "healing": 6127,
-      "selfMitigatedDamage": 14934
+      "selfMitigatedDamage": 14934,
+      "soloKills": 0
      }
     }
    ],
@@ -33877,9 +33916,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -504,
+     "csd15": 19,
+     "xpd15": 2750,
      "stats": {
       "cs": 229,
       "goldEarned": 9573,
@@ -33891,7 +33930,8 @@
       "damageToObjectives": 6067,
       "damageToTurrets": 6067,
       "healing": 3771,
-      "selfMitigatedDamage": 45630
+      "selfMitigatedDamage": 45630,
+      "soloKills": 2
      }
     },
     {
@@ -33903,9 +33943,9 @@
      "kills": 3,
      "deaths": 5,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -60,
+     "csd15": -2,
+     "xpd15": -176,
      "stats": {
       "cs": 193,
       "goldEarned": 10825,
@@ -33918,7 +33958,8 @@
       "damageToObjectives": 9391,
       "damageToTurrets": 1006,
       "healing": 11782,
-      "selfMitigatedDamage": 24700
+      "selfMitigatedDamage": 24700,
+      "soloKills": 0
      }
     },
     {
@@ -33930,9 +33971,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 3,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -3200,
+     "csd15": -20,
+     "xpd15": -1111,
      "stats": {
       "cs": 195,
       "goldEarned": 8329,
@@ -33946,7 +33987,8 @@
       "damageToObjectives": 2969,
       "damageToTurrets": 2852,
       "healing": 4156,
-      "selfMitigatedDamage": 11666
+      "selfMitigatedDamage": 11666,
+      "soloKills": 0
      }
     },
     {
@@ -33958,9 +34000,9 @@
      "kills": 5,
      "deaths": 6,
      "assists": 4,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2644,
+     "csd15": 92,
+     "xpd15": 775,
      "stats": {
       "cs": 225,
       "goldEarned": 12999,
@@ -33974,7 +34016,8 @@
       "damageToObjectives": 3087,
       "damageToTurrets": 3087,
       "healing": 5706,
-      "selfMitigatedDamage": 9059
+      "selfMitigatedDamage": 9059,
+      "soloKills": 0
      }
     },
     {
@@ -33986,9 +34029,9 @@
      "kills": 3,
      "deaths": 8,
      "assists": 5,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 274,
+     "csd15": -1,
+     "xpd15": -167,
      "stats": {
       "cs": 31,
       "goldEarned": 8081,
@@ -34000,7 +34043,8 @@
       "controlWardsBought": 9,
       "crowdControlScore": 19,
       "healing": 2819,
-      "selfMitigatedDamage": 13929
+      "selfMitigatedDamage": 13929,
+      "soloKills": 0
      }
     },
     {
@@ -34012,9 +34056,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -910,
+     "csd15": -29,
+     "xpd15": -2026,
      "stats": {
       "cs": 177,
       "goldEarned": 8162,
@@ -34027,7 +34071,8 @@
       "crowdControlScore": 14,
       "damageToObjectives": 5374,
       "healing": 2903,
-      "selfMitigatedDamage": 19497
+      "selfMitigatedDamage": 19497,
+      "soloKills": 0
      }
     },
     {
@@ -34039,9 +34084,9 @@
      "kills": 3,
      "deaths": 1,
      "assists": 14,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 504,
+     "csd15": -19,
+     "xpd15": -2750,
      "stats": {
       "cs": 179,
       "goldEarned": 11240,
@@ -34055,7 +34100,8 @@
       "damageToObjectives": 45686,
       "damageToTurrets": 3662,
       "healing": 39643,
-      "selfMitigatedDamage": 31232
+      "selfMitigatedDamage": 31232,
+      "soloKills": 0
      }
     },
     {
@@ -34067,9 +34113,9 @@
      "kills": 13,
      "deaths": 2,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 3200,
+     "csd15": 20,
+     "xpd15": 1111,
      "stats": {
       "cs": 253,
       "goldEarned": 16438,
@@ -34082,7 +34128,8 @@
       "damageToObjectives": 18591,
       "damageToTurrets": 18591,
       "healing": 2700,
-      "selfMitigatedDamage": 14175
+      "selfMitigatedDamage": 14175,
+      "soloKills": 4
      }
     },
     {
@@ -34094,9 +34141,9 @@
      "kills": 9,
      "deaths": 3,
      "assists": 11,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2725,
+     "csd15": 13,
+     "xpd15": -1916,
      "stats": {
       "cs": 260,
       "goldEarned": 17450,
@@ -34110,7 +34157,8 @@
       "damageToObjectives": 22281,
       "damageToTurrets": 11024,
       "healing": 5362,
-      "selfMitigatedDamage": 12583
+      "selfMitigatedDamage": 12583,
+      "soloKills": 0
      }
     },
     {
@@ -34122,9 +34170,9 @@
      "kills": 1,
      "deaths": 4,
      "assists": 19,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2644,
+     "csd15": -92,
+     "xpd15": -775,
      "stats": {
       "cs": 29,
       "goldEarned": 8759,
@@ -34138,7 +34186,8 @@
       "damageToObjectives": 2382,
       "damageToTurrets": 853,
       "healing": 10002,
-      "selfMitigatedDamage": 11586
+      "selfMitigatedDamage": 11586,
+      "soloKills": 0
      }
     }
    ],
@@ -34205,9 +34254,9 @@
      "kills": 5,
      "deaths": 2,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 771,
+     "csd15": 7,
+     "xpd15": 416,
      "stats": {
       "cs": 184,
       "goldEarned": 10382,
@@ -34220,7 +34269,8 @@
       "damageToObjectives": 14232,
       "damageToTurrets": 13167,
       "healing": 6522,
-      "selfMitigatedDamage": 15038
+      "selfMitigatedDamage": 15038,
+      "soloKills": 4
      }
     },
     {
@@ -34232,9 +34282,9 @@
      "kills": 4,
      "deaths": 2,
      "assists": 10,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -296,
+     "csd15": -15,
+     "xpd15": -2685,
      "stats": {
       "cs": 135,
       "goldEarned": 8943,
@@ -34248,7 +34298,8 @@
       "damageToObjectives": 20101,
       "damageToTurrets": 313,
       "healing": 9045,
-      "selfMitigatedDamage": 20735
+      "selfMitigatedDamage": 20735,
+      "soloKills": 1
      }
     },
     {
@@ -34260,9 +34311,9 @@
      "kills": 3,
      "deaths": 1,
      "assists": 6,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 214,
+     "csd15": 4,
+     "xpd15": 136,
      "stats": {
       "cs": 183,
       "goldEarned": 8277,
@@ -34275,7 +34326,8 @@
       "damageToObjectives": 1113,
       "damageToTurrets": 1113,
       "healing": 1107,
-      "selfMitigatedDamage": 6886
+      "selfMitigatedDamage": 6886,
+      "soloKills": 0
      }
     },
     {
@@ -34287,9 +34339,9 @@
      "kills": 10,
      "deaths": 0,
      "assists": 7,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 2809,
+     "csd15": 18,
+     "xpd15": 830,
      "stats": {
       "cs": 200,
       "goldEarned": 12862,
@@ -34302,7 +34354,8 @@
       "damageToObjectives": 10284,
       "damageToTurrets": 9510,
       "healing": 5580,
-      "selfMitigatedDamage": 6285
+      "selfMitigatedDamage": 6285,
+      "soloKills": 0
      }
     },
     {
@@ -34314,9 +34367,9 @@
      "kills": 2,
      "deaths": 0,
      "assists": 15,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 865,
+     "csd15": -6,
+     "xpd15": 679,
      "stats": {
       "cs": 23,
       "goldEarned": 6826,
@@ -34330,7 +34383,8 @@
       "damageToObjectives": 1819,
       "damageToTurrets": 1819,
       "healing": 5928,
-      "selfMitigatedDamage": 11882
+      "selfMitigatedDamage": 11882,
+      "soloKills": 0
      }
     },
     {
@@ -34342,9 +34396,9 @@
      "kills": 2,
      "deaths": 6,
      "assists": 2,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 296,
+     "csd15": 15,
+     "xpd15": 2685,
      "stats": {
       "cs": 173,
       "goldEarned": 7806,
@@ -34356,7 +34410,8 @@
       "damageToObjectives": 4101,
       "damageToTurrets": 4101,
       "healing": 5330,
-      "selfMitigatedDamage": 17971
+      "selfMitigatedDamage": 17971,
+      "soloKills": 2
      }
     },
     {
@@ -34368,9 +34423,9 @@
      "kills": 0,
      "deaths": 4,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": 221,
+     "csd15": 27,
+     "xpd15": 352,
      "stats": {
       "cs": 175,
       "goldEarned": 7821,
@@ -34382,7 +34437,8 @@
       "crowdControlScore": 3,
       "damageToObjectives": 3373,
       "healing": 6530,
-      "selfMitigatedDamage": 9430
+      "selfMitigatedDamage": 9430,
+      "soloKills": 0
      }
     },
     {
@@ -34394,9 +34450,9 @@
      "kills": 2,
      "deaths": 3,
      "assists": 0,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -214,
+     "csd15": -4,
+     "xpd15": -136,
      "stats": {
       "cs": 174,
       "goldEarned": 7284,
@@ -34409,7 +34465,8 @@
       "damageToObjectives": 866,
       "damageToTurrets": 866,
       "healing": 4044,
-      "selfMitigatedDamage": 7125
+      "selfMitigatedDamage": 7125,
+      "soloKills": 0
      }
     },
     {
@@ -34421,9 +34478,9 @@
      "kills": 1,
      "deaths": 5,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -2809,
+     "csd15": -18,
+     "xpd15": -830,
      "stats": {
       "cs": 170,
       "goldEarned": 8466,
@@ -34435,7 +34492,8 @@
       "controlWardsBought": 1,
       "crowdControlScore": 20,
       "healing": 1617,
-      "selfMitigatedDamage": 6408
+      "selfMitigatedDamage": 6408,
+      "soloKills": 0
      }
     },
     {
@@ -34447,9 +34505,9 @@
      "kills": 0,
      "deaths": 6,
      "assists": 1,
-     "gd15": null,
-     "csd15": null,
-     "xpd15": null,
+     "gd15": -865,
+     "csd15": 6,
+     "xpd15": -679,
      "stats": {
       "cs": 28,
       "goldEarned": 4849,
@@ -34461,7 +34519,8 @@
       "controlWardsBought": 6,
       "crowdControlScore": 36,
       "healing": 1248,
-      "selfMitigatedDamage": 23140
+      "selfMitigatedDamage": 23140,
+      "soloKills": 0
      }
     }
    ],
@@ -37627,6 +37686,1382 @@
      "championId": "오리아나"
     }
    ]
+  },
+  {
+   "id": "m_r917cqrmqs5eief",
+   "createdAt": "2026-06-24T14:07:58.887Z",
+   "playedAt": "2026-06-23",
+   "setNumber": 1,
+   "winnerTeam": "RED",
+   "gameId": "8270634823",
+   "durationMin": 30,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "championId": "사이온",
+     "kills": 1,
+     "deaths": 3,
+     "assists": 3,
+     "gd15": -1667,
+     "csd15": -34,
+     "xpd15": -993,
+     "stats": {
+      "cs": 178,
+      "goldEarned": 9057,
+      "damageToChampions": 12459,
+      "damageTaken": 21983,
+      "visionScore": 25,
+      "wardsPlaced": 8,
+      "wardsKilled": 3,
+      "controlWardsBought": 3,
+      "crowdControlScore": 25,
+      "damageToObjectives": 9849,
+      "damageToTurrets": 9020,
+      "healing": 5254,
+      "selfMitigatedDamage": 43197,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
+     "championId": "나피리",
+     "kills": 5,
+     "deaths": 11,
+     "assists": 3,
+     "gd15": -319,
+     "csd15": -30,
+     "xpd15": -3043,
+     "stats": {
+      "cs": 177,
+      "goldEarned": 11155,
+      "damageToChampions": 17498,
+      "damageTaken": 31974,
+      "visionScore": 21,
+      "wardsPlaced": 2,
+      "wardsKilled": 5,
+      "controlWardsBought": 0,
+      "crowdControlScore": 9,
+      "damageToObjectives": 16013,
+      "damageToTurrets": 0,
+      "healing": 9643,
+      "selfMitigatedDamage": 12157,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "팀원죽이기",
+     "playerId": "p_07v55ab9_mq7nhxuq",
+     "championId": "신드라",
+     "kills": 2,
+     "deaths": 3,
+     "assists": 3,
+     "gd15": -1798,
+     "csd15": -27,
+     "xpd15": -1427,
+     "stats": {
+      "cs": 220,
+      "goldEarned": 10061,
+      "damageToChampions": 11931,
+      "damageTaken": 17611,
+      "visionScore": 34,
+      "wardsPlaced": 7,
+      "wardsKilled": 6,
+      "controlWardsBought": 2,
+      "crowdControlScore": 19,
+      "damageToObjectives": 586,
+      "damageToTurrets": 0,
+      "healing": 2863,
+      "selfMitigatedDamage": 4813,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "twitch소혁",
+     "playerId": "p_wqf3x0omq7ub77q",
+     "championId": "제라스",
+     "kills": 3,
+     "deaths": 4,
+     "assists": 4,
+     "gd15": -197,
+     "csd15": -4,
+     "xpd15": 586,
+     "stats": {
+      "cs": 258,
+      "goldEarned": 11946,
+      "damageToChampions": 20182,
+      "damageTaken": 15160,
+      "visionScore": 16,
+      "wardsPlaced": 8,
+      "wardsKilled": 3,
+      "controlWardsBought": 1,
+      "crowdControlScore": 14,
+      "damageToObjectives": 4098,
+      "damageToTurrets": 2822,
+      "healing": 1295,
+      "selfMitigatedDamage": 5869,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "Killer Tune",
+     "playerId": "p_ujjbme0y_mq7nhxuq",
+     "championId": "카르마",
+     "kills": 0,
+     "deaths": 3,
+     "assists": 8,
+     "gd15": -60,
+     "csd15": 3,
+     "xpd15": 81,
+     "stats": {
+      "cs": 43,
+      "goldEarned": 7077,
+      "damageToChampions": 4755,
+      "damageTaken": 14637,
+      "visionScore": 108,
+      "wardsPlaced": 44,
+      "wardsKilled": 14,
+      "controlWardsBought": 16,
+      "crowdControlScore": 15,
+      "damageToObjectives": 652,
+      "damageToTurrets": 162,
+      "healing": 3634,
+      "selfMitigatedDamage": 5851,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "DoYeon",
+     "playerId": "p_si39mrju_mq7nhxuq",
+     "championId": "오른",
+     "kills": 1,
+     "deaths": 2,
+     "assists": 7,
+     "gd15": 1667,
+     "csd15": 34,
+     "xpd15": 993,
+     "stats": {
+      "cs": 181,
+      "goldEarned": 10337,
+      "damageToChampions": 14101,
+      "damageTaken": 24487,
+      "visionScore": 30,
+      "wardsPlaced": 11,
+      "wardsKilled": 3,
+      "controlWardsBought": 0,
+      "crowdControlScore": 34,
+      "damageToObjectives": 15044,
+      "damageToTurrets": 12792,
+      "healing": 5995,
+      "selfMitigatedDamage": 33205,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "엘리스",
+     "kills": 5,
+     "deaths": 4,
+     "assists": 3,
+     "gd15": 728,
+     "csd15": -12,
+     "xpd15": -2315,
+     "stats": {
+      "cs": 162,
+      "goldEarned": 11049,
+      "damageToChampions": 10749,
+      "damageTaken": 23273,
+      "visionScore": 42,
+      "wardsPlaced": 6,
+      "wardsKilled": 7,
+      "controlWardsBought": 6,
+      "crowdControlScore": 21,
+      "damageToObjectives": 54673,
+      "damageToTurrets": 2407,
+      "healing": 10497,
+      "selfMitigatedDamage": 10723,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "잭 슨",
+     "playerId": "p_imjto1qf_mq7nhxuq",
+     "championId": "탈론",
+     "kills": 18,
+     "deaths": 3,
+     "assists": 2,
+     "gd15": 1798,
+     "csd15": 27,
+     "xpd15": 1427,
+     "stats": {
+      "cs": 262,
+      "goldEarned": 16889,
+      "damageToChampions": 49188,
+      "damageTaken": 23842,
+      "visionScore": 28,
+      "wardsPlaced": 10,
+      "wardsKilled": 2,
+      "controlWardsBought": 1,
+      "crowdControlScore": 4,
+      "damageToObjectives": 19687,
+      "damageToTurrets": 10821,
+      "healing": 6502,
+      "selfMitigatedDamage": 15599,
+      "soloKills": 12
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "DRX Ae1",
+     "playerId": "p_p4y4tq6mq7ub77o",
+     "championId": "시비르",
+     "kills": 0,
+     "deaths": 0,
+     "assists": 7,
+     "gd15": 197,
+     "csd15": 4,
+     "xpd15": -586,
+     "stats": {
+      "cs": 268,
+      "goldEarned": 11768,
+      "damageToChampions": 8741,
+      "damageTaken": 11778,
+      "visionScore": 29,
+      "wardsPlaced": 12,
+      "wardsKilled": 8,
+      "controlWardsBought": 3,
+      "crowdControlScore": 2,
+      "damageToObjectives": 23571,
+      "damageToTurrets": 4315,
+      "healing": 3818,
+      "selfMitigatedDamage": 6163,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "차연서",
+     "playerId": "p_ybyb79mg_mq7nhxup",
+     "championId": "소라카",
+     "kills": 0,
+     "deaths": 2,
+     "assists": 7,
+     "gd15": 60,
+     "csd15": -3,
+     "xpd15": -81,
+     "stats": {
+      "cs": 29,
+      "goldEarned": 7398,
+      "damageToChampions": 2226,
+      "damageTaken": 9919,
+      "visionScore": 68,
+      "wardsPlaced": 32,
+      "wardsKilled": 8,
+      "controlWardsBought": 7,
+      "crowdControlScore": 21,
+      "damageToObjectives": 1894,
+      "damageToTurrets": 686,
+      "healing": 19347,
+      "selfMitigatedDamage": 3513,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "녹턴"
+    },
+    {
+     "team": "BLUE",
+     "championId": "빅토르"
+    },
+    {
+     "team": "BLUE",
+     "championId": "오리아나"
+    },
+    {
+     "team": "BLUE",
+     "championId": "노틸러스"
+    },
+    {
+     "team": "BLUE",
+     "championId": "밀리오"
+    },
+    {
+     "team": "RED",
+     "championId": "케인"
+    },
+    {
+     "team": "RED",
+     "championId": "사일러스"
+    },
+    {
+     "team": "RED",
+     "championId": "우디르"
+    },
+    {
+     "team": "RED",
+     "championId": "룰루"
+    },
+    {
+     "team": "RED",
+     "championId": "세라핀"
+    }
+   ]
+  },
+  {
+   "id": "m_wqhc5bimqs5eif0",
+   "createdAt": "2026-06-24T14:07:58.908Z",
+   "playedAt": "2026-06-23",
+   "setNumber": 2,
+   "winnerTeam": "RED",
+   "gameId": "8270727272",
+   "durationMin": 32,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "DoYeon",
+     "playerId": "p_si39mrju_mq7nhxuq",
+     "championId": "일라오이",
+     "kills": 1,
+     "deaths": 4,
+     "assists": 1,
+     "gd15": 2631,
+     "csd15": 83,
+     "xpd15": 998,
+     "stats": {
+      "cs": 267,
+      "goldEarned": 14081,
+      "damageToChampions": 28350,
+      "damageTaken": 32219,
+      "visionScore": 24,
+      "wardsPlaced": 10,
+      "wardsKilled": 1,
+      "controlWardsBought": 0,
+      "crowdControlScore": 16,
+      "damageToObjectives": 23830,
+      "damageToTurrets": 23830,
+      "healing": 11591,
+      "selfMitigatedDamage": 43319,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "리 신",
+     "kills": 1,
+     "deaths": 6,
+     "assists": 2,
+     "gd15": 1184,
+     "csd15": 28,
+     "xpd15": -2395,
+     "stats": {
+      "cs": 173,
+      "goldEarned": 9671,
+      "damageToChampions": 8287,
+      "damageTaken": 30703,
+      "visionScore": 40,
+      "wardsPlaced": 21,
+      "wardsKilled": 6,
+      "controlWardsBought": 16,
+      "crowdControlScore": 17,
+      "damageToObjectives": 15863,
+      "damageToTurrets": 0,
+      "healing": 9490,
+      "selfMitigatedDamage": 25996,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "잭 슨",
+     "playerId": "p_imjto1qf_mq7nhxuq",
+     "championId": "사일러스",
+     "kills": 3,
+     "deaths": 6,
+     "assists": 0,
+     "gd15": 807,
+     "csd15": 30,
+     "xpd15": 665,
+     "stats": {
+      "cs": 239,
+      "goldEarned": 10549,
+      "damageToChampions": 13740,
+      "damageTaken": 29728,
+      "visionScore": 18,
+      "wardsPlaced": 8,
+      "wardsKilled": 3,
+      "controlWardsBought": 0,
+      "crowdControlScore": 22,
+      "damageToObjectives": 995,
+      "damageToTurrets": 778,
+      "healing": 5147,
+      "selfMitigatedDamage": 21098,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "DRX Ae1",
+     "playerId": "p_p4y4tq6mq7ub77o",
+     "championId": "진",
+     "kills": 1,
+     "deaths": 2,
+     "assists": 2,
+     "gd15": -768,
+     "csd15": -3,
+     "xpd15": 868,
+     "stats": {
+      "cs": 277,
+      "goldEarned": 11925,
+      "damageToChampions": 15778,
+      "damageTaken": 18366,
+      "visionScore": 21,
+      "wardsPlaced": 12,
+      "wardsKilled": 4,
+      "controlWardsBought": 2,
+      "crowdControlScore": 36,
+      "damageToObjectives": 7937,
+      "damageToTurrets": 5506,
+      "healing": 4353,
+      "selfMitigatedDamage": 12685,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "차연서",
+     "playerId": "p_ybyb79mg_mq7nhxup",
+     "championId": "나미",
+     "kills": 0,
+     "deaths": 1,
+     "assists": 3,
+     "gd15": -116,
+     "csd15": 0,
+     "xpd15": -400,
+     "stats": {
+      "cs": 24,
+      "goldEarned": 7267,
+      "damageToChampions": 4776,
+      "damageTaken": 12952,
+      "visionScore": 76,
+      "wardsPlaced": 33,
+      "wardsKilled": 6,
+      "controlWardsBought": 13,
+      "crowdControlScore": 35,
+      "damageToObjectives": 1070,
+      "damageToTurrets": 0,
+      "healing": 16005,
+      "selfMitigatedDamage": 5829,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "딜폿하면원딜안함",
+     "playerId": "p_0g6qhb6e_mq7nhxuq",
+     "championId": "쉔",
+     "kills": 2,
+     "deaths": 2,
+     "assists": 10,
+     "gd15": -2631,
+     "csd15": -83,
+     "xpd15": -998,
+     "stats": {
+      "cs": 143,
+      "goldEarned": 9382,
+      "damageToChampions": 15172,
+      "damageTaken": 29182,
+      "visionScore": 23,
+      "wardsPlaced": 12,
+      "wardsKilled": 2,
+      "controlWardsBought": 1,
+      "crowdControlScore": 31,
+      "damageToObjectives": 7161,
+      "damageToTurrets": 5646,
+      "healing": 5669,
+      "selfMitigatedDamage": 59305,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "MEVIUS 01",
+     "playerId": "p_4siqelqmq7ub77p",
+     "championId": "그레이브즈",
+     "kills": 11,
+     "deaths": 0,
+     "assists": 3,
+     "gd15": 188,
+     "csd15": -8,
+     "xpd15": -1413,
+     "stats": {
+      "cs": 337,
+      "goldEarned": 18363,
+      "damageToChampions": 36648,
+      "damageTaken": 20478,
+      "visionScore": 38,
+      "wardsPlaced": 3,
+      "wardsKilled": 9,
+      "controlWardsBought": 0,
+      "crowdControlScore": 18,
+      "damageToObjectives": 60102,
+      "damageToTurrets": 11538,
+      "healing": 10762,
+      "selfMitigatedDamage": 28161,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "팀원죽이기",
+     "playerId": "p_07v55ab9_mq7nhxuq",
+     "championId": "갈리오",
+     "kills": 1,
+     "deaths": 1,
+     "assists": 11,
+     "gd15": -807,
+     "csd15": -30,
+     "xpd15": -665,
+     "stats": {
+      "cs": 214,
+      "goldEarned": 10371,
+      "damageToChampions": 14315,
+      "damageTaken": 17828,
+      "visionScore": 35,
+      "wardsPlaced": 7,
+      "wardsKilled": 5,
+      "controlWardsBought": 3,
+      "crowdControlScore": 28,
+      "damageToObjectives": 5998,
+      "damageToTurrets": 3778,
+      "healing": 2940,
+      "selfMitigatedDamage": 45567,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "twitch소혁",
+     "playerId": "p_wqf3x0omq7ub77q",
+     "championId": "루시안",
+     "kills": 5,
+     "deaths": 2,
+     "assists": 5,
+     "gd15": 768,
+     "csd15": 3,
+     "xpd15": -868,
+     "stats": {
+      "cs": 241,
+      "goldEarned": 14671,
+      "damageToChampions": 30386,
+      "damageTaken": 17426,
+      "visionScore": 27,
+      "wardsPlaced": 10,
+      "wardsKilled": 7,
+      "controlWardsBought": 3,
+      "crowdControlScore": 6,
+      "damageToObjectives": 19941,
+      "damageToTurrets": 12645,
+      "healing": 5735,
+      "selfMitigatedDamage": 17908,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "백 정",
+     "playerId": "p_svkv85m9_mq7nhxuq",
+     "championId": "밀리오",
+     "kills": 0,
+     "deaths": 1,
+     "assists": 14,
+     "gd15": 116,
+     "csd15": 0,
+     "xpd15": 400,
+     "stats": {
+      "cs": 26,
+      "goldEarned": 9309,
+      "damageToChampions": 5853,
+      "damageTaken": 7799,
+      "visionScore": 107,
+      "wardsPlaced": 45,
+      "wardsKilled": 8,
+      "controlWardsBought": 12,
+      "crowdControlScore": 28,
+      "damageToObjectives": 4979,
+      "damageToTurrets": 3650,
+      "healing": 11112,
+      "selfMitigatedDamage": 9860,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "케인"
+    },
+    {
+     "team": "BLUE",
+     "championId": "우디르"
+    },
+    {
+     "team": "BLUE",
+     "championId": "카직스"
+    },
+    {
+     "team": "BLUE",
+     "championId": "바루스"
+    },
+    {
+     "team": "BLUE",
+     "championId": "세나"
+    },
+    {
+     "team": "RED",
+     "championId": "녹턴"
+    },
+    {
+     "team": "RED",
+     "championId": "오리아나"
+    },
+    {
+     "team": "RED",
+     "championId": "빅토르"
+    },
+    {
+     "team": "RED",
+     "championId": "노틸러스"
+    },
+    {
+     "team": "RED",
+     "championId": "유미"
+    }
+   ]
+  },
+  {
+   "id": "m_sqqnfw2mqs5eifi",
+   "createdAt": "2026-06-24T14:07:58.926Z",
+   "playedAt": "2026-06-24",
+   "setNumber": 1,
+   "winnerTeam": "BLUE",
+   "gameId": "8271826611",
+   "durationMin": 23,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "DoYeon",
+     "playerId": "p_si39mrju_mq7nhxuq",
+     "championId": "자헨",
+     "kills": 2,
+     "deaths": 2,
+     "assists": 0,
+     "gd15": -807,
+     "csd15": -18,
+     "xpd15": -892,
+     "stats": {
+      "cs": 187,
+      "goldEarned": 8984,
+      "damageToChampions": 11261,
+      "damageTaken": 16189,
+      "visionScore": 17,
+      "wardsPlaced": 6,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 25,
+      "damageToObjectives": 15267,
+      "damageToTurrets": 13609,
+      "healing": 6411,
+      "selfMitigatedDamage": 14827,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "제드",
+     "kills": 2,
+     "deaths": 2,
+     "assists": 7,
+     "gd15": -47,
+     "csd15": -23,
+     "xpd15": -3505,
+     "stats": {
+      "cs": 185,
+      "goldEarned": 9466,
+      "damageToChampions": 11891,
+      "damageTaken": 19516,
+      "visionScore": 32,
+      "wardsPlaced": 5,
+      "wardsKilled": 9,
+      "controlWardsBought": 4,
+      "crowdControlScore": 6,
+      "damageToObjectives": 40878,
+      "damageToTurrets": 389,
+      "healing": 10929,
+      "selfMitigatedDamage": 14258,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "잭 슨",
+     "playerId": "p_imjto1qf_mq7nhxuq",
+     "championId": "아칼리",
+     "kills": 9,
+     "deaths": 0,
+     "assists": 2,
+     "gd15": 1221,
+     "csd15": 42,
+     "xpd15": 1292,
+     "stats": {
+      "cs": 264,
+      "goldEarned": 13365,
+      "damageToChampions": 21444,
+      "damageTaken": 16125,
+      "visionScore": 32,
+      "wardsPlaced": 7,
+      "wardsKilled": 7,
+      "controlWardsBought": 3,
+      "crowdControlScore": 4,
+      "damageToObjectives": 16957,
+      "damageToTurrets": 13047,
+      "healing": 6582,
+      "selfMitigatedDamage": 12953,
+      "soloKills": 5
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "DRX Ae1",
+     "playerId": "p_p4y4tq6mq7ub77o",
+     "championId": "바루스",
+     "kills": 6,
+     "deaths": 1,
+     "assists": 3,
+     "gd15": 638,
+     "csd15": 3,
+     "xpd15": 846,
+     "stats": {
+      "cs": 178,
+      "goldEarned": 10418,
+      "damageToChampions": 18210,
+      "damageTaken": 9457,
+      "visionScore": 20,
+      "wardsPlaced": 9,
+      "wardsKilled": 4,
+      "controlWardsBought": 1,
+      "crowdControlScore": 22,
+      "damageToObjectives": 16970,
+      "damageToTurrets": 8797,
+      "healing": 1936,
+      "selfMitigatedDamage": 4887,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "차연서",
+     "playerId": "p_ybyb79mg_mq7nhxup",
+     "championId": "밀리오",
+     "kills": 1,
+     "deaths": 0,
+     "assists": 9,
+     "gd15": 548,
+     "csd15": -5,
+     "xpd15": -394,
+     "stats": {
+      "cs": 24,
+      "goldEarned": 6831,
+      "damageToChampions": 3144,
+      "damageTaken": 7393,
+      "visionScore": 62,
+      "wardsPlaced": 25,
+      "wardsKilled": 6,
+      "controlWardsBought": 9,
+      "crowdControlScore": 13,
+      "damageToObjectives": 3005,
+      "damageToTurrets": 2163,
+      "healing": 4856,
+      "selfMitigatedDamage": 4265,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "Lucky Grasp",
+     "playerId": "p_29ndxd5j_mq7nhxuq",
+     "championId": "크산테",
+     "kills": 2,
+     "deaths": 0,
+     "assists": 0,
+     "gd15": 807,
+     "csd15": 18,
+     "xpd15": 892,
+     "stats": {
+      "cs": 208,
+      "goldEarned": 8322,
+      "damageToChampions": 14089,
+      "damageTaken": 17501,
+      "visionScore": 12,
+      "wardsPlaced": 4,
+      "wardsKilled": 1,
+      "controlWardsBought": 1,
+      "crowdControlScore": 21,
+      "damageToObjectives": 3674,
+      "damageToTurrets": 2349,
+      "healing": 5745,
+      "selfMitigatedDamage": 34789,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "모카라떼",
+     "playerId": "p_hdu5pzwf_mq7nhxup",
+     "championId": "마오카이",
+     "kills": 1,
+     "deaths": 4,
+     "assists": 2,
+     "gd15": 262,
+     "csd15": -28,
+     "xpd15": -3395,
+     "stats": {
+      "cs": 121,
+      "goldEarned": 7019,
+      "damageToChampions": 4711,
+      "damageTaken": 16841,
+      "visionScore": 27,
+      "wardsPlaced": 5,
+      "wardsKilled": 5,
+      "controlWardsBought": 2,
+      "crowdControlScore": 20,
+      "damageToObjectives": 6344,
+      "damageToTurrets": 0,
+      "healing": 6012,
+      "selfMitigatedDamage": 21769,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "이서하",
+     "playerId": "p_h7k04k4c_mq7nhxuq",
+     "championId": "라이즈",
+     "kills": 1,
+     "deaths": 5,
+     "assists": 2,
+     "gd15": -1221,
+     "csd15": -42,
+     "xpd15": -1292,
+     "stats": {
+      "cs": 177,
+      "goldEarned": 7485,
+      "damageToChampions": 12637,
+      "damageTaken": 20354,
+      "visionScore": 22,
+      "wardsPlaced": 8,
+      "wardsKilled": 2,
+      "controlWardsBought": 2,
+      "crowdControlScore": 19,
+      "damageToObjectives": 5176,
+      "damageToTurrets": 4398,
+      "healing": 2609,
+      "selfMitigatedDamage": 11307,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
+     "championId": "진",
+     "kills": 1,
+     "deaths": 6,
+     "assists": 2,
+     "gd15": -638,
+     "csd15": -3,
+     "xpd15": -846,
+     "stats": {
+      "cs": 185,
+      "goldEarned": 8210,
+      "damageToChampions": 7983,
+      "damageTaken": 14249,
+      "visionScore": 25,
+      "wardsPlaced": 12,
+      "wardsKilled": 4,
+      "controlWardsBought": 4,
+      "crowdControlScore": 15,
+      "damageToObjectives": 986,
+      "damageToTurrets": 897,
+      "healing": 1878,
+      "selfMitigatedDamage": 6395,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "자야놀자야",
+     "playerId": "p_so05ompmq7ub77q",
+     "championId": "니코",
+     "kills": 0,
+     "deaths": 5,
+     "assists": 2,
+     "gd15": -894,
+     "csd15": -91,
+     "xpd15": -4320,
+     "stats": {
+      "cs": 31,
+      "goldEarned": 5343,
+      "damageToChampions": 4882,
+      "damageTaken": 13273,
+      "visionScore": 62,
+      "wardsPlaced": 27,
+      "wardsKilled": 6,
+      "controlWardsBought": 7,
+      "crowdControlScore": 11,
+      "damageToObjectives": 588,
+      "damageToTurrets": 513,
+      "healing": 1578,
+      "selfMitigatedDamage": 4985,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "녹턴"
+    },
+    {
+     "team": "BLUE",
+     "championId": "소라카"
+    },
+    {
+     "team": "BLUE",
+     "championId": "블라디미르"
+    },
+    {
+     "team": "BLUE",
+     "championId": "요네"
+    },
+    {
+     "team": "BLUE",
+     "championId": "야스오"
+    },
+    {
+     "team": "RED",
+     "championId": "룰루"
+    },
+    {
+     "team": "RED",
+     "championId": "오공"
+    },
+    {
+     "team": "RED",
+     "championId": "아펠리오스"
+    },
+    {
+     "team": "RED",
+     "championId": "사이온"
+    },
+    {
+     "team": "RED",
+     "championId": "사일러스"
+    }
+   ]
+  },
+  {
+   "id": "m_dldoulbmqs5eig0",
+   "createdAt": "2026-06-24T14:07:58.944Z",
+   "playedAt": "2026-06-24",
+   "setNumber": 2,
+   "winnerTeam": "RED",
+   "gameId": "8271903049",
+   "durationMin": 19,
+   "memo": "클라이언트 추출 입력",
+   "mvpId": "",
+   "participants": [
+    {
+     "team": "BLUE",
+     "lane": "TOP",
+     "rawName": "Lucky Grasp",
+     "playerId": "p_29ndxd5j_mq7nhxuq",
+     "championId": "모데카이저",
+     "kills": 1,
+     "deaths": 6,
+     "assists": 0,
+     "gd15": -1553,
+     "csd15": -56,
+     "xpd15": -3021,
+     "stats": {
+      "cs": 87,
+      "goldEarned": 4982,
+      "damageToChampions": 11707,
+      "damageTaken": 16598,
+      "visionScore": 11,
+      "wardsPlaced": 7,
+      "wardsKilled": 1,
+      "controlWardsBought": 2,
+      "crowdControlScore": 3,
+      "damageToObjectives": 1799,
+      "damageToTurrets": 1799,
+      "healing": 2715,
+      "selfMitigatedDamage": 15048,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "JUNGLE",
+     "rawName": "모카라떼",
+     "playerId": "p_hdu5pzwf_mq7nhxup",
+     "championId": "바이",
+     "kills": 0,
+     "deaths": 4,
+     "assists": 1,
+     "gd15": -1903,
+     "csd15": -16,
+     "xpd15": -654,
+     "stats": {
+      "cs": 88,
+      "goldEarned": 5076,
+      "damageToChampions": 730,
+      "damageTaken": 11054,
+      "visionScore": 12,
+      "wardsPlaced": 4,
+      "wardsKilled": 1,
+      "controlWardsBought": 2,
+      "crowdControlScore": 4,
+      "damageToObjectives": 338,
+      "damageToTurrets": 0,
+      "healing": 2831,
+      "selfMitigatedDamage": 8783,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "MID",
+     "rawName": "이서하",
+     "playerId": "p_h7k04k4c_mq7nhxuq",
+     "championId": "야스오",
+     "kills": 1,
+     "deaths": 8,
+     "assists": 0,
+     "gd15": -2569,
+     "csd15": -36,
+     "xpd15": -2005,
+     "stats": {
+      "cs": 128,
+      "goldEarned": 5768,
+      "damageToChampions": 10248,
+      "damageTaken": 17907,
+      "visionScore": 9,
+      "wardsPlaced": 4,
+      "wardsKilled": 1,
+      "controlWardsBought": 1,
+      "crowdControlScore": 8,
+      "damageToObjectives": 2478,
+      "damageToTurrets": 2478,
+      "healing": 2000,
+      "selfMitigatedDamage": 12815,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "ADC",
+     "rawName": "세혀닝",
+     "playerId": "p_gi86d5qmq7ub77o",
+     "championId": "이즈리얼",
+     "kills": 1,
+     "deaths": 4,
+     "assists": 0,
+     "gd15": -1495,
+     "csd15": 15,
+     "xpd15": -1309,
+     "stats": {
+      "cs": 158,
+      "goldEarned": 6313,
+      "damageToChampions": 8774,
+      "damageTaken": 10824,
+      "visionScore": 9,
+      "wardsPlaced": 7,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 2,
+      "damageToObjectives": 2801,
+      "damageToTurrets": 2070,
+      "healing": 1686,
+      "selfMitigatedDamage": 5576,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "BLUE",
+     "lane": "SUPPORT",
+     "rawName": "자야놀자야",
+     "playerId": "p_so05ompmq7ub77q",
+     "championId": "카르마",
+     "kills": 0,
+     "deaths": 3,
+     "assists": 2,
+     "gd15": -1774,
+     "csd15": 1,
+     "xpd15": -44,
+     "stats": {
+      "cs": 23,
+      "goldEarned": 4398,
+      "damageToChampions": 3857,
+      "damageTaken": 10819,
+      "visionScore": 43,
+      "wardsPlaced": 16,
+      "wardsKilled": 6,
+      "controlWardsBought": 8,
+      "crowdControlScore": 14,
+      "damageToObjectives": 72,
+      "damageToTurrets": 40,
+      "healing": 3075,
+      "selfMitigatedDamage": 6506,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "TOP",
+     "rawName": "DoYeon",
+     "playerId": "p_si39mrju_mq7nhxuq",
+     "championId": "올라프",
+     "kills": 5,
+     "deaths": 1,
+     "assists": 2,
+     "gd15": 1553,
+     "csd15": 56,
+     "xpd15": 3021,
+     "stats": {
+      "cs": 164,
+      "goldEarned": 8236,
+      "damageToChampions": 15342,
+      "damageTaken": 14224,
+      "visionScore": 7,
+      "wardsPlaced": 4,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 13,
+      "damageToObjectives": 5702,
+      "damageToTurrets": 5702,
+      "healing": 9476,
+      "selfMitigatedDamage": 10767,
+      "soloKills": 3
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "JUNGLE",
+     "rawName": "철도너구리",
+     "playerId": "p_60ospv2c_mq7nhxuq",
+     "championId": "리 신",
+     "kills": 7,
+     "deaths": 0,
+     "assists": 3,
+     "gd15": 1903,
+     "csd15": 16,
+     "xpd15": 654,
+     "stats": {
+      "cs": 109,
+      "goldEarned": 8424,
+      "damageToChampions": 10279,
+      "damageTaken": 13965,
+      "visionScore": 20,
+      "wardsPlaced": 12,
+      "wardsKilled": 1,
+      "controlWardsBought": 6,
+      "crowdControlScore": 11,
+      "damageToObjectives": 34103,
+      "damageToTurrets": 203,
+      "healing": 10787,
+      "selfMitigatedDamage": 13399,
+      "soloKills": 0
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "MID",
+     "rawName": "잭 슨",
+     "playerId": "p_imjto1qf_mq7nhxuq",
+     "championId": "르블랑",
+     "kills": 8,
+     "deaths": 0,
+     "assists": 1,
+     "gd15": 2569,
+     "csd15": 36,
+     "xpd15": 2005,
+     "stats": {
+      "cs": 173,
+      "goldEarned": 9528,
+      "damageToChampions": 13471,
+      "damageTaken": 11001,
+      "visionScore": 16,
+      "wardsPlaced": 4,
+      "wardsKilled": 2,
+      "controlWardsBought": 3,
+      "crowdControlScore": 17,
+      "damageToObjectives": 8089,
+      "damageToTurrets": 8089,
+      "healing": 3466,
+      "selfMitigatedDamage": 5213,
+      "soloKills": 5
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "ADC",
+     "rawName": "DRX Ae1",
+     "playerId": "p_p4y4tq6mq7ub77o",
+     "championId": "케이틀린",
+     "kills": 3,
+     "deaths": 2,
+     "assists": 4,
+     "gd15": 1495,
+     "csd15": -15,
+     "xpd15": 1309,
+     "stats": {
+      "cs": 143,
+      "goldEarned": 8324,
+      "damageToChampions": 8347,
+      "damageTaken": 8260,
+      "visionScore": 9,
+      "wardsPlaced": 7,
+      "wardsKilled": 0,
+      "controlWardsBought": 0,
+      "crowdControlScore": 8,
+      "damageToObjectives": 12028,
+      "damageToTurrets": 6930,
+      "healing": 2809,
+      "selfMitigatedDamage": 4347,
+      "soloKills": 1
+     }
+    },
+    {
+     "team": "RED",
+     "lane": "SUPPORT",
+     "rawName": "차연서",
+     "playerId": "p_ybyb79mg_mq7nhxup",
+     "championId": "모르가나",
+     "kills": 2,
+     "deaths": 0,
+     "assists": 10,
+     "gd15": 1774,
+     "csd15": -1,
+     "xpd15": 44,
+     "stats": {
+      "cs": 24,
+      "goldEarned": 6794,
+      "damageToChampions": 7548,
+      "damageTaken": 5091,
+      "visionScore": 47,
+      "wardsPlaced": 18,
+      "wardsKilled": 4,
+      "controlWardsBought": 8,
+      "crowdControlScore": 24,
+      "damageToObjectives": 3700,
+      "damageToTurrets": 2363,
+      "healing": 1608,
+      "selfMitigatedDamage": 1886,
+      "soloKills": 0
+     }
+    }
+   ],
+   "bans": [
+    {
+     "team": "BLUE",
+     "championId": "룰루"
+    },
+    {
+     "team": "BLUE",
+     "championId": "빅토르"
+    },
+    {
+     "team": "BLUE",
+     "championId": "오리아나"
+    },
+    {
+     "team": "BLUE",
+     "championId": "레넥톤"
+    },
+    {
+     "team": "RED",
+     "championId": "소라카"
+    },
+    {
+     "team": "RED",
+     "championId": "요릭"
+    },
+    {
+     "team": "RED",
+     "championId": "녹턴"
+    },
+    {
+     "team": "RED",
+     "championId": "아리"
+    },
+    {
+     "team": "RED",
+     "championId": "갈리오"
+    }
+   ]
   }
  ],
  "voteRooms": [],
@@ -37709,8 +39144,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 432,
- "updatedAt": "2026-06-23T04:25:28.221Z",
+ "rev": 433,
+ "updatedAt": "2026-06-24T14:07:58.960Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
