@@ -352,13 +352,14 @@ module.exports = async function handler(req, res) {
     }
     if (action === 'aucSetPosition') { // 🎯 로스터 선수 포지션 확정 (팀장/운영)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
-      var plPos = String(body.player || '').trim(); if (!plPos) return res.status(400).json({ error: '선수를 지정해주세요' });
+      var plPos = String(body.player || '').trim();
       var posPos = String(body.position || '').slice(0, 10);
       var lkPos = []; try { lkPos = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkPos = []; }
       if (!lkPos.length) return res.status(400).json({ error: '먼저 팀 명단을 확정해주세요' });
-      var tgtPos = (isOp(s) && body.acct) ? String(body.acct) : s.name, foundPos = false;
-      lkPos.forEach(function (t) { if (t.acct === tgtPos) { (t.roster || []).forEach(function (r) { if (r.name === plPos) { r.position = posPos; foundPos = true; } }); } });
-      if (!foundPos) return res.status(404).json({ error: '선수를 찾을 수 없거나 권한이 없어요' });
+      var tPos = aucResolveMyTeam(lkPos, s, body.acct);
+      if (!tPos) return res.status(403).json({ error: '본인 팀만 설정할 수 있어요' });
+      if (body.isLeader) { tPos.leaderPos = posPos; }
+      else { if (!plPos) return res.status(400).json({ error: '선수를 지정해주세요' }); var foundPos = false; (tPos.roster || []).forEach(function (r) { if (r.name === plPos) { r.position = posPos; foundPos = true; } }); if (!foundPos) return res.status(404).json({ error: '선수를 찾을 수 없어요' }); }
       await redis(['SET', 'doom:teams', JSON.stringify(lkPos)]);
       return res.status(200).json({ ok: true });
     }
@@ -369,10 +370,10 @@ module.exports = async function handler(req, res) {
       var selAcctTP = (body.acct && lkTP.some(function (t) { return t.acct === body.acct; })) ? body.acct : (myT ? myT.acct : (lkTP.length ? lkTP[0].acct : ''));
       var selTP = null; for (var iTP = 0; iTP < lkTP.length; iTP++) if (lkTP[iTP].acct === selAcctTP) selTP = lkTP[iTP];
       var canPrivTP = !!(opTP || (myT && selTP && myT.acct === selTP.acct));
-      var pubTP = lkTP.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, roster: (t.roster || []).map(function (r) { return { name: r.name, position: r.position, cost: r.cost, tier: r.tier }; }) }; });
+      var pubTP = lkTP.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, leaderPos: t.leaderPos || '', color: t.color, roster: (t.roster || []).map(function (r) { return { name: r.name, position: r.position, cost: r.cost, tier: r.tier }; }) }; });
       var selData = null;
       if (selTP) {
-        selData = { acct: selTP.acct, name: selTP.name, leader: selTP.leader, color: selTP.color, roster: selTP.roster || [], priv: canPrivTP };
+        selData = { acct: selTP.acct, name: selTP.name, leader: selTP.leader, leaderPos: selTP.leaderPos || '', color: selTP.color, roster: selTP.roster || [], priv: canPrivTP };
         if (canPrivTP) { selData.weekly = selTP.weekly || {}; selData.drafts = selTP.drafts || []; selData.practice = selTP.practice || []; selData.sched = selTP.sched || ''; selData.canEdit = true; }
       }
       return res.status(200).json({ ok: true, isOp: opTP, myAcct: myT ? myT.acct : '', myName: (s && s.name) || '', teams: pubTP, sel: selData });
