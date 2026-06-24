@@ -374,7 +374,7 @@ module.exports = async function handler(req, res) {
       var selData = null;
       if (selTP) {
         selData = { acct: selTP.acct, name: selTP.name, leader: selTP.leader, leaderPos: selTP.leaderPos || '', color: selTP.color, roster: selTP.roster || [], priv: canPrivTP };
-        if (canPrivTP) { selData.weekly = selTP.weekly || {}; selData.drafts = selTP.drafts || []; selData.practice = selTP.practice || []; selData.sched = selTP.sched || ''; selData.canEdit = true; }
+        if (canPrivTP) { selData.weekly = selTP.weekly || {}; selData.drafts = selTP.drafts || []; selData.practice = selTP.practice || []; selData.sched = selTP.sched || ''; selData.avail = selTP.avail || {}; var myMemTP = ''; if (s && s.name) { if (aucNameMatch(selTP.leader, s.name) || aucNameMatch(selTP.acct, s.name)) myMemTP = selTP.leader; else (selTP.roster || []).forEach(function (r) { if (!myMemTP && aucNameMatch(r.name, s.name)) myMemTP = r.name; }); } selData.myMember = myMemTP; selData.canEdit = true; }
       }
       return res.status(200).json({ ok: true, isOp: opTP, myAcct: myT ? myT.acct : '', myName: (s && s.name) || '', teams: pubTP, sel: selData });
     }
@@ -388,6 +388,25 @@ module.exports = async function handler(req, res) {
       DAYS.forEach(function (d) { if (srcW[d]) w[d] = String(srcW[d]).slice(0, 40); });
       tW.weekly = w;
       await redis(['SET', 'doom:teams', JSON.stringify(lkW)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucSetAvail') { // 🗓️ 개인별 가능 시간 격자 (팀원/운영)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var lkAv = []; try { lkAv = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkAv = []; }
+      var tAv = aucResolveMyTeam(lkAv, s, body.acct);
+      if (!tAv) return res.status(403).json({ error: '팀원만 입력할 수 있어요' });
+      var memAv = String(body.member || '').trim();
+      if (!memAv) return res.status(400).json({ error: '멤버를 지정해주세요' });
+      var memNames = [tAv.leader].concat((tAv.roster || []).map(function (r) { return r.name; }));
+      if (memNames.indexOf(memAv) < 0) return res.status(400).json({ error: '팀 멤버가 아니에요' });
+      var DAYSav = ['월', '화', '수', '목', '금', '토', '일'];
+      var srcAv = (body.grid && typeof body.grid === 'object') ? body.grid : {};
+      var gAv = {};
+      DAYSav.forEach(function (d) { var arr = Array.isArray(srcAv[d]) ? srcAv[d] : []; var clean = []; arr.forEach(function (h) { h = parseInt(h, 10); if (h >= 18 && h <= 25 && clean.indexOf(h) < 0) clean.push(h); }); if (clean.length) { clean.sort(function (a, b) { return a - b; }); gAv[d] = clean; } });
+      tAv.avail = tAv.avail || {};
+      tAv.avail[memAv] = gAv;
+      Object.keys(tAv.avail).forEach(function (k) { if (memNames.indexOf(k) < 0) delete tAv.avail[k]; });
+      await redis(['SET', 'doom:teams', JSON.stringify(lkAv)]);
       return res.status(200).json({ ok: true });
     }
     if (action === 'aucDraftAdd') { // ⚔️ 밴픽/전적 기록 (팀원/운영)
@@ -475,7 +494,7 @@ module.exports = async function handler(req, res) {
       var aLK = await aucGet(); if (!aLK || !aLK.teams || !aLK.teams.length) return res.status(400).json({ error: '확정할 팀이 없어요' });
       var prevLK = []; try { prevLK = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { prevLK = []; }
       var prevByA = {}; prevLK.forEach(function (t) { prevByA[t.acct] = t; });
-      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position, tier: r.tier }; }), sched: p.sched || '', practice: p.practice || [], weekly: p.weekly || {}, drafts: p.drafts || [] }; });
+      var locked = aLK.teams.map(function (t) { var p = prevByA[t.acct] || {}; var prevPos = {}; (p.roster || []).forEach(function (r) { prevPos[r.name] = r.position; }); return { acct: t.acct, name: p.name || t.name, leader: t.leader, color: t.color, points: t.points, leaderPos: p.leaderPos || '', roster: (t.roster || []).map(function (r) { return { name: r.name, cost: r.cost, position: r.position || prevPos[r.name] || '', tier: r.tier }; }), sched: p.sched || '', practice: p.practice || [], weekly: p.weekly || {}, drafts: p.drafts || [], avail: p.avail || {} }; });
       await redis(['SET', 'doom:teams', JSON.stringify(locked)]);
       aLK.phase = 'done'; aLK.confirmed = true; aLK.queue = []; aLK.current = null;
       await redis(['DEL', 'doom:auc:bids']); await redis(['DEL', 'doom:auc:passes']); await aucPut(aLK);
