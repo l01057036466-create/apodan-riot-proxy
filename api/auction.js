@@ -402,7 +402,7 @@ module.exports = async function handler(req, res) {
       var DAYSav = ['월', '화', '수', '목', '금', '토', '일'];
       var srcAv = (body.grid && typeof body.grid === 'object') ? body.grid : {};
       var gAv = {};
-      DAYSav.forEach(function (d) { var arr = Array.isArray(srcAv[d]) ? srcAv[d] : []; var clean = []; arr.forEach(function (h) { h = parseInt(h, 10); if (h >= 18 && h <= 25 && clean.indexOf(h) < 0) clean.push(h); }); if (clean.length) { clean.sort(function (a, b) { return a - b; }); gAv[d] = clean; } });
+      DAYSav.forEach(function (d) { var arr = Array.isArray(srcAv[d]) ? srcAv[d] : []; var clean = []; arr.forEach(function (h) { h = parseInt(h, 10); if (h >= 12 && h <= 26 && clean.indexOf(h) < 0) clean.push(h); }); if (clean.length) { clean.sort(function (a, b) { return a - b; }); gAv[d] = clean; } });
       tAv.avail = tAv.avail || {};
       tAv.avail[memAv] = gAv;
       Object.keys(tAv.avail).forEach(function (k) { if (memNames.indexOf(k) < 0) delete tAv.avail[k]; });
