@@ -11258,7 +11258,7 @@ function doomReloadTeamPage(){var acct=window._doomTPSel||'';auctionCall('aucTea
 function doomPickTPTeam(acct){window._doomTPSel=acct;doomReloadTeamPage();}
 function doomSetTP(r){
   window._doomTP=r;
-  if(r&&r.sel&&r.sel.priv){window._doomAvail=JSON.parse(JSON.stringify(r.sel.avail||{}));window._doomAvMem=r.sel.myMember||r.sel.leader||'';}
+  if(r&&r.sel&&r.sel.priv){window._doomAvMap=JSON.parse(JSON.stringify(r.sel.avail||{}));window._doomAvMem=r.sel.myMember||r.sel.leader||'';}
   if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
 }
 function doomAvHourLbl(h){return h>=24?(h-24)+'시':h+'시';}
@@ -11267,8 +11267,8 @@ function doomAvDragInit(){
   function cellFrom(t){while(t&&t!==document){if(t.classList&&t.classList.contains('avcell'))return t;t=t.parentNode;}return null;}
   function paint(cell){
     if(!cell||!window._avDrag||!window._avDrag.active)return;
-    var d=cell.getAttribute('data-d'),h=parseInt(cell.getAttribute('data-h'),10);var mem=window._avDrag.member;if(!mem)return;
-    var av=window._doomAvail=window._doomAvail||{};var g=av[mem]=av[mem]||{};var arr=g[d]=g[d]||[];var idx=arr.indexOf(h);
+    var d=cell.getAttribute('data-d'),h=parseFloat(cell.getAttribute('data-slot'));var mem=window._avDrag.member;if(!mem)return;
+    var av=window._doomAvMap=window._doomAvMap||{};var g=av[mem]=av[mem]||{};var arr=g[d]=g[d]||[];var idx=arr.indexOf(h);
     if(window._avDrag.mode==='on'){if(idx<0){arr.push(h);window._avDrag.changed=true;}}
     else{if(idx>=0){arr.splice(idx,1);window._avDrag.changed=true;}}
     if(!arr.length)delete g[d];
@@ -11277,8 +11277,8 @@ function doomAvDragInit(){
   function start(cell){
     if(!cell)return false;var sel=window._doomTP&&window._doomTP.sel;if(!sel||!sel.canEdit)return false;
     var mem=window._doomAvMem;if(!mem)return false;
-    var d=cell.getAttribute('data-d'),h=parseInt(cell.getAttribute('data-h'),10);
-    var av=window._doomAvail||{};var arr=(av[mem]&&av[mem][d])||[];var isOn=arr.indexOf(h)>=0;
+    var d=cell.getAttribute('data-d'),h=parseFloat(cell.getAttribute('data-slot'));
+    var av=window._doomAvMap||{};var arr=(av[mem]&&av[mem][d])||[];var isOn=arr.indexOf(h)>=0;
     window._avDrag={active:true,mode:isOn?'off':'on',member:mem,color:(sel.color||'#d4af37'),changed:false};
     paint(cell);return true;
   }
@@ -11287,7 +11287,7 @@ function doomAvDragInit(){
     window._avDrag.active=false;
     if(changed){
       var sel=window._doomTP&&window._doomTP.sel;if(sel){var n=document.getElementById('doomAvSec');if(n)n.outerHTML=doomAvailSection(sel);}
-      clearTimeout(window._doomAvT);window._doomAvT=setTimeout(function(){var gg=(window._doomAvail||{})[mem]||{};auctionCall('aucSetAvail',{acct:doomTPAcct(),member:mem,grid:gg}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});},250);
+      clearTimeout(window._doomAvT);window._doomAvT=setTimeout(function(){var gg=(window._doomAvMap||{})[mem]||{};auctionCall('aucSetAvail',{acct:doomTPAcct(),member:mem,grid:gg}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});},250);
     }
   }
   document.addEventListener('mousedown',function(e){var c=cellFrom(e.target);if(c&&start(c))e.preventDefault();});
@@ -11302,45 +11302,48 @@ function doomAvailSection(sel){
   doomAvDragInit();
   var col=sel.color||'#d4af37';
   var DAYS=['월','화','수','목','금','토','일'];
-  var HRS=[];for(var hh=12;hh<=26;hh++)HRS.push(hh);
+  var SLOTS=[];for(var sh=12;sh<=26;sh++){SLOTS.push(sh);if(sh<26)SLOTS.push(sh+0.5);}
   var members=[sel.leader].concat((sel.roster||[]).map(function(r){return r.name;})).filter(Boolean);
   var total=members.length;
-  var av=window._doomAvail||{};
+  var av=window._doomAvMap||{};
   var cur=window._doomAvMem||members[0]||'';
   if(members.indexOf(cur)<0)cur=members[0]||'';
   var canEdit=!!sel.canEdit;
   var dcol=function(d){return d==='토'?'#5dade2':d==='일'?'#e74c3c':'var(--ink)';};
+  var slbl=function(v){return Math.floor(v)+':'+(((v-Math.floor(v))>=0.5)?'30':'00');};
   var chips=members.map(function(m){
     var on=m===cur,lead=m===sel.leader;
     var n=av[m]?Object.keys(av[m]).reduce(function(s,d){return s+(av[m][d]||[]).length;},0):0;
-    return '<button onclick="doomAvPickMem(\''+(''+m).replace(/'/g,'')+'\')" style="flex:none;border:2px solid '+(on?col:'var(--line)')+';background:'+(on?(col+'22'):'transparent')+';color:var(--ink);border-radius:9px;padding:6px 10px;font-size:12.5px;font-weight:'+(on?'800':'600')+';white-space:nowrap;cursor:pointer">'+(lead?'👑 ':'')+esc(m)+(n?' <span style="opacity:.65;font-weight:700">'+n+'</span>':'')+'</button>';
+    return '<button onclick="doomAvPickMem(\''+(''+m).replace(/'/g,'')+'\')" style="flex:none;border:2px solid '+(on?col:'var(--line)')+';background:'+(on?(col+'22'):'transparent')+';color:var(--ink);border-radius:9px;padding:6px 10px;font-size:12.5px;font-weight:'+(on?'800':'600')+';white-space:nowrap;cursor:pointer">'+(lead?'👑 ':'')+esc(m)+(n?' <span style="opacity:.65;font-weight:700">'+(n/2)+'h</span>':'')+'</button>';
   }).join('');
-  var head='<tr><td style="width:30px"></td>'+DAYS.map(function(d){return '<td style="text-align:center;font-size:11px;font-weight:800;color:'+dcol(d)+';padding-bottom:3px">'+d+'</td>';}).join('')+'</tr>';
+  var head='<tr><td style="width:34px"></td>'+DAYS.map(function(d){return '<td style="text-align:center;font-size:11px;font-weight:800;color:'+dcol(d)+';padding-bottom:3px">'+d+'</td>';}).join('')+'</tr>';
   var mg=av[cur]||{};
-  var eRows=HRS.map(function(h){return '<tr><td style="font-size:10px;color:#888;text-align:right;padding-right:4px;height:24px">'+h+'</td>'+DAYS.map(function(d){var on=((mg[d]||[]).indexOf(h)>=0);return '<td style="padding:0"><div '+(canEdit?'class="avcell" data-d="'+d+'" data-h="'+h+'"':'')+' style="height:22px;margin:1px;border-radius:4px;background:'+(on?col:'rgba(255,255,255,.05)')+';'+(canEdit?'cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none':'')+'"></div></td>';}).join('')+'</tr>';}).join('');
-  var eGrid=canEdit?'<div style="margin-top:10px"><div class="mini" style="margin-bottom:5px"><b style="color:'+col+'">👤 '+esc(cur)+'</b> <span class="dim">님 — 탭/드래그로 여러 칸 선택 (자동 저장)</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+eRows+'</table></div>':'';
-  var ovc=function(d,h){var c=0;members.forEach(function(m){if((av[m]&&av[m][d]||[]).indexOf(h)>=0)c++;});return c;};
-  var ovColor=function(c){
-    if(c<=0)return {bg:'rgba(255,255,255,.03)',fg:'transparent',glow:0};
-    if(total>0&&c>=total)return {bg:'#f1c40f',fg:'#3a2c00',glow:1};
-    var r=total>1?(c/total):1;var o=(0.20+0.62*r).toFixed(2);
-    return {bg:'rgba(46,204,113,'+o+')',fg:'#eafff0',glow:0};
+  var rowFor=function(v,getCell){
+    var half=(v-Math.floor(v))>=0.5;
+    var top=half?'':'border-top:1px solid rgba(255,255,255,.08);';
+    var lab=half?':30':(''+Math.floor(v));
+    var labCss='font-size:9px;color:'+(half?'#65656d':'#9aa')+';text-align:right;padding-right:4px;height:16px;'+(half?'':'font-weight:800;')+top;
+    return '<tr><td style="'+labCss+'">'+lab+'</td>'+DAYS.map(function(d){return getCell(d,v,top);}).join('')+'</tr>';
   };
-  var oRows=HRS.map(function(h){return '<tr><td style="font-size:10px;color:#888;text-align:right;padding-right:4px;height:24px">'+h+'</td>'+DAYS.map(function(d){var c=ovc(d,h);var cc=ovColor(c);return '<td style="padding:0"><div style="height:22px;margin:1px;border-radius:4px;background:'+cc.bg+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+cc.fg+';'+(cc.glow?'box-shadow:0 0 7px rgba(241,196,15,.75)':'')+'">'+(c||'')+'</div></td>';}).join('')+'</tr>';}).join('');
+  var eRows=SLOTS.map(function(v){return rowFor(v,function(d,v,top){var on=((mg[d]||[]).indexOf(v)>=0);return '<td style="padding:0;'+top+'"><div '+(canEdit?'class="avcell" data-d="'+d+'" data-slot="'+v+'"':'')+' style="height:14px;margin:1px;border-radius:3px;background:'+(on?col:'rgba(255,255,255,.05)')+';'+(canEdit?'cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none':'')+'"></div></td>';});}).join('');
+  var eGrid=canEdit?'<div style="margin-top:10px"><div class="mini" style="margin-bottom:5px"><b style="color:'+col+'">👤 '+esc(cur)+'</b> <span class="dim">님 — 탭/드래그로 선택 (30분 단위, 자동 저장)</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+eRows+'</table></div>':'';
+  var ovc=function(d,v){var c=0;members.forEach(function(m){if((av[m]&&av[m][d]||[]).indexOf(v)>=0)c++;});return c;};
+  var ovColor=function(c){if(c<=0)return{bg:'rgba(255,255,255,.03)',fg:'transparent',glow:0};if(total>0&&c>=total)return{bg:'#f1c40f',fg:'#3a2c00',glow:1};var r=total>1?(c/total):1;return{bg:'rgba(46,204,113,'+(0.20+0.62*r).toFixed(2)+')',fg:'#eafff0',glow:0};};
+  var oRows=SLOTS.map(function(v){return rowFor(v,function(d,v,top){var c=ovc(d,v);var cc=ovColor(c);return '<td style="padding:0;'+top+'"><div style="height:14px;margin:1px;border-radius:3px;background:'+cc.bg+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:'+cc.fg+';'+(cc.glow?'box-shadow:0 0 6px rgba(241,196,15,.7)':'')+'">'+(c||'')+'</div></td>';});}).join('');
   var legSteps='';for(var c2=1;c2<=total;c2++){var cc2=ovColor(c2);legSteps+='<span style="display:inline-flex;align-items:center;gap:3px;margin-right:9px;margin-top:3px"><span style="width:14px;height:14px;border-radius:3px;background:'+cc2.bg+';'+(cc2.glow?'box-shadow:0 0 4px rgba(241,196,15,.7)':'')+'"></span><span class="mini dim">'+(c2===total?'전원':c2+'명')+'</span></span>';}
   var legend='<div style="margin-top:7px;display:flex;flex-wrap:wrap;align-items:center">'+legSteps+'</div>';
-  var oGrid='<div style="margin-top:16px"><div class="mini" style="margin-bottom:5px">📊 <b>전체 겹침</b> <span class="dim">— 색이 진할수록 많이 가능, </span><span style="color:#f1c40f;font-weight:700">금색=전원</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+oRows+'</table>'+legend+'</div>';
-  var allS=[];DAYS.forEach(function(d){HRS.forEach(function(h){if(total>0&&ovc(d,h)===total)allS.push(d+' '+doomAvHourLbl(h));});});
-  var allLine=allS.length?'<div style="margin-top:11px;background:rgba(241,196,15,.13);border:1px solid #f1c40f;border-radius:10px;padding:9px 11px;font-size:13px"><b style="color:#f1c40f">⭐ 전원 가능</b> · '+allS.join(', ')+'</div>':'<div class="mini dim" style="margin-top:11px;text-align:center">아직 전원이 겹치는 시간이 없어요. 각자 체크해보세요!</div>';
-  return '<div id="doomAvSec" style="background:rgba(46,204,113,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 4px;font-size:16px">📆 주간 가능 시간 <span style="color:var(--lose);font-size:12px">(비공개)</span></h3><p class="mini dim" style="margin:0 0 10px">각자 본인 가능 시간을 체크하면 모두 겹치는 시간이 시간표로 보여요. (낮 12시~새벽 2시)</p><div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:5px">'+chips+'</div>'+eGrid+oGrid+allLine+'</div>';
+  var oGrid='<div style="margin-top:16px"><div class="mini" style="margin-bottom:5px">📊 <b>전체 겹침</b> <span class="dim">— 색 진할수록 많이 가능, </span><span style="color:#f1c40f;font-weight:700">금색=전원</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+oRows+'</table>'+legend+'</div>';
+  var allS=[];DAYS.forEach(function(d){var runs=[],cr=null;SLOTS.forEach(function(v){if(total>0&&ovc(d,v)===total){if(cr&&Math.abs(v-cr.end-0.5)<0.01){cr.end=v;}else{cr={start:v,end:v};runs.push(cr);}}});runs.forEach(function(rr){allS.push(d+' '+slbl(rr.start)+'~'+slbl(rr.end+0.5));});});
+  var allLine=allS.length?'<div style="margin-top:11px;background:rgba(241,196,15,.13);border:1px solid #f1c40f;border-radius:10px;padding:9px 11px;font-size:13px"><b style="color:#f1c40f">⭐ 전원 가능</b> · '+allS.join(' / ')+'</div>':'<div class="mini dim" style="margin-top:11px;text-align:center">아직 전원이 겹치는 시간이 없어요. 각자 체크해보세요!</div>';
+  return '<div id="doomAvSec" style="background:rgba(46,204,113,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 4px;font-size:16px">📆 주간 가능 시간 <span style="color:var(--lose);font-size:12px">(비공개)</span></h3><p class="mini dim" style="margin:0 0 10px">각자 본인 가능 시간을 체크하면 모두 겹치는 시간이 시간표로 보여요. (낮 12시~새벽 2시, 30분 단위)</p><div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:5px">'+chips+'</div>'+eGrid+oGrid+allLine+'</div>';
 }
 function doomAvToggle(day,hour){
   var mem=window._doomAvMem;if(!mem)return;
-  var av=window._doomAvail=window._doomAvail||{};var g=av[mem]=av[mem]||{};var arr=g[day]=g[day]||[];
+  var av=window._doomAvMap=window._doomAvMap||{};var g=av[mem]=av[mem]||{};var arr=g[day]=g[day]||[];
   var i=arr.indexOf(hour);if(i>=0)arr.splice(i,1);else arr.push(hour);
   if(!arr.length)delete g[day];
   var sel=window._doomTP&&window._doomTP.sel;if(sel){var n=document.getElementById('doomAvSec');if(n)n.outerHTML=doomAvailSection(sel);}
-  clearTimeout(window._doomAvT);window._doomAvT=setTimeout(function(){var gg=(window._doomAvail||{})[mem]||{};auctionCall('aucSetAvail',{acct:doomTPAcct(),member:mem,grid:gg}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});},700);
+  clearTimeout(window._doomAvT);window._doomAvT=setTimeout(function(){var gg=(window._doomAvMap||{})[mem]||{};auctionCall('aucSetAvail',{acct:doomTPAcct(),member:mem,grid:gg}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});},700);
 }
 function doomAvPickMem(m){window._doomAvMem=m;var sel=window._doomTP&&window._doomTP.sel;if(sel){var n=document.getElementById('doomAvSec');if(n)n.outerHTML=doomAvailSection(sel);}}
 function doomSetWeekly(){
