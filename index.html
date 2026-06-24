@@ -11177,6 +11177,35 @@ function doomResultAdd(){
 }
 function doomResultDel(id){if(!confirm('이 경기 결과를 지울까요?'))return;auctionCall('aucResultDel',{id:id}).then(function(){doomReloadStandings();}).catch(function(e){toast(e.message||'실패',true);});}
 function doomReloadStandings(){auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
+function doomPosIcon(pos,color,sz){
+  sz=sz||16;color=color||'#d4af37';
+  var P={
+    '탑':'<path d="M26 74 V26 H74"/><path d="M29 29 L53 53"/>',
+    '정글':'<path d="M50 86 V40"/><path d="M50 57 C 31 57 21 41 25 23 C 44 23 54 40 50 57 Z"/><path d="M50 47 C 69 47 79 31 75 13 C 56 13 46 30 50 47 Z"/>',
+    '미드':'<path d="M50 14 L86 50 L50 86 L14 50 Z"/><path d="M36 64 L64 36"/>',
+    '원딜':'<path d="M74 26 V74 H26"/><path d="M71 71 L47 47"/>',
+    '서폿':'<path d="M50 22 V78"/><path d="M22 50 H78"/>'
+  };
+  var inner=P[pos];
+  if(!inner)return '<span style="opacity:.4;font-size:'+sz+'px;line-height:1">◌</span>';
+  var fbSvg='<svg xmlns="http://www.w3.org/2000/svg" width="'+sz+'" height="'+sz+'" viewBox="0 0 100 100" fill="none" stroke="'+color+'" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" style="display:block">'+inner+'</svg>';
+  var KEY={'탑':'top','정글':'jungle','미드':'middle','원딜':'bottom','서폿':'utility'};
+  var k=KEY[pos];
+  if(!k)return fbSvg;
+  var url='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-'+k+'.png';
+  var id='pi'+(window._piSeq=(window._piSeq||0)+1);
+  (window._piQ=window._piQ||[]).push({id:id,url:url,color:color,sz:sz});
+  if(!window._piTimer)window._piTimer=setTimeout(doomPosIconFlush,30);
+  return '<span id="'+id+'" style="display:inline-flex;width:'+sz+'px;height:'+sz+'px">'+fbSvg+'</span>';
+}
+function doomPosIconFlush(){
+  window._piTimer=null;var q=window._piQ||[];window._piQ=[];
+  q.forEach(function(it){
+    var im=new Image();
+    im.onload=function(){var el=document.getElementById(it.id);if(el)el.innerHTML='<span style="display:block;width:'+it.sz+'px;height:'+it.sz+'px;background:'+it.color+';-webkit-mask:url(\''+it.url+'\') center/contain no-repeat;mask:url(\''+it.url+'\') center/contain no-repeat"></span>';};
+    im.src=it.url;
+  });
+}
 function doomTeamPageTab(){
   var tp=window._doomTP;
   if(!tp)return '<div class="card" style="text-align:center;padding:20px"><p class="mini dim" style="margin:0">불러오는 중…</p></div>';
@@ -11193,11 +11222,14 @@ function doomTeamPageTab(){
   }).join('')+'</div>';
   if(!sel)return head+chips+'<p class="mini dim" style="text-align:center">팀을 선택해주세요.</p>';
   var col=sel.color||'var(--gold)';
-  var POSI={'탑':'🛡️','정글':'🌳','미드':'⚡','원딜':'🏹','서폿':'🛟'};
-  var rosterHtml=(sel.roster||[]).map(function(r){return '<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border-radius:7px;padding:3px 9px;font-size:13px;margin:0 4px 4px 0">'+(r.position?(POSI[r.position]||'')+' ':'')+'<b>'+esc(r.name)+'</b>'+(r.position?' <span class="mini dim">'+esc(r.position)+'</span>':'')+'</span>';}).join('');
+  var POS5=['탑','정글','미드','원딜','서폿'];
+  var members5=[{name:sel.leader||'팀장',position:sel.leaderPos||'',isLeader:true,cost:null}].concat((sel.roster||[]).map(function(r){return {name:r.name,position:r.position||'',isLeader:false,cost:r.cost};}));
+  members5.sort(function(a,b){var ia=POS5.indexOf(a.position);var ib=POS5.indexOf(b.position);if(ia<0)ia=9;if(ib<0)ib=9;return ia-ib;});
+  var lineupHtml=members5.map(function(m){var ic=doomPosIcon(m.position,col,18);var crown=m.isLeader?' <span style="color:var(--gold);font-weight:900">👑</span>':'';var nm=String(m.name||'').replace(/'/g,'');if(sel.canEdit){var optsP=['','탑','정글','미드','원딜','서폿'].map(function(p){return '<option value="'+p+'"'+(p===m.position?' selected':'')+'>'+(p||'미지정')+'</option>';}).join('');return '<div style="display:flex;align-items:center;gap:9px;padding:8px 4px;border-top:1px solid rgba(255,255,255,.07)"><span style="flex:none;width:26px;display:flex;justify-content:center;align-items:center">'+ic+'</span><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(m.name)+crown+'</b><select onchange="doomSetPos(this,'+(m.isLeader?'true':'false')+',\''+nm+'\')" style="flex:none;'+inp+'">'+optsP+'</select></div>';}return '<div style="display:flex;align-items:center;gap:9px;padding:8px 4px;border-top:1px solid rgba(255,255,255,.07)"><span style="flex:none;width:26px;display:flex;justify-content:center;align-items:center">'+ic+'</span><span style="flex:none;width:42px;font-size:12px;font-weight:800;color:'+(m.position?col:'#8b8f9a')+'">'+(m.position||'미정')+'</span><b style="flex:1;min-width:0">'+esc(m.name)+crown+'</b>'+(m.cost!=null?'<span class="mini dim" style="flex:none">'+m.cost+'P</span>':'')+'</div>';}).join('');
+  var lineupBox='<div style="background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:11px;padding:2px 10px 8px;margin-top:8px"><div class="mini dim" style="padding:8px 0 1px;font-weight:700">⭐ 라인업 · 5포지션'+(sel.canEdit?' <span style="opacity:.7">— 포지션 선택 시 자동 저장</span>':'')+'</div>'+lineupHtml+'</div>';
   var canEdit=!!sel.canEdit;
   var nameEdit=canEdit?('<button onclick="doomTPSetName(\''+esc(sel.acct)+'\',\''+esc(sel.name).replace(/\x27/g,"\\x27")+'\')" style="background:transparent;border:1px solid '+col+';color:'+col+';border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer;font-weight:700;white-space:nowrap">✏️ 팀명 변경</button>'):'';
-  var teamHeader='<div style="border:2px solid '+col+';border-radius:14px;padding:14px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:20px;color:'+col+'">🛡️ '+esc(sel.name)+'</h2><div style="display:flex;align-items:center;gap:8px"><span class="mini dim">팀장 '+esc(sel.leader||'')+'</span>'+nameEdit+'</div></div><div>'+(rosterHtml||'<span class="mini dim">로스터 없음</span>')+'</div></div>';
+  var teamHeader='<div style="border:2px solid '+col+';border-radius:14px;padding:14px;margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><h2 style="margin:0;font-size:20px;color:'+col+'">🛡️ '+esc(sel.name)+'</h2><div style="display:flex;align-items:center;gap:8px"><span class="mini dim">팀장 '+esc(sel.leader||'')+'</span>'+nameEdit+'</div></div>'+lineupBox+'</div>';
   if(!sel.priv){
     var hint='<p class="mini dim" style="margin:10px 0 0">현재 로그인: <b>'+esc(tp.myName||'(비로그인)')+'</b>'+(tp.myName?' · 이 팀 소속으로 인식 안 됐어요':'')+'</p>';
     return head+chips+teamHeader+'<div style="border:1px dashed var(--line);border-radius:14px;padding:24px;text-align:center"><div style="font-size:28px">🔒</div><p style="margin:8px 0 0;font-weight:700">이 팀의 가능시간·밴픽은<br><b style="color:'+col+'">'+esc(sel.name)+' 팀원</b>만 볼 수 있어요</p>'+hint+'</div>';
@@ -11218,6 +11250,11 @@ function doomTPSetName(acct,cur){
   var nm=prompt('새 팀 이름을 입력하세요 (최대 20자)',cur||'');
   if(nm===null)return;nm=nm.trim();if(!nm)return toast('팀명을 입력해주세요',true);
   auctionCall('aucSetTeamName',{name:nm,acct:acct}).then(function(){toast('✏️ 팀명 변경: '+nm);doomReloadTeamPage();}).catch(function(e){toast(e.message||'실패',true);});
+}
+function doomSetPos(selEl,isLeader,name){
+  var pos=selEl.value;var body={position:pos,acct:doomTPAcct()};
+  if(isLeader){body.isLeader=true;}else{body.player=name;}
+  auctionCall('aucSetPosition',body).then(function(){toast('🎯 포지션 저장!');doomReloadTeamPage();}).catch(function(e){toast(e.message||'실패',true);doomReloadTeamPage();});
 }
 function doomTPAcct(){return (window._doomTP&&window._doomTP.sel&&window._doomTP.sel.acct)||'';}
 function doomReloadTeamPage(){var acct=window._doomTPSel||'';auctionCall('aucTeamPage',acct?{acct:acct}:{}).then(function(r){window._doomTP=r;if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
