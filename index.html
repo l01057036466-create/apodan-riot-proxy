@@ -11262,7 +11262,44 @@ function doomSetTP(r){
   if(window._doomTab==='teampage'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
 }
 function doomAvHourLbl(h){return h>=24?(h-24)+'시':h+'시';}
+function doomAvDragInit(){
+  if(window._avDragInit)return;window._avDragInit=true;
+  function cellFrom(t){while(t&&t!==document){if(t.classList&&t.classList.contains('avcell'))return t;t=t.parentNode;}return null;}
+  function paint(cell){
+    if(!cell||!window._avDrag||!window._avDrag.active)return;
+    var d=cell.getAttribute('data-d'),h=parseInt(cell.getAttribute('data-h'),10);var mem=window._avDrag.member;if(!mem)return;
+    var av=window._doomAvail=window._doomAvail||{};var g=av[mem]=av[mem]||{};var arr=g[d]=g[d]||[];var idx=arr.indexOf(h);
+    if(window._avDrag.mode==='on'){if(idx<0){arr.push(h);window._avDrag.changed=true;}}
+    else{if(idx>=0){arr.splice(idx,1);window._avDrag.changed=true;}}
+    if(!arr.length)delete g[d];
+    cell.style.background=(window._avDrag.mode==='on')?window._avDrag.color:'rgba(255,255,255,.05)';
+  }
+  function start(cell){
+    if(!cell)return false;var sel=window._doomTP&&window._doomTP.sel;if(!sel||!sel.canEdit)return false;
+    var mem=window._doomAvMem;if(!mem)return false;
+    var d=cell.getAttribute('data-d'),h=parseInt(cell.getAttribute('data-h'),10);
+    var av=window._doomAvail||{};var arr=(av[mem]&&av[mem][d])||[];var isOn=arr.indexOf(h)>=0;
+    window._avDrag={active:true,mode:isOn?'off':'on',member:mem,color:(sel.color||'#d4af37'),changed:false};
+    paint(cell);return true;
+  }
+  function end(){
+    if(!window._avDrag||!window._avDrag.active)return;var changed=window._avDrag.changed,mem=window._avDrag.member;
+    window._avDrag.active=false;
+    if(changed){
+      var sel=window._doomTP&&window._doomTP.sel;if(sel){var n=document.getElementById('doomAvSec');if(n)n.outerHTML=doomAvailSection(sel);}
+      clearTimeout(window._doomAvT);window._doomAvT=setTimeout(function(){var gg=(window._doomAvail||{})[mem]||{};auctionCall('aucSetAvail',{acct:doomTPAcct(),member:mem,grid:gg}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});},250);
+    }
+  }
+  document.addEventListener('mousedown',function(e){var c=cellFrom(e.target);if(c&&start(c))e.preventDefault();});
+  document.addEventListener('mouseover',function(e){if(window._avDrag&&window._avDrag.active){var c=cellFrom(e.target);if(c)paint(c);}});
+  document.addEventListener('mouseup',function(){end();});
+  document.addEventListener('touchstart',function(e){var c=cellFrom(e.target);if(c&&start(c))e.preventDefault();},{passive:false});
+  document.addEventListener('touchmove',function(e){if(window._avDrag&&window._avDrag.active){var t=e.touches[0];if(t){var c=cellFrom(document.elementFromPoint(t.clientX,t.clientY));if(c)paint(c);}e.preventDefault();}},{passive:false});
+  document.addEventListener('touchend',function(){end();});
+  document.addEventListener('touchcancel',function(){end();});
+}
 function doomAvailSection(sel){
+  doomAvDragInit();
   var col=sel.color||'#d4af37';
   var DAYS=['월','화','수','목','금','토','일'];
   var HRS=[];for(var hh=12;hh<=26;hh++)HRS.push(hh);
@@ -11280,8 +11317,8 @@ function doomAvailSection(sel){
   }).join('');
   var head='<tr><td style="width:30px"></td>'+DAYS.map(function(d){return '<td style="text-align:center;font-size:11px;font-weight:800;color:'+dcol(d)+';padding-bottom:3px">'+d+'</td>';}).join('')+'</tr>';
   var mg=av[cur]||{};
-  var eRows=HRS.map(function(h){return '<tr><td style="font-size:10px;color:#888;text-align:right;padding-right:4px;height:24px">'+h+'</td>'+DAYS.map(function(d){var on=((mg[d]||[]).indexOf(h)>=0);return '<td style="padding:0"><div '+(canEdit?'onclick="doomAvToggle(\''+d+'\','+h+')"':'')+' style="height:22px;margin:1px;border-radius:4px;background:'+(on?col:'rgba(255,255,255,.05)')+';'+(canEdit?'cursor:pointer':'')+'"></div></td>';}).join('')+'</tr>';}).join('');
-  var eGrid=canEdit?'<div style="margin-top:10px"><div class="mini" style="margin-bottom:5px"><b style="color:'+col+'">👤 '+esc(cur)+'</b> <span class="dim">님 — 가능한 칸을 탭 (자동 저장)</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+eRows+'</table></div>':'';
+  var eRows=HRS.map(function(h){return '<tr><td style="font-size:10px;color:#888;text-align:right;padding-right:4px;height:24px">'+h+'</td>'+DAYS.map(function(d){var on=((mg[d]||[]).indexOf(h)>=0);return '<td style="padding:0"><div '+(canEdit?'class="avcell" data-d="'+d+'" data-h="'+h+'"':'')+' style="height:22px;margin:1px;border-radius:4px;background:'+(on?col:'rgba(255,255,255,.05)')+';'+(canEdit?'cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none':'')+'"></div></td>';}).join('')+'</tr>';}).join('');
+  var eGrid=canEdit?'<div style="margin-top:10px"><div class="mini" style="margin-bottom:5px"><b style="color:'+col+'">👤 '+esc(cur)+'</b> <span class="dim">님 — 탭/드래그로 여러 칸 선택 (자동 저장)</span></div><table style="width:100%;border-collapse:collapse;table-layout:fixed">'+head+eRows+'</table></div>':'';
   var ovc=function(d,h){var c=0;members.forEach(function(m){if((av[m]&&av[m][d]||[]).indexOf(h)>=0)c++;});return c;};
   var ovColor=function(c){
     if(c<=0)return {bg:'rgba(255,255,255,.03)',fg:'transparent',glow:0};
