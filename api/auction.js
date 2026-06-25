@@ -458,7 +458,7 @@ module.exports = async function handler(req, res) {
       var lkR = []; try { lkR = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkR = []; }
       var colOf = {}; lkR.forEach(function (t) { colOf[t.name] = t.color; });
       var resR = []; try { resR = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resR = []; }
-      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), at: Date.now() });
+      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '스크림' ? '스크림' : '멸망전'), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), at: Date.now() });
       await redis(['SET', 'doom:results', JSON.stringify(resR)]);
       return res.status(200).json({ ok: true });
     }
