@@ -8973,13 +8973,18 @@ function doomTeamAvgPow(team){
   if(!names.length)return 50;
   return names.reduce(function(a,n){return a+doomPowByName(n);},0)/names.length;
 }
-function doomMkOdds(aTeam,bTeam){
+var DOOM_BET_CAP=50000, DOOM_VLIQ=15000; // 멸망전 1경기 상한 / 가상 유동성(시드배당 세기)
+function doomMkOdds(aTeam,bTeam,mkt){
   var teams=window._doomTeams||[];
   var ta=teams.filter(function(t){return t.name===aTeam;})[0],tb=teams.filter(function(t){return t.name===bTeam;})[0];
   var ra=doomTeamAvgPow(ta),rb=doomTeamAvgPow(tb);
-  var pa=1/(1+Math.pow(10,(rb-ra)/15));
-  var clamp=function(x){return Math.max(1.05,Math.min(9,Math.round(x*100)/100));};
-  return {a:clamp((1/pa)*0.95),b:clamp((1/(1-pa))*0.95)};
+  var pw=1/(1+Math.pow(10,(rb-ra)/15)); // A팀 승률(팀 레이팅 기반)
+  // 가상 유동성(팀 레이팅 시드) + 실제 풀 → 사람들이 걸수록 그쪽 배당↓ 반대↑
+  var vA=DOOM_VLIQ*pw, vB=DOOM_VLIQ*(1-pw);
+  var rA=(mkt&&mkt.alpha)||0, rB=(mkt&&mkt.beta)||0;
+  var eA=vA+rA, eB=vB+rB, tot=(eA+eB)*0.95;
+  var clamp=function(x){return Math.max(1.05,Math.min(12,Math.round(x*100)/100));};
+  return {a:clamp(tot/eA), b:clamp(tot/eB), live:(rA+rB)>0};
 }
 function doomAmInMatch(m){
   var B=(typeof bankSession==='function')?bankSession():null;
@@ -9030,19 +9035,20 @@ function doomMkSettle(id,mk,winner){
 function doomBetPanel(m){
   if(!m.pub||!m.mk)return ''; // 비공개 = 베팅 없음
   var op=(typeof doomSchedIsOp==='function')&&doomSchedIsOp();
-  // 결과 확정됨
+  var mkt=(window._doomMkts&&window._doomMkts[m.mk])||{};
   if(m.winner){
-    var wN=m.winner==='a'?m.aTeam:m.bTeam,wC=m.winner==='a'?m.aColor:m.bColor;
-    var mkt0=(window._doomMkts&&window._doomMkts[m.mk])||{};var my0=mkt0.my;
+    var wN=m.winner==='a'?m.aTeam:m.bTeam,wC=m.winner==='a'?m.aColor:m.bColor;var my0=mkt.my;
     var hit=my0?(((my0.team==='alpha')===(m.winner==='a'))?'<span style="color:var(--win);font-weight:800">내 베팅 적중 🎉</span>':'<span style="color:var(--lose)">내 베팅 미적중</span>'):'';
     return '<div style="margin-top:9px;padding:9px;border-radius:9px;background:rgba(46,204,113,.08);border:1px solid var(--line);text-align:center;font-size:13px">🏁 결과 <b style="color:'+wC+'">'+esc(wN)+'</b> 승 '+(hit?'· '+hit:'')+'</div>';
   }
-  var od=doomMkOdds(m.aTeam,m.bTeam);
-  var mkt=(window._doomMkts&&window._doomMkts[m.mk])||{};
+  var od=doomMkOdds(m.aTeam,m.bTeam,mkt);
   var bettors=mkt.bettors||0,status=mkt.status||'open',my=mkt.my||null;
+  var pa=mkt.alpha||0,pb=mkt.beta||0,tot=pa+pb;
   var mine=doomAmInMatch(m);
   var mksan=m.mk.replace(/[^a-z0-9]/gi,'');
+  var aCol=m.aColor||'#e74c3c',bCol=m.bColor||'#3498db';
   var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><b style="font-size:13px">🎰 승부 베팅</b><span class="mini dim">'+bettors+'명 참여'+(status!=='open'?' · ⛔마감':'')+'</span></div>';
+  var poolRow=tot?'<p class="mini dim" style="text-align:center;margin:0 0 5px">참전 <span style="color:'+aCol+'">🅰 '+fmtAPO(pa)+'</span> · <span style="color:'+bCol+'">🅱 '+fmtAPO(pb)+'</span> APO</p><div style="height:6px;border-radius:5px;overflow:hidden;display:flex;border:1px solid var(--line);margin-bottom:7px"><i style="width:'+Math.round(pa/tot*100)+'%;background:'+aCol+'99"></i><i style="flex:1;background:'+bCol+'99"></i></div>':'';
   var inner='';
   if(mine){
     inner='<p class="mini" style="text-align:center;margin:4px 0;color:var(--gold);font-weight:700">🙅 본인 출전 경기 — 베팅 불가 (승부조작 방지)</p>';
@@ -9050,16 +9056,36 @@ function doomBetPanel(m){
     inner='<p class="mini dim" style="text-align:center;margin:4px 0">⛔ 베팅이 마감됐어요</p>';
   } else {
     var btn=function(team,name,col,o){return '<button class="btn" style="flex:1;min-width:0;padding:8px 4px;border:1px solid '+col+';background:'+col+'18;border-radius:9px;color:var(--ink)" onclick="doomDoBet(\''+m.mk+'\',\''+team+'\','+o+')"><b style="color:'+col+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+esc(name)+'</b><span style="font-family:var(--mono);font-weight:900;font-size:15px">x'+o.toFixed(2)+'</span></button>';};
-    inner='<div style="display:flex;gap:7px;margin-bottom:7px">'+btn('alpha',m.aTeam,m.aColor||'#e74c3c',od.a)+btn('beta',m.bTeam,m.bColor||'#3498db',od.b)+'</div>'
-      +'<input id="dbet'+mksan+'" type="number" min="100" step="100" placeholder="베팅액 (최소 100 APO)" style="width:100%;box-sizing:border-box;padding:8px;border-radius:8px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px">'
-      +'<p class="mini dim" style="text-align:center;margin:6px 0 0">배당은 베팅 순간 고정 · 위 팀 버튼을 누르면 베팅돼요</p>';
+    inner='<div style="display:flex;gap:7px;margin-bottom:5px">'+btn('alpha',m.aTeam,aCol,od.a)+btn('beta',m.bTeam,bCol,od.b)+'</div>'
+      +'<p class="mini dim" style="text-align:center;margin:0 0 7px;font-size:10px;opacity:.72">🎰 베팅이 쌓이면 배당 실시간 변동 (몰린 팀↓·반대편↑)</p>'
+      +'<div style="display:flex;gap:5px"><input id="dbet'+mksan+'" type="number" min="100" max="'+DOOM_BET_CAP+'" step="100" placeholder="베팅액 (100~'+(DOOM_BET_CAP/10000)+'만 APO)" style="flex:1;min-width:0;box-sizing:border-box;padding:8px;border-radius:8px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px"><button class="btn sm ghost" style="flex:none;font-size:11px" onclick="var e=document.getElementById(\'dbet'+mksan+'\');if(e)e.value='+DOOM_BET_CAP+'">🔝 최대</button></div>'
+      +'<p class="mini dim" style="text-align:center;margin:6px 0 0">팀 버튼을 누르면 베팅 · 배당은 누른 순간 고정 · 1경기 최대 '+fmtAPO(DOOM_BET_CAP)+' APO</p>';
   }
-  if(my){inner+='<div style="margin-top:7px;text-align:center;font-size:12.5px;background:rgba(255,255,255,.04);border-radius:7px;padding:6px"><b>내 베팅:</b> '+(my.team==='alpha'?'🅰 '+esc(m.aTeam):'🅱 '+esc(m.bTeam))+' · '+fmtAPO(my.amt||my.amount||0)+' APO'+(my.odds?(' (x'+my.odds+')'):'')+'</div>';}
+  if(my){inner+='<div style="margin-top:7px;text-align:center;font-size:12.5px;background:rgba(255,255,255,.04);border-radius:7px;padding:6px"><b>내 베팅:</b> '+(my.team==='alpha'?'🅰 '+esc(m.aTeam):'🅱 '+esc(m.bTeam))+' · '+fmtAPO(my.amt||my.amount||0)+' APO'+(my.odds?(' @ x'+my.odds+' → 적중 시 '+fmtAPO(Math.floor((my.amt||my.amount||0)*my.odds))+' APO'):'')+'</div>';}
+  var betsList='';
+  if(op){
+    var bl=(window._doomBets&&window._doomBets[m.mk]);
+    if(bl===undefined){
+      betsList=tot?'<p class="mini" style="text-align:center;margin:7px 0 0"><button class="btn sm ghost" style="font-size:11px" onclick="doomLoadBets(\''+m.mk+'\')">👀 누가 어디에 걸었나 (운영진)</button></p>':'';
+    } else if(!bl.length){
+      betsList='<p class="mini dim" style="text-align:center;margin:7px 0 0">아직 베팅한 사람이 없어요</p>';
+    } else {
+      betsList='<details open style="margin-top:7px"><summary style="cursor:pointer;font-size:11px;color:var(--gold);text-align:center;font-weight:700">👁 베터 '+bl.length+'명 — 운영진 전용</summary><div style="font-size:11px;margin-top:5px;text-align:center;line-height:2">'+bl.map(function(b){var side=b.team==='alpha'?m.aTeam:m.bTeam,col=b.team==='alpha'?aCol:bCol;return '<span style="display:inline-block;margin:0 5px;white-space:nowrap"><b style="color:var(--ink)">'+esc(bareName(b.name))+'</b>→<span style="color:'+col+'">'+esc(side)+'</span> '+fmtAPO(b.amt)+'</span>';}).join('')+'</div></details>';
+    }
+  }
   var opCtl='';
   if(op){
     opCtl='<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"><button class="btn sm ghost" style="flex:1;font-size:11px" onclick="doomMkLock(\''+m.mk+'\','+(status==='open'?'false':'true')+')">'+(status==='open'?'🔒 베팅 마감':'▶️ 베팅 재개')+'</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'a\')">🏁 '+esc(m.aTeam)+' 승</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'b\')">🏁 '+esc(m.bTeam)+' 승</button></div>';
   }
-  return '<div style="margin-top:10px;padding:11px;border-radius:10px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.3)">'+head+inner+opCtl+'</div>';
+  return '<div style="margin-top:10px;padding:11px;border-radius:10px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.3)">'+head+poolRow+inner+betsList+opCtl+'</div>';
+}
+function doomLoadBets(mk){
+  var api=(typeof voteApiBase==='function')?voteApiBase():'';if(!api)return;
+  if(window._doomBetsBusy)return;window._doomBetsBusy=true;
+  bankCall('mktDetail',{market:mk},'GET').then(function(j){
+    window._doomBets=window._doomBets||{};window._doomBets[mk]=(j&&j.rows)||[];
+    window._doomBetsBusy=false;if(typeof render==='function')render('force');
+  }).catch(function(e){window._doomBetsBusy=false;toast((e&&e.message)||'불러오기 실패',true);});
 }
 
 function doomMLineupCard(){
