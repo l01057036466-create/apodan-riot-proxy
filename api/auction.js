@@ -231,11 +231,47 @@ module.exports = async function handler(req, res) {
       var lockedT = []; try { lockedT = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lockedT = []; }
       var availL = []; try { availL = JSON.parse((await redis(['GET', 'doom:avail'])) || '[]'); } catch (e) { availL = []; }
       var resultsL = []; try { resultsL = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resultsL = []; }
-      var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, color: t.color, points: t.points, roster: t.roster || [] }; });
+      var bracketL = []; try { bracketL = JSON.parse((await redis(['GET', 'doom:bracket'])) || '[]'); } catch (e) { bracketL = []; }
+      var mlineL = []; try { mlineL = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlineL = []; }
+      var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, leaderPos: t.leaderPos || '', color: t.color, points: t.points, roster: t.roster || [] }; });
       var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, allPracticeS = null, opSchedS = isOp(s);
       if (opSchedS) { allSchedS = {}; allPracticeS = {}; }
       lockedT.forEach(function (t) { if (t.acct === myAcctS) { mySchedS = t.sched || ''; myPracticeS = t.practice || []; } if (opSchedS) { allSchedS[t.acct] = t.sched || ''; allPracticeS[t.acct] = t.practice || []; } });
-      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, allPractice: allPracticeS, avail: availL, results: resultsL, myPractice: myPracticeS });
+      return res.status(200).json({ ok: true, sched: schedL, recruit: recruitL, teams: pubT, myAcct: myAcctS, mySched: mySchedS, allSched: allSchedS, allPractice: allPracticeS, avail: availL, results: resultsL, bracket: bracketL, mlineups: mlineL, myPractice: myPracticeS });
+    }
+    if (action === 'aucMLineupAdd') { // 📢 멸망전/스크림 라인업 공지 (운영 전용)
+      if (!isOp(s)) return res.status(403).json({ error: '운영자만 공지할 수 있어요' });
+      var aTm = String(body.aTeam || '').trim(), bTm = String(body.bTeam || '').trim();
+      if (!aTm || !bTm) return res.status(400).json({ error: '두 팀을 골라주세요' });
+      if (aTm === bTm) return res.status(400).json({ error: '같은 팀끼리는 안 돼요' });
+      var lkML = []; try { lkML = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkML = []; }
+      if (!lkML.length) return res.status(400).json({ error: '먼저 팀 명단을 확정해주세요 (못 박기)' });
+      var colML = {}; lkML.forEach(function (t) { colML[t.name] = t.color; });
+      if (colML[aTm] === undefined || colML[bTm] === undefined) return res.status(404).json({ error: '확정된 팀만 공지할 수 있어요' });
+      var mlA = []; try { mlA = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlA = []; }
+      mlA.push({ id: 'ml' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '멸망전' ? '멸망전' : '스크림'), aTeam: aTm, aColor: colML[aTm] || '', bTeam: bTm, bColor: colML[bTm] || '', date: String(body.date || '').slice(0, 10), time: String(body.time || '').slice(0, 5), note: String(body.note || '').slice(0, 100), by: s.name, at: Date.now() });
+      await redis(['SET', 'doom:mlineups', JSON.stringify(mlA)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucMLineupDel') {
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var mlD = []; try { mlD = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlD = []; }
+      mlD = mlD.filter(function (x) { return x.id !== body.id; });
+      await redis(['SET', 'doom:mlineups', JSON.stringify(mlD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucBracketSet') { // 🏆 더블 엘리미네이션 대진표 저장 (운영 전용)
+      if (!isOp(s)) return res.status(403).json({ error: '운영자만 대진표를 편집할 수 있어요' });
+      var mbB = Array.isArray(body.matches) ? body.matches : [];
+      var toScoreB = function (x) { if (x === null || x === undefined || x === '') return null; var n = parseInt(x, 10); return isNaN(n) ? null : Math.max(0, Math.min(99, n)); };
+      var cleanB = mbB.slice(0, 80).map(function (m, i) {
+        m = m || {};
+        var brB = ['W', 'L', 'GF'].indexOf(m.br) >= 0 ? m.br : 'W';
+        var rdB = parseInt(m.round, 10); if (!(rdB >= 1 && rdB <= 20)) rdB = 1;
+        return { id: String(m.id || ('bm' + Date.now() + '_' + i)).slice(0, 40), br: brB, round: rdB, slot: parseInt(m.slot, 10) || (i + 1), a: String(m.a || '').slice(0, 40), b: String(m.b || '').slice(0, 40), sa: toScoreB(m.sa), sb: toScoreB(m.sb), date: String(m.date || '').slice(0, 10), note: String(m.note || '').slice(0, 60) };
+      });
+      await redis(['SET', 'doom:bracket', JSON.stringify(cleanB)]);
+      return res.status(200).json({ ok: true, bracket: cleanB });
     }
     if (action === 'aucSchedAdd') {
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요 (지갑에서 로그인)' });
@@ -458,7 +494,12 @@ module.exports = async function handler(req, res) {
       var lkR = []; try { lkR = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkR = []; }
       var colOf = {}; lkR.forEach(function (t) { colOf[t.name] = t.color; });
       var resR = []; try { resR = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resR = []; }
-      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '스크림' ? '스크림' : '멸망전'), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), at: Date.now() });
+      var lnR = null;
+      if (body.lineup && typeof body.lineup === 'object') {
+        var cleanSideR = function (sd) { sd = sd || {}; var picks = (Array.isArray(sd.picks) ? sd.picks : []).slice(0, 5).map(function (x) { x = x || {}; return { p: String(x.p || '').slice(0, 30), c: String(x.c || '').slice(0, 30) }; }); var bans = (Array.isArray(sd.bans) ? sd.bans : []).slice(0, 5).map(function (x) { return String(x || '').slice(0, 30); }); return { picks: picks, bans: bans }; };
+        lnR = { a: cleanSideR(body.lineup.a), b: cleanSideR(body.lineup.b) };
+      }
+      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '스크림' ? '스크림' : '멸망전'), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), lineup: lnR, at: Date.now() });
       await redis(['SET', 'doom:results', JSON.stringify(resR)]);
       return res.status(200).json({ ok: true });
     }
