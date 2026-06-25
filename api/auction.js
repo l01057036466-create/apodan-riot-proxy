@@ -234,7 +234,7 @@ module.exports = async function handler(req, res) {
       var bracketL = []; try { bracketL = JSON.parse((await redis(['GET', 'doom:bracket'])) || '[]'); } catch (e) { bracketL = []; }
       var mlineL = []; try { mlineL = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlineL = []; }
       var mlMig = false;
-      mlineL.forEach(function (mm) { if (!mm.mk && mm.pub !== false && /^\d{4}-\d{2}-\d{2}$/.test(String(mm.date || ''))) { mm.mk = mm.date + '#' + Math.random().toString(36).slice(2, 5); if (mm.pub === undefined) mm.pub = true; if (mm.winner === undefined) mm.winner = null; mlMig = true; } });
+      for (var mmi = 0; mmi < mlineL.length; mmi++) { var mm = mlineL[mmi]; if (!mm.mk && mm.pub !== false && /^\d{4}-\d{2}-\d{2}$/.test(String(mm.date || ''))) { mm.mk = mm.date + '#' + Math.random().toString(36).slice(2, 5); if (mm.pub === undefined) mm.pub = true; if (mm.winner === undefined) mm.winner = null; try { await redis(['SET', 'mkt:' + mm.mk + ':cap', '50000']); } catch (e) {} mlMig = true; } }
       if (mlMig) { try { await redis(['SET', 'doom:mlineups', JSON.stringify(mlineL)]); } catch (e) {} }
       var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, leaderPos: t.leaderPos || '', color: t.color, points: t.points, roster: t.roster || [] }; });
       var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, allPracticeS = null, opSchedS = isOp(s);
@@ -256,6 +256,7 @@ module.exports = async function handler(req, res) {
       var pubML = !!body.pub;
       var mkML = '';
       if (pubML && /^\d{4}-\d{2}-\d{2}$/.test(dateML)) { mkML = dateML + '#' + Math.random().toString(36).slice(2, 5); }
+      if (mkML) { try { await redis(['SET', 'mkt:' + mkML + ':cap', '50000']); } catch (e) {} } // 멸망전 베팅 상한 5만
       var idML = 'ml' + Date.now() + Math.floor(Math.random() * 1000);
       mlA.push({ id: idML, type: (body.type === '멸망전' ? '멸망전' : '스크림'), aTeam: aTm, aColor: colML[aTm] || '', bTeam: bTm, bColor: colML[bTm] || '', date: dateML, time: String(body.time || '').slice(0, 5), note: String(body.note || '').slice(0, 100), pub: pubML, mk: mkML, winner: null, by: s.name, at: Date.now() });
       await redis(['SET', 'doom:mlineups', JSON.stringify(mlA)]);

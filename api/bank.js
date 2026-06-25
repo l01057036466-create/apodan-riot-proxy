@@ -33,24 +33,6 @@ module.exports = async function handler(req, res) {
       if (j && j.error) throw new Error('Upstash: ' + j.error);
       return j ? j.result : null;
     }
-    // ⚡ 파이프라인: 여러 Redis 명령을 단일 HTTP 요청으로 — 순차 왕복(렉) 제거. 명령은 보낸 순서대로 실행됨.
-    async function pipe(cmds) {
-      if (!cmds || !cmds.length) return [];
-      if (cmds.length === 1) return [await redis(cmds[0])];
-      var r = await fetch(URL_ + '/pipeline', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
-        body: JSON.stringify(cmds),
-      });
-      var j = await r.json();
-      if (j && j.error) throw new Error('Upstash: ' + j.error);
-      var out = [];
-      for (var i = 0; i < (j || []).length; i++) {
-        if (j[i] && j[i].error) throw new Error('Upstash: ' + j[i].error);
-        out.push(j[i] ? j[i].result : null);
-      }
-      return out;
-    }
 
     var SEC90 = String(60 * 60 * 24 * 90), SEC30 = String(60 * 60 * 24 * 30);
     function hash(pin, salt) { return crypto.createHash('sha256').update(salt + '|' + pin).digest('hex'); }
@@ -74,7 +56,8 @@ module.exports = async function handler(req, res) {
     }
     async function ledger(name, d, v, bal) {
       var e = JSON.stringify({ t: new Date().toISOString(), d: d, v: v, bal: bal });
-      await pipe([['LPUSH', 'ledger:' + name, e], ['LTRIM', 'ledger:' + name, '0', '199']]);
+      await redis(['LPUSH', 'ledger:' + name, e]);
+      await redis(['LTRIM', 'ledger:' + name, '0', '199']);
     }
     async function auth(token) { // 세션 → {role, name} | null
       if (!token) return null;
@@ -83,7 +66,7 @@ module.exports = async function handler(req, res) {
       if (v === '__dev__') return { role: 'dev', name: null }; // 유령 개발자
       var a = await getAcct(v);
       if (!a || a.status !== 'active') return null;
-      return { role: a.role || 'member', name: a.name, rank: a.rank || '', acct: a };
+      return { role: a.role || 'member', name: a.name, acct: a };
     }
     function tok() { return crypto.randomBytes(24).toString('hex'); }
     async function acctLock(name) { // 🐛fix: 더블클릭·동시 요청 이중지출 방지 (5초 자동 해제)
@@ -104,7 +87,7 @@ module.exports = async function handler(req, res) {
       var raws = names.length ? (await redis(['MGET'].concat(names.map(function (n) { return 'acct:' + n; })))) || [] : []; // 🐛fix: N+1 → MGET (서버 렉 해소)
       for (var i = 0; i < names.length; i++) {
         var a = raws[i] ? JSON.parse(raws[i]) : null;
-        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', rank: a.rank || '', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {}, bio: a.bio || '', madMovie: a.madMovie || '' });
+        if (a && a.status === 'active') out.push({ name: a.name, bal: a.bal, role: a.role === 'admin' ? 'admin' : 'member', bust: a.bust || 0, lastBustAt: a.lastBustAt || '', pnl: Math.round(Number(a.pnl) || 0), trades: Number(a.trades) || 0, equip: a.equip || {}, bio: a.bio || '', madMovie: a.madMovie || '' });
       }
       out.sort(function (x, y) { return y.bal - x.bal; });
       var onRaws = out.length ? (await redis(['MGET'].concat(out.map(function (r) { return 'online:' + r.name; })))) || [] : [];
@@ -159,27 +142,17 @@ module.exports = async function handler(req, res) {
       if (s.role === 'dev') return res.status(200).json({ name: '시스템', role: 'dev', bal: null });
       var a3 = s.acct, today = kstDate();
       await redis(['SET', 'online:' + a3.name, '1', 'EX', '420']); // 🟢 접속 표시 (7분 TTL — 절약형 폴링에 맞춤)
-      // ☀ 출석 수당 — 오늘 첫 me일 때만. 🔒 락 잡고 '최신 잔액'에 더해 저장 → 게임·거래로 방금 오른 포인트가 유실되던 버그 수정
-      if (a3.lastDaily !== today) {
-        if (await acctLock(a3.name)) {
-          try {
-            var aFresh = (await getAcct(a3.name)) || a3; // 락 안에서 재조회 — 게임/거래가 방금 올린 값을 보존
-            if (aFresh.lastDaily !== today) { // 락 안 재확인 → 이중지급 방지
-              aFresh.lastDaily = today; aFresh.bal += 500;
-              aFresh.streak = (aFresh.lastDay && (new Date(today) - new Date(aFresh.lastDay) === 86400000)) ? (Number(aFresh.streak) || 0) + 1 : 1;
-              aFresh.lastDay = today;
-              await putAcct(aFresh);
-              await ledger(aFresh.name, '출석 수당 ☀', 500, aFresh.bal);
-            }
-            a3 = aFresh;
-          } finally { await acctUnlock(a3.name); }
-        }
-        // 락 못 잡으면(게임·거래 처리 중) 이번 me는 수당 스킵 → 다음 새로고침에서 지급. 게임 포인트는 안전.
+      if (a3.lastDaily !== today && (await redis(['SET', 'daily:' + a3.name + ':' + today, '1', 'NX', 'EX', SEC90])) === 'OK') { // 🐛fix: 동시 접속 이중지급 방지
+        a3.lastDaily = today; a3.bal += 500;
+        a3.streak = (a3.lastDay && (new Date(today) - new Date(a3.lastDay) === 86400000)) ? (Number(a3.streak) || 0) + 1 : 1;
+        a3.lastDay = today;
+        await putAcct(a3);
+        await ledger(a3.name, '출석 수당 ☀', 500, a3.bal);
       }
       var led = (await redis(['LRANGE', 'ledger:' + a3.name, '0', '29'])) || [];
       var hRawMe = await redis(['GET', 'hold:' + a3.name]);
       var pxRawMe = await redis(['GET', 'stock:px']);
-      return res.status(200).json({ name: a3.name, role: a3.role, rank: a3.rank || '', bal: a3.bal, bust: a3.bust || 0, suspendUntil: a3.suspendUntil || 0,
+      return res.status(200).json({ name: a3.name, role: a3.role, bal: a3.bal, bust: a3.bust || 0, suspendUntil: a3.suspendUntil || 0,
         items: a3.items || {}, equip: a3.equip || {}, // 🐛fix: 새로고침하면 보유·장착 정보를 잃어 "장착" 버튼이 사라지던 버그
         holdings: hRawMe ? JSON.parse(hRawMe) : {}, prices: pxRawMe ? JSON.parse(pxRawMe) : {},
         ledger: led.map(function (x) { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean) });
@@ -323,18 +296,8 @@ module.exports = async function handler(req, res) {
       var tn2 = nameOk(body.name);
       var ta2 = tn2 ? await getAcct(tn2) : null;
       if (!ta2) return res.status(404).json({ error: '계정을 못 찾았어요' });
-      if (action === 'promote') {
-        var newRank = (body.rank === 'chairman' || body.rank === 'vicechair') ? body.rank : '';
-        ta2.role = 'admin'; ta2.rank = newRank;
-        if (newRank) { // 🏆 유일 계급 — 같은 계급의 기존 보유자는 일반 운영자로 강등
-          var allN = (await redis(['SMEMBERS', 'acct:_all'])) || [];
-          var allR = allN.length ? (await redis(['MGET'].concat(allN.map(function (n) { return 'acct:' + n; })))) || [] : [];
-          for (var ri = 0; ri < allN.length; ri++) { var ra = allR[ri] ? JSON.parse(allR[ri]) : null;
-            if (ra && ra.name !== ta2.name && ra.rank === newRank) { ra.rank = ''; await putAcct(ra); } }
-        }
-        await putAcct(ta2); return res.status(200).json({ ok: true, rank: newRank });
-      }
-      if (action === 'demote') { ta2.role = 'member'; ta2.rank = ''; await putAcct(ta2); return res.status(200).json({ ok: true }); }
+      if (action === 'promote') { ta2.role = 'admin'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
+      if (action === 'demote') { ta2.role = 'member'; await putAcct(ta2); return res.status(200).json({ ok: true }); }
       var amt = Math.round(Number(body.amount) || 0);
       var cap = isDev ? 1000000 : 50000; // 운영자 발권 한도 ±5만
       if (!amt || Math.abs(amt) > cap) return res.status(400).json({ error: '금액 확인 (±' + cap.toLocaleString() + ' 이내)' });
@@ -347,18 +310,14 @@ module.exports = async function handler(req, res) {
     // ═══════════ Phase 2: 승부 예측 베팅 (패리뮤추얼) ═══════════
     function mktOk(m) { return /^\d{4}-\d{2}-\d{2}(#[A-Za-z0-9]{1,4})?$/.test(String(m || '')); }
     async function pushHist(nm, px, why) { // 가격 히스토리 + 변동 사유 태그 (trade/form/ai/list)
-      await pipe([
-        ['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px, w: why || 'trade' })],
-        ['LTRIM', 'pxh:' + nm, '0', '59'],
-        ['EXPIRE', 'pxh:' + nm, SEC90],
-      ]);
+      await redis(['LPUSH', 'pxh:' + nm, JSON.stringify({ t: Date.now(), p: px, w: why || 'trade' })]);
+      await redis(['LTRIM', 'pxh:' + nm, '0', '59']);
+      await redis(['EXPIRE', 'pxh:' + nm, SEC90]);
     }
     async function pushTape(e) { // 체결 테이프 (전원 공개 실시간 피드, 최근 30건)
-      await pipe([
-        ['LPUSH', 'trades:recent', JSON.stringify(e)],
-        ['LTRIM', 'trades:recent', '0', '29'],
-        ['EXPIRE', 'trades:recent', SEC90],
-      ]);
+      await redis(['LPUSH', 'trades:recent', JSON.stringify(e)]);
+      await redis(['LTRIM', 'trades:recent', '0', '29']);
+      await redis(['EXPIRE', 'trades:recent', SEC90]);
     }
     async function busted(a) { // 파산: 잔액 0 + 보유 주식도 0일 때만 (자산가는 파산 아님)
       if (a.bal > 0) return a;
@@ -422,7 +381,8 @@ module.exports = async function handler(req, res) {
       var prevRaw = await redis(['GET', 'bet:' + mk2 + ':' + aB.name]);
       var prev = prevRaw ? JSON.parse(prevRaw) : null;
       if (prev && prev.team !== team2) return res.status(409).json({ error: '이미 ' + (prev.team === 'alpha' ? '알파' : '베타') + '에 베팅했어요 — 팀 변경 불가, 추가 베팅만 가능' });
-      var BET_CAP = 20000; // 🔒 1경기 1인 베팅 상한 — 고정배당 변동성 차단
+      var capOv2 = await redis(['GET', 'mkt:' + mk2 + ':cap']); // 시장별 상한 (멸망전 등 — 없으면 기본 2만)
+      var BET_CAP = (capOv2 && Number(capOv2) >= 100) ? Number(capOv2) : 20000; // 🔒 1경기 1인 베팅 상한
       var curStake = prev ? prev.amt : 0;
       if (curStake + amt2 > BET_CAP) return res.status(400).json({ error: '1경기 베팅 상한은 ' + BET_CAP + ' APO예요 — 현재 ' + curStake + ' APO 베팅 중 (추가 ' + Math.max(0, BET_CAP - curStake) + ' 가능)' });
       var betOdds = Number(body.odds) || 0;
@@ -629,18 +589,15 @@ module.exports = async function handler(req, res) {
     }
 
     // ═══ 멤버 주식: 시세 (운영진 클라이언트가 자동 갱신 — 조작 불가) ═══
-    function clampPx(v) { return Math.max(30, Math.min(9999, Math.round(v))); } // 🛟 최저 시세 30 (1원 폭락 차단)
+    function clampPx(v) { return Math.max(1, Math.min(9999, Math.round(v))); }
     async function loadPx() { // base(폼 기준가) + prem(수급 프리미엄) → 합산 시세
       var b = JSON.parse((await redis(['GET', 'stock:base'])) || (await redis(['GET', 'stock:px'])) || '{}'); // 구버전 px는 base로 승계
       var p = JSON.parse((await redis(['GET', 'stock:prem'])) || '{}');
       return { base: b, prem: p };
     }
-    function premCap(base, prem) { // 수급 프리미엄 한도 — 하락 25% / 상승은 저가주일수록 강하게 조임 (떡상·줍줍 방지)
-      base = base || 100;
-      var down = Math.round(base * 0.25); // 할인(하락) 한도 = 기준가의 25%
-      var up = base >= 100 ? Math.round(base * 0.25)               // 100 이상: 상승도 25%
-                           : Math.floor(base * 0.2 * (base / 100)); // 🧊 100 미만: (base/100)으로 더 조임 → 1원=0(동결), 저가일수록 상승 거의 막힘
-      return Math.max(-down, Math.min(up, Math.round(Number(prem) || 0)));
+    function premCap(base, prem) { // 수급은 폼을 못 이긴다: 프리미엄 ≤ 기준가의 ±45%
+      var cap = Math.round((base || 100) * 0.25); // 수급 프리미엄 한도 = 기준가의 ±25% (상한가/하한가). 바닥 없음 → 기준가 1짜리는 프리미엄 0 → 진짜 1 APO
+      return Math.max(-cap, Math.min(cap, Math.round(Number(prem) || 0)));
     }
     function combinePx(S) {
       var out = {};
@@ -649,11 +606,9 @@ module.exports = async function handler(req, res) {
       return out;
     }
     async function savePx(S) {
-      await pipe([
-        ['SET', 'stock:base', JSON.stringify(S.base)],
-        ['SET', 'stock:prem', JSON.stringify(S.prem)],
-        ['SET', 'stock:px', JSON.stringify(combinePx(S))], // 호환 캐시
-      ]);
+      await redis(['SET', 'stock:base', JSON.stringify(S.base)]);
+      await redis(['SET', 'stock:prem', JSON.stringify(S.prem)]);
+      await redis(['SET', 'stock:px', JSON.stringify(combinePx(S))]); // 호환 캐시
     }
     if (req.method === 'GET' && action === 'prices') {
       var S0 = await loadPx();
@@ -721,18 +676,13 @@ module.exports = async function handler(req, res) {
       var nP = 0;
       for (var kP in inP) {
         var vP = Math.round(Number(inP[kP]) || 0);
-        if (vP < 30) vP = 30; if (vP > 9999) vP = 9999; // 🛟 폼 기준가 바닥 30
         if (rescM2[kP] && rescM2[kP] > nowR2) continue; // 구제 보호 기간 중 — 폼 기준가 갱신 스킵
         if (manipM2[kP] && !forceP) continue; // 🔧 조작 보호 — 경기 등록(force) 전까지 폼 동기화가 못 덮음 (조작값 최우선)
-        if (nameOk(kP)) {
-          var oldB = Number(SP.base[kP]) || 0;
-          var setV = vP;
-          if (oldB >= 30 && (oldB - vP) > 40) setV = oldB - 40; // 🚧 기존 종목 폼반영 1회 하락 최대 40 (▼160 폭락 방지턱 / 상승·붕괴회복은 즉시)
-          if (setV < 30) setV = 30;
-          var oldC = clampPx(oldB + (Number(SP.prem[kP]) || 0));
-          SP.base[kP] = setV; nP++;
-          var newC = clampPx(setV + (Number(SP.prem[kP]) || 0));
-          if (Math.abs(newC - oldC) >= 2) await pushHist(kP, newC, 'form');
+        if (nameOk(kP) && vP >= 1 && vP <= 9999) {
+          var oldC = clampPx((SP.base[kP] || 0) + (Number(SP.prem[kP]) || 0));
+          SP.base[kP] = vP; nP++;
+          var newC = clampPx(vP + (Number(SP.prem[kP]) || 0));
+          if (SP.base[kP] && Math.abs(newC - oldC) >= 2) await pushHist(kP, newC, 'form');
         }
       }
       if (forceP && Object.keys(manipM2).length) await redis(['DEL', 'stock:manipped']); // 🔧 경기 등록(force) → 조작 보호 전체 해제 (다음 폼부터 정상 반영)
@@ -744,50 +694,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, updated: nP });
     }
 
-    if (req.method === 'POST' && action === 'stockRecover') { // 🚑 dev/admin — 폭락한 주가를 직전 고점(히스토리)으로 일괄 복구
-      var sRc = await auth(body.token);
-      if (!sRc || (sRc.role !== 'admin' && sRc.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
-      var whoRc = String(body.who || 'all').trim();
-      var thrRc = Number(body.thr); if (!(thrRc > 0 && thrRc < 1)) thrRc = 0.6; // 현재가가 직전 고점의 thr 미만이면 '폭락'으로 보고 복구
-      var SRc = await loadPx();
-      var selRc = Array.isArray(body.names) ? body.names.filter(function (x) { return nameOk(x); }).slice(0, 400) : null; // ✅ 체크된 특정 멤버들
-      // 🎯 특정 가격(특정 시점)으로 복구 — 선택 선수들의 시세를 toPrice에 맞춤
-      var toPx = Math.round(Number(body.toPrice) || 0);
-      if (selRc && selRc.length && toPx >= 30 && toPx <= 9999) {
-        var fx = [], nf = 0;
-        for (var iT = 0; iT < selRc.length; iT++) {
-          var nmT = selRc[iT];
-          var oldCT = clampPx((SRc.base[nmT] || 0) + premCap(SRc.base[nmT] || 0, SRc.prem[nmT]));
-          var bT = clampPx(toPx - premCap(toPx, SRc.prem[nmT])); // 합산가 ≈ toPx 가 되도록 기준가 설정
-          SRc.base[nmT] = bT;
-          var ncT = clampPx(bT + premCap(bT, SRc.prem[nmT]));
-          await pushHist(nmT, ncT, 'form');
-          fx.push({ name: nmT, from: oldCT, to: ncT }); nf++;
-        }
-        await savePx(SRc);
-        return res.status(200).json({ ok: true, count: nf, fixed: fx });
-      }
-      var forceSel = selRc && selRc.length > 0; // 직접 선택 시 → 임계값 무시하고 무조건 복구
-      var namesRc = forceSel ? selRc : ((whoRc === 'all' || whoRc === '전원' || whoRc === '*') ? Object.keys(SRc.base) : (whoRc ? [whoRc] : []));
-      var fixedRc = [], nRc = 0;
-      for (var iRc = 0; iRc < namesRc.length; iRc++) {
-        var nmRc = namesRc[iRc];
-        var histRc = (await redis(['LRANGE', 'pxh:' + nmRc, '0', '59'])) || [];
-        if (!histRc.length) continue;
-        var peakRc = 0;
-        for (var hRc = 0; hRc < histRc.length; hRc++) { try { var peRc = JSON.parse(histRc[hRc]); if (peRc && peRc.p > peakRc) peakRc = peRc.p; } catch (e) {} }
-        if (peakRc < 30) continue;
-        var curRc = clampPx((SRc.base[nmRc] || 0) + premCap(SRc.base[nmRc] || 0, SRc.prem[nmRc]));
-        if (!forceSel && curRc >= Math.round(peakRc * thrRc)) continue; // (전원 모드만) 폭락 아님 → 건너뜀
-        var tgtBRc = clampPx(peakRc - premCap(peakRc, SRc.prem[nmRc])); // 합산가 ≈ 직전 고점이 되도록 기준가 설정
-        SRc.base[nmRc] = tgtBRc;
-        var newCRc = clampPx(tgtBRc + premCap(tgtBRc, SRc.prem[nmRc]));
-        await pushHist(nmRc, newCRc, 'form');
-        fixedRc.push({ name: nmRc, from: curRc, to: newCRc, peak: peakRc }); nRc++;
-      }
-      await savePx(SRc);
-      return res.status(200).json({ ok: true, count: nRc, fixed: fixedRc.slice(0, 60) });
-    }
+    // ═══ 주식 매수/매도 (서버 시세 기준, 수수료 1%) ═══
     if (req.method === 'POST' && (action === 'stockBuy' || action === 'stockSell')) {
       var sT = await auth(body.token);
       if (!sT || !sT.name) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -845,7 +752,7 @@ module.exports = async function handler(req, res) {
         stepB = Math.max(-dcap - drift0, Math.min(dcap - drift0, stepB));
           if (!stepB) stepB = 0;
           var beforeC = price;
-          SX.base[tgt] = Math.max(30, Math.min(9999, SX.base[tgt] + stepB)); // 🛟 바닥 30
+          SX.base[tgt] = Math.max(1, Math.min(9999, SX.base[tgt] + stepB));
           if (stepB) { await redis(['INCRBY', dayK, String(stepB)]); await redis(['EXPIRE', dayK, '90000']); }
           price = clampPx(SX.base[tgt] + premCap(SX.base[tgt], SX.prem[tgt]));
           if (Math.abs(price - beforeC) >= 2) await pushHist(tgt, price, 'form');
@@ -1311,10 +1218,10 @@ module.exports = async function handler(req, res) {
       await redis(['EXPIRE', 'spin:' + dSp + ':' + aSp.name, '93600']);
       if (used > maxSpin) return res.status(429).json({ error: '오늘 스핀 소진! ' + (maxSpin === 1 ? '7일 연속 출석하면 하루 2회' : '내일 또 만나요') });
       var kRank = pickWeighted([['A', 3], ['B', 12], ['C', 25], ['D', 35], ['E', 25]]);
-      var kPrize = { A: 4000, B: 1500, C: 700, D: 300, E: 150 }[kRank];
+      var kPrize = { A: 3000, B: 1000, C: 500, D: 200, E: 100 }[kRank];
       aSp.bal += kPrize;
       await putAcct(aSp);
-      await ledger(aSp.name, '🎡 데일리 룰렛 ' + kRank + '상', kPrize, aSp.bal);
+      await ledger(aSp.name, '🎴 이치방쿠지 ' + kRank + '상', kPrize, aSp.bal);
       return res.status(200).json({ ok: true, prize: kPrize, rank: kRank, bal: aSp.bal, left: maxSpin - used });
       } finally { await acctUnlock(sSp.name); }
     }
@@ -1333,7 +1240,7 @@ module.exports = async function handler(req, res) {
       aSc.bal -= 500;
       await redis(['SET', 'arcade:jackpot', '2000', 'NX']);
       await redis(['INCRBY', 'arcade:jackpot', '100']);
-      var pz = pickWeighted([['JP', 1], [1200, 2], [600, 9], [500, 24], [300, 39], [150, 25]]);
+      var pz = pickWeighted([['JP', 2], [2000, 1], [800, 5], [500, 20], [300, 30], [200, 42]]);
       var wonJp = 0;
       if (pz === 'JP') {
         wonJp = Number(await redis(['GET', 'arcade:jackpot'])) || 2000;
@@ -1382,7 +1289,7 @@ module.exports = async function handler(req, res) {
         await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0;
       } else {
         rank = pickWeighted([[2, 1], [3, 3], [4, 7], [5, 12], [6, 17], [7, 22], [8, 22], [9, 16]]);
-        prize = { 2: 22000, 3: 11000, 4: 7000, 5: 4800, 6: 3800, 7: 3000, 8: 2200, 9: 1200 }[rank];
+        prize = { 2: 25000, 3: 11000, 4: 7500, 5: 5500, 6: 4500, 7: 3200, 8: 2300, 9: 1400 }[rank];
         if (prize < ENTRY) {
           if (streak >= 7) { prize = ENTRY; rank = 6; guard = true; await redis(['SET', stK, '0', 'EX', SEC30]); streak = 0; }
           else { streak = streak + 1; await redis(['SET', stK, String(streak), 'EX', SEC30]); }
@@ -1391,40 +1298,14 @@ module.exports = async function handler(req, res) {
       aPc.bal += prize;
       aPc = await busted(aPc);
       await putAcct(aPc);
-      await ledger(aPc.name, wonJp ? '🎰💥 가라폰 1등!! 누적 잭팟' : (guard ? '🎰🛡 가라폰 꽝방지 보장(본전)' : '🎰 가라폰 ' + rank + '등'), prize - ENTRY, aPc.bal);
+      await ledger(aPc.name, wonJp ? '🎰💥 빠칭코 1등!! 누적 잭팟' : (guard ? '🎰🛡 빠칭코 꽝방지 보장(본전)' : '🎰 빠칭코 ' + rank + '등'), prize - ENTRY, aPc.bal);
       if (rank <= 3 && !guard) { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aPc.name, t: (wonJp ? 'pcnjp' : 'pcn'), v: prize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
       var potNowPc = wonJp ? 30000 : (Number(await redis(['GET', 'arcade:pcnpot'])) || 30000);
       return res.status(200).json({ ok: true, rank: rank, prize: prize, winNum: winNum, pick: pick, jackpot: !!wonJp, guard: guard, streak: streak, pot: potNowPc, bal: aPc.bal, capLeft: Math.max(0, 50000 - spentPc) });
       } finally { await acctUnlock(sPc.name); }
     }
-    // ═══ 🧸 인형 뽑기 (UFO 캐처) — 한 판 2,500 · 잡으면 인형, 놓치면 위로금 · 환급률 ~80% ═══
-    if (req.method === 'POST' && action === 'claw') {
-      var sCl = await auth(body.token);
-      if (!sCl || !sCl.name) return res.status(401).json({ error: '로그인이 필요해요' });
-      if (!(await acctLock(sCl.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
-      try {
-        var aCl = await getAcct(sCl.name);
-        if (!aCl || aCl.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-        var CLAW = 1500;
-        if (aCl.bal < CLAW) return res.status(400).json({ error: '인형뽑기는 1,500 APO' });
-        var spKCl = 'spendClaw:' + kstDate() + ':' + aCl.name; // 🧸 인형뽑기 단독 하루 한도 50,000
-        var spentCl = Number(await redis(['INCRBY', spKCl, String(CLAW)]));
-        await redis(['EXPIRE', spKCl, '93600']);
-        if (spentCl > 50000) { await redis(['INCRBY', spKCl, String(-CLAW)]); return res.status(429).json({ error: '오늘 인형뽑기 한도(50,000 APO)를 다 썼어요 — 내일 또! 🙏' }); }
-        aCl.bal -= CLAW;
-        var clGrade = pickWeighted([['miss', 46], ['bear', 29], ['rabbit', 15], ['penguin', 6], ['unicorn', 3], ['gold', 1]]);
-        var clPrize = { miss: 250, bear: 950, rabbit: 1900, penguin: 3000, unicorn: 5200, gold: 14000 }[clGrade];
-        var clCaught = clGrade !== 'miss';
-        aCl.bal += clPrize;
-        aCl = await busted(aCl);
-        await putAcct(aCl);
-        await ledger(aCl.name, clCaught ? '🧸 인형뽑기 — ' + clGrade : '🧸 인형뽑기 — 놓침', clPrize - CLAW, aCl.bal);
-        if (clGrade === 'gold' || clGrade === 'unicorn') { await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: aCl.name, t: 'claw', v: clPrize, ts: new Date().toISOString() })]); await redis(['LTRIM', 'arcade:news', '0', '9']); }
-        return res.status(200).json({ ok: true, grade: clGrade, prize: clPrize, caught: clCaught, bal: aCl.bal, capLeft: Math.max(0, 50000 - spentCl) });
-      } finally { await acctUnlock(sCl.name); }
-    }
     var PG_COST = 3000;
-    var PG_BOX = [['A', 1, 'pass', '원하는 팀원 1명 선택권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 6500], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1300], ['F', 13, 'apo', 700]];
+    var PG_BOX = [['A', 1, 'pass', '원하는 팀원 1명 선택권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1500], ['F', 13, 'apo', 800]];
     function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
     function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
     if (req.method === 'GET' && action === 'pgacha') {
@@ -1472,8 +1353,8 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock('pgacha'); }
       } finally { await acctUnlock(sPg.name); }
     }
-    var PCN_COST = 8000, PCN_CLEAR = 80000;
-    var PCN_G = [['SSS', 1, 120000], ['SS', 1, 40000], ['S', 1, 16000], ['A', 7, 6000], ['B', 24, 2800], ['C', 50, 1500]];
+    var PCN_COST = 5000, PCN_CLEAR = 5000;
+    var PCN_G = [['SSS', 1, 60000], ['SS', 1, 22000], ['S', 2, 10000], ['A', 9, 3800], ['B', 26, 1600], ['C', 45, 850]];
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
@@ -1552,7 +1433,7 @@ module.exports = async function handler(req, res) {
         if (lo.name !== sPl.name) return res.status(403).json({ error: '풀클리어를 마무리한 분만 뽑을 수 있어요' });
         var aPl = await getAcct(sPl.name);
         if (!aPl || aPl.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-        var LAST_PRIZE = 80000, win = Math.random() < 0.49, prize = win ? LAST_PRIZE : 0;
+        var LAST_PRIZE = 49000, win = Math.random() < 0.49, prize = win ? LAST_PRIZE : 0;
         if (win) { aPl.bal += prize; await putAcct(aPl); }
         await redis(['DEL', 'pcn:lastone']);
         await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: sPl.name, t: 'pcnlast', v: prize, win: win, ts: new Date().toISOString() })]);
