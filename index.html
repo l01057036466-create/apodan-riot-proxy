@@ -2365,6 +2365,7 @@ function renderReview(targetId){
       <button class="btn gold" style="font-size:15px" onclick="saveDraft()">${draftEditId?'✓ 수정 내용 저장':'✓ 경기 저장'}</button>
       <button class="btn ghost" onclick="draft=null;draftEditId=null;render()">취소</button>
     </div>
+    <button class="btn" style="width:100%;margin-top:8px;background:rgba(52,152,219,.15);border:1px solid rgba(52,152,219,.4);color:#5ab0ec;font-weight:800;font-size:13px" onclick="doomScrimFromDraft()">🤝 멸망전 스크림으로 등록 (픽/밴 자동기록)</button>
   </div>`;
 }
 function rvToggle(i,on){
@@ -8727,7 +8728,7 @@ function pgDashboard(){
   const meta=statChamps().filter(c=>c.picks>=2)[0];
   return head('대시보드','아포단 내전의 서사, 조합, 천적, 봉인픽, 폼 변화를 기록하는 곳.')+`
   ${newbieBanner()}
-  ${scrimNoticeCard()}
+  ${doomMLineupCard()}
   ${(()=>{const _bk=window._bank,_pn=window._bankPending||[];if(!_bk||(_bk.role!=='admin'&&_bk.role!=='dev')||!_pn.length)return'';return`<div class="card" style="margin-bottom:14px;border:1px solid var(--gold);background:rgba(242,184,75,.1)"><h3 style="margin:0 0 4px;color:var(--gold)">⏳ 가입 신청 ${_pn.length}건 — 승인 대기 <span class="tag">운영진 전용</span></h3><p class="mini dim" style="margin:0 0 8px">홈에서 바로 승인할 수 있어요. 승인하면 10,000 APO가 자동 지급돼요.</p>${_pn.map(p=>`<div class="row" style="justify-content:space-between;align-items:center;padding:7px 0;border-top:1px dashed var(--line)"><span class="mini"><b>${esc(p.name)}</b> <span class="dim">${esc((p.created||'').slice(0,10))}</span></span><span class="row" style="gap:6px"><button class="btn sm gold" onclick="bankApprove('${esc(p.name)}','approve')">승인 (+10,000)</button><button class="btn sm lose" onclick="bankApprove('${esc(p.name)}','reject')">거절</button></span></div>`).join('')}</div>`})()}
   ${(()=>{if(voteApiBase()){bankLoadRoster();if(window._trades===undefined){window._trades=null;loadTrades().then(()=>softRender())}}const rb=recentBusts(48);if(!rb.length)return'';
     return`<div style="background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.45);border-radius:12px;padding:10px 14px;margin-bottom:14px;text-align:center">
@@ -8938,9 +8939,58 @@ function scrimNoticeCard(){
   if(!list.length)return '';
   return `<div class="card" style="margin-bottom:14px;border:1px solid rgba(52,152,219,.45);background:rgba(52,152,219,.08)"><h3 style="margin:0 0 8px;color:#5ab0ec">📢 스크림 공지</h3>${list.slice(0,6).map(n=>`<div style="padding:7px 0;border-top:1px dashed var(--line);line-height:1.5"><span class="mini">${n.date?`<b style="color:var(--gold)">${esc(snFmtDate(n.date))}</b> · `:''}${esc(n.text)}</span></div>`).join('')}</div>`;
 }
+/* ═══════════ 📢 멸망전/스크림 라인업 공지 (팀별 · 멸망전 전용) ═══════════ */
+var MLINP='padding:7px;border-radius:7px;background:var(--inset,#1a1d25);border:1px solid var(--line);color:var(--ink,#e8e8e8);font-size:13px';
+function doomMLineupEnsure(){
+  if(window._doomMLineups!==undefined)return;
+  if(window._doomMLFetching)return;
+  window._doomMLFetching=true;
+  auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomMLineups=r.mlineups||[];window._doomMLFetching=false;if(typeof render==='function')render('force');}).catch(function(){window._doomMLFetching=false;window._doomMLineups=window._doomMLineups||[];});
+}
+function doomMLineupRefresh(){auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomMLineups=r.mlineups||[];if(typeof render==='function')render('force');}).catch(function(){});}
+function doomMLineupAdd(){
+  if(typeof needAdmin==='function'&&needAdmin())return;
+  var ty=($('mlType')||{}).value||'스크림',a=($('mlA')||{}).value||'',b=($('mlB')||{}).value||'',dt=($('mlDate')||{}).value||'',tm=($('mlTime')||{}).value||'',nt=($('mlNote')||{}).value||'';
+  if(!a||!b)return toast('두 팀을 골라주세요',true);
+  if(a===b)return toast('같은 팀끼리는 안 돼요',true);
+  auctionCall('aucMLineupAdd',{type:ty,aTeam:a,bTeam:b,date:dt,time:tm,note:nt}).then(function(){toast('📢 라인업 공지 완료! 대시보드에 떴어요');doomMLineupRefresh();}).catch(function(e){toast((e&&e.message)||'공지 실패',true);});
+}
+function doomMLineupDel(id){if(!confirm('이 라인업 공지를 지울까요?'))return;auctionCall('aucMLineupDel',{id:id}).then(function(){toast('지웠어요');doomMLineupRefresh();}).catch(function(e){toast((e&&e.message)||'실패',true);});}
+function doomTeamLineupMini(team){
+  if(!team)return '<div class="mini dim" style="margin-bottom:8px">팀 정보를 찾을 수 없어요</div>';
+  var POS5ml=['탑','정글','미드','원딜','서폿'];
+  var mem=[{name:team.leader,pos:team.leaderPos||'',lead:true}].concat((team.roster||[]).map(function(r){return {name:r.name,pos:r.position||'',lead:false};})).filter(function(m){return m.name;});
+  mem.sort(function(a,b){var ia=POS5ml.indexOf(a.pos),ib=POS5ml.indexOf(b.pos);return (ia<0?9:ia)-(ib<0?9:ib);});
+  var col=team.color||'#888';
+  var cells=mem.map(function(m){var ic=(typeof doomPosIcon==='function')?doomPosIcon(m.pos||'',col,20):'';return '<div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:7px;background:rgba(255,255,255,.025)"><span style="flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center">'+ic+'</span><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">'+(m.lead?'👑 ':'')+esc(m.name)+'</b><span class="mini" style="flex:none;font-weight:800;color:'+(m.pos?col:'#8b8f9a')+'">'+(m.pos||'미정')+'</span></div>';}).join('');
+  return '<div style="margin-bottom:10px"><div style="font-weight:800;font-size:13px;color:'+col+';margin-bottom:6px;border-left:3px solid '+col+';padding-left:7px">'+esc(team.name)+'</div><div style="display:flex;flex-direction:column;gap:3px">'+cells+'</div></div>';
+}
+function doomMLineupCard(){
+  doomMLineupEnsure();
+  var mls=(window._doomMLineups||[]).slice().sort(function(a,b){return (a.date||'').localeCompare(b.date||'')||(a.at||0)-(b.at||0);});
+  if(!mls.length)return '';
+  var teamBy={};(window._doomTeams||[]).forEach(function(t){teamBy[t.name]=t;});
+  return mls.map(function(m){
+    var badge=m.type==='멸망전'?'<span style="background:rgba(230,126,34,.2);color:#e67e22;font-size:10px;font-weight:800;border-radius:5px;padding:2px 7px">🏆 멸망전</span>':'<span style="background:rgba(52,152,219,.2);color:#5ab0ec;font-size:10px;font-weight:800;border-radius:5px;padding:2px 7px">🤝 스크림</span>';
+    var when=(m.date?(typeof doomSchedFmtDate==='function'?doomSchedFmtDate(m.date):m.date):'')+(m.time?(' '+m.time):'');
+    return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(155,89,182,.4);background:rgba(155,89,182,.06)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+badge+'<b style="flex:1">📢 라인업 공지</b>'+(when?'<span class="mini dim">'+esc(when)+'</span>':'')+'</div><div style="text-align:center;font-weight:900;font-size:15px;margin-bottom:10px"><span style="color:'+(m.aColor||'#bbb')+'">'+esc(m.aTeam)+'</span> <span class="dim">vs</span> <span style="color:'+(m.bColor||'#bbb')+'">'+esc(m.bTeam)+'</span></div>'+doomTeamLineupMini(teamBy[m.aTeam])+doomTeamLineupMini(teamBy[m.bTeam])+(m.note?'<div class="mini dim" style="margin-top:4px">'+esc(m.note)+'</div>':'')+'</div>';
+  }).join('');
+}
+function doomMLineupEditor(){
+  doomMLineupEnsure();
+  if(window._doomMLineups===undefined)return '<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px;font-size:16px">📢 멸망전/스크림 라인업 공지</h3><p class="mini dim" style="margin:6px 0 0">멸망전 팀 정보를 불러오는 중…</p></div>';
+  var teams=window._doomTeams||[];
+  if(!teams.length)return '<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px;font-size:16px">📢 멸망전/스크림 라인업 공지 <span class="tag">멸망전 전용</span></h3><p class="mini dim" style="margin:6px 0 0">멸망전 <b>팀 명단 확정(못 박기)</b> 후에 이용할 수 있어요. 멸망전 탭 → 옥션 완료 후 📌 못 박기를 해주세요.</p></div>';
+  var opts=teams.map(function(t){return '<option value="'+esc(t.name)+'">'+esc(t.name)+'</option>';}).join('');
+  var mls=(window._doomMLineups||[]).slice().sort(function(a,b){return (b.at||0)-(a.at||0);});
+  var teamBy={};teams.forEach(function(t){teamBy[t.name]=t;});
+  var list=mls.length?('<div class="hr"></div><p class="mini" style="font-weight:800;margin:0 0 6px">올라간 라인업 공지</p>'+mls.map(function(m){return '<div style="border:1px solid var(--line);border-radius:9px;padding:9px;margin-bottom:7px"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:7px"><b style="font-size:13px;flex:1;min-width:0">'+(m.type==='멸망전'?'🏆':'🤝')+' <span style="color:'+(m.aColor||'#bbb')+'">'+esc(m.aTeam)+'</span> vs <span style="color:'+(m.bColor||'#bbb')+'">'+esc(m.bTeam)+'</span>'+((m.date||m.time)?' <span class="mini dim">'+(m.date?(typeof doomSchedFmtDate==='function'?doomSchedFmtDate(m.date):m.date):'')+(m.time?(' '+m.time):'')+'</span>':'')+'</b><button class="btn sm lose" style="flex:none" onclick="doomMLineupDel(\''+m.id+'\')">삭제</button></div>'+doomTeamLineupMini(teamBy[m.aTeam])+doomTeamLineupMini(teamBy[m.bTeam])+'</div>';}).join('')):'<p class="mini dim" style="margin:10px 0 0">아직 라인업 공지가 없어요.</p>';
+  return '<div class="card" style="margin-bottom:14px"><h3 style="margin:0 0 4px;font-size:16px">📢 멸망전/스크림 라인업 공지 <span class="tag">멤버 대시보드에 떠요</span></h3><p class="mini dim" style="margin:0 0 10px">멸망전 두 팀을 골라 라인업(포지션별)을 공지해요. 내전 라인업 공지와 별개로, 멸망전 팀이 확정됐을 때만 가능해요.</p><div style="display:flex;gap:5px;margin-bottom:7px"><select id="mlType" style="flex:none;'+MLINP+'"><option value="스크림">🤝 스크림</option><option value="멸망전">🏆 멸망전</option></select><input id="mlDate" type="date" style="flex:1;'+MLINP+'"><input id="mlTime" type="time" style="flex:none;'+MLINP+'"></div><div style="display:flex;gap:5px;align-items:center;margin-bottom:7px"><select id="mlA" style="flex:1;min-width:0;'+MLINP+'">'+opts+'</select><span style="font-weight:800">vs</span><select id="mlB" style="flex:1;min-width:0;'+MLINP+'">'+opts+'</select></div><input id="mlNote" maxlength="100" placeholder="메모 (예: Bo3 · 21시 디코 모여)" style="width:100%;box-sizing:border-box;margin-bottom:8px;'+MLINP+'"><button class="btn gold" style="width:100%" onclick="doomMLineupAdd()">📢 라인업 공지하기</button>'+list+'</div>';
+}
+
 function pgNotice(){
   if(!isAdmin())return head('내전 공지','운영진 전용')+`<div class="card"><p class="mini dim" style="margin:0">🏟 내전 라인업 공지는 운영진 전용이에요 — 설정 탭에서 운영자 PIN으로 로그인해주세요.</p></div>`;
-  return head('🏟 내전 공지','매일 내전 라인업(1차·2차…)을 멤버 전원에게 공지하고 베팅을 여는 곳이에요. 팀을 랜덤으로 나누려면 ⚖️ 팀짜주기 → 🌪 아수라장 탭을 이용하세요.')+lineupEditor()+scrimNoticeEditor();
+  return head('🏟 내전 공지','매일 내전 라인업(1차·2차…)을 멤버 전원에게 공지하고 베팅을 여는 곳이에요. 팀을 랜덤으로 나누려면 ⚖️ 팀짜주기 → 🌪 아수라장 탭을 이용하세요.')+lineupEditor()+doomMLineupEditor();
 }
 function pgRecord(){
   return head('기록하기','라이엇 연동이 가장 정확해요(딜량·시야·밴·챔피언까지 자동). 어떤 방법이든 자동 저장은 없고, 항상 검수 후 저장됩니다.')+pgRecordInner();
@@ -10917,12 +10967,12 @@ function doomAfter(){
     auctionCall('aucTeamPage',acctTP?{acct:acctTP}:{}).then(function(r){doomSetTP(r);}).catch(function(e){window._doomTP={error:(e&&e.message)||'불러오기 실패'};if(window._doomTab==='teampage'){var b2=document.getElementById('doomBody');if(b2)b2.innerHTML=doomBody();}});
   }
   if(window._doomTab==='standings'&&voteApiBase()){
-    auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+    auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];window._doomBracket=r.bracket||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
   }
   if(window._doomTab==='rating'&&voteApiBase()){
     Promise.all([auctionCall('aucState',{}).catch(function(){return null;}),auctionCall('aucSchedList',{}).catch(function(){return null;})]).then(function(res){
       if(res[0])window._aucSt=res[0];
-      if(res[1]){window._doomTeams=res[1].teams||[];window._doomResults=res[1].results||[];}
+      if(res[1]){window._doomTeams=res[1].teams||[];window._doomResults=res[1].results||[];window._doomBracket=res[1].bracket||[];}
       if(window._doomTab==='rating'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}
     });
   }
@@ -10934,7 +10984,7 @@ function doomAfter(){
     });
   }
   if(window._doomTab==='home'&&voteApiBase()){
-    auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='home'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
+    auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomTeams=r.teams||[];window._doomResults=r.results||[];window._doomBracket=r.bracket||[];window._doomMLineups=r.mlineups||[];if(window._doomTab==='home'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});
   }
 }
 function doomHomeMatches(){
@@ -10960,6 +11010,7 @@ function doomHomeTab(){
   var dd=doomDday();
   return '<div style="background:rgba(212,175,55,.08);border:1px solid var(--gold);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px"><div style="font-size:13px;color:var(--gold);font-weight:800;letter-spacing:.5px">제2회 아포단 멸망전</div><div style="font-size:30px;font-weight:900;margin:5px 0;color:'+(dd.hot?'var(--gold)':'var(--ink)')+'">'+dd.txt+'</div><div class="mini dim">'+dd.sub+' · 2026.07.01~07.30</div></div>'
     +doomHomeMatches()
+    +doomMLineupCard()
     +'<div style="display:flex;flex-direction:column;gap:14px">'
     +slides.map(function(n){return '<img src="/doom'+n+'.jpg" alt="멸망전 공지 '+n+'페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display=\'none\';var w=document.getElementById(\'doomWarn\');if(w)w.style.display=\'block\'">';}).join('')
     +'</div><p id="doomWarn" class="mini" style="display:none;text-align:center;margin:14px 0 0;color:var(--lose);font-weight:700">⚠ 슬라이드 이미지가 아직 안 보여요 — repo 루트에 doom1.jpg ~ doom13.jpg를 확인해주세요!</p>'
@@ -11236,7 +11287,7 @@ function doomRecruitAdd(){
 }
 function doomRecruitDel(id){if(!confirm('이 글을 지울까요?'))return;auctionCall('aucRecruitDel',{id:id}).then(function(){toast('지웠어요');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
 function doomRecruitToggle(id){auctionCall('aucRecruitToggle',{id:id}).then(function(r){toast(r.status==='closed'?'✅ 구함 완료로 변경':'🙋 다시 모집중');doomReloadSched();}).catch(function(e){toast(e.message||'실패',true);});}
-function doomReloadSched(){auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomRecruit=r.recruit||[];window._doomTeams=r.teams||[];window._doomMyAcct=r.myAcct||'';window._doomMySched=r.mySched;window._doomAllSched=r.allSched;window._doomAvail=r.avail||[];window._doomResults=r.results||[];window._doomMyPractice=r.myPractice||[];window._doomAllPractice=r.allPractice;if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
+function doomReloadSched(){auctionCall('aucSchedList',{}).then(function(r){window._doomSched=r.sched||[];window._doomRecruit=r.recruit||[];window._doomTeams=r.teams||[];window._doomMyAcct=r.myAcct||'';window._doomMySched=r.mySched;window._doomAllSched=r.allSched;window._doomAvail=r.avail||[];window._doomResults=r.results||[];window._doomBracket=r.bracket||[];window._doomMyPractice=r.myPractice||[];window._doomAllPractice=r.allPractice;if(window._doomTab==='schedule'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
 function doomSchedSub(s){window._doomSchedSub=s;var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
 function doomAvailAdd(){
   var d=(document.getElementById('avDate')||{}).value||'';
@@ -11252,6 +11303,120 @@ function doomDday(){
   if(now<=end){var d2=Math.floor((now-start)/D)+1;return {txt:d2+'일차 진행 중',sub:'~ 7월 30일',hot:true};}
   return {txt:'대회 종료',sub:'2026 멸망전',hot:false};
 }
+/* ═══════════ 🏆 더블 엘리미네이션 대진표 ═══════════ */
+var DOOM_BR_LABEL={W:'🏆 승자조',L:'💀 패자조',GF:'👑 최종전'};
+function doomBrkSave(msg){
+  auctionCall('aucBracketSet',{matches:window._doomBracket||[]}).then(function(r){
+    window._doomBracket=r.bracket||[];
+    if(msg&&typeof toast==='function')toast(msg);
+    doomReloadStandings();
+  }).catch(function(e){toast((e&&e.message)||'대진표 저장 실패',true);});
+}
+function doomBrkFind(id){return (window._doomBracket||[]).filter(function(m){return m.id===id;})[0];}
+function doomBrkSetScore(id,which,val){var m=doomBrkFind(id);if(!m)return;var n=(val===''||val==null)?null:Math.max(0,Math.min(99,parseInt(val,10)||0));m[which==='a'?'sa':'sb']=n;doomBrkSave();}
+function doomBrkSetDate(id,val){var m=doomBrkFind(id);if(!m)return;m.date=String(val||'').slice(0,10);doomBrkSave('📅 날짜 저장');}
+function doomBrkDel(id){if(!confirm('이 경기를 대진표에서 지울까요?'))return;window._doomBracket=(window._doomBracket||[]).filter(function(m){return m.id!==id;});doomBrkSave('지웠어요');}
+function doomBrkAdd(){
+  var br=(document.getElementById('brkBr')||{}).value||'W';
+  var rd=parseInt((document.getElementById('brkRd')||{}).value,10)||1;
+  var a=((document.getElementById('brkA')||{}).value||'').trim();
+  var b=((document.getElementById('brkB')||{}).value||'').trim();
+  var date=(document.getElementById('brkDate')||{}).value||'';
+  if(!a||!b)return toast('두 팀을 입력해주세요',true);
+  window._doomBracket=(window._doomBracket||[]).concat([{id:'bm'+Date.now(),br:br,round:rd,slot:(window._doomBracket||[]).length+1,a:a,b:b,sa:null,sb:null,date:date,note:''}]);
+  doomBrkSave('➕ 경기 추가!');
+}
+function doomBrkSeed(){
+  var teams=window._doomTeams||[];
+  if(!teams.length)return toast('먼저 팀 명단을 확정해주세요',true);
+  if((window._doomBracket||[]).length && !confirm('기존 대진표를 덮어쓸까요?'))return;
+  var byLeader={};teams.forEach(function(t){byLeader[bareName(t.leader)]=t.name;});
+  var pairs=[['미르','메비'],['잭슨','구구'],['콜라','세혀닝']];
+  window._doomBracket=pairs.map(function(p,i){return {id:'bm_s'+i,br:'W',round:1,slot:i+1,a:byLeader[p[0]]||(p[0]+'팀'),b:byLeader[p[1]]||(p[1]+'팀'),sa:null,sb:null,date:'',note:''};});
+  doomBrkSave('🎲 기본 대진표 생성!');
+}
+function doomBracketSection(teams,op){
+  var BRKINP='padding:7px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px';
+  var brk=(window._doomBracket||[]).slice();
+  var colorOf={};(teams||[]).forEach(function(t){colorOf[t.name]=t.color;});
+  var card=function(m){
+    var done=(m.sa!=null&&m.sb!=null);
+    var aWin=done&&m.sa>m.sb,bWin=done&&m.sb>m.sa;
+    var ca=colorOf[m.a]||'#bbb',cb=colorOf[m.b]||'#bbb';
+    var top='<div style="display:flex;align-items:center;gap:6px"><b style="flex:1;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;color:'+ca+';'+(done&&!aWin?'opacity:.4':'')+'">'+esc(m.a||'?')+'</b><span style="flex:none;font-family:var(--mono);font-weight:900;font-size:15px;min-width:46px;text-align:center">'+(done?(m.sa+' : '+m.sb):'<span style="font-size:11px;opacity:.5;font-family:inherit">vs</span>')+'</span><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;color:'+cb+';'+(done&&!bWin?'opacity:.4':'')+'">'+esc(m.b||'?')+'</b></div>';
+    var sub=(m.date?('📅 '+doomSchedFmtDate(m.date)):'<span style="opacity:.5">날짜 미정</span>')+(m.note?(' · '+esc(m.note)):'');
+    var bodyH=top+'<div class="mini dim" style="text-align:center;margin-top:3px">'+sub+'</div>';
+    if(op){
+      var nm=String(m.id);
+      bodyH+='<div style="display:flex;gap:5px;align-items:center;margin-top:7px;justify-content:center;flex-wrap:wrap"><input type="number" min="0" value="'+(m.sa==null?'':m.sa)+'" placeholder="-" onchange="doomBrkSetScore(\''+nm+'\',\'a\',this.value)" style="width:38px;text-align:center;'+BRKINP+'"><span style="font-weight:800">:</span><input type="number" min="0" value="'+(m.sb==null?'':m.sb)+'" placeholder="-" onchange="doomBrkSetScore(\''+nm+'\',\'b\',this.value)" style="width:38px;text-align:center;'+BRKINP+'"><input type="date" value="'+esc(m.date||'')+'" onchange="doomBrkSetDate(\''+nm+'\',this.value)" style="flex:none;'+BRKINP+'"><button class="btn sm ghost" style="flex:none;font-size:10px;padding:2px 6px;border-color:var(--lose);color:var(--lose)" onclick="doomBrkDel(\''+nm+'\')">✕</button></div>';
+    }
+    return '<div style="border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:7px;background:rgba(255,255,255,.015)">'+bodyH+'</div>';
+  };
+  var sectionHtml=function(brKey){
+    var ms=brk.filter(function(m){return m.br===brKey;});
+    if(!ms.length)return '';
+    var byRound={};ms.forEach(function(m){(byRound[m.round]=byRound[m.round]||[]).push(m);});
+    var rounds=Object.keys(byRound).map(Number).sort(function(a,b){return a-b;});
+    var inner=rounds.map(function(rd){return '<div style="margin-bottom:6px"><div class="mini" style="font-weight:800;color:#9aa;margin:2px 0 5px">'+rd+'라운드</div>'+byRound[rd].map(card).join('')+'</div>';}).join('');
+    var accent=brKey==='W'?'#2ecc71':brKey==='L'?'#e67e22':'var(--gold)';
+    return '<div style="margin-bottom:14px"><div style="font-weight:900;font-size:14px;color:'+accent+';border-bottom:2px solid var(--line);padding-bottom:4px;margin-bottom:8px">'+DOOM_BR_LABEL[brKey]+'</div>'+inner+'</div>';
+  };
+  var brkBody=sectionHtml('W')+sectionHtml('L')+sectionHtml('GF');
+  if(!brk.length)brkBody='<div style="text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">아직 대진표가 없어요.'+(op?'<br>아래에서 만들어보세요!':'')+'</p></div>';
+  var opForm='';
+  if(op){
+    var dl='<datalist id="brkTL">'+(teams||[]).map(function(t){return '<option value="'+esc(t.name)+'">';}).join('')+'</datalist>';
+    opForm='<details style="margin-top:10px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">➕ 대진 경기 추가 / 시드</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px">'+dl+'<div style="display:flex;gap:5px;margin-bottom:7px"><select id="brkBr" style="flex:none;'+BRKINP+'"><option value="W">🏆 승자조</option><option value="L">💀 패자조</option><option value="GF">👑 최종전</option></select><select id="brkRd" style="flex:none;'+BRKINP+'">'+[1,2,3,4,5].map(function(n){return '<option value="'+n+'">'+n+'R</option>';}).join('')+'</select><input id="brkDate" type="date" style="flex:1;'+BRKINP+'"></div><div style="display:flex;gap:5px;align-items:center;margin-bottom:8px"><input id="brkA" list="brkTL" placeholder="팀 A" autocomplete="off" style="flex:1;min-width:0;'+BRKINP+'"><span style="font-weight:800">vs</span><input id="brkB" list="brkTL" placeholder="팀 B" autocomplete="off" style="flex:1;min-width:0;'+BRKINP+'"></div><div style="display:flex;gap:6px"><button class="btn gold" style="flex:1" onclick="doomBrkAdd()">➕ 추가</button><button class="btn sm ghost" style="flex:none" onclick="doomBrkSeed()">🎲 기본 대진</button></div><p class="mini dim" style="margin:8px 0 0">※ 점수·날짜는 만든 뒤 입력하면 자동 저장돼요. 날짜는 나중에 넣어도 돼요.</p></div></details>';
+  }
+  return '<div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;background:rgba(155,89,182,.04)"><h3 style="margin:0 0 3px;font-size:16px">🏆 더블 엘리미네이션 대진표</h3><p class="mini dim" style="margin:0 0 12px">승자조 · 패자조 · 최종전 · 운영자가 점수/날짜 입력</p>'+brkBody+opForm+'</div>';
+}
+
+/* ═══════════ 🤝 추출기 → 멸망전 스크림 등록 (픽/밴 + 라이엇 공식 챔프 얼굴) ═══════════ */
+async function doomScrimFromDraft(){
+  if(!draft||!(draft.participants||[]).length)return toast('먼저 경기를 불러와주세요',true);
+  var r;
+  try{r=await auctionCall('aucSchedList',{});}catch(e){return toast('팀 정보를 불러오지 못했어요',true);}
+  var teams=r.teams||[];
+  if(!teams.length)return toast('먼저 멸망전 팀 명단을 확정해주세요 (못 박기)',true);
+  var nameTeam={};teams.forEach(function(t){var add=function(nm){if(nm)nameTeam[bareName(nm)]=t;};add(t.leader);(t.roster||[]).forEach(function(p){add(p.name);});});
+  var sideTeam=function(side){
+    var ps=(draft.participants||[]).filter(function(p){return p.team===side;});
+    var cnt={};
+    ps.forEach(function(p){var nm=bareName(p.rawName||nameOf(p.playerId)||'');var t=nameTeam[nm];if(t)cnt[t.name]=(cnt[t.name]||0)+1;});
+    var best=null,bc=0;teams.forEach(function(t){if((cnt[t.name]||0)>bc){bc=cnt[t.name];best=t;}});
+    return best;
+  };
+  var bt=sideTeam('BLUE'),rt=sideTeam('RED');
+  var blueName=bt?bt.name:'블루팀',redName=rt?rt.name:'레드팀';
+  if(blueName===redName)return toast('양 팀이 같게 감지됐어요 — 로스터를 확인해주세요',true);
+  var sideLineup=function(side){
+    var ps=(draft.participants||[]).filter(function(p){return p.team===side;});
+    var picks=ps.map(function(p){return {p:bareName(p.rawName||nameOf(p.playerId)||'?'),c:p.championId||''};});
+    var bans=(draft.bans||[]).filter(function(b){return b.team===side;}).map(function(b){return b.championId||'';}).filter(Boolean);
+    return {picks:picks,bans:bans};
+  };
+  var winName=draft.winnerTeam==='RED'?redName:blueName;
+  if(!confirm('🤝 멸망전 스크림으로 등록\n\n'+blueName+' vs '+redName+'\n승자: '+winName+'\n\n픽/밴까지 같이 기록할까요?\n('+(bt?'':'⚠️ 블루팀 자동감지 실패 — ')+(rt?'':'⚠️ 레드팀 자동감지 실패')+(bt&&rt?'팀 자동감지 완료':'')+')'))return;
+  var body={type:'스크림',aName:blueName,bName:redName,scoreA:draft.winnerTeam==='BLUE'?1:0,scoreB:draft.winnerTeam==='RED'?1:0,date:draft.playedAt||'',round:'스크림',note:(draft.durationMin?draft.durationMin+'분':''),lineup:{a:sideLineup('BLUE'),b:sideLineup('RED')}};
+  try{await auctionCall('aucResultAdd',body);toast('🤝 스크림 결과 등록 완료! 멸망전 순위 탭 → 스크림에서 확인 (픽/밴 포함)');}catch(e){toast((e&&e.message)||'등록 실패',true);}
+}
+function doomLnToggle(id){window._lnOpen=window._lnOpen||{};window._lnOpen[id]=!window._lnOpen[id];if(typeof render==='function')render('force');}
+function doomLineupBox(r){
+  var ln=r.lineup;if(!ln)return '';
+  var hasA=(ln.a&&ln.a.picks&&ln.a.picks.length),hasB=(ln.b&&ln.b.picks&&ln.b.picks.length);
+  if(!hasA&&!hasB)return '';
+  var open=!!(window._lnOpen&&window._lnOpen[r.id]);
+  var toggle='<div style="text-align:center;margin:-3px 0 12px"><button class="btn sm ghost" style="font-size:11px;padding:3px 13px" onclick="doomLnToggle(\''+r.id+'\')">📋 '+(open?'픽/밴 접기 ▲':'픽/밴 보기 ▼')+'</button></div>';
+  if(!open)return toggle;
+  var side=function(sd,name,color){
+    if(!sd)return '';
+    var picks=(sd.picks||[]).map(function(x){return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;width:46px">'+champFace(x.c,38)+'<div class="mini" style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46px">'+esc(x.p||'')+'</div></div>';}).join('');
+    var bans=(sd.bans||[]).length?('<div style="display:flex;gap:4px;align-items:center;margin-top:6px"><span class="mini dim" style="font-weight:700">밴</span>'+(sd.bans||[]).map(function(c){return '<div style="opacity:.45;filter:grayscale(1)">'+champFace(c,22)+'</div>';}).join('')+'</div>'):'';
+    return '<div style="margin-bottom:10px"><div class="mini" style="font-weight:800;color:'+(color||'#bbb')+';margin-bottom:6px">'+esc(name||'?')+'</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+picks+'</div>'+bans+'</div>';
+  };
+  return toggle+'<div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin:-6px 0 14px;background:rgba(255,255,255,.015)">'+side(ln.a,r.aName,r.aColor)+'<div style="height:1px;background:var(--line);margin:4px 0 10px"></div>'+side(ln.b,r.bName,r.bColor)+'</div>';
+}
+
 function doomStandingsTab(){
   var teams=(window._doomTeams&&window._doomTeams.length)?window._doomTeams:[];
   var results=(window._doomResults||[]).slice();
@@ -11273,7 +11438,7 @@ function doomStandingsTab(){
   var resHtml='';
   if(results.length){
     var sortedAll=results.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||b.at-a.at;});
-    var renderR=function(r){var aWin=r.scoreA>r.scoreB,bWin=r.scoreB>r.scoreA;return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:5px">'+(r.round?'<span style="flex:none;background:var(--inset);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--gold);white-space:nowrap">'+esc(r.round)+'</span>':'')+'<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0"><b style="color:'+(r.aColor||'#ddd')+';text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;'+(aWin?'':'opacity:.45')+'">'+esc(r.aName)+'</b><span style="flex:none;font-family:var(--mono);font-weight:900;font-size:16px">'+r.scoreA+' : '+r.scoreB+'</span><b style="color:'+(r.bColor||'#ddd')+';flex:1;overflow:hidden;text-overflow:ellipsis;'+(bWin?'':'opacity:.45')+'">'+esc(r.bName)+'</b></div>'+(op?'<button class="btn sm ghost" style="flex:none;font-size:10px;padding:2px 6px;border-color:var(--lose);color:var(--lose)" onclick="doomResultDel(\''+r.id+'\')">✕</button>':'')+'</div>'+((r.date||r.note)?'<div class="mini dim" style="text-align:center;margin:-2px 0 9px">'+(r.date?doomSchedFmtDate(r.date):'')+(r.note?' · '+esc(r.note):'')+'</div>':'')+doomResToggle(r,teams);};
+    var renderR=function(r){var aWin=r.scoreA>r.scoreB,bWin=r.scoreB>r.scoreA;return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:5px">'+(r.round?'<span style="flex:none;background:var(--inset);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--gold);white-space:nowrap">'+esc(r.round)+'</span>':'')+'<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0"><b style="color:'+(r.aColor||'#ddd')+';text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;'+(aWin?'':'opacity:.45')+'">'+esc(r.aName)+'</b><span style="flex:none;font-family:var(--mono);font-weight:900;font-size:16px">'+r.scoreA+' : '+r.scoreB+'</span><b style="color:'+(r.bColor||'#ddd')+';flex:1;overflow:hidden;text-overflow:ellipsis;'+(bWin?'':'opacity:.45')+'">'+esc(r.bName)+'</b></div>'+(op?'<button class="btn sm ghost" style="flex:none;font-size:10px;padding:2px 6px;border-color:var(--lose);color:var(--lose)" onclick="doomResultDel(\''+r.id+'\')">✕</button>':'')+'</div>'+((r.date||r.note)?'<div class="mini dim" style="text-align:center;margin:-2px 0 9px">'+(r.date?doomSchedFmtDate(r.date):'')+(r.note?' · '+esc(r.note):'')+'</div>':'')+doomLineupBox(r)+doomResToggle(r,teams);};
     var doomR=sortedAll.filter(function(r){return r.type!=='스크림';}),scrimR=sortedAll.filter(function(r){return r.type==='스크림';});
     if(doomR.length)resHtml+='<h3 style="margin:22px 0 10px;font-size:16px">🏆 멸망전 경기</h3>'+doomR.map(renderR).join('');
     if(scrimR.length)resHtml+='<h3 style="margin:22px 0 10px;font-size:16px">🤝 스크림 <span class="mini dim" style="font-weight:400">(순위 미반영)</span></h3>'+scrimR.map(renderR).join('');
@@ -11283,7 +11448,7 @@ function doomStandingsTab(){
     var inp='padding:8px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px';
     addForm='<details style="margin:18px 0 0"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:14px">➕ 경기 결과 입력 (운영자)</summary><div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><select id="rsType" style="flex:1;'+inp+'"><option value="멸망전">🏆 멸망전 경기</option><option value="스크림">🤝 스크림</option></select><input id="rsDate" type="date" style="flex:none;'+inp+'"></div><datalist id="doomTL">'+teams.map(function(t){return '<option value="'+esc(t.name)+'">';}).join('')+'</datalist><div style="display:flex;gap:5px;align-items:center"><input id="rsA" list="doomTL" placeholder="팀 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"><input id="rsAs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><span style="font-weight:800">:</span><input id="rsBs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><input id="rsB" list="doomTL" placeholder="상대 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"></div><input id="rsRound" placeholder="라운드/메모 (예: 8강 1경기 · 연습)" maxlength="30" style="'+inp+'"><input id="rsNote" placeholder="메모 (예: Bo3 · MVP 누구)" maxlength="100" style="'+inp+'"><button class="btn gold" style="width:100%" onclick="doomResultAdd()">🏆 결과 등록</button></div></details>';
   }
-  return '<div class="card" style="padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:34px">📊</div><h3 style="margin:6px 0 2px">순위 & 경기 결과</h3><p class="mini dim" style="margin:0">승 많은 순 · 동률 시 득실차</p></div>'+standHtml+resHtml+addForm+(teams.length?'':'<p class="mini dim" style="text-align:center;margin:16px 0 0">※ <b>팀 명단 확정</b> 후 순위가 집계돼요</p>');
+  return '<div class="card" style="padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:34px">📊</div><h3 style="margin:6px 0 2px">순위 & 경기 결과</h3><p class="mini dim" style="margin:0">승 많은 순 · 동률 시 득실차</p></div>'+standHtml+doomBracketSection(teams,op)+resHtml+addForm+(teams.length?'':'<p class="mini dim" style="text-align:center;margin:16px 0 0">※ <b>팀 명단 확정</b> 후 순위가 집계돼요</p>');
 }
 function doomResultAdd(){
   var a=(document.getElementById('rsA')||{}).value||'',b=(document.getElementById('rsB')||{}).value||'';
@@ -11294,7 +11459,7 @@ function doomResultAdd(){
   auctionCall('aucResultAdd',{type:type,aName:a.trim(),bName:b.trim(),scoreA:sa,scoreB:sb,round:(document.getElementById('rsRound')||{}).value||'',date:(document.getElementById('rsDate')||{}).value||'',note:(document.getElementById('rsNote')||{}).value||''}).then(function(){toast((type==='스크림'?'🤝':'🏆')+' 결과 등록!');doomReloadStandings();}).catch(function(e){toast(e.message||'실패',true);});
 }
 function doomResultDel(id){if(!confirm('이 경기 결과를 지울까요?'))return;auctionCall('aucResultDel',{id:id}).then(function(){doomReloadStandings();}).catch(function(e){toast(e.message||'실패',true);});}
-function doomReloadStandings(){auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
+function doomReloadStandings(){auctionCall('aucSchedList',{}).then(function(r){window._doomTeams=r.teams||[];window._doomResults=r.results||[];window._doomBracket=r.bracket||[];if(window._doomTab==='standings'){var b=document.getElementById('doomBody');if(b)b.innerHTML=doomBody();}}).catch(function(){});}
 function doomPosIcon(pos,color,sz){
   sz=sz||16;color=color||'#d4af37';
   var P={
