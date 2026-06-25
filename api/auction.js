@@ -249,7 +249,12 @@ module.exports = async function handler(req, res) {
       var colML = {}; lkML.forEach(function (t) { colML[t.name] = t.color; });
       if (colML[aTm] === undefined || colML[bTm] === undefined) return res.status(404).json({ error: '확정된 팀만 공지할 수 있어요' });
       var mlA = []; try { mlA = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlA = []; }
-      mlA.push({ id: 'ml' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '멸망전' ? '멸망전' : '스크림'), aTeam: aTm, aColor: colML[aTm] || '', bTeam: bTm, bColor: colML[bTm] || '', date: String(body.date || '').slice(0, 10), time: String(body.time || '').slice(0, 5), note: String(body.note || '').slice(0, 100), by: s.name, at: Date.now() });
+      var dateML = String(body.date || '').slice(0, 10);
+      var pubML = !!body.pub;
+      var mkML = '';
+      if (pubML && /^\d{4}-\d{2}-\d{2}$/.test(dateML)) { mkML = dateML + '#' + Math.random().toString(36).slice(2, 5); }
+      var idML = 'ml' + Date.now() + Math.floor(Math.random() * 1000);
+      mlA.push({ id: idML, type: (body.type === '멸망전' ? '멸망전' : '스크림'), aTeam: aTm, aColor: colML[aTm] || '', bTeam: bTm, bColor: colML[bTm] || '', date: dateML, time: String(body.time || '').slice(0, 5), note: String(body.note || '').slice(0, 100), pub: pubML, mk: mkML, winner: null, by: s.name, at: Date.now() });
       await redis(['SET', 'doom:mlineups', JSON.stringify(mlA)]);
       return res.status(200).json({ ok: true });
     }
@@ -258,6 +263,14 @@ module.exports = async function handler(req, res) {
       var mlD = []; try { mlD = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlD = []; }
       mlD = mlD.filter(function (x) { return x.id !== body.id; });
       await redis(['SET', 'doom:mlineups', JSON.stringify(mlD)]);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'aucMLineupSettle') { // 🏁 경기 결과 확정 (베팅 정산은 클라가 bank로 별도 호출)
+      if (!isOp(s)) return res.status(403).json({ error: '권한 없음' });
+      var winML = (body.winner === 'a' || body.winner === 'b') ? body.winner : null;
+      var mlS = []; try { mlS = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlS = []; }
+      mlS = mlS.map(function (x) { if (x.id === body.id) { x.winner = winML; } return x; });
+      await redis(['SET', 'doom:mlineups', JSON.stringify(mlS)]);
       return res.status(200).json({ ok: true });
     }
     if (action === 'aucBracketSet') { // 🏆 더블 엘리미네이션 대진표 저장 (운영 전용)
