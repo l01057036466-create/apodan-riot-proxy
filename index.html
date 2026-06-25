@@ -10992,8 +10992,11 @@ function doomHomeMatches(){
   var teams=(window._doomTeams&&window._doomTeams.length)?window._doomTeams:[];
   var colorOf={};teams.forEach(function(t){colorOf[t.name]=t.color||'#888';});
   var today=sessionDay();
-  var up=sched.filter(function(e){return (e.type==='scrim'||e.type==='match')&&e.date>=today;}).sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''));});
-  if(!up.length)return '<div style="margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:17px">🔥 다가오는 경기</h3><div style="text-align:center;padding:18px;border:1px dashed var(--line);border-radius:12px"><p class="mini dim" style="margin:0">예정된 스크림·본경기가 없어요.<br>📅 일정 탭에서 등록하면 여기 크게 떠요!</p></div></div>';
+  var brk=(window._doomBracket||[]);
+  var scrimsUp=sched.filter(function(e){return e.type==='scrim'&&e.date>=today;}).map(function(e){return {type:'scrim',teamName:e.teamName,opponent:e.opponent,date:e.date,time:e.time||'',note:e.note||''};});
+  var brkUp=brk.filter(function(m){return m.a&&m.b&&m.date&&m.date>=today&&(m.sa==null||m.sb==null);}).map(function(m){return {type:'match',teamName:m.a,opponent:m.b,date:m.date,time:'',note:'멸망전 '+(m.br==='W'?'승자조':m.br==='L'?'패자조':'최종전')+' '+(m.round||1)+'R'};});
+  var up=scrimsUp.concat(brkUp).sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''));});
+  if(!up.length)return '<div style="margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:17px">🔥 다가오는 경기</h3><div style="text-align:center;padding:18px;border:1px dashed var(--line);border-radius:12px"><p class="mini dim" style="margin:0">예정된 경기가 없어요.<br>스크림은 📅 일정 탭, 멸망전 본경기는 🏆 대진표에서 날짜를 잡으면 여기 떠요!</p></div></div>';
   var cards=up.slice(0,8).map(function(e){
     var isMatch=e.type==='match';
     var badge=isMatch?'<span style="background:#e67e22;color:#fff;font-weight:800;font-size:11px;padding:3px 9px;border-radius:6px">🏆 본경기</span>':'<span style="background:#3498db;color:#fff;font-weight:800;font-size:11px;padding:3px 9px;border-radius:6px">⚔️ 스크림</span>';
@@ -11170,10 +11173,10 @@ function doomScheduleTab(){
     +teamObjs.map(function(t){return '<div style="flex:none;border:1px solid var(--line);border-left:4px solid '+(t.color||'#888')+';border-radius:9px;padding:7px 11px"><b style="color:'+(t.color||'#888')+';font-size:13px;white-space:nowrap">'+esc(t.name)+'</b><div class="mini dim" style="white-space:nowrap">팀장 '+esc(t.leader||'')+(t.roster&&t.roster.length?' · '+t.roster.length+'/5':'')+'</div></div>';}).join('')+'</div>';
 
   var schedForm = loggedIn
-    ? '<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">➕ 일정 등록 (스크림 가능·확정·본경기)</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px;display:flex;flex-direction:column;gap:7px">'
-      +'<div style="display:flex;gap:6px"><select id="schType" style="flex:1;'+inp+'"><option value="available">✅ 스크림 가능</option><option value="scrim">⚔️ 스크림 확정</option><option value="match">🏆 본경기</option></select><select id="schTeam" style="flex:1;'+inp+'">'+teamOpts+'</select></div>'
+    ? '<details style="margin-bottom:10px"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">➕ 스크림 일정 등록 (가능·확정)</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px;display:flex;flex-direction:column;gap:7px">'
+      +'<div style="display:flex;gap:6px"><select id="schType" style="flex:1;'+inp+'"><option value="available">✅ 스크림 가능</option><option value="scrim">⚔️ 스크림 확정</option></select><select id="schTeam" style="flex:1;'+inp+'">'+teamOpts+'</select></div>'
       +'<div style="display:flex;gap:6px"><input id="schDate" type="date" value="'+sessionDay()+'" style="flex:1;'+inp+'"><input id="schTime" type="time" style="flex:1;'+inp+'"></div>'
-      +'<select id="schOpp" style="'+inp+'"><option value="">상대 팀 선택 (스크림·본경기)</option>'+teamOpts+'</select>'
+      +'<select id="schOpp" style="'+inp+'"><option value="">상대 팀 선택 (스크림)</option>'+teamOpts+'</select>'
       +'<input id="schNote" placeholder="메모 (예: 서폿 대타 포함 / Bo3)" maxlength="120" style="'+inp+'">'
       +'<button class="btn gold" style="width:100%" onclick="doomSchedAdd()">📅 일정 등록</button><p class="mini" style="margin:7px 0 0;color:#e67e22;text-align:center">⚡ 같은 시간에 여러 경기도 등록 가능 (동시 진행)</p></div></details>'
     : '<p class="mini dim" style="text-align:center;margin:0 0 10px">💡 일정 등록은 <b>💰 지갑에서 로그인</b> 후 가능해요 (팀장·팀원 누구나)</p>';
@@ -11182,7 +11185,7 @@ function doomScheduleTab(){
   if(!sched.length){agenda='<div style="text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">아직 등록된 일정이 없어요.<br>스크림 가능한 날짜를 등록해보세요!</p></div>';}
   else{
     sched.sort(function(a,b){return (a.date+(a.time||'~')).localeCompare(b.date+(b.time||'~'));});
-    var byDate={};sched.forEach(function(e){(byDate[e.date]=byDate[e.date]||[]).push(e);});
+    var byDate={};sched.forEach(function(e){if(e.type==='match')return;(byDate[e.date]=byDate[e.date]||[]).push(e);});
     var schRow=function(e){
       var canDel=(e.by===me||op);
       var vs=(e.type!=='available'&&e.opponent)?(' <span class="dim">vs</span> <b style="color:'+(colorOf[e.opponent]||'#bbb')+'">'+esc(e.opponent)+'</b>'):'';
@@ -11245,7 +11248,7 @@ function doomScheduleTab(){
     }).join('');
   }
   var practiceAvail='<div style="background:rgba(46,204,113,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 4px;font-size:16px">🟢 공개 가능 날짜</h3><p class="mini dim" style="margin:0 0 11px">다들 연습 가능한 날을 적어주세요 — <b style="color:var(--gold)">🔥 여러 팀이 겹치는 날</b>이 강조돼요!</p>'+availForm+availBoard+'</div>';
-  var matchView=doomSchedCalSection()+'<div style="background:rgba(52,152,219,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:16px">📅 스크림 · 경기 일정</h3>'+schedForm+agenda+'</div>'+'<div style="background:rgba(230,126,34,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:16px">🙋 대타 구인방</h3>'+recruitForm+recList+'</div>';
+  var matchView=doomSchedCalSection()+'<div style="background:rgba(52,152,219,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 3px;font-size:16px">📅 스크림 일정</h3><p class="mini dim" style="margin:0 0 10px">스크림 가능·확정 날짜를 잡는 곳이에요. <b style="color:var(--gold)">🏆 멸망전 본경기는 순위 탭 → 대진표</b>에서 관리해요.</p>'+schedForm+agenda+'</div>'+'<div style="background:rgba(230,126,34,.05);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px"><h3 style="margin:0 0 10px;font-size:16px">🙋 대타 구인방</h3>'+recruitForm+recList+'</div>';
   return '<div class="card" style="padding:16px;text-align:center;margin-bottom:14px"><div style="font-size:34px">📅</div><h3 style="margin:6px 0 2px">멸망전 일정</h3><p class="mini dim" style="margin:0">제2회 아포단 멸망전 · 2026.07.01~07.30</p></div>'
     +lockBtn+teamStrip+lockedRoster
     +practiceAvail
@@ -11440,7 +11443,7 @@ function doomStandingsTab(){
     var sortedAll=results.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||b.at-a.at;});
     var renderR=function(r){var aWin=r.scoreA>r.scoreB,bWin=r.scoreB>r.scoreA;return '<div style="display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:5px">'+(r.round?'<span style="flex:none;background:var(--inset);border-radius:5px;padding:2px 7px;font-size:10px;font-weight:700;color:var(--gold);white-space:nowrap">'+esc(r.round)+'</span>':'')+'<div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0"><b style="color:'+(r.aColor||'#ddd')+';text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;'+(aWin?'':'opacity:.45')+'">'+esc(r.aName)+'</b><span style="flex:none;font-family:var(--mono);font-weight:900;font-size:16px">'+r.scoreA+' : '+r.scoreB+'</span><b style="color:'+(r.bColor||'#ddd')+';flex:1;overflow:hidden;text-overflow:ellipsis;'+(bWin?'':'opacity:.45')+'">'+esc(r.bName)+'</b></div>'+(op?'<button class="btn sm ghost" style="flex:none;font-size:10px;padding:2px 6px;border-color:var(--lose);color:var(--lose)" onclick="doomResultDel(\''+r.id+'\')">✕</button>':'')+'</div>'+((r.date||r.note)?'<div class="mini dim" style="text-align:center;margin:-2px 0 9px">'+(r.date?doomSchedFmtDate(r.date):'')+(r.note?' · '+esc(r.note):'')+'</div>':'')+doomLineupBox(r)+doomResToggle(r,teams);};
     var doomR=sortedAll.filter(function(r){return r.type!=='스크림';}),scrimR=sortedAll.filter(function(r){return r.type==='스크림';});
-    if(doomR.length)resHtml+='<h3 style="margin:22px 0 10px;font-size:16px">🏆 멸망전 경기</h3>'+doomR.map(renderR).join('');
+    if(doomR.length)resHtml+='<h3 style="margin:22px 0 3px;font-size:16px">📜 경기 기록 <span class="mini dim" style="font-weight:400">· 픽/밴</span></h3><p class="mini dim" style="margin:0 0 10px">끝난 게임의 스코어·픽/밴이 게임별로 쌓여요 (위 🏆 대진표는 토너먼트 진행도).</p><div style="font-weight:800;font-size:13px;color:var(--gold);margin:6px 0 6px">🏆 멸망전</div>'+doomR.map(renderR).join('');
     if(scrimR.length)resHtml+='<h3 style="margin:22px 0 10px;font-size:16px">🤝 스크림 <span class="mini dim" style="font-weight:400">(순위 미반영)</span></h3>'+scrimR.map(renderR).join('');
   }
   var addForm='';
