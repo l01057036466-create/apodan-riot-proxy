@@ -233,6 +233,9 @@ module.exports = async function handler(req, res) {
       var resultsL = []; try { resultsL = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resultsL = []; }
       var bracketL = []; try { bracketL = JSON.parse((await redis(['GET', 'doom:bracket'])) || '[]'); } catch (e) { bracketL = []; }
       var mlineL = []; try { mlineL = JSON.parse((await redis(['GET', 'doom:mlineups'])) || '[]'); } catch (e) { mlineL = []; }
+      var mlMig = false;
+      mlineL.forEach(function (mm) { if (!mm.mk && mm.pub !== false && /^\d{4}-\d{2}-\d{2}$/.test(String(mm.date || ''))) { mm.mk = mm.date + '#' + Math.random().toString(36).slice(2, 5); if (mm.pub === undefined) mm.pub = true; if (mm.winner === undefined) mm.winner = null; mlMig = true; } });
+      if (mlMig) { try { await redis(['SET', 'doom:mlineups', JSON.stringify(mlineL)]); } catch (e) {} }
       var pubT = lockedT.map(function (t) { return { acct: t.acct, name: t.name, leader: t.leader, leaderPos: t.leaderPos || '', color: t.color, points: t.points, roster: t.roster || [] }; });
       var myAcctS = (s && s.name) || '', mySchedS = null, myPracticeS = [], allSchedS = null, allPracticeS = null, opSchedS = isOp(s);
       if (opSchedS) { allSchedS = {}; allPracticeS = {}; }
