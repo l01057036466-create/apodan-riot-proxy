@@ -648,7 +648,47 @@ module.exports = async function handler(req, res) {
       }
       return res.status(200).json({ ok: true, mode: modeRf, users: usersRf, shares: sharesRf, refunded: totalRf });
     }
-    if (req.method === 'POST' && action === 'stockManip') { // 🔧 개발자 전용 — 주가(폼 기준가) 직접 조작
+    if (req.method === 'POST' && action === 'stockRecover') { // 🚑 주가 복구 — 단일/지정({names,toPrice}) + 일괄({who:'all',thr}=직전 고점)
+      var sRv = await auth(body.token);
+      if (!sRv || (sRv.role !== 'admin' && sRv.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
+      var SRv = await loadPx();
+      var manipRv = JSON.parse((await redis(['GET', 'stock:manipped'])) || '{}'); // 폼 동기화가 못 덮게 보호(다음 경기 등록까지 고정)
+      var fixedRv = [], cntRv = 0;
+      if (body.who === 'all') {
+        var thrRv = Number(body.thr); if (!(thrRv > 0) || thrRv > 0.99) thrRv = 0.6;
+        var namesAll = Object.keys(SRv.base || {});
+        for (var ir = 0; ir < namesAll.length; ir++) {
+          var nmR = namesAll[ir];
+          var curR = clampPx((Number(SRv.base[nmR]) || 0) + (Number(SRv.prem[nmR]) || 0));
+          var hRawR = (await redis(['LRANGE', 'pxh:' + nmR, '0', '59'])) || [];
+          var highR = curR;
+          for (var jr = 0; jr < hRawR.length; jr++) { try { var oR = JSON.parse(hRawR[jr]); if (oR && Number(oR.p) > highR) highR = Number(oR.p); } catch (eR) {} }
+          if (highR > curR && curR < highR * thrRv) {
+            SRv.base[nmR] = clampPx(highR); SRv.prem[nmR] = 0;
+            await pushHist(nmR, clampPx(highR), 'form');
+            manipRv[nmR] = 1; cntRv++;
+            if (fixedRv.length < 20) fixedRv.push({ name: nmR, from: curR, to: clampPx(highR) });
+          }
+        }
+      } else {
+        var toR = Math.round(Number(body.toPrice) || 0);
+        if (toR < 1) return res.status(400).json({ error: '복구 가격은 1 APO 이상이어야 해요' });
+        var namesR = Array.isArray(body.names) ? body.names : (body.name ? [body.name] : []);
+        for (var kr = 0; kr < namesR.length; kr++) {
+          var nm2 = nameOk(namesR[kr]); if (!nm2) continue;
+          var cur2 = clampPx((Number(SRv.base[nm2]) || 0) + (Number(SRv.prem[nm2]) || 0));
+          SRv.base[nm2] = clampPx(toR); SRv.prem[nm2] = 0;
+          await pushHist(nm2, clampPx(toR), 'form');
+          manipRv[nm2] = 1; cntRv++;
+          if (fixedRv.length < 20) fixedRv.push({ name: nm2, from: cur2, to: clampPx(toR) });
+        }
+        if (!cntRv) return res.status(400).json({ error: '복구할 종목 이름을 확인해주세요' });
+      }
+      await savePx(SRv);
+      await redis(['SET', 'stock:manipped', JSON.stringify(manipRv)]);
+      return res.status(200).json({ ok: true, count: cntRv, fixed: fixedRv, prices: combinePx(SRv) });
+    }
+ if (req.method === 'POST' && action === 'stockManip') { // 🔧 개발자 전용 — 주가(폼 기준가) 직접 조작
       var sMp = await auth(body.token);
       if (!sMp || sMp.role !== 'dev') return res.status(403).json({ error: '개발자 전용 기능이에요' });
       var whoMp = String(body.name || '').trim();
@@ -1225,7 +1265,37 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, prize: kPrize, rank: kRank, bal: aSp.bal, left: maxSpin - used });
       } finally { await acctUnlock(sSp.name); }
     }
-    if (req.method === 'POST' && action === 'scratch') {
+    if (req.method === 'POST' && action === 'claw') {
+      var sCl = await auth(body.token);
+      if (!sCl || !sCl.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      if (!(await acctLock(sCl.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
+      try {
+      var aCl = await getAcct(sCl.name);
+      if (!aCl || aCl.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
+      if (aCl.bal < 1500) return res.status(400).json({ error: '인형뽑기는 1,500 APO' });
+      aCl.bal -= 1500;
+      var clRoll = pickWeighted([['miss', 440], ['bear', 300], ['rabbit', 130], ['penguin', 80], ['unicorn', 40], ['gold', 10]]); // 캐치 56%
+      var clPz = { bear: 1000, rabbit: 1600, penguin: 2200, unicorn: 4500, gold: 14000 };
+      var clCaught = clRoll !== 'miss';
+      var clCapKey = 'wonClaw:' + kstDate() + ':' + aCl.name; // 인형뽑기 하루 당첨 한도 50,000
+      var clWon = Number(await redis(['GET', clCapKey])) || 0;
+      var CL_CAP = 50000, clPrize, clCapLeft;
+      if (clCaught) {
+        var clRaw = clPz[clRoll] || 0;
+        clPrize = Math.min(clRaw, Math.max(0, CL_CAP - clWon));
+        if (clPrize > 0) { await redis(['INCRBY', clCapKey, String(clPrize)]); await redis(['EXPIRE', clCapKey, '93600']); }
+        clCapLeft = Math.max(0, CL_CAP - (clWon + clPrize));
+      } else {
+        clPrize = 250;
+        clCapLeft = Math.max(0, CL_CAP - clWon);
+      }
+      aCl.bal += clPrize;
+      await putAcct(aCl);
+      await ledger(aCl.name, clCaught ? ('🧸 인형뽑기 — ' + clRoll + ' GET') : '🧸 인형뽑기 — 놓침(위로금)', clPrize - 1500, aCl.bal);
+      return res.status(200).json({ ok: true, bal: aCl.bal, caught: clCaught, grade: clCaught ? clRoll : null, prize: clPrize, capLeft: clCapLeft });
+      } finally { await acctUnlock(sCl.name); }
+    }
+ if (req.method === 'POST' && action === 'scratch') {
       var sSc2 = await auth(body.token);
       if (!sSc2 || !sSc2.name) return res.status(401).json({ error: '로그인이 필요해요' });
       if (!(await acctLock(sSc2.name))) return res.status(429).json({ error: '처리 중 — 잠시 후 다시' });
