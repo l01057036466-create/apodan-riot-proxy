@@ -9033,10 +9033,21 @@ function doomDoBet(mk,team,odds){
   }).catch(function(e){window._doomBetBusy=false;toast('베팅 실패: '+((e&&e.message)||''),true);});
 }
 function doomMkLock(mk,open){bankCall('lock',{market:mk,open:!!open}).then(function(){toast(open?'베팅 재개':'⛔ 베팅 마감!');doomFetchMkts(true);}).catch(function(e){toast((e&&e.message)||'실패',true);});}
+function doomBetRefund(mk){
+  if(!confirm('🚫 판 취소 + 전액 환불\n\n경기가 빵꾸 나거나 대타로 바뀌었을 때 쓰는 기능이에요.\n베팅 전액이 베팅한 멤버들에게 그대로 돌아가고, 이 판은 "취소됨"으로 닫혀요.\n\n진행할까요?'))return;
+  bankCall('refund',{market:mk}).then(function(j){toast('↩️ 환불 완료 — '+(j.refunded||0)+'명에게 '+fmtAPO(j.total||0)+' APO 반환!');doomFetchMkts(true);if(typeof bankRefresh==='function')bankRefresh(true);}).catch(function(e){toast('환불 실패: '+((e&&e.message)||''),true);});
+}
 function doomMkSettle(id,mk,winner){
   if(!confirm('결과를 '+(winner==='a'?'🅰 A팀 승':'🅱 B팀 승')+'으로 확정하고\n베팅을 정산(지급)할까요?'))return;
   var fin=function(){auctionCall('aucMLineupSettle',{id:id,winner:winner}).then(function(){toast('🏁 결과 확정 + 정산 완료!');doomMLineupRefresh();doomFetchMkts(true);if(typeof bankRefresh==='function')bankRefresh(true);}).catch(function(e){toast((e&&e.message)||'실패',true);});};
   if(mk){bankCall('settle',{market:mk,winner:(winner==='a'?'alpha':'beta')}).then(fin).catch(function(e){toast('정산 실패: '+((e&&e.message)||''),true);});}
+  else fin();
+}
+function doomMkUnsettle(id,mk){
+  if(!confirm('⚠ 정산 되돌리기 (비상 도구)\n\n적중자에게 지급된 배당을 똑같이 회수하고, 베팅판을 "마감" 상태로 되돌려요.\n그 후 올바른 승자로 다시 정산하면 돼요.\n\n계속할까요?'))return;
+  if(!confirm('정말 되돌릴까요? 적중자 지갑에서 배당이 회수됩니다.'))return;
+  var fin=function(){auctionCall('aucMLineupSettle',{id:id,winner:null}).then(function(){toast('↩️ 정산 되돌리기 완료 — 다시 정산할 수 있어요');doomMLineupRefresh();doomFetchMkts(true);if(typeof bankRefresh==='function')bankRefresh(true);}).catch(function(e){toast((e&&e.message)||'실패',true);});};
+  if(mk){bankCall('unsettle',{market:mk}).then(fin).catch(function(e){toast('되돌리기 실패: '+((e&&e.message)||''),true);});}
   else fin();
 }
 function doomBetPanel(m){
@@ -9046,7 +9057,7 @@ function doomBetPanel(m){
   if(m.winner){
     var wN=m.winner==='a'?m.aTeam:m.bTeam,wC=m.winner==='a'?m.aColor:m.bColor;var my0=mkt.my;
     var hit=my0?(((my0.team==='alpha')===(m.winner==='a'))?'<span style="color:var(--win);font-weight:800">내 베팅 적중 🎉</span>':'<span style="color:var(--lose)">내 베팅 미적중</span>'):'';
-    return '<div style="margin-top:9px;padding:9px;border-radius:9px;background:rgba(46,204,113,.08);border:1px solid var(--line);text-align:center;font-size:13px">🏁 결과 <b style="color:'+wC+'">'+esc(wN)+'</b> 승 '+(hit?'· '+hit:'')+'</div>';
+    return '<div style="margin-top:9px;padding:9px;border-radius:9px;background:rgba(46,204,113,.08);border:1px solid var(--line);text-align:center;font-size:13px">🏁 결과 <b style="color:'+wC+'">'+esc(wN)+'</b> 승 '+(hit?'· '+hit:'')+'</div>'+(op?'<div style="text-align:center;margin-top:7px"><button class="btn sm ghost" style="border-color:rgba(255,92,122,.4);color:var(--lose);font-size:11px" onclick="doomMkUnsettle(\''+m.id+'\',\''+m.mk+'\')">↩️ 정산 되돌리기 (실수로 눌렀을 때)</button></div>':'');
   }
   var od=doomMkOdds(m.aTeam,m.bTeam,mkt);
   var bettors=mkt.bettors||0,status=mkt.status||'open',my=mkt.my||null;
@@ -9057,7 +9068,8 @@ function doomBetPanel(m){
   var head='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><b style="font-size:13px">🎰 승부 베팅</b><span class="mini dim">'+bettors+'명 참여'+(status!=='open'?' · ⛔마감':'')+'</span></div>';
   var poolRow=tot?'<p class="mini dim" style="text-align:center;margin:0 0 5px">참전 <span style="color:'+aCol+'">🅰 '+fmtAPO(pa)+'</span> · <span style="color:'+bCol+'">🅱 '+fmtAPO(pb)+'</span> APO</p><div style="height:6px;border-radius:5px;overflow:hidden;display:flex;border:1px solid var(--line);margin-bottom:7px"><i style="width:'+Math.round(pa/tot*100)+'%;background:'+aCol+'99"></i><i style="flex:1;background:'+bCol+'99"></i></div>':'';
   var inner='';
-  if(mine){
+  if(status==='refunded'){inner='<p class="mini" style="text-align:center;margin:4px 0;color:var(--mut);font-weight:800">🚫 취소된 판 — 베팅 전액 환불 완료</p>';}
+  else if(mine){
     inner='<div style="display:flex;gap:7px;margin-bottom:5px"><div style="flex:1;padding:8px 4px;border:1px solid '+aCol+';background:'+aCol+'14;border-radius:9px;text-align:center;opacity:.92"><b style="color:'+aCol+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+esc(m.aTeam)+'</b><span style="font-family:var(--mono);font-weight:900;font-size:15px">x'+od.a.toFixed(2)+'</span></div><div style="flex:1;padding:8px 4px;border:1px solid '+bCol+';background:'+bCol+'14;border-radius:9px;text-align:center;opacity:.92"><b style="color:'+bCol+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+esc(m.bTeam)+'</b><span style="font-family:var(--mono);font-weight:900;font-size:15px">x'+od.b.toFixed(2)+'</span></div></div><p class="mini" style="text-align:center;margin:5px 0 0;color:var(--gold);font-weight:700">🙅 본인 출전 경기 — 베팅은 막혀요 (승부조작 방지) · <span style="color:var(--gold)">배당은 참고용 👀</span></p>';
   } else if(status!=='open'){
     inner='<p class="mini dim" style="text-align:center;margin:4px 0">⛔ 베팅이 마감됐어요</p>';
@@ -9082,7 +9094,7 @@ function doomBetPanel(m){
   }
   var opCtl='';
   if(op){
-    opCtl='<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"><button class="btn sm ghost" style="flex:1;font-size:11px" onclick="doomMkLock(\''+m.mk+'\','+(status==='open'?'false':'true')+')">'+(status==='open'?'🔒 베팅 마감':'▶️ 베팅 재개')+'</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'a\')">🏁 '+esc(m.aTeam)+' 승</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'b\')">🏁 '+esc(m.bTeam)+' 승</button></div>';
+    opCtl='<div style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap"><button class="btn sm ghost" style="flex:1;font-size:11px" onclick="doomMkLock(\''+m.mk+'\','+(status==='open'?'false':'true')+')">'+(status==='open'?'🔒 베팅 마감':'▶️ 베팅 재개')+'</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'a\')">🏁 '+esc(m.aTeam)+' 승</button><button class="btn sm ghost" style="flex:1;font-size:11px;border-color:var(--gold);color:var(--gold)" onclick="doomMkSettle(\''+m.id+'\',\''+m.mk+'\',\'b\')">🏁 '+esc(m.bTeam)+' 승</button>'+'<button class="btn sm ghost" style="flex:1;font-size:11px;border-color:rgba(255,92,122,.4);color:var(--lose)" title="빵꾸·대타 — 베팅 전액 환불" onclick="doomBetRefund(\''+m.mk+'\')">🚫 취소·환불</button>'+'</div>';
   }
   return '<div style="margin-top:10px;padding:11px;border-radius:10px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.3)">'+head+poolRow+inner+betsList+opCtl+'</div>';
 }
