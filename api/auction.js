@@ -7,6 +7,33 @@
 // ═══════════════════════════════════════════════════════════════
 var crypto = require('crypto');
 
+// 🤖 LLM 호출 (무료 Gemini 우선 → 없으면 Claude). 환경변수 GEMINI_API_KEY 또는 ANTHROPIC_API_KEY 필요
+async function callLLM(prompt, maxTokens) {
+  var gk = process.env.GEMINI_API_KEY;
+  var ak = process.env.ANTHROPIC_API_KEY;
+  if (gk) {
+    var gm = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gm + ':generateContent?key=' + gk, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
+    });
+    var gd = await gr.json();
+    if (!gr.ok) throw new Error((gd.error && gd.error.message) || 'Gemini 호출 실패');
+    return ((((gd.candidates || [])[0] || {}).content || {}).parts || []).map(function (p) { return p.text || ''; }).join('').trim();
+  }
+  if (ak) {
+    var ar = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'x-api-key': ak, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] })
+    });
+    var ad = await ar.json();
+    if (!ar.ok) throw new Error((ad.error && ad.error.message) || 'Claude 호출 실패');
+    return (ad.content || []).map(function (x) { return x.type === 'text' ? x.text : ''; }).join('').trim();
+  }
+  throw new Error('NOKEY');
+}
+
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -291,8 +318,7 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, fdraft: clean });
     }
     if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Claude API)
-      var simKey = process.env.ANTHROPIC_API_KEY;
-      if (!simKey) return res.status(400).json({ error: 'AI 시뮬레이션이 아직 설정 안 됐어요 — Vercel 환경변수에 ANTHROPIC_API_KEY를 추가해주세요' });
+      if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY(또는 ANTHROPIC_API_KEY)를 Vercel에 추가해주세요' });
       var sBp = (body.bluePicks || []).filter(Boolean), sRp = (body.redPicks || []).filter(Boolean);
       if (sBp.length < 3 || sRp.length < 3) return res.status(400).json({ error: '양 팀 픽이 3명 이상 필요해요' });
       var sL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
@@ -309,20 +335,12 @@ module.exports = async function handler(req, res) {
         + ((body.blueRoster || body.redRoster) ? '위 내전 챔프풀(주력 챔프·승률)을 반영해서, 각 선수가 이 픽을 잘 다루는 챔프인지/숙련도까지 평가에 넣어주세요.\n' : ((body.bluePow && body.redPow) ? '체급(선수 실력)도 참고하되, 챔피언 조합 중심으로 분석해주세요.\n' : ''))
         + '마크다운 헤더(#)나 별표(**)는 쓰지 말고, 이모지와 줄바꿈으로 읽기 좋게 정리해주세요. 5~8줄 정도로.';
       try {
-        var simR = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'x-api-key': simKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-          body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1100, messages: [{ role: 'user', content: sPrompt }] })
-        });
-        var simD = await simR.json();
-        if (!simR.ok) return res.status(502).json({ error: (simD && simD.error && simD.error.message) || 'AI 호출 실패' });
-        var simText = (simD.content || []).map(function (x) { return x.type === 'text' ? x.text : ''; }).join('').trim();
+        var simText = await callLLM(sPrompt, 1100);
         return res.status(200).json({ ok: true, analysis: simText || '(분석 결과가 비어 있어요)' });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
     if (action === 'aucDraftSuggest') { // 🤔 모르겠음 — AI가 이번 차례 픽/밴 추천 (솔랭·자랭 추정 + 내전 데이터)
-      var sgKey = process.env.ANTHROPIC_API_KEY;
-      if (!sgKey) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — ANTHROPIC_API_KEY를 추가해주세요' });
+      if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY를 추가해주세요' });
       var sgSide = body.side === 'r' ? '레드' : '블루';
       var sgType = body.type === 'ban' ? '밴' : '픽';
       var sgL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
@@ -337,14 +355,7 @@ module.exports = async function handler(req, res) {
         + '출력 형식: 첫 줄에 챔피언 이름만 (반드시 아래 목록에 있는 그대로), 둘째 줄에 25자 이내 이유 한 줄.\n\n'
         + '가능 챔피언 목록: ' + avail.join(', ');
       try {
-        var sgR = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'x-api-key': sgKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 120, messages: [{ role: 'user', content: sgPrompt }] })
-        });
-        var sgD = await sgR.json();
-        if (!sgR.ok) return res.status(502).json({ error: (sgD && sgD.error && sgD.error.message) || 'AI 호출 실패' });
-        var sgText = (sgD.content || []).map(function (x) { return x.type === 'text' ? x.text : ''; }).join('').trim();
+        var sgText = await callLLM(sgPrompt, 120);
         var sgLines = sgText.split('\n').filter(function (l) { return l.trim(); });
         var sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s]+/, '').replace(/["'`]/g, '').trim();
         var sgReason = (sgLines.slice(1).join(' ') || '').trim();
