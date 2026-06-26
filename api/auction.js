@@ -290,6 +290,67 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'doom:fdraft', JSON.stringify(clean)]);
       return res.status(200).json({ ok: true, fdraft: clean });
     }
+    if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Claude API)
+      var simKey = process.env.ANTHROPIC_API_KEY;
+      if (!simKey) return res.status(400).json({ error: 'AI 시뮬레이션이 아직 설정 안 됐어요 — Vercel 환경변수에 ANTHROPIC_API_KEY를 추가해주세요' });
+      var sBp = (body.bluePicks || []).filter(Boolean), sRp = (body.redPicks || []).filter(Boolean);
+      if (sBp.length < 3 || sRp.length < 3) return res.status(400).json({ error: '양 팀 픽이 3명 이상 필요해요' });
+      var sL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
+      var sPw = function (p) { return (p && p > 0) ? ('\n평균 체급(선수 실력): ' + Math.round(p) + '/100') : ''; };
+      var sRoster = function (r) { return (r && String(r).trim()) ? ('\n[내전 선수단 챔프풀]\n' + r) : ''; };
+      var sPrompt = '당신은 리그 오브 레전드 드래프트 분석 전문가입니다. 아래 밴픽을 보고 모의 경기 결과를 예측해주세요.\n\n'
+        + '🔵 ' + (body.blue || '블루팀') + ' (블루)\n픽: ' + sL(body.bluePicks) + '\n밴: ' + sL(body.blueBans) + sPw(body.bluePow) + sRoster(body.blueRoster) + '\n\n'
+        + '🔴 ' + (body.red || '레드팀') + ' (레드)\n픽: ' + sL(body.redPicks) + '\n밴: ' + sL(body.redBans) + sPw(body.redPow) + sRoster(body.redRoster) + '\n\n'
+        + '다음을 한국어로, 간결하고 실전 코칭 톤으로 분석해주세요:\n'
+        + '1) 예상 승자와 승률 (예: 블루 62%)\n'
+        + '2) 각 팀 조합 평가 — 딜 구성(AD/AP)/탱킹/이니시에이팅/스케일링/라인전 강약\n'
+        + '3) 핵심 승부처와 그 이유 (챔피언 시너지·카운터·한타 구도·게임 흐름)\n'
+        + '4) 약한 팀이 뒤집을 수 있는 변수\n\n'
+        + ((body.blueRoster || body.redRoster) ? '위 내전 챔프풀(주력 챔프·승률)을 반영해서, 각 선수가 이 픽을 잘 다루는 챔프인지/숙련도까지 평가에 넣어주세요.\n' : ((body.bluePow && body.redPow) ? '체급(선수 실력)도 참고하되, 챔피언 조합 중심으로 분석해주세요.\n' : ''))
+        + '마크다운 헤더(#)나 별표(**)는 쓰지 말고, 이모지와 줄바꿈으로 읽기 좋게 정리해주세요. 5~8줄 정도로.';
+      try {
+        var simR = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': simKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1100, messages: [{ role: 'user', content: sPrompt }] })
+        });
+        var simD = await simR.json();
+        if (!simR.ok) return res.status(502).json({ error: (simD && simD.error && simD.error.message) || 'AI 호출 실패' });
+        var simText = (simD.content || []).map(function (x) { return x.type === 'text' ? x.text : ''; }).join('').trim();
+        return res.status(200).json({ ok: true, analysis: simText || '(분석 결과가 비어 있어요)' });
+      } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
+    }
+    if (action === 'aucDraftSuggest') { // 🤔 모르겠음 — AI가 이번 차례 픽/밴 추천 (솔랭·자랭 추정 + 내전 데이터)
+      var sgKey = process.env.ANTHROPIC_API_KEY;
+      if (!sgKey) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — ANTHROPIC_API_KEY를 추가해주세요' });
+      var sgSide = body.side === 'r' ? '레드' : '블루';
+      var sgType = body.type === 'ban' ? '밴' : '픽';
+      var sgL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
+      var avail = (body.available || []).filter(Boolean);
+      if (!avail.length) return res.status(400).json({ error: '선택 가능한 챔피언이 없어요' });
+      var sgPrompt = '리그 오브 레전드 드래프트 진행 중입니다. 지금 ' + sgSide + '팀의 ' + sgType + ' 차례입니다.\n\n'
+        + '블루 픽: ' + sgL(body.bluePicks) + ' / 밴: ' + sgL(body.blueBans) + '\n'
+        + '레드 픽: ' + sgL(body.redPicks) + ' / 밴: ' + sgL(body.redBans) + '\n\n'
+        + (body.roster ? ('지금 ' + sgType + '하는 ' + sgSide + '팀 선수 내전 챔프풀(솔랭·자랭 경향 추정 포함):\n' + body.roster + '\n\n') : '')
+        + '이 ' + sgSide + '팀이 실제로 ' + sgType + '할 법한, 동시에 합리적인 챔피언 하나를 아래 목록에서 골라주세요. '
+        + (body.type === 'ban' ? '상대에게 위협적이거나 이 팀이 꺼릴 챔피언 위주로 밴하세요.' : '아직 안 뽑힌 포지션·선수 숙련 챔프·메타·시너지·카운터를 종합 고려하세요.') + '\n\n'
+        + '출력 형식: 첫 줄에 챔피언 이름만 (반드시 아래 목록에 있는 그대로), 둘째 줄에 25자 이내 이유 한 줄.\n\n'
+        + '가능 챔피언 목록: ' + avail.join(', ');
+      try {
+        var sgR = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': sgKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 120, messages: [{ role: 'user', content: sgPrompt }] })
+        });
+        var sgD = await sgR.json();
+        if (!sgR.ok) return res.status(502).json({ error: (sgD && sgD.error && sgD.error.message) || 'AI 호출 실패' });
+        var sgText = (sgD.content || []).map(function (x) { return x.type === 'text' ? x.text : ''; }).join('').trim();
+        var sgLines = sgText.split('\n').filter(function (l) { return l.trim(); });
+        var sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s]+/, '').replace(/["'`]/g, '').trim();
+        var sgReason = (sgLines.slice(1).join(' ') || '').trim();
+        return res.status(200).json({ ok: true, champion: sgChamp, reason: sgReason });
+      } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
+    }
     if (action === 'aucBracketSet') { // 🏆 더블 엘리미네이션 대진표 저장 (운영 전용)
       if (!isOp(s)) return res.status(403).json({ error: '운영자만 대진표를 편집할 수 있어요' });
       var mbB = Array.isArray(body.matches) ? body.matches : [];
