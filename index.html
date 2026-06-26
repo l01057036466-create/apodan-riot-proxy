@@ -9058,7 +9058,7 @@ function doomBetPanel(m){
   var poolRow=tot?'<p class="mini dim" style="text-align:center;margin:0 0 5px">참전 <span style="color:'+aCol+'">🅰 '+fmtAPO(pa)+'</span> · <span style="color:'+bCol+'">🅱 '+fmtAPO(pb)+'</span> APO</p><div style="height:6px;border-radius:5px;overflow:hidden;display:flex;border:1px solid var(--line);margin-bottom:7px"><i style="width:'+Math.round(pa/tot*100)+'%;background:'+aCol+'99"></i><i style="flex:1;background:'+bCol+'99"></i></div>':'';
   var inner='';
   if(mine){
-    inner='<p class="mini" style="text-align:center;margin:4px 0;color:var(--gold);font-weight:700">🙅 본인 출전 경기 — 베팅 불가 (승부조작 방지)</p>';
+    inner='<div style="display:flex;gap:7px;margin-bottom:5px"><div style="flex:1;padding:8px 4px;border:1px solid '+aCol+';background:'+aCol+'14;border-radius:9px;text-align:center;opacity:.92"><b style="color:'+aCol+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+esc(m.aTeam)+'</b><span style="font-family:var(--mono);font-weight:900;font-size:15px">x'+od.a.toFixed(2)+'</span></div><div style="flex:1;padding:8px 4px;border:1px solid '+bCol+';background:'+bCol+'14;border-radius:9px;text-align:center;opacity:.92"><b style="color:'+bCol+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">'+esc(m.bTeam)+'</b><span style="font-family:var(--mono);font-weight:900;font-size:15px">x'+od.b.toFixed(2)+'</span></div></div><p class="mini" style="text-align:center;margin:5px 0 0;color:var(--gold);font-weight:700">🙅 본인 출전 경기 — 베팅은 막혀요 (승부조작 방지) · <span style="color:var(--gold)">배당은 참고용 👀</span></p>';
   } else if(status!=='open'){
     inner='<p class="mini dim" style="text-align:center;margin:4px 0">⛔ 베팅이 마감됐어요</p>';
   } else {
