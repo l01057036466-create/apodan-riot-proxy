@@ -12,7 +12,7 @@ async function callLLM(prompt, maxTokens) {
   var gk = process.env.GEMINI_API_KEY;
   var ak = process.env.ANTHROPIC_API_KEY;
   if (gk) {
-    var gm = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    var gm = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
     var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gm + ':generateContent?key=' + gk, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
