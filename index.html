@@ -11658,9 +11658,11 @@ var FDRAFT_SEQ=[
 function fdCur(){if(!window._fdCur)window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};return window._fdCur;}
 function fdSeries(){return window._fdraft||{blue:'',red:'',games:[]};}
 function doomFDraftEnsure(){
+  var acct=(window._doomTP&&window._doomTP.sel&&window._doomTP.sel.acct)||'';
+  if(window._fdTeam!==acct){window._fdTeam=acct;window._fdraft=undefined;window._fdCur=null;window._fdLiveTs=0;if(window._fdLive){if(window._fdLiveTimer)clearInterval(window._fdLiveTimer);window._fdLive=false;window._fdLiveTimer=null;}}
   if(window._fdraft!==undefined)return;
   window._fdraft=null;
-  auctionCall('aucFDraftGet',{}).then(function(r){window._fdraft=r.fdraft||{blue:'',red:'',games:[]};if(typeof render==='function')render('force');}).catch(function(){window._fdraft={blue:'',red:'',games:[]};if(typeof render==='function')render('force');});
+  auctionCall('aucFDraftGet',{team:acct}).then(function(r){window._fdraft=r.fdraft||{blue:'',red:'',games:[]};if(typeof render==='function')render('force');}).catch(function(){window._fdraft={blue:'',red:'',games:[]};if(typeof render==='function')render('force');});
 }
 function fdUsed(){var s=fdSeries(),u={};(s.games||[]).forEach(function(g){(g.bp||[]).concat(g.rp||[]).forEach(function(c){u[c]=1;});});return u;}
 function fdThisPicks(){var c=fdCur();return c.bp.concat(c.rp);}
@@ -11696,7 +11698,7 @@ function doomFDSaveGame(){
   if(c.bp.length+c.rp.length===0)return toast('픽이 없어요 — 드래프트를 진행해주세요',true);
   var s=fdSeries();
   var ns={blue:s.blue||'',red:s.red||'',games:(s.games||[]).concat([{bb:c.bb,rb:c.rb,bp:c.bp,rp:c.rp}])};
-  auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};toast('💾 게임 '+window._fdraft.games.length+' 저장 — 쓴 챔피언이 다음 게임에서 제외돼요!');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});
+  auctionCall('aucFDraftSet',{fdraft:ns,team:window._fdTeam||''}).then(function(r){window._fdraft=r.fdraft||ns;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};toast('💾 게임 '+window._fdraft.games.length+' 저장 — 쓴 챔피언이 다음 게임에서 제외돼요!');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'저장 실패',true);});
 }
 function doomFDRosterInfo(nm){
   if(!nm)return '';
@@ -11744,19 +11746,19 @@ function doomFDGlobalBan(){
   if(gb.indexOf(nm)>=0)return toast('이미 글로벌 밴이에요',true);
   gb.push(nm);
   var ns={blue:s.blue||'',red:s.red||'',games:s.games||[],globalBans:gb};
-  auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;if(el)el.value='';toast('🌐 '+nm+' 글로벌 밴');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
+  auctionCall('aucFDraftSet',{fdraft:ns,team:window._fdTeam||''}).then(function(r){window._fdraft=r.fdraft||ns;if(el)el.value='';toast('🌐 '+nm+' 글로벌 밴');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
 }
 function doomFDGlobalBanRem(nm){
   var s=fdSeries();var ns={blue:s.blue||'',red:s.red||'',games:s.games||[],globalBans:(s.globalBans||[]).filter(function(c){return c!==nm;})};
-  auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
+  auctionCall('aucFDraftSet',{fdraft:ns,team:window._fdTeam||''}).then(function(r){window._fdraft=r.fdraft||ns;if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
 }
 function doomFDLiveApply(lv){if(!lv)return;window._fdCur={step:lv.step||0,bb:lv.bb||[],rb:lv.rb||[],bp:lv.bp||[],rp:lv.rp||[]};var s=fdSeries();if(lv.blue!=null)s.blue=lv.blue;if(lv.red!=null)s.red=lv.red;window._fdraft=s;window._fdLiveTs=lv.ts||Date.now();}
-function doomFDLivePush(){if(!window._fdLive)return;var c=fdCur(),s=fdSeries();auctionCall('aucFDLiveSet',{state:{step:c.step,bb:c.bb,rb:c.rb,bp:c.bp,rp:c.rp,blue:s.blue||'',red:s.red||''}}).then(function(r){if(r&&r.ts)window._fdLiveTs=r.ts;}).catch(function(){});}
-function doomFDLivePoll(){if(!window._fdLive)return;auctionCall('aucFDLiveGet',{}).then(function(r){if(r&&r.live&&(r.live.ts||0)>(window._fdLiveTs||0)){doomFDLiveApply(r.live);if(typeof render==='function')render('force');}}).catch(function(){});}
+function doomFDLivePush(){if(!window._fdLive)return;var c=fdCur(),s=fdSeries();auctionCall('aucFDLiveSet',{team:window._fdTeam||'',state:{step:c.step,bb:c.bb,rb:c.rb,bp:c.bp,rp:c.rp,blue:s.blue||'',red:s.red||''}}).then(function(r){if(r&&r.ts)window._fdLiveTs=r.ts;}).catch(function(){});}
+function doomFDLivePoll(){if(!window._fdLive)return;auctionCall('aucFDLiveGet',{team:window._fdTeam||''}).then(function(r){if(r&&r.live&&(r.live.ts||0)>(window._fdLiveTs||0)){doomFDLiveApply(r.live);if(typeof render==='function')render('force');}}).catch(function(){});}
 function doomFDLiveToggle(){
   window._fdLive=!window._fdLive;
   if(window._fdLive){
-    auctionCall('aucFDLiveGet',{}).then(function(r){
+    auctionCall('aucFDLiveGet',{team:window._fdTeam||''}).then(function(r){
       if(r&&r.live&&typeof r.live.step==='number'){doomFDLiveApply(r.live);toast('🔴 실시간 연결 — 진행 상황을 불러왔어요');}
       else{doomFDLivePush();toast('🔴 실시간 시작 — 상대도 켜면 같이 진행돼요');}
       if(typeof render==='function')render('force');
@@ -11791,18 +11793,18 @@ function doomFDSim(){
 function doomFDDelGame(gi){
   if(!confirm('게임 '+(gi+1)+' 기록을 지울까요?\n(그 게임에서 쓴 챔피언이 다시 사용 가능해져요)'))return;
   var s=fdSeries();var ns={blue:s.blue||'',red:s.red||'',games:(s.games||[]).filter(function(_,i){return i!==gi;})};
-  auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;toast('🗑️ 게임 삭제됨');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
+  auctionCall('aucFDraftSet',{fdraft:ns,team:window._fdTeam||''}).then(function(r){window._fdraft=r.fdraft||ns;toast('🗑️ 게임 삭제됨');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
 }
 function doomFDNewSeries(){
   if(!confirm('시리즈를 새로 시작할까요? (저장된 게임 기록이 모두 지워져요)'))return;
   var ns={blue:fdSeries().blue||'',red:fdSeries().red||'',games:[]};
-  auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};toast('🆕 새 시리즈 시작!');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
+  auctionCall('aucFDraftSet',{fdraft:ns,team:window._fdTeam||''}).then(function(r){window._fdraft=r.fdraft||ns;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};toast('🆕 새 시리즈 시작!');if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
 }
 function doomFDFilter(){var el=document.getElementById('fdSearch');window._fdQ=el?el.value:'';var q=(window._fdQ||'').trim().toLowerCase(),role=window._fdRole||'';var grid=document.getElementById('fdGrid');if(!grid)return;Array.prototype.forEach.call(grid.children,function(it){var nm=(it.getAttribute('data-nm')||'').toLowerCase(),tags=(it.getAttribute('data-tags')||'');var ok=(!q||nm.indexOf(q)>=0)&&(!role||tags.indexOf(role)>=0);it.style.display=ok?'':'none';});}
 function doomFDRole(r){window._fdRole=(window._fdRole===r?'':r);if(typeof render==='function')render('force');}
 function doomFearlessSection(){
-  var fdS=(window._bank)||(typeof bankSession==='function'?bankSession():null);
-  if(!fdS||!fdS.name)return '<div style="background:rgba(124,77,255,.05);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:24px">🎯</div><h3 style="margin:6px 0 2px;font-size:15px">모의 밴픽</h3><p class="mini dim" style="margin:0">지갑에서 <b>로그인</b>하면 모의 밴픽(피어리스 + 실시간 함께하기)을 쓸 수 있어요.</p></div>';
+  var fdAcct=(window._doomTP&&window._doomTP.sel&&window._doomTP.sel.acct)||'';
+  if(!fdAcct)return '';
   doomFDraftEnsure();
   if(window._fdraft===null)return '<div style="background:rgba(124,77,255,.05);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px"><p class="mini dim" style="margin:0">🎯 모의 밴픽 불러오는 중…</p></div>';
   if(!Object.keys(CHAMP_KEY||{}).length&&typeof loadChampMap==='function')loadChampMap();
