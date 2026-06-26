@@ -304,30 +304,40 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'doom:mlineups', JSON.stringify(mlS)]);
       return res.status(200).json({ ok: true });
     }
-    if (action === 'aucFDraftGet') { // 🎯 모의 밴픽(피어리스) 시리즈 불러오기
-      var fdRaw = null; try { fdRaw = JSON.parse((await redis(['GET', 'doom:fdraft'])) || 'null'); } catch (e) { fdRaw = null; }
+    if (action === 'aucFDraftGet') { // 🎯 모의 밴픽(피어리스) 시리즈 불러오기 (팀별)
+      var acctFG = body.team || '';
+      var fdRaw = null; try { fdRaw = JSON.parse((await redis(['GET', acctFG ? ('doom:fdraft:' + acctFG) : 'doom:fdraft'])) || 'null'); } catch (e) { fdRaw = null; }
       return res.status(200).json({ fdraft: fdRaw || { blue: '', red: '', games: [], globalBans: [] } });
     }
-    if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (로그인 필요)
+    if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (그 팀 팀원만)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var acctFS = body.team || '';
+      var lkFS = []; try { lkFS = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkFS = []; }
+      var myFS = aucResolveMyTeam(lkFS, s, null);
+      if (!(isOp(s) || (myFS && acctFS && myFS.acct === acctFS))) return res.status(403).json({ error: '이 팀의 팀원만 저장할 수 있어요' });
       var fd = body.fdraft;
       if (!fd || typeof fd !== 'object') return res.status(400).json({ error: '저장 데이터 오류' });
       var clean = { blue: String(fd.blue || '').slice(0, 40), red: String(fd.red || '').slice(0, 40), games: [], globalBans: (Array.isArray(fd.globalBans) ? fd.globalBans : []).slice(0, 20).map(function (c) { return String(c || '').slice(0, 30); }).filter(Boolean) };
       if (Array.isArray(fd.games)) { clean.games = fd.games.slice(0, 9).map(function (g) { var pick = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); }; return { bb: pick(g.bb), rb: pick(g.rb), bp: pick(g.bp), rp: pick(g.rp) }; }); }
-      await redis(['SET', 'doom:fdraft', JSON.stringify(clean)]);
+      await redis(['SET', acctFS ? ('doom:fdraft:' + acctFS) : 'doom:fdraft', JSON.stringify(clean)]);
       return res.status(200).json({ ok: true, fdraft: clean });
     }
-    if (action === 'aucFDLiveGet') { // 🔴 실시간 라이브 드래프트 상태 (관전 포함 누구나 읽기)
-      var lvRaw = null; try { lvRaw = JSON.parse((await redis(['GET', 'doom:fdlive'])) || 'null'); } catch (e) { lvRaw = null; }
+    if (action === 'aucFDLiveGet') { // 🔴 실시간 라이브 (팀별 · 읽기)
+      var acctLG = body.team || '';
+      var lvRaw = null; try { lvRaw = JSON.parse((await redis(['GET', acctLG ? ('doom:fdlive:' + acctLG) : 'doom:fdlive'])) || 'null'); } catch (e) { lvRaw = null; }
       return res.status(200).json({ live: lvRaw });
     }
-    if (action === 'aucFDLiveSet') { // 🔴 실시간 라이브 드래프트 갱신 (로그인 필요)
+    if (action === 'aucFDLiveSet') { // 🔴 실시간 라이브 갱신 (그 팀 팀원만)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var acctLS = body.team || '';
+      var lkLS = []; try { lkLS = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkLS = []; }
+      var myLS = aucResolveMyTeam(lkLS, s, null);
+      if (!(isOp(s) || (myLS && acctLS && myLS.acct === acctLS))) return res.status(403).json({ error: '이 팀의 팀원만 사용할 수 있어요' });
       var stIn = body.state || {};
       var clampArr = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); };
       var ts = Date.now();
       var lv = { step: Math.max(0, Math.min(20, parseInt(stIn.step, 10) || 0)), bb: clampArr(stIn.bb), rb: clampArr(stIn.rb), bp: clampArr(stIn.bp), rp: clampArr(stIn.rp), blue: String(stIn.blue || '').slice(0, 40), red: String(stIn.red || '').slice(0, 40), ts: ts, by: s.name };
-      await redis(['SET', 'doom:fdlive', JSON.stringify(lv)]);
+      await redis(['SET', acctLS ? ('doom:fdlive:' + acctLS) : 'doom:fdlive', JSON.stringify(lv)]);
       return res.status(200).json({ ok: true, ts: ts });
     }
     if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Claude API)
