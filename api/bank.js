@@ -1602,7 +1602,7 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST' && action === 'setFreeze') {
       var sFz = await auth(body.token);
       if (!sFz || (sFz.role !== 'admin' && sFz.role !== 'dev')) return res.status(403).json({ error: '권한 없음' });
-      if (body.on) await redis(['SET', 'betsfreeze', '1']); else await redis(['DEL', 'betsfreeze']);
+      if (body.on) await redis(['SET', 'betsfreeze', '1', 'EX', '21600']); else await redis(['DEL', 'betsfreeze']);
       return res.status(200).json({ ok: true, frozen: !!body.on });
     }
     if (req.method === 'POST' && action === 'totoSettle') {
