@@ -308,14 +308,27 @@ module.exports = async function handler(req, res) {
       var fdRaw = null; try { fdRaw = JSON.parse((await redis(['GET', 'doom:fdraft'])) || 'null'); } catch (e) { fdRaw = null; }
       return res.status(200).json({ fdraft: fdRaw || { blue: '', red: '', games: [], globalBans: [] } });
     }
-    if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (운영 전용)
-      if (!isOp(s)) return res.status(403).json({ error: '운영자만 저장할 수 있어요' });
+    if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (로그인 필요)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
       var fd = body.fdraft;
       if (!fd || typeof fd !== 'object') return res.status(400).json({ error: '저장 데이터 오류' });
       var clean = { blue: String(fd.blue || '').slice(0, 40), red: String(fd.red || '').slice(0, 40), games: [], globalBans: (Array.isArray(fd.globalBans) ? fd.globalBans : []).slice(0, 20).map(function (c) { return String(c || '').slice(0, 30); }).filter(Boolean) };
       if (Array.isArray(fd.games)) { clean.games = fd.games.slice(0, 9).map(function (g) { var pick = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); }; return { bb: pick(g.bb), rb: pick(g.rb), bp: pick(g.bp), rp: pick(g.rp) }; }); }
       await redis(['SET', 'doom:fdraft', JSON.stringify(clean)]);
       return res.status(200).json({ ok: true, fdraft: clean });
+    }
+    if (action === 'aucFDLiveGet') { // 🔴 실시간 라이브 드래프트 상태 (관전 포함 누구나 읽기)
+      var lvRaw = null; try { lvRaw = JSON.parse((await redis(['GET', 'doom:fdlive'])) || 'null'); } catch (e) { lvRaw = null; }
+      return res.status(200).json({ live: lvRaw });
+    }
+    if (action === 'aucFDLiveSet') { // 🔴 실시간 라이브 드래프트 갱신 (로그인 필요)
+      if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
+      var stIn = body.state || {};
+      var clampArr = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); };
+      var ts = Date.now();
+      var lv = { step: Math.max(0, Math.min(20, parseInt(stIn.step, 10) || 0)), bb: clampArr(stIn.bb), rb: clampArr(stIn.rb), bp: clampArr(stIn.bp), rp: clampArr(stIn.rp), blue: String(stIn.blue || '').slice(0, 40), red: String(stIn.red || '').slice(0, 40), ts: ts, by: s.name };
+      await redis(['SET', 'doom:fdlive', JSON.stringify(lv)]);
+      return res.status(200).json({ ok: true, ts: ts });
     }
     if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Claude API)
       if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY(또는 ANTHROPIC_API_KEY)를 Vercel에 추가해주세요' });
