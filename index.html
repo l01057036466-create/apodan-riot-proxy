@@ -4784,7 +4784,7 @@ async function totoLock(date,kind,open){
 }
 async function toggleFreeze(){
   const on=!window._betsFrozen;
-  if(on&&!confirm('⏸ 모든 베팅(매치·스코어·토토·MVP)을 정지할까요? 경기 끝나면 ▶ 재개를 눌러주세요.'))return;
+  if(on&&!confirm('⏸ 모든 베팅(매치·스코어·토토·MVP·멸망전)을 정지할까요?\n경기 끝나면 ▶ 재개를 눌러주세요. (안 풀어도 6시간 후 자동 해제돼요)'))return;
   try{await bankCall('setFreeze',{on});window._betsFrozen=on;toast(on?'⏸ 모든 베팅 정지됨':'▶ 베팅 재개');render()}
   catch(e){toast('실패: '+e.message,true)}
 }
@@ -8526,7 +8526,7 @@ function lineupCard(L){
       else if(!B)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">💰 <b>거래소 탭에서 로그인</b>하면 APO로 베팅할 수 있어요 (가입 시 10,000 APO)</p>`;
       else if(B.role==='dev'&&!B.name)actions='';
       else if(!oA||!oB)actions=`<p class="mini dim" style="text-align:center;margin:8px 0 0">⏳ 배당 계산 중 — 라인업이 확정되면 베팅이 열려요</p>`;
-      else if(only)actions=`<p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🙅 본인 출전 경기 — 베팅할 수 없어요 (승부조작 방지). MVP 투표·응원은 가능!</p>`;
+      else if(only)actions=`<div class="row" style="justify-content:center;gap:10px;margin-top:8px"><div style="text-align:center;padding:5px 18px;border:1px solid rgba(242,184,75,.45);border-radius:10px;background:rgba(242,184,75,.06);opacity:.92"><div class="mini" style="color:var(--gold);font-weight:800">🅰 알파</div><div style="font-size:17px;font-weight:900;color:var(--gold)">x${oA}</div></div><div style="text-align:center;padding:5px 18px;border:1px solid rgba(63,217,197,.45);border-radius:10px;background:rgba(63,217,197,.06);opacity:.92"><div class="mini" style="color:var(--win);font-weight:800">🅱 베타</div><div style="font-size:17px;font-weight:900;color:var(--win)">x${oB}</div></div></div><p class="mini" style="text-align:center;margin:8px 0 0;font-weight:800;color:var(--mut)">🙅 본인 출전 경기 — 베팅은 막혀요 (승부조작 방지) · <span style="color:var(--gold)">배당은 참고용 👀</span> · MVP 투표·응원은 가능!</p>`;
       else{
         const myOdds=M&&M.my?(M.my.odds||(M.my.team==='alpha'?oA:oB)):0;
         const maxAdd=Math.max(0,20000-(M&&M.my?M.my.amt:0));
@@ -8584,7 +8584,7 @@ function lineupCard(L){
           const sProbs=dp!=null?opts.map(o=>seriesScoreProb(o,dp)):null;
           const sFav=sProbs?sProbs.indexOf(Math.max.apply(null,sProbs)):-1;
           return`<div style="margin-top:10px;border-top:1px dashed var(--line);padding-top:8px">
-            ${(()=>{if(window._betsFrozen===undefined){window._betsFrozen=false;setTimeout(fetchFreeze,50)}const _fz=window._betsFrozen;const _bs=bankSession();const _op=_bs&&(_bs.role==='admin'||_bs.role==='dev');return (_fz||_op)?`<div style="text-align:center;margin:0 0 10px">${_fz?`<div style="background:rgba(255,77,107,.15);border:1px solid var(--lose);border-radius:10px;padding:9px;font-weight:800;color:var(--lose);margin-bottom:${_op?'6px':'0'}">⏸ 베팅 정지됨 — 운영자가 모든 베팅을 막았어요</div>`:''}${_op?`<button class="btn sm ${_fz?'gold':'lose'}" onclick="toggleFreeze()">${_fz?'▶ 베팅 재개':'⏸ 모든 베팅 정지'}</button>`:''}</div>`:''})()}
+            
             <p class="mini" style="margin:0 0 ${sProbs?'2px':'6px'};text-align:center;font-weight:900;letter-spacing:.1em;color:var(--win)">🎯 스코어 예측 · 토토 <span class="dim" style="font-weight:600;letter-spacing:0">${SC.win?`— 결과 ${SC.win} 확정`:lockedS?'— 마감':'— 정답자끼리 풀 분배'}</span></p>
             ${sProbs?`<p class="mini dim" style="text-align:center;margin:0 0 6px;font-size:10px">📊 데이터 배당 — 유력 <b style="color:var(--gold)">${opts[sFav]}</b> ${Math.round(sProbs[sFav]*100)}% <span style="opacity:.6">· 폼·승률 기반 예측</span></p>`:''}
             <div class="row" style="flex-wrap:wrap;gap:6px;justify-content:center">
@@ -8766,14 +8766,21 @@ function pgDashboard(){
 }
 
 /* ───── 🎠 대시보드 내전 캐러셀 — 화살표·회차칩·8초 자동 넘김 ───── */
+function freezeBar(){ // 🚦 항상 보이는 베팅 정지 표시/해제 (운영자) — 갇힘 방지
+  if(window._betsFrozen===undefined){window._betsFrozen=false;setTimeout(fetchFreeze,50);}
+  const fz=window._betsFrozen;const bs=bankSession();const op=bs&&(bs.role==='admin'||bs.role==='dev');
+  if(!fz&&!op)return '';
+  return `<div style="text-align:center;margin:0 0 12px">${fz?`<div style="background:rgba(255,77,107,.15);border:1px solid var(--lose);border-radius:10px;padding:9px;font-weight:800;color:var(--lose);margin-bottom:${op?'6px':'0'}">⏸ 베팅 정지됨 — 모든 베팅(내전·멸망전·스크림)이 막혀있어요${op?' · 아래 버튼으로 해제':''}</div>`:''}${op?`<button class="btn sm ${fz?'gold':'lose'}" onclick="toggleFreeze()">${fz?'▶ 베팅 재개 (정지 풀기)':'⏸ 모든 베팅 정지'}</button>`:''}</div>`;
+}
 function luCarousel(){
   const Ls=allLineups();
-  if(!Ls.length)return'';
+  const fz=freezeBar();
+  if(!Ls.length)return fz;
   let i=Math.min(window._luIdx||0,Ls.length-1);window._luIdx=i;
   clearTimeout(window._luAuto); // 자동 넘김 제거 — 화살표·회차 버튼으로만 이동
   window._lpUsed=new Set();const card=lineupCard(Ls[i]);window._lpUsed=null;
-  if(Ls.length===1)return card;
-  return`<div class="row" style="justify-content:center;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+  if(Ls.length===1)return fz+card;
+  return fz+`<div class="row" style="justify-content:center;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
     <button class="btn sm ghost" onclick="luGo(-1)" aria-label="이전 내전">◀</button>
     ${Ls.map((L,j)=>`<button class="btn sm ${j===i?'gold':'ghost'}" onclick="luSet(${j})">${esc(L.round||'1차')}</button>`).join('')}
     <button class="btn sm ghost" onclick="luGo(1)" aria-label="다음 내전">▶</button>
