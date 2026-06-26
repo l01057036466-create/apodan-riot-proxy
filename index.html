@@ -9066,7 +9066,7 @@ function doomBetPanel(m){
   if(op){
     var bl=(window._doomBets&&window._doomBets[m.mk]);
     if(bl===undefined){
-      betsList=tot?'<p class="mini" style="text-align:center;margin:7px 0 0"><button class="btn sm ghost" style="font-size:11px" onclick="doomLoadBets(\''+m.mk+'\')">👀 누가 어디에 걸었나 (운영진)</button></p>':'';
+      betsList='<p class="mini" style="text-align:center;margin:7px 0 0"><button class="btn sm ghost" style="font-size:11px" onclick="doomLoadBets(\''+m.mk+'\')">👀 누가 어디에 걸었나 (운영진)</button></p>';
     } else if(!bl.length){
       betsList='<p class="mini dim" style="text-align:center;margin:7px 0 0">아직 베팅한 사람이 없어요</p>';
     } else {
@@ -11574,10 +11574,40 @@ function doomStandingsTab(){
   var addForm='';
   if(op&&teams.length){
     var inp='padding:8px;border-radius:7px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:13px';
-    addForm='<details style="margin:18px 0 0"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:14px">➕ 경기 결과 입력 (운영자)</summary><div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><select id="rsType" style="flex:1;'+inp+'"><option value="멸망전">🏆 멸망전 경기</option><option value="스크림">🤝 스크림</option></select><input id="rsDate" type="date" style="flex:none;'+inp+'"></div><datalist id="doomTL">'+teams.map(function(t){return '<option value="'+esc(t.name)+'">';}).join('')+'</datalist><div style="display:flex;gap:5px;align-items:center"><input id="rsA" list="doomTL" placeholder="팀 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"><input id="rsAs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><span style="font-weight:800">:</span><input id="rsBs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><input id="rsB" list="doomTL" placeholder="상대 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"></div><input id="rsRound" placeholder="라운드/메모 (예: 8강 1경기 · 연습)" maxlength="30" style="'+inp+'"><input id="rsNote" placeholder="메모 (예: Bo3 · MVP 누구)" maxlength="100" style="'+inp+'"><button class="btn gold" style="width:100%" onclick="doomResultAdd()">🏆 결과 등록</button></div></details>';
+    addForm='<details style="margin:18px 0 0"><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:14px">➕ 경기 결과 입력 (운영자)</summary><div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:6px"><select id="rsType" style="flex:1;'+inp+'"><option value="멸망전">🏆 멸망전 경기</option><option value="스크림">🤝 스크림</option></select><input id="rsDate" type="date" style="flex:none;'+inp+'"></div><div style="border:1px solid var(--line);border-radius:10px;padding:10px;background:rgba(124,77,255,.07)"><div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><b style="font-size:13px">📋 JSON 붙여넣기</b><span class="mini dim">픽/밴 자동 · 레이팅 반영</span></div><textarea id="doomJsonBox" placeholder="경기 JSON을 여기에 붙여넣기 (winnerTeam·participants...)" style="width:100%;box-sizing:border-box;height:58px;resize:vertical;background:var(--inset);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-family:var(--mono);font-size:11px;padding:8px"></textarea><button class="btn gold" style="width:100%;margin-top:6px" onclick="doomResultFromJson()">🏆 JSON으로 등록 (픽/밴 자동)</button><p class="mini dim" style="margin:6px 0 0;font-size:10.5px;line-height:1.6">위 <b>종류</b>(멸망전/스크림) 선택 후 경기 JSON 붙여넣기 → 팀은 로스터로 자동 감지. 내전 \'경기 기록\' 탭과 같은 형식이에요.</p></div><div style="text-align:center;color:var(--mut);font-size:11px;margin:3px 0;font-weight:700">— 또는 직접 입력 —</div><datalist id="doomTL">'+teams.map(function(t){return '<option value="'+esc(t.name)+'">';}).join('')+'</datalist><div style="display:flex;gap:5px;align-items:center"><input id="rsA" list="doomTL" placeholder="팀 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"><input id="rsAs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><span style="font-weight:800">:</span><input id="rsBs" type="number" min="0" placeholder="0" style="width:42px;text-align:center;'+inp+'"><input id="rsB" list="doomTL" placeholder="상대 입력/선택" autocomplete="off" style="flex:1;min-width:0;'+inp+'"></div><input id="rsRound" placeholder="라운드/메모 (예: 8강 1경기 · 연습)" maxlength="30" style="'+inp+'"><input id="rsNote" placeholder="메모 (예: Bo3 · MVP 누구)" maxlength="100" style="'+inp+'"><button class="btn gold" style="width:100%" onclick="doomResultAdd()">🏆 직접 등록</button></div></details>';
   }
   return '<div class="card" style="padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:34px">📊</div><h3 style="margin:6px 0 2px">순위 & 경기 결과</h3><p class="mini dim" style="margin:0">승 많은 순 · 동률 시 득실차</p></div>'+standHtml+doomBracketSection(teams,op)+resHtml+addForm+(teams.length?'':'<p class="mini dim" style="text-align:center;margin:16px 0 0">※ <b>팀 명단 확정</b> 후 순위가 집계돼요</p>');
 }
+async function doomResultFromJson(){
+  if(typeof needAdmin==='function'&&needAdmin())return;
+  var type=(((document.getElementById('rsType')||{}).value)==='스크림')?'스크림':'멸망전';
+  var box=document.getElementById('doomJsonBox');
+  var raw=(box&&box.value||'').trim();
+  if(!raw)return toast('경기 JSON을 붙여넣어주세요',true);
+  var obj; try{obj=JSON.parse(raw);}catch(e){return toast('JSON 형식이 잘못됐어요 (중괄호/따옴표 확인)',true);}
+  if(Array.isArray(obj))obj=obj[0]; else if(obj&&obj.matches)obj=Array.isArray(obj.matches)?obj.matches[0]:obj.matches;
+  var d=(typeof jsonToMatch==='function')?jsonToMatch(obj):null;
+  if(!d||!(d.participants||[]).length)return toast('participants 배열이 필요해요 (형식 확인)',true);
+  var r; try{r=await auctionCall('aucSchedList',{});}catch(e){return toast('팀 정보를 못 불러왔어요',true);}
+  var teams=r.teams||[];
+  if(!teams.length)return toast('먼저 멸망전 팀 명단을 확정해주세요 (못 박기)',true);
+  var nameTeam={};teams.forEach(function(t){var add=function(nm){if(nm)nameTeam[bareName(nm)]=t;};add(t.leader);(t.roster||[]).forEach(function(p){add(p.name);});});
+  var sideTeam=function(side){var ps=(d.participants||[]).filter(function(p){return p.team===side;});var cnt={};ps.forEach(function(p){var nm=bareName(p.rawName||nameOf(p.playerId)||'');var t=nameTeam[nm];if(t)cnt[t.name]=(cnt[t.name]||0)+1;});var best=null,bc=0;teams.forEach(function(t){if((cnt[t.name]||0)>bc){bc=cnt[t.name];best=t;}});return best;};
+  var bt=sideTeam('BLUE'),rt=sideTeam('RED');
+  var blueName=bt?bt.name:'',redName=rt?rt.name:'';
+  if(!blueName||!redName)return toast('⚠️ 팀 자동감지 실패 — 로스터에 있는 선수들의 경기인지 확인해주세요',true);
+  if(blueName===redName)return toast('양 팀이 같게 감지됐어요 — 로스터를 확인해주세요',true);
+  var sideLineup=function(side){var ps=(d.participants||[]).filter(function(p){return p.team===side;});var picks=ps.map(function(p){return {p:bareName(p.rawName||nameOf(p.playerId)||'?'),c:p.championId||''};});var bans=(d.bans||[]).filter(function(b){return b.team===side;}).map(function(b){return b.championId||'';}).filter(Boolean);return {picks:picks,bans:bans};};
+  var winName=d.winnerTeam==='RED'?redName:blueName;
+  var tyL=type==='스크림'?'스크림':'멸망전 경기';
+  if(!confirm('🏆 '+tyL+' 결과 등록\n\n'+blueName+' vs '+redName+'\n승자: '+winName+'\n\n픽/밴 자동기록 + 레이팅 반영할까요?'))return;
+  var rnd=((document.getElementById('rsRound')||{}).value||'').trim()||(type==='스크림'?'스크림':'');
+  var memo=((document.getElementById('rsNote')||{}).value||'').trim();
+  var note=(d.durationMin?d.durationMin+'분':'')+(memo?((d.durationMin?' · ':'')+memo):'');
+  var body={type:type,aName:blueName,bName:redName,scoreA:d.winnerTeam==='RED'?0:1,scoreB:d.winnerTeam==='RED'?1:0,date:d.playedAt||((document.getElementById('rsDate')||{}).value||''),round:rnd,note:note,lineup:{a:sideLineup('BLUE'),b:sideLineup('RED')}};
+  try{await auctionCall('aucResultAdd',body);toast('✅ '+tyL+' 등록 완료 — 레이팅 반영됨! (순위/레이팅 탭에서 확인)');if(box)box.value='';if(typeof doomReloadStandings==='function')doomReloadStandings();}catch(e){toast((e&&e.message)||'등록 실패',true);}
+}
+
 function doomResultAdd(){
   var a=(document.getElementById('rsA')||{}).value||'',b=(document.getElementById('rsB')||{}).value||'';
   var sa=(document.getElementById('rsAs')||{}).value,sb=(document.getElementById('rsBs')||{}).value;
