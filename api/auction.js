@@ -369,12 +369,19 @@ module.exports = async function handler(req, res) {
       var sgL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
       var avail = (body.available || []).filter(Boolean);
       if (!avail.length) return res.status(400).json({ error: '선택 가능한 챔피언이 없어요' });
-      var sgPrompt = '리그 오브 레전드 드래프트 진행 중입니다. 지금 ' + sgSide + '팀의 ' + sgType + ' 차례입니다.\n\n'
-        + '블루 픽: ' + sgL(body.bluePicks) + ' / 밴: ' + sgL(body.blueBans) + '\n'
-        + '레드 픽: ' + sgL(body.redPicks) + ' / 밴: ' + sgL(body.redBans) + '\n\n'
-        + (body.roster ? ('지금 ' + sgType + '하는 ' + sgSide + '팀 선수 내전 챔프풀(솔랭·자랭 경향 추정 포함):\n' + body.roster + '\n\n') : '')
-        + '이 ' + sgSide + '팀이 실제로 ' + sgType + '할 법한, 동시에 합리적인 챔피언 하나를 아래 목록에서 골라주세요. '
-        + (body.type === 'ban' ? '상대에게 위협적이거나 이 팀이 꺼릴 챔피언 위주로 밴하세요.' : '아직 안 뽑힌 포지션·선수 숙련 챔프·메타·시너지·카운터를 종합 고려하세요.') + '\n\n'
+      var sgMeBlue = body.side !== 'r';
+      var sgMyPicks = sgMeBlue ? body.bluePicks : body.redPicks;
+      var sgMyBans = sgMeBlue ? body.blueBans : body.redBans;
+      var sgOppPicks = sgMeBlue ? body.redPicks : body.bluePicks;
+      var sgOppBans = sgMeBlue ? body.redBans : body.blueBans;
+      var sgPrompt = '리그 오브 레전드 드래프트 진행 중. 나는 ' + sgSide + '팀이고, 지금 우리 팀의 ' + sgType + ' 차례입니다.\n\n'
+        + '【우리 팀(' + sgSide + ')】 픽: ' + sgL(sgMyPicks) + ' / 밴: ' + sgL(sgMyBans) + '\n'
+        + '【상대 팀】 픽: ' + sgL(sgOppPicks) + ' / 밴: ' + sgL(sgOppBans) + '\n\n'
+        + (body.roster ? ('우리 팀(' + sgSide + ') 선수 내전 챔프풀(솔랭·자랭 경향 추정 포함):\n' + body.roster + '\n\n') : '')
+        + '우리 팀에게 가장 유리한 ' + sgType + '을 아래 목록에서 하나만 고르세요.\n'
+        + (body.type === 'ban'
+            ? '밴 기준: 우리 팀 선수에게 까다로운(상대가 우리 상대로 쓰면 위협적인) 챔피언, 또는 상대가 잘 다룰 챔피언을 밴해 상대를 견제하세요. (= 우리에게 불리한 챔프를 지우는 것)'
+            : '픽 기준: 우리 팀 기존 픽과 시너지가 좋고, 상대 팀 픽을 카운터하며, 우리 팀 선수가 잘 다루는 챔피언을 고르세요. 아직 안 뽑힌 포지션을 우선하세요.') + '\n\n'
         + '출력 형식: 첫 줄에 챔피언 이름만 (반드시 아래 목록에 있는 그대로), 둘째 줄에 25자 이내 이유 한 줄.\n\n'
         + '가능 챔피언 목록: ' + avail.join(', ');
       try {
