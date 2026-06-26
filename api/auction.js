@@ -277,6 +277,19 @@ module.exports = async function handler(req, res) {
       await redis(['SET', 'doom:mlineups', JSON.stringify(mlS)]);
       return res.status(200).json({ ok: true });
     }
+    if (action === 'aucFDraftGet') { // 🎯 모의 밴픽(피어리스) 시리즈 불러오기
+      var fdRaw = null; try { fdRaw = JSON.parse((await redis(['GET', 'doom:fdraft'])) || 'null'); } catch (e) { fdRaw = null; }
+      return res.status(200).json({ fdraft: fdRaw || { blue: '', red: '', games: [] } });
+    }
+    if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (운영 전용)
+      if (!isOp(s)) return res.status(403).json({ error: '운영자만 저장할 수 있어요' });
+      var fd = body.fdraft;
+      if (!fd || typeof fd !== 'object') return res.status(400).json({ error: '저장 데이터 오류' });
+      var clean = { blue: String(fd.blue || '').slice(0, 40), red: String(fd.red || '').slice(0, 40), games: [] };
+      if (Array.isArray(fd.games)) { clean.games = fd.games.slice(0, 9).map(function (g) { var pick = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); }; return { bb: pick(g.bb), rb: pick(g.rb), bp: pick(g.bp), rp: pick(g.rp) }; }); }
+      await redis(['SET', 'doom:fdraft', JSON.stringify(clean)]);
+      return res.status(200).json({ ok: true, fdraft: clean });
+    }
     if (action === 'aucBracketSet') { // 🏆 더블 엘리미네이션 대진표 저장 (운영 전용)
       if (!isOp(s)) return res.status(403).json({ error: '운영자만 대진표를 편집할 수 있어요' });
       var mbB = Array.isArray(body.matches) ? body.matches : [];
