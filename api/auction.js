@@ -378,6 +378,7 @@ module.exports = async function handler(req, res) {
         + '【우리 팀(' + sgSide + ')】 픽: ' + sgL(sgMyPicks) + ' / 밴: ' + sgL(sgMyBans) + '\n'
         + '【상대 팀】 픽: ' + sgL(sgOppPicks) + ' / 밴: ' + sgL(sgOppBans) + '\n\n'
         + (body.roster ? ('우리 팀(' + sgSide + ') 선수 내전 챔프풀(솔랭·자랭 경향 추정 포함):\n' + body.roster + '\n\n') : '')
+        + '진영 참고: 우리 팀은 ' + (sgMeBlue ? '블루(선픽 주도권 — 좋은 챔프를 먼저 선점하는 진영)' : '레드(후픽·막픽 카운터 우위 — 상대 픽을 보고 대응하는 진영)') + '입니다.\n'
         + '우리 팀에게 가장 유리한 ' + sgType + '을 아래 목록에서 하나만 고르세요.\n'
         + (body.type === 'ban'
             ? '밴 기준: 우리 팀 선수에게 까다로운(상대가 우리 상대로 쓰면 위협적인) 챔피언, 또는 상대가 잘 다룰 챔피언을 밴해 상대를 견제하세요. (= 우리에게 불리한 챔프를 지우는 것)'
