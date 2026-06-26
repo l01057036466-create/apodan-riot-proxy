@@ -262,7 +262,8 @@
    "riotTag": "조 아",
    "aliases": [
     "준표",
-    "01준표"
+    "01준표",
+    "nirah"
    ],
    "active": true,
    "memo": "",
@@ -605,7 +606,8 @@
    "riotTag": "개같은가락",
    "aliases": [
     "언지",
-    "99언지"
+    "99언지",
+    "언남노"
    ],
    "active": true,
    "memo": "",
@@ -641,7 +643,8 @@
    "riotTag": "고양이",
    "aliases": [
     "잭슨",
-    "99잭슨"
+    "99잭슨",
+    "부식배송"
    ],
    "active": true,
    "memo": "",
@@ -39811,7 +39814,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_b0ryjti5_mq7nhxuq",
      "rawName": "nirah",
      "championId": "니코",
      "kills": 1,
@@ -40301,7 +40304,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_b0ryjti5_mq7nhxuq",
      "rawName": "nirah",
      "championId": "쓰레쉬",
      "kills": 2,
@@ -40497,7 +40500,7 @@
     {
      "team": "BLUE",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_00q5dhm1_mq7nhxuq",
      "rawName": "언남노",
      "championId": "마오카이",
      "kills": 0,
@@ -40968,7 +40971,7 @@
     {
      "team": "RED",
      "lane": "SUPPORT",
-     "playerId": "",
+     "playerId": "p_00q5dhm1_mq7nhxuq",
      "rawName": "언남노",
      "championId": "세라핀",
      "kills": 2,
@@ -41386,7 +41389,7 @@
     {
      "team": "BLUE",
      "lane": "TOP",
-     "playerId": "",
+     "playerId": "p_imjto1qf_mq7nhxuq",
      "rawName": "부식배송",
      "championId": "세주아니",
      "kills": 4,
@@ -41788,8 +41791,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 443,
- "updatedAt": "2026-06-26T17:31:34.246Z",
+ "rev": 446,
+ "updatedAt": "2026-06-26T17:42:38.890Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
