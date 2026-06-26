@@ -11684,10 +11684,11 @@ function doomFDPick(name){
     (st.s==='b'?c.bb:c.rb).push(name);
   }
   c.step++;
+  doomFDLivePush();
   if(typeof render==='function')render('force');
 }
-function doomFDUndo(){var c=fdCur();if(c.step<=0)return;var p=FDRAFT_SEQ[c.step-1];(p.s==='b'?(p.t==='ban'?c.bb:c.bp):(p.t==='ban'?c.rb:c.rp)).pop();c.step--;if(typeof render==='function')render('force');}
-function doomFDReset(){if(!confirm('이번 게임 드래프트를 초기화할까요?'))return;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};if(typeof render==='function')render('force');}
+function doomFDUndo(){var c=fdCur();if(c.step<=0)return;var p=FDRAFT_SEQ[c.step-1];(p.s==='b'?(p.t==='ban'?c.bb:c.bp):(p.t==='ban'?c.rb:c.rp)).pop();c.step--;doomFDLivePush();if(typeof render==='function')render('force');}
+function doomFDReset(){if(!confirm('이번 게임 드래프트를 초기화할까요?'))return;window._fdCur={step:0,bb:[],rb:[],bp:[],rp:[]};doomFDLivePush();if(typeof render==='function')render('force');}
 function doomFDSetTeam(side,val){var s=fdSeries();s[side]=val;window._fdraft=s;if(typeof render==='function')render('force');}
 function doomFDSetTeamLive(side,val){var s=fdSeries();s[side]=val;window._fdraft=s;var h=document.getElementById('fdHdr_'+side);if(h)h.textContent=val||(side==='blue'?'🔵 블루':'🔴 레드');}
 function doomFDSaveGame(){
@@ -11732,8 +11733,8 @@ function doomFDSuggest(){
   }).catch(function(e){window._fdSug=null;toast((e&&e.message)||'AI 추천 실패',true);if(typeof render==='function')render('force');});
 }
 function champLaneRank(nm){var t=(typeof CHAMP_TAG!=='undefined'&&CHAMP_TAG[nm])||[];if(t.indexOf('Marksman')>=0)return 4;if(t.indexOf('Support')>=0)return 5;if(t.indexOf('Mage')>=0)return 3;if(t.indexOf('Assassin')>=0)return 3;if(t.indexOf('Fighter')>=0)return 1;if(t.indexOf('Tank')>=0)return 2;return 3;}
-function doomFDSortLane(){var c=fdCur();var srt=function(a){return a.slice().sort(function(x,y){return champLaneRank(x)-champLaneRank(y);});};c.bp=srt(c.bp);c.rp=srt(c.rp);if(typeof render==='function')render('force');toast('🔀 라인(역할)순 정렬 — ▲▼로 미세조정 가능');}
-function doomFDMovePick(side,i,dir){var c=fdCur();var arr=side==='b'?c.bp:c.rp;var j=i+(dir|0);if(j<0||j>=arr.length)return;var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;if(typeof render==='function')render('force');}
+function doomFDSortLane(){var c=fdCur();var srt=function(a){return a.slice().sort(function(x,y){return champLaneRank(x)-champLaneRank(y);});};c.bp=srt(c.bp);c.rp=srt(c.rp);doomFDLivePush();if(typeof render==='function')render('force');toast('🔀 라인(역할)순 정렬 — ▲▼로 미세조정 가능');}
+function doomFDMovePick(side,i,dir){var c=fdCur();var arr=side==='b'?c.bp:c.rp;var j=i+(dir|0);if(j<0||j>=arr.length)return;var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;doomFDLivePush();if(typeof render==='function')render('force');}
 function doomFDGlobalBan(){
   var el=document.getElementById('fdGbIn');var v=(el&&el.value||'').trim();if(!v)return toast('챔피언 이름을 입력하세요',true);
   var canon=(typeof canonChamp==='function'?canonChamp(v):v)||v;
@@ -11748,6 +11749,24 @@ function doomFDGlobalBan(){
 function doomFDGlobalBanRem(nm){
   var s=fdSeries();var ns={blue:s.blue||'',red:s.red||'',games:s.games||[],globalBans:(s.globalBans||[]).filter(function(c){return c!==nm;})};
   auctionCall('aucFDraftSet',{fdraft:ns}).then(function(r){window._fdraft=r.fdraft||ns;if(typeof render==='function')render('force');}).catch(function(e){toast((e&&e.message)||'실패',true);});
+}
+function doomFDLiveApply(lv){if(!lv)return;window._fdCur={step:lv.step||0,bb:lv.bb||[],rb:lv.rb||[],bp:lv.bp||[],rp:lv.rp||[]};var s=fdSeries();if(lv.blue!=null)s.blue=lv.blue;if(lv.red!=null)s.red=lv.red;window._fdraft=s;window._fdLiveTs=lv.ts||Date.now();}
+function doomFDLivePush(){if(!window._fdLive)return;var c=fdCur(),s=fdSeries();auctionCall('aucFDLiveSet',{state:{step:c.step,bb:c.bb,rb:c.rb,bp:c.bp,rp:c.rp,blue:s.blue||'',red:s.red||''}}).then(function(r){if(r&&r.ts)window._fdLiveTs=r.ts;}).catch(function(){});}
+function doomFDLivePoll(){if(!window._fdLive)return;auctionCall('aucFDLiveGet',{}).then(function(r){if(r&&r.live&&(r.live.ts||0)>(window._fdLiveTs||0)){doomFDLiveApply(r.live);if(typeof render==='function')render('force');}}).catch(function(){});}
+function doomFDLiveToggle(){
+  window._fdLive=!window._fdLive;
+  if(window._fdLive){
+    auctionCall('aucFDLiveGet',{}).then(function(r){
+      if(r&&r.live&&typeof r.live.step==='number'){doomFDLiveApply(r.live);toast('🔴 실시간 연결 — 진행 상황을 불러왔어요');}
+      else{doomFDLivePush();toast('🔴 실시간 시작 — 상대도 켜면 같이 진행돼요');}
+      if(typeof render==='function')render('force');
+    }).catch(function(){window._fdLive=false;toast('연결 실패',true);if(typeof render==='function')render('force');});
+    if(window._fdLiveTimer)clearInterval(window._fdLiveTimer);
+    window._fdLiveTimer=setInterval(doomFDLivePoll,1500);
+  }else{
+    if(window._fdLiveTimer)clearInterval(window._fdLiveTimer);window._fdLiveTimer=null;
+    toast('실시간 종료');if(typeof render==='function')render('force');
+  }
 }
 function doomFDSim(){
   var c=fdCur(),s=fdSeries();
@@ -11782,7 +11801,8 @@ function doomFDNewSeries(){
 function doomFDFilter(){var el=document.getElementById('fdSearch');window._fdQ=el?el.value:'';var q=(window._fdQ||'').trim().toLowerCase(),role=window._fdRole||'';var grid=document.getElementById('fdGrid');if(!grid)return;Array.prototype.forEach.call(grid.children,function(it){var nm=(it.getAttribute('data-nm')||'').toLowerCase(),tags=(it.getAttribute('data-tags')||'');var ok=(!q||nm.indexOf(q)>=0)&&(!role||tags.indexOf(role)>=0);it.style.display=ok?'':'none';});}
 function doomFDRole(r){window._fdRole=(window._fdRole===r?'':r);if(typeof render==='function')render('force');}
 function doomFearlessSection(){
-  if(typeof doomSchedIsOp!=='function'||!doomSchedIsOp())return '';
+  var fdS=(window._bank)||(typeof bankSession==='function'?bankSession():null);
+  if(!fdS||!fdS.name)return '<div style="background:rgba(124,77,255,.05);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:24px">🎯</div><h3 style="margin:6px 0 2px;font-size:15px">모의 밴픽</h3><p class="mini dim" style="margin:0">지갑에서 <b>로그인</b>하면 모의 밴픽(피어리스 + 실시간 함께하기)을 쓸 수 있어요.</p></div>';
   doomFDraftEnsure();
   if(window._fdraft===null)return '<div style="background:rgba(124,77,255,.05);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px"><p class="mini dim" style="margin:0">🎯 모의 밴픽 불러오는 중…</p></div>';
   if(!Object.keys(CHAMP_KEY||{}).length&&typeof loadChampMap==='function')loadChampMap();
@@ -11817,7 +11837,7 @@ function doomFearlessSection(){
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><h3 style="margin:0;font-size:16px">🎯 모의 밴픽 <span class="mini dim">하드 피어리스</span></h3><span class="mini" style="background:rgba(124,77,255,.22);color:#b39ddb;border-radius:6px;padding:2px 9px;font-weight:800">게임 '+gameNo+'</span></div>'
     +'<p class="mini dim" style="margin:0 0 10px;font-size:11px">정식 밴픽 순서 · 중복 밴 가능 · 이전 게임에 쓴 챔피언은 픽 불가</p>'
     +'<div style="display:flex;gap:6px;margin-bottom:11px">'+'<datalist id="fdTL">'+teams.map(function(t){return '<option value="'+esc(t.name)+'">';}).join('')+'</datalist>'+'<input list="fdTL" value="'+esc(s.blue||'')+'" oninput="doomFDSetTeamLive(\'blue\',this.value)" placeholder="🔵 우리팀 이름" autocomplete="off" style="flex:1;min-width:0;padding:7px;border-radius:8px;background:var(--inset);border:1px solid #3498db66;color:#5dade2;font-size:12px;font-weight:700">'+'<span style="align-self:center;font-weight:800;font-size:11px">VS</span>'+'<input list="fdTL" value="'+esc(s.red||'')+'" oninput="doomFDSetTeamLive(\'red\',this.value)" placeholder="🔴 상대팀 이름" autocomplete="off" style="flex:1;min-width:0;padding:7px;border-radius:8px;background:var(--inset);border:1px solid #e74c3c66;color:#ec7063;font-size:12px;font-weight:700"></div>'
-    +fdGbSection+'<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:11px"><div><div class="mini" style="color:#5dade2;font-weight:700;margin-bottom:3px">🔵 밴</div><div style="display:flex;gap:3px">'+[0,1,2,3,4].map(function(i){return banSlot(c.bb,i,'#3498db');}).join('')+'</div></div><div><div class="mini" style="color:#ec7063;font-weight:700;margin-bottom:3px;text-align:right">밴 🔴</div><div style="display:flex;gap:3px">'+[0,1,2,3,4].map(function(i){return banSlot(c.rb,i,'#e74c3c');}).join('')+'</div></div></div>'
+    +(window._fdLive?'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px;padding:8px 11px;border-radius:9px;background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.5)"><span style="font-size:12px;font-weight:800;color:#ec7063">🔴 실시간 ON · 상대와 동기화 중</span><button class="btn sm ghost" style="font-size:11px;border-color:rgba(231,76,60,.5);color:#ec7063" onclick="doomFDLiveToggle()">종료</button></div>':'<button class="btn sm ghost" style="width:100%;margin-bottom:11px;font-size:12px;border-color:rgba(231,76,60,.4);color:#ec7063;font-weight:700" onclick="doomFDLiveToggle()">🔴 실시간 함께하기 (상대와 같이 벤픽)</button>')+fdGbSection+'<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:11px"><div><div class="mini" style="color:#5dade2;font-weight:700;margin-bottom:3px">🔵 밴</div><div style="display:flex;gap:3px">'+[0,1,2,3,4].map(function(i){return banSlot(c.bb,i,'#3498db');}).join('')+'</div></div><div><div class="mini" style="color:#ec7063;font-weight:700;margin-bottom:3px;text-align:right">밴 🔴</div><div style="display:flex;gap:3px">'+[0,1,2,3,4].map(function(i){return banSlot(c.rb,i,'#e74c3c');}).join('')+'</div></div></div>'
     +'<div style="display:flex;gap:8px;margin-bottom:4px"><div id="fdHdr_blue" style="flex:1;min-width:0;text-align:center;font-weight:800;font-size:13px;color:#5dade2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.blue?esc(s.blue):'🔵 블루')+'</div><div id="fdHdr_red" style="flex:1;min-width:0;text-align:center;font-weight:800;font-size:13px;color:#ec7063;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(s.red?esc(s.red):'🔴 레드')+'</div></div><div style="display:flex;gap:8px;margin-bottom:11px"><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">'+[0,1,2,3,4].map(function(i){return pickSlot(c.bp,i,'#3498db','b');}).join('')+'</div><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">'+[0,1,2,3,4].map(function(i){return pickSlot(c.rp,i,'#e74c3c','r');}).join('')+'</div></div>'
     +((c.bp.length+c.rp.length>=2)?'<button class="btn sm ghost" style="width:100%;margin-bottom:11px;font-size:11.5px" onclick="doomFDSortLane()">🔀 픽 라인순 정렬 (▲▼ 수동조정)</button>':'')
     +'<div style="text-align:center;padding:8px;border-radius:9px;background:'+curCol+'1a;border:1px solid '+curCol+'55;margin-bottom:11px;font-weight:800;font-size:14px;color:'+curCol+'">▶ '+curTxt+'</div>'
