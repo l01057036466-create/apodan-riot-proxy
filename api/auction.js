@@ -8,8 +8,9 @@
 var crypto = require('crypto');
 
 // 🤖 LLM 호출 (무료 Gemini 우선 → 없으면 Claude). 환경변수 GEMINI_API_KEY 또는 ANTHROPIC_API_KEY 필요
-async function callLLM(prompt, maxTokens) {
-  var gk = process.env.GEMINI_API_KEY;
+async function callLLM(prompt, maxTokens, userKey) {
+  var uk = (userKey && /^AIza[0-9A-Za-z_\-]{20,}$/.test(String(userKey).trim())) ? String(userKey).trim() : '';
+  var gk = uk || process.env.GEMINI_API_KEY;
   var ak = process.env.ANTHROPIC_API_KEY;
   if (gk) {
     var gm = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
@@ -340,8 +341,9 @@ module.exports = async function handler(req, res) {
       await redis(['SET', acctLS ? ('doom:fdlive:' + acctLS) : 'doom:fdlive', JSON.stringify(lv)]);
       return res.status(200).json({ ok: true, ts: ts });
     }
-    if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Claude API)
-      if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY(또는 ANTHROPIC_API_KEY)를 Vercel에 추가해주세요' });
+    if (action === 'aucDraftSim') { // 🤖 AI 드래프트 모의결과 (Gemini/Claude · 본인 키 BYOK 지원)
+      var simUK = body.userKey && /^AIza[0-9A-Za-z_\-]{20,}$/.test(String(body.userKey).trim());
+      if (!simUK && !process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY를 Vercel에 추가하거나, 설정에서 본인 키를 등록해주세요' });
       var sBp = (body.bluePicks || []).filter(Boolean), sRp = (body.redPicks || []).filter(Boolean);
       if (sBp.length < 3 || sRp.length < 3) return res.status(400).json({ error: '양 팀 픽이 3명 이상 필요해요' });
       var sL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
@@ -350,20 +352,22 @@ module.exports = async function handler(req, res) {
       var sPrompt = '당신은 리그 오브 레전드 드래프트 분석 전문가입니다. 아래 밴픽을 보고 모의 경기 결과를 예측해주세요.\n\n'
         + '🔵 ' + (body.blue || '블루팀') + ' (블루)\n픽: ' + sL(body.bluePicks) + '\n밴: ' + sL(body.blueBans) + sPw(body.bluePow) + sRoster(body.blueRoster) + '\n\n'
         + '🔴 ' + (body.red || '레드팀') + ' (레드)\n픽: ' + sL(body.redPicks) + '\n밴: ' + sL(body.redBans) + sPw(body.redPow) + sRoster(body.redRoster) + '\n\n'
-        + '다음을 한국어로, 간결하고 실전 코칭 톤으로 분석해주세요:\n'
-        + '1) 예상 승자와 승률 (예: 블루 62%)\n'
-        + '2) 각 팀 조합 평가 — 딜 구성(AD/AP)/탱킹/이니시에이팅/스케일링/라인전 강약\n'
-        + '3) 핵심 승부처와 그 이유 (챔피언 시너지·카운터·한타 구도·게임 흐름)\n'
-        + '4) 약한 팀이 뒤집을 수 있는 변수\n\n'
-        + ((body.blueRoster || body.redRoster) ? '위 내전 챔프풀(주력 챔프·승률)을 반영해서, 각 선수가 이 픽을 잘 다루는 챔프인지/숙련도까지 평가에 넣어주세요.\n' : ((body.bluePow && body.redPow) ? '체급(선수 실력)도 참고하되, 챔피언 조합 중심으로 분석해주세요.\n' : ''))
-        + '마크다운 헤더(#)나 별표(**)는 쓰지 말고, 이모지와 줄바꿈으로 읽기 좋게 정리해주세요. 5~8줄 정도로.';
+        + '다음을 한국어로, 실전 코칭 톤으로 "근거 있게" 분석해주세요.\n'
+        + '★ 핵심 원칙: 추상적 평가("조합이 좋다", "밸런스가 잘 맞는다") 금지. 모든 판단은 반드시 [무엇이(구체적 챔프·매치업·선수) → 어떤 메커니즘으로 → 어떤 영향 → 그래서 어떤 결과]의 인과 사슬로 풀어쓰세요.\n\n'
+        + '1) 예상 승자와 승률 (예: 🔵 블루 64%) — 옆에 이 승률이 나온 "결정적 한 줄 근거"를 바로 붙이기\n'
+        + '2) 핵심 승부처 2~3개 — 각각 누구의 무슨 픽/매치업이 어떻게 풀리는지 구체적으로. 톤 예시: "레드가 ○○를 못 막아서 탑이 풀림 → 라인전 압살 → 그 골드로 미드 로밍 → 글로벌 골드 격차 → 블루 스노우볼". 즉 누구의 발이 풀려서(=어떤 픽이 살아서) 어떤 영향력으로 이기고 지는지 납득되게.\n'
+        + '3) 각 팀 조합 한 줄평 — 딜 구성(AD/AP)·탱킹·이니시·스케일링·라인전 중 강·약점을 근거와 함께\n'
+        + '4) 약한 팀이 뒤집을 변수 — "이게 되면 판이 바뀐다"는 구체적 조건 1~2개\n\n'
+        + ((body.blueRoster || body.redRoster) ? '⭐ 위 내전 챔프풀(주력 챔프·판수·승률)을 반드시 근거로 쓰세요. "○○ 선수는 이 챔프 ○판 ○○%라 숙련도가 높다/낮다" 처럼 선수 이름과 실제 숙련도를 인과에 직접 넣어주세요. 데이터 없는 선수는 일반론으로.\n' : ((body.bluePow && body.redPow) ? '체급(선수 실력) 차이가 라인전·한타에 어떻게 작용하는지도 근거로 넣되, 챔피언 조합·매치업을 중심으로.\n' : ''))
+        + '마크다운 헤더(#)·별표(**)는 쓰지 말고, 이모지와 줄바꿈으로 읽기 좋게. 인과를 충분히 풀어 8~12줄.';
       try {
-        var simText = await callLLM(sPrompt, 1100);
+        var simText = await callLLM(sPrompt, 1400, body.userKey);
         return res.status(200).json({ ok: true, analysis: simText || '(분석 결과가 비어 있어요)' });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
-    if (action === 'aucDraftSuggest') { // 🤔 모르겠음 — AI가 이번 차례 픽/밴 추천 (솔랭·자랭 추정 + 내전 데이터)
-      if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY를 추가해주세요' });
+    if (action === 'aucDraftSuggest') { // 🤔 모르겠음 — AI가 이번 차례 픽/밴 추천 (솔랭·자랭 추정 + 내전 데이터 · BYOK 지원)
+      var sgUK = body.userKey && /^AIza[0-9A-Za-z_\-]{20,}$/.test(String(body.userKey).trim());
+      if (!sgUK && !process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'AI가 아직 설정 안 됐어요 — 무료 GEMINI_API_KEY를 추가하거나, 설정에서 본인 키를 등록해주세요' });
       var sgSide = body.side === 'r' ? '레드' : '블루';
       var sgType = body.type === 'ban' ? '밴' : '픽';
       var sgL = function (a) { return (a || []).filter(Boolean).join(', ') || '(없음)'; };
@@ -395,7 +399,7 @@ module.exports = async function handler(req, res) {
         + '출력(정확히 2줄): 1줄=챔피언 이름만(아래 목록 표기 그대로), 2줄=라인과 이유 30자 이내.\n\n'
         + '선택 가능 챔피언: ' + avail.join(', ');
       try {
-        var sgText = await callLLM(sgPrompt, 160);
+        var sgText = await callLLM(sgPrompt, 200, body.userKey);
         var sgLines = sgText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
         var sgAvailSet = {}; avail.forEach(function (a) { sgAvailSet[a] = 1; });
         var sgChamp = '', sgIdx = -1;
