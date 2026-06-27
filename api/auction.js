@@ -374,22 +374,44 @@ module.exports = async function handler(req, res) {
       var sgMyBans = sgMeBlue ? body.blueBans : body.redBans;
       var sgOppPicks = sgMeBlue ? body.redPicks : body.bluePicks;
       var sgOppBans = sgMeBlue ? body.redBans : body.blueBans;
-      var sgPrompt = '리그 오브 레전드 드래프트 진행 중. 나는 ' + sgSide + '팀이고, 지금 우리 팀의 ' + sgType + ' 차례입니다.\n\n'
-        + '【우리 팀(' + sgSide + ')】 픽: ' + sgL(sgMyPicks) + ' / 밴: ' + sgL(sgMyBans) + '\n'
-        + '【상대 팀】 픽: ' + sgL(sgOppPicks) + ' / 밴: ' + sgL(sgOppBans) + '\n\n'
-        + (body.roster ? ('우리 팀(' + sgSide + ') 선수 내전 챔프풀(솔랭·자랭 경향 추정 포함):\n' + body.roster + '\n\n') : '')
-        + '진영 참고: 우리 팀은 ' + (sgMeBlue ? '블루(선픽 주도권 — 좋은 챔프를 먼저 선점하는 진영)' : '레드(후픽·막픽 카운터 우위 — 상대 픽을 보고 대응하는 진영)') + '입니다.\n'
-        + '우리 팀에게 가장 유리한 ' + sgType + '을 아래 목록에서 하나만 고르세요.\n'
+      var sgFilled = body.myFilled || '(정보 없음)';
+      var sgOpen = body.myOpen || '(정보 없음)';
+      var sgOpenPools = body.myOpenPools || '';
+      var sgOppPool = body.oppRoster || '';
+      var sgPrompt = '리그 오브 레전드 5대5 토너먼트 드래프트 진행 중. 나는 ' + sgSide + '팀이고 지금 우리 팀 ' + sgType + ' 차례입니다.\n\n'
+        + '[우리 팀(' + sgSide + ')]\n'
+        + '· 이미 채운 라인: ' + sgFilled + '\n'
+        + '· 아직 비어있는 라인: ' + sgOpen + '\n'
+        + (sgOpenPools ? ('· 빈 라인 담당 선수의 실제 챔프풀:\n' + sgOpenPools + '\n') : '')
+        + '· 우리 전체 픽: ' + sgL(sgMyPicks) + ' / 밴: ' + sgL(sgMyBans) + '\n\n'
+        + '[상대 팀]\n'
+        + '· 픽: ' + sgL(sgOppPicks) + ' / 밴: ' + sgL(sgOppBans) + '\n'
+        + (sgOppPool ? ('· 상대 선수 챔프풀(이 챔프들에 능숙):\n' + sgOppPool + '\n') : '')
+        + '\n진영: 우리 팀은 ' + (sgMeBlue ? '블루(선픽 주도권)' : '레드(후픽·막픽 카운터 우위)') + '.\n\n'
         + (body.type === 'ban'
-            ? '밴 기준: 우리 팀 선수에게 까다로운(상대가 우리 상대로 쓰면 위협적인) 챔피언, 또는 상대가 잘 다룰 챔피언을 밴해 상대를 견제하세요. (= 우리에게 불리한 챔프를 지우는 것)'
-            : '픽 기준: 우리 팀 기존 픽과 시너지가 좋고, 상대 팀 픽을 카운터하며, 우리 팀 선수가 잘 다루는 챔피언을 고르세요. 아직 안 뽑힌 포지션을 우선하세요.') + '\n\n'
-        + '출력 형식: 첫 줄에 챔피언 이름만 (반드시 아래 목록에 있는 그대로), 둘째 줄에 25자 이내 이유 한 줄.\n\n'
-        + '가능 챔피언 목록: ' + avail.join(', ');
+            ? '【밴 추천 규칙】 우선순위: (1) 상대 선수가 잘 다루는 주력 챔프(위 상대 챔프풀)를 끊기 (2) 우리 빈 라인 선수에게 까다로운 카운터 챔프 지우기 (3) 메타 OP 챔프. 우리에게 불리하거나 상대에게 강력한 챔프를 지우는 것.'
+            : '【픽 추천 규칙】 반드시 위 "비어있는 라인" 중 하나를 채우는 챔프를 고르세요(채운 라인 중복 금지). 우선순위: (1) 그 라인 우리 선수가 실제로 잘 다루는 챔프("지금 가능" 최우선) (2) 우리 기존 픽과 시너지(이니시에이터·탱커/앞라인·AD/AP 딜 밸런스) (3) 상대 픽·상대 라이너 카운터. 솔로 라인은 맞라인, 정글/서폿은 팀 시너지를 더 중시.') + '\n\n'
+        + '빈 라인·시너지·카운터를 따진 뒤 결론만 출력하세요.\n'
+        + '출력(정확히 2줄): 1줄=챔피언 이름만(아래 목록 표기 그대로), 2줄=라인과 이유 30자 이내.\n\n'
+        + '선택 가능 챔피언: ' + avail.join(', ');
       try {
-        var sgText = await callLLM(sgPrompt, 120);
-        var sgLines = sgText.split('\n').filter(function (l) { return l.trim(); });
-        var sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s]+/, '').replace(/["'`]/g, '').trim();
-        var sgReason = (sgLines.slice(1).join(' ') || '').trim();
+        var sgText = await callLLM(sgPrompt, 160);
+        var sgLines = sgText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+        var sgAvailSet = {}; avail.forEach(function (a) { sgAvailSet[a] = 1; });
+        var sgChamp = '', sgIdx = -1;
+        for (var sgi = 0; sgi < sgLines.length && !sgChamp; sgi++) {
+          var sgCand = sgLines[sgi].replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim();
+          if (sgAvailSet[sgCand]) { sgChamp = sgCand; sgIdx = sgi; }
+        }
+        if (!sgChamp) {
+          for (var sgj = 0; sgj < sgLines.length && !sgChamp; sgj++) {
+            var sgHit = avail.filter(function (a) { return sgLines[sgj].indexOf(a) >= 0; }).sort(function (x, y) { return y.length - x.length; })[0];
+            if (sgHit) { sgChamp = sgHit; sgIdx = sgj; }
+          }
+        }
+        var sgReason = '';
+        if (sgIdx >= 0) { var sgRest = sgLines.slice(sgIdx + 1).join(' '); var sgSame = sgLines[sgIdx].split(sgChamp).join(' '); sgReason = (sgRest || sgSame).replace(/["'`*]/g, '').replace(/^[\s:\-]+/, '').trim(); }
+        if (!sgChamp) { sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim(); sgReason = sgLines.slice(1).join(' ').trim(); }
         return res.status(200).json({ ok: true, champion: sgChamp, reason: sgReason });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
