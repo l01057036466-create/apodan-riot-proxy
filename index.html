@@ -11732,6 +11732,23 @@ function doomFDRosterInfo(nm){
     return '· '+(m.pos||'')+' '+m.name+' [체급'+pw+ch+']';
   }).join('\n');
 }
+function doomFDDraftCtx(teamName,myPicks){ // 우리 픽을 선수 챔프풀로 라인 매핑 → 빈 라인 계산
+  var teams=window._doomTeams||[];var t=teams.filter(function(x){return x.name===teamName;})[0];if(!t)return null;
+  var mems=[{name:t.leader,pos:t.leaderPos}].concat((t.roster||[]).map(function(r){return {name:r.name,pos:r.position};})).filter(function(m){return m.name&&m.pos;});
+  mems.forEach(function(m){
+    var pl=(state.players||[]).filter(function(x){return x.displayName===m.name||x.kakaoName===m.name||(x.aliases||[]).indexOf(m.name)>=0;})[0];
+    m.pool=(pl&&typeof playerChamps==='function')?playerChamps(pl.id).slice(0,8).map(function(c){return c.champ;}):[];
+    m.pw=Math.round(doomPowByName(m.name));
+  });
+  var filled={};
+  (myPicks||[]).filter(Boolean).forEach(function(ch){
+    var owner=mems.filter(function(m){return !filled[m.pos]&&m.pool.indexOf(ch)>=0;})[0];
+    if(!owner)owner=mems.filter(function(m){return !filled[m.pos];})[0];
+    if(owner)filled[owner.pos]=ch;
+  });
+  return {mems:mems,filled:filled};
+}
+
 function doomFDSuggest(){
   var c=fdCur(),s=fdSeries();
   if(c.step>=FDRAFT_SEQ.length)return toast('드래프트가 끝났어요',true);
@@ -11744,8 +11761,21 @@ function doomFDSuggest(){
   if(!avail.length)return toast('선택 가능한 챔피언이 없어요',true);
   if(!avail.length||avail.length>200)avail=avail.slice(0,200);
   var sideTeam=st.s==='b'?s.blue:s.red;
+  var oppTeam=st.s==='b'?s.red:s.blue;
+  var myPk=st.s==='b'?c.bp:c.rp;
+  var _ctx=doomFDDraftCtx(sideTeam,myPk),myFilled='(정보 없음)',myOpen='(정보 없음)',myOpenPools='';
+  if(_ctx){
+    var _fl=_ctx.mems.filter(function(m){return _ctx.filled[m.pos];}).map(function(m){return m.pos+' '+_ctx.filled[m.pos];});
+    var _op=_ctx.mems.filter(function(m){return !_ctx.filled[m.pos];});
+    myFilled=_fl.join(', ')||'(아직 없음)';
+    myOpen=_op.map(function(m){return m.pos;}).join(', ')||'(5라인 모두 채움)';
+    myOpenPools=_op.map(function(m){
+      var _ia=m.pool.filter(function(cn){return avail.indexOf(cn)>=0;});
+      return '· '+m.pos+' '+m.name+'(체급'+m.pw+') 주력: '+(m.pool.slice(0,5).join(', ')||'기록 부족')+(_ia.length?' / 지금 가능: '+_ia.join(', '):' / 주력이 다 막힘');
+    }).join('\n');
+  }
   window._fdSug='로딩';if(typeof render==='function')render('force');
-  auctionCall('aucDraftSuggest',{side:st.s,type:st.t,bluePicks:c.bp,redPicks:c.rp,blueBans:c.bb,redBans:c.rb,roster:doomFDRosterInfo(sideTeam),available:avail}).then(function(r){
+  auctionCall('aucDraftSuggest',{side:st.s,type:st.t,bluePicks:c.bp,redPicks:c.rp,blueBans:c.bb,redBans:c.rb,roster:doomFDRosterInfo(sideTeam),oppRoster:doomFDRosterInfo(oppTeam),myFilled:myFilled,myOpen:myOpen,myOpenPools:myOpenPools,available:avail}).then(function(r){
     window._fdSug=null;
     var ch=(r.champion||'').trim();
     var canon=(typeof canonChamp==='function'?canonChamp(ch):ch)||ch;
