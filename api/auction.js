@@ -19,7 +19,7 @@ async function callLLM(prompt, maxTokens, userKey) {
     for (var gi = 0; gi < gmodels.length; gi++) {
       var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gmodels[gi] + ':generateContent?key=' + gk, {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens, thinkingConfig: { thinkingBudget: 0 } } })
       });
       var gd = await gr.json();
       if (gr.ok) {
@@ -373,7 +373,7 @@ module.exports = async function handler(req, res) {
         + '5) 【결론】 최종 예상 승자와 승률(예: 🔵 블루 63%) + 그 %가 나온 핵심 근거 1~2줄, 그리고 약팀이 뒤집을 변수 1~2개.\n\n'
         + '마크다운 헤더(#)·별표(**)는 쓰지 말고, 【】 소제목 + 이모지 + 줄바꿈으로 읽기 좋게. 분량은 제한 없이 충분히 디테일하게.';
       try {
-        var simText = await callLLM(sPrompt, 2000, body.userKey);
+        var simText = await callLLM(sPrompt, 4000, body.userKey);
         return res.status(200).json({ ok: true, analysis: simText || '(분석 결과가 비어 있어요)' });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
@@ -413,7 +413,7 @@ module.exports = async function handler(req, res) {
         + '2) 마지막 줄에 결론 — "추천' + sgType + ': " 뒤에 실제 추천 챔피언 이름 하나만(아래 목록 표기 그대로). 예) 추천' + sgType + ': 아리\n\n'
         + '선택 가능 챔피언: ' + avail.join(', ');
       try {
-        var sgText = await callLLM(sgPrompt, 700, body.userKey);
+        var sgText = await callLLM(sgPrompt, 1100, body.userKey);
         var sgLines = sgText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
         var sgAvailSet = {}; avail.forEach(function (a) { sgAvailSet[a] = 1; });
         var sgChamp = '', sgIdx = -1;
