@@ -1375,7 +1375,7 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock(sPc.name); }
     }
     var PG_COST = 3000;
-    var PG_BOX = [['A', 1, 'pass', '원하는 팀원 1명 선택권'], ['B', 2, 'apo', 12000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1500], ['F', 13, 'apo', 800]];
+    var PG_BOX = [['A', 1, 'pass', '원하는 팀원 1명 선택권'], ['B', 2, 'apo', 14000], ['C', 3, 'apo', 7000], ['D', 5, 'apo', 3000], ['E', 12, 'apo', 1400], ['F', 13, 'apo', 700]];
     function pgFullBox() { var o = {}; for (var pi = 0; pi < PG_BOX.length; pi++) o[PG_BOX[pi][0]] = PG_BOX[pi][1]; return o; }
     function pgMeta(t) { for (var pj = 0; pj < PG_BOX.length; pj++) if (PG_BOX[pj][0] === t) return { tier: PG_BOX[pj][0], kind: PG_BOX[pj][2], val: PG_BOX[pj][3] }; return null; }
     if (req.method === 'GET' && action === 'pgacha') {
@@ -1423,8 +1423,8 @@ module.exports = async function handler(req, res) {
       } finally { await acctUnlock('pgacha'); }
       } finally { await acctUnlock(sPg.name); }
     }
-    var PCN_COST = 5000, PCN_CLEAR = 5000;
-    var PCN_G = [['SSS', 1, 60000], ['SS', 1, 22000], ['S', 2, 10000], ['A', 9, 3800], ['B', 26, 1600], ['C', 45, 850]];
+    var PCN_COST = 8000, PCN_CLEAR = 80000;
+    var PCN_G = [['SSS', 1, 120000], ['SS', 1, 45000], ['S', 2, 18000], ['A', 9, 7500], ['B', 26, 3200], ['C', 45, 1800]];
     function pcnGapo(g) { for (var i = 0; i < PCN_G.length; i++) if (PCN_G[i][0] === g) return PCN_G[i][2]; return 0; }
     function pcnNewBoard() {
       var cells = []; for (var i = 0; i < PCN_G.length; i++) for (var k = 0; k < PCN_G[i][1]; k++) cells.push(PCN_G[i][0]);
@@ -1503,7 +1503,7 @@ module.exports = async function handler(req, res) {
         if (lo.name !== sPl.name) return res.status(403).json({ error: '풀클리어를 마무리한 분만 뽑을 수 있어요' });
         var aPl = await getAcct(sPl.name);
         if (!aPl || aPl.status !== 'active') return res.status(403).json({ error: '계좌 상태 확인' });
-        var LAST_PRIZE = 49000, win = Math.random() < 0.49, prize = win ? LAST_PRIZE : 0;
+        var LAST_PRIZE = 80000, win = Math.random() < 0.49, prize = win ? LAST_PRIZE : 0;
         if (win) { aPl.bal += prize; await putAcct(aPl); }
         await redis(['DEL', 'pcn:lastone']);
         await redis(['LPUSH', 'arcade:news', JSON.stringify({ n: sPl.name, t: 'pcnlast', v: prize, win: win, ts: new Date().toISOString() })]);
