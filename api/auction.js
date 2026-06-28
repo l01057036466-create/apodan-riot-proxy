@@ -361,16 +361,19 @@ module.exports = async function handler(req, res) {
       var sPrompt = '당신은 리그 오브 레전드 드래프트 분석 전문가입니다. 아래 밴픽을 보고 모의 경기 결과를 예측해주세요.\n\n'
         + '🔵 ' + (body.blue || '블루팀') + ' (블루)\n픽: ' + sL(body.bluePicks) + '\n밴: ' + sL(body.blueBans) + sPw(body.bluePow) + sRoster(body.blueRoster) + '\n\n'
         + '🔴 ' + (body.red || '레드팀') + ' (레드)\n픽: ' + sL(body.redPicks) + '\n밴: ' + sL(body.redBans) + sPw(body.redPow) + sRoster(body.redRoster) + '\n\n'
-        + '다음을 한국어로, 실전 코칭 톤으로 "근거 있게" 분석해주세요.\n'
-        + '★ 핵심 원칙: 추상적 평가("조합이 좋다", "밸런스가 잘 맞는다") 금지. 모든 판단은 반드시 [무엇이(구체적 챔프·매치업·선수) → 어떤 메커니즘으로 → 어떤 영향 → 그래서 어떤 결과]의 인과 사슬로 풀어쓰세요.\n\n'
-        + '1) 예상 승자와 승률 (예: 🔵 블루 64%) — 옆에 이 승률이 나온 "결정적 한 줄 근거"를 바로 붙이기\n'
-        + '2) 핵심 승부처 2~3개 — 각각 누구의 무슨 픽/매치업이 어떻게 풀리는지 구체적으로. 톤 예시: "레드가 ○○를 못 막아서 탑이 풀림 → 라인전 압살 → 그 골드로 미드 로밍 → 글로벌 골드 격차 → 블루 스노우볼". 즉 누구의 발이 풀려서(=어떤 픽이 살아서) 어떤 영향력으로 이기고 지는지 납득되게.\n'
-        + '3) 각 팀 조합 한 줄평 — 딜 구성(AD/AP)·탱킹·이니시·스케일링·라인전 중 강·약점을 근거와 함께\n'
-        + '4) 약한 팀이 뒤집을 변수 — "이게 되면 판이 바뀐다"는 구체적 조건 1~2개\n\n'
-        + ((body.blueRoster || body.redRoster) ? '⭐ 위 내전 챔프풀(주력 챔프·판수·승률)을 반드시 근거로 쓰세요. "○○ 선수는 이 챔프 ○판 ○○%라 숙련도가 높다/낮다" 처럼 선수 이름과 실제 숙련도를 인과에 직접 넣어주세요. 데이터 없는 선수는 일반론으로.\n' : ((body.bluePow && body.redPow) ? '체급(선수 실력) 차이가 라인전·한타에 어떻게 작용하는지도 근거로 넣되, 챔피언 조합·매치업을 중심으로.\n' : ''))
-        + '마크다운 헤더(#)·별표(**)는 쓰지 말고, 이모지와 줄바꿈으로 읽기 좋게. 인과를 충분히 풀어 8~12줄.';
+        + '다음을 한국어로, 프로 분석가의 실전 코칭 톤으로 "엄청 디테일하게" 분석하세요. 게임이 실제로 어떻게 흘러갈지 시간순으로 그리되, 모든 주장은 [무엇이(구체적 챔프·선수·매치업) → 왜 → 그래서 어떤 결과]의 인과로 풀고, 추상적 표현("좋다/밸런스 맞다")은 금지합니다.\n\n'
+        + ((body.blueRoster || body.redRoster)
+            ? '★ 절대 규칙(선수 데이터): 위 [내전 선수단 챔프풀]만 근거로 쓰세요. 데이터 형식은 "포지션 이름 [체급N · 주력: 챔프(N겜 W%)...]"이고 주력은 상위 3개만 줍니다. 각 픽은 그 챔프의 주 포지션을 보고 같은 포지션 선수와 매칭하세요. 그 선수 주력에 그 챔프가 있으면 "○○ 선수 이 챔프 N겜 W%"처럼 실제 수치를 인용하고, 주력에 없으면 "주력 외 — 기록 없음"이라 쓰고 승률을 지어내지 마세요. 데이터에 없는 뜬금없는 선수-챔프 매칭이나 수치 창작은 절대 금지.\n\n'
+            : ((body.bluePow && body.redPow) ? '★ 선수별 챔프 기록이 없으니 특정 선수 승률 수치를 지어내지 말 것. 평균 체급 차이가 라인전·한타에 어떻게 작용하는지를 챔프 상성·조합 중심으로 풀어주세요.\n\n' : '★ 선수 기록이 없으니 특정 선수 승률을 지어내지 말고, 순수 챔피언 조합·상성·메타 중심으로 분석하세요.\n\n'))
+        + '아래 5단계로 빠짐없이:\n'
+        + '1) 【라인전】 탑·정글·미드·원딜·서폿 각 맞라인 — 누가(선수) 무슨 챔프로 상대 누구를 이기는지/지는지. 선수 숙련도(N겜 W%)와 챔프 상성을 둘 다 근거로. 누가 풀리고 누가 막히는지.\n'
+        + '2) 【정글·오브젝트】 초반 유충(그럽)·용·(후반)바론 주도권을 어느 팀이 잡는지 — 정글 챔프·라인 우세·이니시 유무로. 그 오브젝트 이득이 어떤 스노우볼로 이어지는지.\n'
+        + '3) 【딜 체크·한타】 두 조합의 딜을 직접 비교 — 각 팀이 상대 앞라인(탱)을 녹일 AD/AP·버스트·지속딜이 충분한지 부족한지. 그리고 누구의 챔프가 상대 핵심 캐리(저 원딜/미드)를 짤라내거나 봉쇄할 수 있는지 없는지를 구체적으로. 이니시·보호(피글)·CC·스케일링까지.\n'
+        + '4) 【게임 흐름】 위를 종합해 초반→중반→후반이 실제로 어떻게 전개될지 하나의 시나리오로(누구의 어떤 픽 때문에 이 그림인지 이유 포함).\n'
+        + '5) 【결론】 최종 예상 승자와 승률(예: 🔵 블루 63%) + 그 %가 나온 핵심 근거 1~2줄, 그리고 약팀이 뒤집을 변수 1~2개.\n\n'
+        + '마크다운 헤더(#)·별표(**)는 쓰지 말고, 【】 소제목 + 이모지 + 줄바꿈으로 읽기 좋게. 분량은 제한 없이 충분히 디테일하게.';
       try {
-        var simText = await callLLM(sPrompt, 1400, body.userKey);
+        var simText = await callLLM(sPrompt, 2000, body.userKey);
         return res.status(200).json({ ok: true, analysis: simText || '(분석 결과가 비어 있어요)' });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
@@ -391,40 +394,54 @@ module.exports = async function handler(req, res) {
       var sgOpen = body.myOpen || '(정보 없음)';
       var sgOpenPools = body.myOpenPools || '';
       var sgOppPool = body.oppRoster || '';
-      var sgPrompt = '리그 오브 레전드 5대5 토너먼트 드래프트 진행 중. 나는 ' + sgSide + '팀이고 지금 우리 팀 ' + sgType + ' 차례입니다.\n\n'
+      var sgPrompt = '리그 오브 레전드 5대5 토너먼트 드래프트 진행 중. 나는 ' + sgSide + '팀이고 지금 우리 팀 ' + sgType + ' 차례입니다. 프로 드래프트 코치처럼, 아래 정보를 "모두" 종합해 이번 차례 최적의 한 수를 결정하세요.\n\n'
         + '[우리 팀(' + sgSide + ')]\n'
         + '· 이미 채운 라인: ' + sgFilled + '\n'
         + '· 아직 비어있는 라인: ' + sgOpen + '\n'
-        + (sgOpenPools ? ('· 빈 라인 담당 선수의 실제 챔프풀:\n' + sgOpenPools + '\n') : '')
+        + (sgOpenPools ? ('· 빈 라인 담당 선수의 실제 챔프풀(판수·승률):\n' + sgOpenPools + '\n') : '')
         + '· 우리 전체 픽: ' + sgL(sgMyPicks) + ' / 밴: ' + sgL(sgMyBans) + '\n\n'
         + '[상대 팀]\n'
         + '· 픽: ' + sgL(sgOppPicks) + ' / 밴: ' + sgL(sgOppBans) + '\n'
         + (sgOppPool ? ('· 상대 선수 챔프풀(이 챔프들에 능숙):\n' + sgOppPool + '\n') : '')
-        + '\n진영: 우리 팀은 ' + (sgMeBlue ? '블루(선픽 주도권)' : '레드(후픽·막픽 카운터 우위)') + '.\n\n'
+        + '\n[진영 전략] 우리 팀은 ' + (sgMeBlue ? '블루 — 선픽 주도권은 있지만 카운터를 당할 수 있음. 카운터당하기 쉬운 라인의존 챔프는 피하고, 여러 라인 가능한 유연픽이나 꼭 가져와야 할 메타 OP를 먼저 확보. 약점 라인을 일찍 노출하지 말 것.' : '레드 — 후픽·막픽 카운터 우위. 지금은 안전·유연한 픽을 하고 상대 핵심 픽이 드러나면 막픽으로 카운터쳐 받는 그림. 이미 드러난 상대 라이너가 있으면 그 카운터를 우선 고려.') + '\n\n'
         + (body.type === 'ban'
-            ? '【밴 추천 규칙】 우선순위: (1) 상대 선수가 잘 다루는 주력 챔프(위 상대 챔프풀)를 끊기 (2) 우리 빈 라인 선수에게 까다로운 카운터 챔프 지우기 (3) 메타 OP 챔프. 우리에게 불리하거나 상대에게 강력한 챔프를 지우는 것.'
-            : '【픽 추천 규칙】 반드시 위 "비어있는 라인" 중 하나를 채우는 챔프를 고르세요(채운 라인 중복 금지). 우선순위: (1) 그 라인 우리 선수가 실제로 잘 다루는 챔프("지금 가능" 최우선) (2) 우리 기존 픽과 시너지(이니시에이터·탱커/앞라인·AD/AP 딜 밸런스) (3) 상대 픽·상대 라이너 카운터. 솔로 라인은 맞라인, 정글/서폿은 팀 시너지를 더 중시.') + '\n\n'
-        + '빈 라인·시너지·카운터를 따진 뒤 결론만 출력하세요.\n'
-        + '출력(정확히 2줄): 1줄=챔피언 이름만(아래 목록 표기 그대로), 2줄=라인과 이유 30자 이내.\n\n'
+            ? '【밴 추천 — 종합해서 가장 위협적인 챔프 1개를 끊기】\n(1) 상대 선수가 잘 다루는 주력 챔프(위 상대 챔프풀)\n(2) 우리 빈 라인 선수에게 까다로운 라인 카운터·우리 조합의 천적\n(3) 진영: 블루면 상대가 선픽으로 가져갈 메타 OP를 선제 차단, 레드면 상대가 막픽 카운터로 쓸 챔프 제거\n(4) 게임을 터뜨리는 메타 OP'
+            : '【픽 추천 — 아래를 모두 따져 최적의 한 수】\n(1) 빈 라인 채우기(채운 라인 중복 절대 금지)\n(2) 선수 숙련도 최우선: 그 라인 우리 선수가 실제로 잘 다루는 챔프(높은 판수·승률 = "지금 가능"). 못 다루는 OP보다 잘 다루는 무난한 픽이 낫다\n(3) 상성 카운터: 상대 픽·상대 라이너와의 맞라인에서 유리한(상대를 카운터하는) 챔프. 우리 라이너가 카운터당하는 픽은 피하기\n(4) 팀 조합·승리조건: 기존 픽과 이니시에이터·앞라인(탱)·AD/AP 딜 밸런스·CC·후반 캐리 균형, 우리 승리 플랜(초반 스노우볼/한타/스플릿)에 맞는지\n(5) 진영 전략(위) 반영. 솔로 라인은 맞라인 상성, 정글/서폿은 팀 시너지·갱 동선을 더 중시') + '\n\n'
+        + '먼저 유력 후보 2~3개를 실제로 비교하세요 — 각 후보를 (상성 카운터 관계 / 그 라인 우리 선수의 챔프풀 숙련도 / 진영별 라인 선픽 전략: 블루면 카운터 적고 유연한 픽·꼭 챙길 메타OP를 선픽하고 미드·원딜 하드매치업 노출은 자제, 레드면 이미 드러난 상대 라이너의 맞라인 카운터를 우선) 면에서 대조하고, 왜 어떤 건 탈락이고 무엇이 최선인지 따진 뒤 결론을 내세요.\n'
+        + '출력 형식(반드시 이 순서로):\n'
+        + '1) "분석:" 으로 시작하는 2~4줄 — 후보들을 비교하며 근거를 구체적으로(예: "○○는 상대 △△에게 맞라인 불리해서 탈락", "□□는 우리 선수 12판 67%라 숙련도 높고 상대 카운터도 적어 최선"). 추상적 표현 금지, 챔프·라인·선수·상성으로.\n'
+        + '2) 마지막 줄에 결론 — "추천' + sgType + ': " 뒤에 실제 추천 챔피언 이름 하나만(아래 목록 표기 그대로). 예) 추천' + sgType + ': 아리\n\n'
         + '선택 가능 챔피언: ' + avail.join(', ');
       try {
-        var sgText = await callLLM(sgPrompt, 200, body.userKey);
+        var sgText = await callLLM(sgPrompt, 700, body.userKey);
         var sgLines = sgText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
         var sgAvailSet = {}; avail.forEach(function (a) { sgAvailSet[a] = 1; });
         var sgChamp = '', sgIdx = -1;
-        for (var sgi = 0; sgi < sgLines.length && !sgChamp; sgi++) {
-          var sgCand = sgLines[sgi].replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim();
-          if (sgAvailSet[sgCand]) { sgChamp = sgCand; sgIdx = sgi; }
+        // 1순위: "추천/결정/최종" 결론 줄에서 챔프 (분석 먼저 → 마지막 줄 결론). 뒤에서부터 스캔
+        for (var sgi = sgLines.length - 1; sgi >= 0 && !sgChamp; sgi--) {
+          if (/추천|결정|최종/.test(sgLines[sgi])) {
+            var sgAfter = sgLines[sgi].replace(/["'`*]/g, '');
+            var sgPickHit = avail.filter(function (a) { return sgAfter.indexOf(a) >= 0; }).sort(function (x, y) { return y.length - x.length; })[0];
+            if (sgPickHit) { sgChamp = sgPickHit; sgIdx = sgi; }
+          }
         }
+        // 2순위: 줄 전체가 정확히 챔프명 (뒤에서부터)
         if (!sgChamp) {
-          for (var sgj = 0; sgj < sgLines.length && !sgChamp; sgj++) {
-            var sgHit = avail.filter(function (a) { return sgLines[sgj].indexOf(a) >= 0; }).sort(function (x, y) { return y.length - x.length; })[0];
-            if (sgHit) { sgChamp = sgHit; sgIdx = sgj; }
+          for (var sgj = sgLines.length - 1; sgj >= 0 && !sgChamp; sgj--) {
+            var sgCand = sgLines[sgj].replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim();
+            if (sgAvailSet[sgCand]) { sgChamp = sgCand; sgIdx = sgj; }
+          }
+        }
+        // 3순위: 줄 안에 포함된 챔프명 (뒤에서부터, 가장 긴 매치)
+        if (!sgChamp) {
+          for (var sgk = sgLines.length - 1; sgk >= 0 && !sgChamp; sgk--) {
+            var sgHit = avail.filter(function (a) { return sgLines[sgk].indexOf(a) >= 0; }).sort(function (x, y) { return y.length - x.length; })[0];
+            if (sgHit) { sgChamp = sgHit; sgIdx = sgk; }
           }
         }
         var sgReason = '';
-        if (sgIdx >= 0) { var sgRest = sgLines.slice(sgIdx + 1).join(' '); var sgSame = sgLines[sgIdx].split(sgChamp).join(' '); sgReason = (sgRest || sgSame).replace(/["'`*]/g, '').replace(/^[\s:\-]+/, '').trim(); }
-        if (!sgChamp) { sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim(); sgReason = sgLines.slice(1).join(' ').trim(); }
+        if (sgIdx >= 0) { sgReason = sgLines.filter(function (l, i) { return i !== sgIdx; }).join('\n').replace(/["'`*]/g, '').replace(/^[\s:\-]+/, '').trim(); if (!sgReason) sgReason = sgLines[sgIdx].split(sgChamp).join(' ').replace(/["'`*]/g, '').trim(); }
+        if (!sgChamp) { sgChamp = (sgLines[0] || '').replace(/^[0-9.)\-\s:]+/, '').replace(/["'`*]/g, '').trim(); sgReason = sgLines.slice(1).join('\n').trim(); }
         return res.status(200).json({ ok: true, champion: sgChamp, reason: sgReason });
       } catch (e) { return res.status(502).json({ error: 'AI 호출 오류: ' + (e && e.message || '') }); }
     }
