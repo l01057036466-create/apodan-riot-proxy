@@ -13,14 +13,23 @@ async function callLLM(prompt, maxTokens, userKey) {
   var gk = uk || process.env.GEMINI_API_KEY;
   var ak = process.env.ANTHROPIC_API_KEY;
   if (gk) {
-    var gm = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gm + ':generateContent?key=' + gk, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
-    });
-    var gd = await gr.json();
-    if (!gr.ok) throw new Error((gd.error && gd.error.message) || 'Gemini 호출 실패');
-    return ((((gd.candidates || [])[0] || {}).content || {}).parts || []).map(function (p) { return p.text || ''; }).join('').trim();
+    var primary = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
+    var gmodels = [primary]; if (gmodels.indexOf('gemini-2.5-flash') < 0) gmodels.push('gemini-2.5-flash'); // 설정 모델이 혼잡(high demand)·빈응답·에러면 안정적인 2.5-flash로 자동 폴백
+    var lastErr = '';
+    for (var gi = 0; gi < gmodels.length; gi++) {
+      var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gmodels[gi] + ':generateContent?key=' + gk, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: maxTokens } })
+      });
+      var gd = await gr.json();
+      if (gr.ok) {
+        var gtxt = ((((gd.candidates || [])[0] || {}).content || {}).parts || []).map(function (p) { return p.text || ''; }).join('').trim();
+        if (gtxt) return gtxt;
+        lastErr = '빈 응답'; continue; // 추론모델이 토큰을 다 써 빈 응답이면 다음 모델로
+      }
+      lastErr = (gd.error && gd.error.message) || ('HTTP ' + gr.status); // 다음 모델로 폴백
+    }
+    throw new Error(lastErr || 'Gemini 호출 실패');
   }
   if (ak) {
     var ar = await fetch('https://api.anthropic.com/v1/messages', {
