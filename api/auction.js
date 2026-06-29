@@ -317,7 +317,7 @@ module.exports = async function handler(req, res) {
     if (action === 'aucFDraftGet') { // 🎯 모의 밴픽(피어리스) 시리즈 불러오기 (팀별)
       var acctFG = body.team || '';
       var fdRaw = null; try { fdRaw = JSON.parse((await redis(['GET', acctFG ? ('doom:fdraft:' + acctFG) : 'doom:fdraft'])) || 'null'); } catch (e) { fdRaw = null; }
-      return res.status(200).json({ fdraft: fdRaw || { blue: '', red: '', games: [], globalBans: [] } });
+      return res.status(200).json({ fdraft: fdRaw || { blue: '', red: '', games: [], globalBans: [], archive: [] } });
     }
     if (action === 'aucFDraftSet') { // 🎯 모의 밴픽 시리즈 저장 (그 팀 팀원만)
       if (!s || !s.name) return res.status(401).json({ error: '로그인이 필요해요' });
@@ -329,6 +329,8 @@ module.exports = async function handler(req, res) {
       if (!fd || typeof fd !== 'object') return res.status(400).json({ error: '저장 데이터 오류' });
       var clean = { blue: String(fd.blue || '').slice(0, 40), red: String(fd.red || '').slice(0, 40), games: [], globalBans: (Array.isArray(fd.globalBans) ? fd.globalBans : []).slice(0, 20).map(function (c) { return String(c || '').slice(0, 30); }).filter(Boolean) };
       if (Array.isArray(fd.games)) { clean.games = fd.games.slice(0, 9).map(function (g) { var pick = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); }; return { bb: pick(g.bb), rb: pick(g.rb), bp: pick(g.bp), rp: pick(g.rp) }; }); }
+      var _pk5 = function (arr) { return (Array.isArray(arr) ? arr : []).slice(0, 5).map(function (c) { return String(c || '').slice(0, 30); }); };
+      clean.archive = (Array.isArray(fd.archive) ? fd.archive : []).slice(0, 20).map(function (a) { a = a || {}; return { name: String(a.name || '').slice(0, 40), ts: Number(a.ts) || 0, blue: String(a.blue || '').slice(0, 40), red: String(a.red || '').slice(0, 40), globalBans: (Array.isArray(a.globalBans) ? a.globalBans : []).slice(0, 20).map(function (c) { return String(c || '').slice(0, 30); }).filter(Boolean), games: (Array.isArray(a.games) ? a.games : []).slice(0, 9).map(function (g) { g = g || {}; return { bb: _pk5(g.bb), rb: _pk5(g.rb), bp: _pk5(g.bp), rp: _pk5(g.rp) }; }) }; });
       await redis(['SET', acctFS ? ('doom:fdraft:' + acctFS) : 'doom:fdraft', JSON.stringify(clean)]);
       return res.status(200).json({ ok: true, fdraft: clean });
     }
