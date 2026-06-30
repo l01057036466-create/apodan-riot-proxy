@@ -11651,9 +11651,59 @@ function doomDEResolve(M){
       if(!present&&!bye)return;
       var winTeam=m[m.win],loseTeam=m[m.win==='a'?'b':'a'];
       if(winTeam&&winTeam!=='BYE'&&m.wTo){var t=find(m.wTo);if(t)t[m.wSlot]=winTeam;}
-      if(loseTeam&&loseTeam!=='BYE'&&m.lTo){var t2=find(m.lTo);if(t2)t2[m.lSlot]=loseTeam;}
+      if(loseTeam&&m.lTo){var t2=find(m.lTo);if(t2)t2[m.lSlot]=loseTeam;}
     });
   }
+  return M;
+}
+function doomDEDisplayRounds(M){
+  M=M||[];if(!M.length)return M;
+  var byId={};M.forEach(function(m){byId[m.id]=m;});
+  var feed={};
+  M.forEach(function(m){
+    if(m.wTo&&m.wSlot)feed[m.wTo+':'+m.wSlot]={src:m.id,type:'W'};
+    if(m.lTo&&m.lSlot)feed[m.lTo+':'+m.lSlot]={src:m.id,type:'L'};
+  });
+  var depth={};
+  function dep(id){
+    if(depth[id]!=null)return depth[id];
+    depth[id]=1;
+    var fa=feed[id+':a'],fb=feed[id+':b'],d=1;
+    if(fa)d=Math.max(d,dep(fa.src)+1);
+    if(fb)d=Math.max(d,dep(fb.src)+1);
+    depth[id]=d;return d;
+  }
+  M.forEach(function(m){dep(m.id);});
+  var visible={};M.forEach(function(m){visible[m.id]=(m.a!=='BYE'&&m.b!=='BYE');});
+  var vd={};M.forEach(function(m){if(visible[m.id])vd[depth[m.id]]=1;});
+  var sorted=Object.keys(vd).map(Number).sort(function(a,b){return a-b;});
+  var remap={};sorted.forEach(function(d,i){remap[d]=i+1;});
+  var brOrd={WB:0,LB:1,GF:2},byNR={};
+  M.forEach(function(m){if(visible[m.id]){m._dr=remap[depth[m.id]];(byNR[m._dr]=byNR[m._dr]||[]).push(m);}else{m._dr=0;}});
+  Object.keys(byNR).forEach(function(r){
+    byNR[r].sort(function(a,b){return (brOrd[a.br]-brOrd[b.br])||(a.round-b.round)||(a.slot-b.slot);});
+    byNR[r].forEach(function(m,i){m._dm=i+1;m._drCount=byNR[r].length;});
+  });
+  function trueSrc(key){
+    var f=feed[key];if(!f)return null;
+    if(visible[f.src])return f;
+    var s=byId[f.src];if(!s)return null;
+    var rs=(s.a==='BYE')?'b':(s.b==='BYE')?'a':null;
+    if(!rs)return null;
+    return trueSrc(s.id+':'+rs);
+  }
+  function lbl(srcId,type){
+    var s=byId[srcId];if(!s||!visible[srcId])return '';
+    var mn=(s._drCount>1)?(' M'+s._dm):'';
+    return (s.br==='GF'?'결승':('R'+s._dr+mn))+' '+(type==='W'?'승자':'패자');
+  }
+  M.forEach(function(m){
+    if(!visible[m.id])return;
+    ['a','b'].forEach(function(sl){
+      var ts=trueSrc(m.id+':'+sl);
+      if(ts){var L=lbl(ts.src,ts.type);if(L)m[sl+'Label']=L;}
+    });
+  });
   return M;
 }
 function doomBrkPickWin(id,ab){
@@ -11720,23 +11770,25 @@ function doomBracketSection(teams,op){
     var dim=decided&&!isWin?'opacity:.38':'';
     return '<div onclick="'+(clickable?('doomBrkPickWin(\''+m.id+'\',\''+side+'\')'):'')+'" style="display:flex;align-items:center;gap:5px;padding:6px 8px;background:'+bg+';'+dim+(clickable?';cursor:pointer':'')+'">'+(isWin?'<span style="flex:none;color:'+col+';font-weight:900;font-size:11px">✔</span>':'')+'<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">'+content+'</span></div>';
   };
+  doomDEDisplayRounds(brk);
+  var brAccent={WB:'#2ecc71',LB:'#e67e22',GF:'var(--gold)'};
   var card=function(m){
+    var accent=brAccent[m.br]||'var(--line)';
+    var mlabel=(m.br==='GF')?'🏆 결승':('R'+m._dr+(m._drCount>1?(' M'+m._dm):''));
     var dateH=op?('<input type="date" value="'+esc(m.date||'')+'" onchange="doomBrkSetDate(\''+m.id+'\',this.value)" style="'+BRKINP+';font-size:10px;padding:2px 4px">'):(m.date?('<span class="mini dim" style="font-size:10px">📅 '+doomSchedFmtDate(m.date)+'</span>'):'');
     var foot='<div style="display:flex;justify-content:space-between;align-items:center;gap:4px;padding:3px 7px;border-top:1px solid var(--line)"><span class="mini dim" style="font-size:9px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">'+esc(m.note||'')+'</span>'+dateH+(op?'<a onclick="doomBrkDel(\''+m.id+'\')" style="cursor:pointer;color:var(--lose);font-weight:900;font-size:11px;flex:none">✕</a>':'')+'</div>';
-    return '<div style="border:1px solid var(--line);border-radius:9px;background:var(--card);margin:7px 0;min-width:158px;overflow:hidden">'+teamRow(m,'a')+'<div style="height:1px;background:var(--line)"></div>'+teamRow(m,'b')+foot+'</div>';
+    return '<div style="border:1px solid var(--line);border-left:3px solid '+accent+';border-radius:9px;background:var(--card);margin:7px 0;min-width:162px;overflow:hidden"><div class="mini" style="padding:3px 8px 1px;font-size:9.5px;font-weight:800;color:'+accent+';letter-spacing:.03em">'+mlabel+'</div>'+teamRow(m,'a')+'<div style="height:1px;background:var(--line)"></div>'+teamRow(m,'b')+foot+'</div>';
   };
-  var sectionHtml=function(secKey,title,accent){
-    var ms=brk.filter(function(m){return normSec(m.br)===secKey;});
-    if(!ms.length)return '';
-    var byRound={};ms.forEach(function(m){(byRound[m.round]=byRound[m.round]||[]).push(m);});
-    var rounds=Object.keys(byRound).map(Number).sort(function(a,b){return a-b;});
-    var cols=rounds.map(function(rd){
-      var rl='<div class="mini" style="font-weight:800;color:'+accent+';margin-bottom:4px;text-align:center;white-space:nowrap;font-size:11px">'+rd+'R</div>';
-      return '<div style="flex:none;display:flex;flex-direction:column;justify-content:space-around;min-width:160px;padding:0 3px">'+rl+byRound[rd].map(card).join('')+'</div>';
-    }).join('');
-    return '<div style="margin-bottom:15px"><div style="font-weight:900;font-size:13.5px;color:'+accent+';border-bottom:2px solid var(--line);padding-bottom:4px;margin-bottom:6px">'+title+'</div><div style="display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;align-items:stretch">'+cols+'</div></div>';
-  };
-  var brkBody=sectionHtml('WB','🏆 승자조 (Winners)','#2ecc71')+sectionHtml('LB','💀 패자조 (Losers)','#e67e22')+sectionHtml('GF','👑 최종전 (Grand Final)','var(--gold)');
+  var vis=brk.filter(function(m){return m.a!=='BYE'&&m.b!=='BYE';});
+  var byDR={};vis.forEach(function(m){(byDR[m._dr]=byDR[m._dr]||[]).push(m);});
+  var drs=Object.keys(byDR).map(Number).sort(function(a,b){return a-b;});
+  var cols=drs.map(function(dr){
+    var ms=byDR[dr].slice().sort(function(a,b){return (a._dm||0)-(b._dm||0);});
+    var fin=(ms.length===1&&ms[0].br==='GF');
+    var hdr=fin?'🏆 결승':('R'+dr);
+    return '<div style="flex:none;display:flex;flex-direction:column;justify-content:space-around;min-width:172px;padding:0 4px"><div class="mini" style="font-weight:900;color:'+(fin?'var(--gold)':'var(--ink)')+';margin-bottom:6px;text-align:center;font-size:12px;letter-spacing:.05em;border-bottom:2px solid '+(fin?'var(--gold)':'var(--line)')+';padding-bottom:4px">'+hdr+'</div>'+ms.map(card).join('')+'</div>';
+  }).join('');
+  var brkBody=vis.length?('<div style="display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;align-items:stretch">'+cols+'</div>'):'';
   if(!brk.length)brkBody='<div style="text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">아직 대진표가 없어요.'+(op?'<br>아래에서 팀을 선택해 만들어보세요!':'')+'</p></div>';
   var seedUI='';
   if(op&&!compact){
