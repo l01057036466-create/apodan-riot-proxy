@@ -11187,6 +11187,7 @@ function doomHomeTab(){
   var dd=doomDday();
   return '<div style="background:rgba(212,175,55,.08);border:1px solid var(--gold);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px"><div style="font-size:13px;color:var(--gold);font-weight:800;letter-spacing:.5px">제2회 아포단 멸망전</div><div style="font-size:30px;font-weight:900;margin:5px 0;color:'+(dd.hot?'var(--gold)':'var(--ink)')+'">'+dd.txt+'</div><div class="mini dim">'+dd.sub+' · 2026.07.01~07.30</div></div>'
     +doomHomeMatches()
+    +doomBracketSection((window._doomTeams||[]),false,true)
     +doomMLineupCard()
     +'<div style="display:flex;flex-direction:column;gap:14px">'
     +slides.map(function(n){return '<img src="/doom'+n+'.jpg" alt="멸망전 공지 '+n+'페이지" loading="lazy" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.28)" onerror="this.style.display=\'none\';var w=document.getElementById(\'doomWarn\');if(w)w.style.display=\'block\'">';}).join('')
@@ -11676,7 +11677,7 @@ function doomBrkGenerate(){
   doomBrkSave('🎲 더블 엘리미네이션 대진표 생성! ('+sel.length+'팀, 기존 날짜 유지)');
 }
 function doomBracketSection(teams,op){
-  var BRKINP='padding:6px;border-radius:6px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:12px';
+  var BRKINP='padding:6px;border-radius:6px;background:var(--inset);border:1px solid var(--line);color:var(--ink);font-size:12px';var compact=arguments[2];if(compact&&!(window._doomBracket||[]).length)return '';
   var brk=(window._doomBracket||[]).slice();
   var colorOf={};(teams||[]).forEach(function(t){colorOf[t.name]=t.color;});
   var normSec=function(br){return (br==='LB'||br==='L')?'LB':(br==='GF')?'GF':'WB';};
@@ -11708,7 +11709,7 @@ function doomBracketSection(teams,op){
   var brkBody=sectionHtml('WB','🏆 승자조 (Winners)','#2ecc71')+sectionHtml('LB','💀 패자조 (Losers)','#e67e22')+sectionHtml('GF','👑 최종전 (Grand Final)','var(--gold)');
   if(!brk.length)brkBody='<div style="text-align:center;padding:20px;border:1px dashed var(--line);border-radius:10px"><p class="mini dim" style="margin:0">아직 대진표가 없어요.'+(op?'<br>아래에서 팀을 선택해 만들어보세요!':'')+'</p></div>';
   var seedUI='';
-  if(op){
+  if(op&&!compact){
     var sel=window._doomSeedSel||[];
     var btns=(teams||[]).map(function(t,i){
       var on=sel.indexOf(t.name)>=0,rank=on?(sel.indexOf(t.name)+1):0;
@@ -11717,7 +11718,7 @@ function doomBracketSection(teams,op){
     var seedList=sel.length?('<div class="mini" style="margin:8px 0 4px;color:var(--gold);font-weight:700">시드 순서: '+sel.map(function(nm,i){return (i+1)+'.'+esc(nm);}).join('  ›  ')+'</div>'):'<p class="mini dim" style="margin:8px 0 4px">팀을 누른 순서가 시드가 돼요 (1번 시드부터). 강팀 순서대로 누르면 됩니다.</p>';
     var seedOpen=(window._doomSeedOpen!==undefined)?window._doomSeedOpen:!brk.length;seedUI='<details style="margin-top:12px" ontoggle="window._doomSeedOpen=this.open"'+(seedOpen?' open':'')+'><summary style="cursor:pointer;font-weight:800;color:var(--gold);font-size:13px">🎲 팀 선택 → 대진표 자동 생성</summary><div style="border:1px solid var(--line);border-radius:10px;padding:11px;margin-top:8px"><div style="display:flex;flex-wrap:wrap;gap:6px">'+(btns||'<span class="mini dim">확정된 팀이 없어요 (못 박기 필요)</span>')+'</div>'+seedList+'<div style="display:flex;gap:6px;margin-top:9px"><button class="btn gold" style="flex:1" onclick="doomBrkGenerate()">🎲 대진표 생성 ('+sel.length+'팀)</button>'+(sel.length?'<button class="btn sm ghost" style="flex:none" onclick="doomBrkSeedClear()">선택 초기화</button>':'')+'</div><p class="mini dim" style="margin:9px 0 0">※ 팀 클릭 = 승자 확정 → 다음 라운드 자동 진출! 날짜는 경기칸에서 입력(일정·달력에도 떠요).</p></div></details>';
   }
-  return '<div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;background:rgba(155,89,182,.04)"><h3 style="margin:0 0 3px;font-size:16px">🏆 더블 엘리미네이션 대진표</h3><p class="mini dim" style="margin:0 0 12px">팀(또는 미정 칸)을 누르면 승자 확정 → 다음 라운드 자동 진출</p>'+brkBody+seedUI+'</div>';
+  return '<div style="border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px;background:rgba(155,89,182,.04)"><h3 style="margin:0 0 3px;font-size:16px">🏆 더블 엘리미네이션 대진표</h3><p class="mini dim" style="margin:0 0 12px">'+(compact?'🏆 현재 대진 현황 (결과·날짜 입력은 순위 탭에서)':'팀(또는 미정 칸)을 누르면 승자 확정 → 다음 라운드 자동 진출')+'</p>'+brkBody+seedUI+'</div>';
 }
 
 
