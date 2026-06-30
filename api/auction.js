@@ -453,9 +453,10 @@ module.exports = async function handler(req, res) {
       var toScoreB = function (x) { if (x === null || x === undefined || x === '') return null; var n = parseInt(x, 10); return isNaN(n) ? null : Math.max(0, Math.min(99, n)); };
       var cleanB = mbB.slice(0, 80).map(function (m, i) {
         m = m || {};
-        var brB = ['W', 'L', 'GF'].indexOf(m.br) >= 0 ? m.br : 'W';
+        var brB = ['R1', 'W', 'L', 'GF', 'WB', 'LB'].indexOf(m.br) >= 0 ? m.br : 'WB';
         var rdB = parseInt(m.round, 10); if (!(rdB >= 1 && rdB <= 20)) rdB = 1;
-        return { id: String(m.id || ('bm' + Date.now() + '_' + i)).slice(0, 40), br: brB, round: rdB, slot: parseInt(m.slot, 10) || (i + 1), a: String(m.a || '').slice(0, 40), b: String(m.b || '').slice(0, 40), sa: toScoreB(m.sa), sb: toScoreB(m.sb), date: String(m.date || '').slice(0, 10), note: String(m.note || '').slice(0, 60) };
+        var abS = function (x) { return (x === 'a' || x === 'b') ? x : ''; };
+        return { id: String(m.id || ('bm' + Date.now() + '_' + i)).slice(0, 40), br: brB, round: rdB, slot: parseInt(m.slot, 10) || (i + 1), a: String(m.a || '').slice(0, 40), b: String(m.b || '').slice(0, 40), sa: toScoreB(m.sa), sb: toScoreB(m.sb), date: String(m.date || '').slice(0, 10), note: String(m.note || '').slice(0, 60), win: (m.win === 'a' || m.win === 'b') ? m.win : null, wTo: String(m.wTo || '').slice(0, 40), wSlot: abS(m.wSlot), lTo: String(m.lTo || '').slice(0, 40), lSlot: abS(m.lSlot), aSeed: !!m.aSeed, bSeed: !!m.bSeed, aLabel: String(m.aLabel || '').slice(0, 40), bLabel: String(m.bLabel || '').slice(0, 40) };
       });
       await redis(['SET', 'doom:bracket', JSON.stringify(cleanB)]);
       return res.status(200).json({ ok: true, bracket: cleanB });
