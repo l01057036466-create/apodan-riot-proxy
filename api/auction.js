@@ -14,7 +14,7 @@ async function callLLM(prompt, maxTokens, userKey) {
   var ak = process.env.ANTHROPIC_API_KEY;
   if (gk) {
     var primary = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
-    var gmodels = [primary]; if (gmodels.indexOf('gemini-2.5-flash') < 0) gmodels.push('gemini-2.5-flash'); // 설정 모델이 혼잡(high demand)·빈응답·에러면 안정적인 2.5-flash로 자동 폴백
+    var gmodels = [primary]; ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash'].forEach(function(m){ if (gmodels.indexOf(m) < 0) gmodels.push(m); }); // 혼잡(high demand)·빈응답·에러면 다른 모델로 순차 폴백
     var lastErr = '';
     for (var gi = 0; gi < gmodels.length; gi++) {
       var gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gmodels[gi] + ':generateContent?key=' + gk, {
