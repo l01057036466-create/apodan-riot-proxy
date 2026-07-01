@@ -1307,7 +1307,7 @@ function ratesMap(laneKo, excludeDate){ // 분당·효율 지표 일괄 계산 (
     wins:s.w, richN:s.rich, soloPg:s.soloN?s.solo/s.soloN:0, hasSolo:s.soloN>0, soloN:s.soloN,
     dmgShare:s.dshN?Math.round(s.dsh/s.dshN*10)/10:null, tankShare:s.tshN?Math.round(s.tsh/s.tshN*10)/10:null, goldShare:s.gshN?Math.round(s.gsh/s.gshN*10)/10:null,
     gd15:s.gdN?Math.round(s.gd/s.gdN):null, csd15:s.csdN?Math.round(s.csd/s.csdN):null, xpd15:s.xpdN?Math.round(s.xpd/s.xpdN):null,
-    avgDmg:s.g?Math.round(s.dmg/s.g):0
+    avgDmg:s.g?Math.round(s.dmg/s.g):0, killsPg:s.g?s.k/s.g:0, assistsPg:s.g?s.a/s.g:0
   }));
   return out;
 }
@@ -1794,6 +1794,33 @@ function makeAwards(){
     if(ccK)push('🩸 CC 마스터',ccK.name,`분당 군중제어 1위 · 적 손발을 묶어버린다`);
     const utilK=P.filter(p=>p.games>=3&&rg(p.id).utilpm>0&&playerMainLane(p.id)==='서폿').sort((a,b)=>rg(b.id).utilpm-rg(a.id).utilpm)[0];
     if(utilK)push('💊 만능 서포터',utilK.name,`분당 힐·실드 1위 · 팀의 생명줄`);
+    // 전체 1위 (라인 무관 순수 최다 지표)
+    const killLd=P.filter(p=>p.games>=3&&rg(p.id).killsPg>0).sort((a,b)=>rg(b.id).killsPg-rg(a.id).killsPg)[0];
+    if(killLd)push('🗡 학살자',killLd.name,`평균 ${(Math.round(rg(killLd.id).killsPg*10)/10).toFixed(1)}킬 · 전체 최다 킬`);
+    const gpmLd=P.filter(p=>p.games>=3&&rg(p.id).gpm>0).sort((a,b)=>rg(b.id).gpm-rg(a.id).gpm)[0];
+    if(gpmLd)push('💰 골드 러시',gpmLd.name,`분당 골드 ${fmt(Math.round(rg(gpmLd.id).gpm))} · 전체 최고`);
+    const goldShLd=P.filter(p=>p.games>=3&&rg(p.id).goldShare!=null).sort((a,b)=>rg(b.id).goldShare-rg(a.id).goldShare)[0];
+    if(goldShLd)push('💸 자원 1순위',goldShLd.name,`팀 골드 비중 ${rg(goldShLd.id).goldShare}% · 자원이 가장 몰린다`);
+    // 🏆 라인별 지표 1위 — 모든 라인 각각 (같은 라인 안에서 비교)
+    try{
+    [{ln:'탑',e:'🛡',ms:[['gd15','라인전'],['dmgShare','화력'],['kda','안정'],['tankShare','맷집']]},
+     {ln:'정글',e:'🌲',ms:[['kp','킬관여'],['objpm','오브젝트'],['kda','안정'],['vspm','시야']]},
+     {ln:'미드',e:'✨',ms:[['dmgShare','화력'],['gd15','라인전'],['kda','안정'],['kp','킬관여']]},
+     {ln:'원딜',e:'🏹',ms:[['dpm','딜'],['dmgShare','딜비중'],['cspm','성장'],['kda','안정']]},
+     {ln:'서폿',e:'💊',ms:[['vspm','시야'],['kp','킬관여'],['utilpm','유틸'],['kda','안정']]}
+    ].forEach(function(cfg){
+      var rmL=ratesMap(cfg.ln);var pool=[];rmL.forEach(function(v,id){if(v.games>=3)pool.push({id:id,v:v});});
+      if(pool.length<2)return;
+      cfg.ms.forEach(function(mm){
+        var k=mm[0];var cand=pool.filter(function(x){var val=x.v[k];return val!=null&&isFinite(Number(val));});
+        if(!cand.length)return;
+        cand.sort(function(a,b){return Number(b.v[k])-Number(a.v[k]);});
+        var t=cand[0];var nm=nameOf(t.id)||'';var val=Number(t.v[k]);
+        var vs=(k==='dmgShare'||k==='goldShare'||k==='kp'||k==='tankShare')?((Math.round(val*10)/10)+'%'):(k==='kda'||k==='cspm')?(Math.round(val*100)/100):(k==='gd15')?((val>0?'+':'')+Math.round(val)):Math.round(val);
+        if(nm)push(cfg.e+' '+cfg.ln+' '+mm[1]+' 1위',nm,cfg.ln+' 중 '+mm[1]+' 최고 ('+vs+')');
+      });
+    });
+    }catch(_lnErr){}
     const ironWall=P.filter(p=>p.games>=4&&p.winRate>=52).sort((a,b)=>per(a,'deaths')-per(b,'deaths'))[0];
     if(ironWall&&per(ironWall,'deaths')<=3)push('🧱 철벽 수비수',ironWall.name,`경기당 ${per(ironWall,'deaths').toFixed(1)}데스·승률 ${ironWall.winRate}% · 안 죽고 이긴다`);
     const deathT=P.filter(p=>p.games>=4).sort((a,b)=>(b.deaths||0)-(a.deaths||0))[0];
@@ -8176,14 +8203,14 @@ function pgMe(){
 /* ───── 내비게이션 ───── */
 const PAGES=[
  ['dashboard','대시보드'],['login','로그인'],['notice','🏟 내전 공지'],['result','📊 경기 결과'],['record','📝 경기 기록'],['matches','경기'],['players','플레이어'],
- ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['awards','칭호'],['doom','🏆 멸망전'],['settings','설정']
+ ['stats','통계'],['compare','1:1 비교'],['today','당일 밴픽'],['balance','팀 짜주기'],['champions','챔피언 티어'],['form','폼 주식'],['laneTier','라인 티어표'],['statRank','📊 지표 순위'],['awards','칭호'],['doom','🏆 멸망전'],['settings','설정']
 ];
 const NAV_GROUPS=[ // 대분류 → 소분류 (헷갈림 제로 재정립)
  ['home','🏠 홈',['dashboard']],
  ['doom','🏆 멸망전',['doom']],
  ['live','⚔️ 내전',['notice','result','today','record','matches','balance']],
  ['champ','🔬 챔피언 분석',['champions']],
- ['member','📊 선수',['players','laneTier','compare','stats']],
+ ['member','📊 선수',['players','laneTier','statRank','compare','stats']],
  ['hall','🥇 명예의 전당',['awards']],
  ['bank','💰 거래소',['bank','form']],
  ['games','🎮 포인트 게임',['games']],
@@ -8417,7 +8444,7 @@ function render(opt){
     </div>`;
     return;
   }
-  const R={dashboard:pgDashboard,notice:pgNotice,result:pgResult,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,
+  const R={dashboard:pgDashboard,notice:pgNotice,result:pgResult,record:pgRecord,matches:pgMatches,players:pgPlayers,stats:pgStats,compare:pgCompare,today:pgToday,laneTier:pgLaneTier,statRank:pgStatRank,
     champions:pgChampions,form:pgForm,awards:pgAwards,doom:pgDoom,settings:pgSettings,bank:pgBank,games:pgGames,shop:pgShop,me:pgMe,balance:pgBalance,login:pgLogin};
   let _xs=[];try{document.querySelectorAll('#view [id]').forEach(el=>{if(el.scrollLeft>0)_xs.push([el.id,el.scrollLeft])})}catch(e){} // 가로 스크롤 보존
   const _se=(typeof document!=='undefined'&&(document.scrollingElement||document.documentElement))||null; // 🐛fix: 자동 동기화 렌더에 스크롤이 맨 위로 튀던 문제
@@ -9611,6 +9638,50 @@ function tblPlayers(P){
     <td class="num">${s.avgDmg?fmt(s.avgDmg):'-'}</td><td class="num">${s.avgVision||'-'}</td>
     <td class="num">${s.mvp?'👑 '+s.mvp:'-'}</td></tr>`).join('')}</tbody></table></div>`;
 }
+var STATRANK_METRICS=[
+  {k:'gd15',t:'15분 맞라인 골드차',f:function(v){return (v>0?'+':'')+Math.round(v);}},
+  {k:'dpm',t:'분당 데미지 (DPM)',f:function(v){return Math.round(v);}},
+  {k:'kda',t:'KDA',f:function(v){return (Math.round(v*100)/100).toFixed(2);}},
+  {k:'killsPg',t:'평균 킬',f:function(v){return (Math.round(v*10)/10).toFixed(1);}},
+  {k:'kp',t:'킬 관여',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}},
+  {k:'cspm',t:'분당 CS',f:function(v){return (Math.round(v*10)/10).toFixed(1);}},
+  {k:'gpm',t:'분당 골드',f:function(v){return Math.round(v);}},
+  {k:'dmgShare',t:'데미지 비중',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}},
+  {k:'goldShare',t:'골드 비중',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}}
+];
+function qStatLeadBadges(pid){var lane=(typeof playerMainLane==='function')?playerMainLane(pid):null;var rm=lane?ratesMap(lane):ratesMap();var leads=[];STATRANK_METRICS.forEach(function(m){var top=null,tv=-Infinity;rm.forEach(function(v,id){if(v.games>=3){var val=v[m.k];if(val!=null&&isFinite(Number(val))&&Number(val)>tv){tv=Number(val);top=id;}}});if(top&&top===pid)leads.push(m.t);});return leads;}
+function pgStatRank(){
+  var role=window._srRole||'전체';
+  var roles=['전체','탑','정글','미드','원딜','서폿'];
+  var chips='<div class="subnav" style="margin-bottom:12px">'+roles.map(function(r){return '<button class="'+(role===r?'on':'')+'" onclick="window._srRole=\''+r+'\';render()">'+r+'</button>';}).join('')+'</div>';
+  var minG=window._srMinG||1;
+  var mg='<div class="subnav" style="margin-bottom:14px">'+[1,3,5].map(function(n){return '<button class="'+(minG===n?'on':'')+'" onclick="window._srMinG='+n+';render()">'+(n===1?'전체':n+'경기+')+'</button>';}).join('')+'</div>';
+  var laneArg=role==='전체'?undefined:role;
+  var rm=ratesMap(laneArg);
+  var _dts=[];try{_dts=[...new Set(state.matches.map(function(m){return m.playedAt;}))].sort();}catch(e){}
+  var _lastD=_dts.length?_dts[_dts.length-1]:null;
+  var rmPrev=_lastD?ratesMap(laneArg,_lastD):null;
+  var rows=[];rm.forEach(function(v,id){if(v.games>=minG)rows.push({id:id,name:nameOf(id)||id,v:v});});
+  var hd=head('📊 지표 순위',(role==='전체'?'전체':role)+' 지표 순위·평균 · ▲▼ 최근 내전 등락');
+  if(!rows.length)return hd+chips+mg+'<div class="empty">해당 조건(최소 '+minG+'경기)의 기록이 없어요.</div>';
+  var body='';
+  STATRANK_METRICS.forEach(function(m){
+    var list=rows.filter(function(r){var val=r.v[m.k];return val!=null&&isFinite(Number(val));});
+    if(!list.length)return;
+    list.sort(function(a,b){return Number(b.v[m.k])-Number(a.v[m.k]);});
+    var avg=list.reduce(function(acc,r){return acc+Number(r.v[m.k]);},0)/list.length;
+    var prevRank={};if(rmPrev){var pl=[];rmPrev.forEach(function(v,id){if(v.games>=minG){var val=v[m.k];if(val!=null&&isFinite(Number(val)))pl.push({id:id,val:Number(val)});}});pl.sort(function(a,b){return b.val-a.val;});pl.forEach(function(r,i){prevRank[r.id]=i;});}
+    var top=list.slice(0,6);
+    var lis=top.map(function(r,i){
+      var rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':('<span style="color:var(--mut)">'+(i+1)+'</span>');
+      var st=i===0?'font-weight:800;color:var(--gold)':'';
+      var arw='';if(rmPrev){var pr=prevRank[r.id];if(pr==null)arw='<span style="color:#5ab0ec;font-size:9px;font-weight:800">NEW</span>';else{var dd=pr-i;arw=dd>0?('<span style="color:#2ecc71;font-size:11px">▲'+dd+'</span>'):dd<0?('<span style="color:#e74c3c;font-size:11px">▼'+(-dd)+'</span>'):'<span style="color:var(--mut);font-size:11px">–</span>';}}
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--line);'+st+'"><span style="display:flex;gap:7px;align-items:center;min-width:0"><span style="width:20px;text-align:center;flex:none">'+rk+'</span><span style="width:26px;text-align:center;flex:none">'+arw+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.name)+'</span></span><b style="flex:none;margin-left:8px">'+m.f(Number(r.v[m.k]))+'</b></div>';
+    }).join('');
+    body+='<div class="card" style="padding:12px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:14px">'+m.t+'</b><span class="mini dim">평균 '+m.f(avg)+' · '+list.length+'명</span></div>'+lis+'</div>';
+  });
+  return hd+chips+mg+body;
+}
 function pgStats(){
   const D=statDuos(),R=statRivals(),PC=statPlayerChamps(),P=statPlayers();
   return head('통계','개인 승률 · 진영 밸런스 · 듀오 시너지 · 상대전적 · 챔피언 궁합. 전부 플레이어 고유 ID 기준입니다.')+`
@@ -10402,6 +10473,8 @@ function _awQuest(){
   const otherHtml=Object.keys(laneKo).filter(L=>L!==lane&&rsByLane[L]).map(L=>sect(laneKo[L]+' 포지션 도전 ('+rsByLane[L].games+'판 경험)',all.filter(m=>m.c===L))).join('');
   const body=myHtml+allHtml+`<h3 style="margin:18px 0 10px">🔓 다른 포지션 도전</h3>`+otherHtml;
   const earnHtml=totalEarn?`<div class="card" style="margin:6px 0 14px;border:1px solid var(--win)"><p class="mini" style="margin:0;color:var(--win)">🎉 달성 미션 <b>${doneN}개</b> · 보상 합계 <b>${km(totalEarn)} APO</b></p></div>`:'';
+  var _leadB=(typeof qStatLeadBadges==='function')?qStatLeadBadges(sel):[];
+  var _leadHtml=_leadB.length?('<div class="card" style="margin-bottom:14px;border:1px solid var(--gold)"><b style="color:var(--gold)">🏆 '+lk+' 지표 1위 '+_leadB.length+'개</b><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">'+_leadB.map(function(t){return '<span class="pill gold">'+t+'</span>';}).join('')+'</div><p class="mini dim" style="margin:8px 0 0">같은 라인('+lk+') 선수 중 이 지표들 1위예요 (3경기+ 기준) — 칭호에도 있어요!</p></div>'):'';
   return head('🎯 포지션 퀘스트','최근 5경기·통산 기록으로 자동 판정 · 총 '+all.length+'개 미션')+_awTabs('quest')+`
   <div class="card" style="margin-bottom:14px">
     <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap">
@@ -10409,7 +10482,7 @@ function _awQuest(){
       <span class="pill blue">주 포지션 ${lk}</span>
       ${rs?`<span class="mini dim">최근 ${rs.games}경기</span>`:'<span class="mini dim">최근 경기 기록 없음</span>'}
     </div>
-  </div>`+earnHtml+body;
+  </div>`+_leadHtml+earnHtml+body;
 }
 function pgAwardProgress(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
