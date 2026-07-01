@@ -1801,23 +1801,19 @@ function makeAwards(){
     if(gpmLd)push('💰 골드 러시',gpmLd.name,`분당 골드 ${fmt(Math.round(rg(gpmLd.id).gpm))} · 전체 최고`);
     const goldShLd=P.filter(p=>p.games>=3&&rg(p.id).goldShare!=null).sort((a,b)=>rg(b.id).goldShare-rg(a.id).goldShare)[0];
     if(goldShLd)push('💸 자원 1순위',goldShLd.name,`팀 골드 비중 ${rg(goldShLd.id).goldShare}% · 자원이 가장 몰린다`);
-    // 🏆 라인별 지표 1위 — 모든 라인 각각 (같은 라인 안에서 비교)
+    // 🏆 라인별 지표 1위 — MVP_W(우리가 정한 라인별 시그니처 지표) 기준, 같은 라인 안에서만
     try{
-    [{ln:'탑',e:'🛡',ms:[['gd15','라인전'],['dmgShare','화력'],['kda','안정'],['tankShare','맷집']]},
-     {ln:'정글',e:'🌲',ms:[['kp','킬관여'],['objpm','오브젝트'],['kda','안정'],['vspm','시야']]},
-     {ln:'미드',e:'✨',ms:[['dmgShare','화력'],['gd15','라인전'],['kda','안정'],['kp','킬관여']]},
-     {ln:'원딜',e:'🏹',ms:[['dpm','딜'],['dmgShare','딜비중'],['cspm','성장'],['kda','안정']]},
-     {ln:'서폿',e:'💊',ms:[['vspm','시야'],['kp','킬관여'],['utilpm','유틸'],['kda','안정']]}
-    ].forEach(function(cfg){
-      var rmL=ratesMap(cfg.ln);var pool=[];rmL.forEach(function(v,id){if(v.games>=3)pool.push({id:id,v:v});});
+    var _LNEMO={'탑':'🛡','정글':'🌲','미드':'✨','원딜':'🏹','서폿':'💊'};
+    Object.keys(MVP_W).forEach(function(ln){
+      var rmL=ratesMap(ln);var pool=[];rmL.forEach(function(v,id){if(v.games>=3)pool.push({id:id,v:v});});
       if(pool.length<2)return;
-      cfg.ms.forEach(function(mm){
-        var k=mm[0];var cand=pool.filter(function(x){var val=x.v[k];return val!=null&&isFinite(Number(val));});
+      var mks=Object.keys(MVP_W[ln]).filter(function(k){return STAT_META[k];}).sort(function(a,b){return MVP_W[ln][b]-MVP_W[ln][a];});
+      mks.forEach(function(k){
+        var cand=pool.filter(function(x){var val=x.v[k];return val!=null&&isFinite(Number(val));});
         if(!cand.length)return;
         cand.sort(function(a,b){return Number(b.v[k])-Number(a.v[k]);});
-        var t=cand[0];var nm=nameOf(t.id)||'';var val=Number(t.v[k]);
-        var vs=(k==='dmgShare'||k==='goldShare'||k==='kp'||k==='tankShare')?((Math.round(val*10)/10)+'%'):(k==='kda'||k==='cspm')?(Math.round(val*100)/100):(k==='gd15')?((val>0?'+':'')+Math.round(val)):Math.round(val);
-        if(nm)push(cfg.e+' '+cfg.ln+' '+mm[1]+' 1위',nm,cfg.ln+' 중 '+mm[1]+' 최고 ('+vs+')');
+        var t=cand[0];var nm=nameOf(t.id)||'';
+        if(nm)push((_LNEMO[ln]||'🏆')+' '+ln+' '+STAT_META[k][0]+' 1위',nm,ln+' 중 '+STAT_META[k][0]+' 최고 ('+STAT_META[k][1](Number(t.v[k]))+')');
       });
     });
     }catch(_lnErr){}
@@ -9638,18 +9634,39 @@ function tblPlayers(P){
     <td class="num">${s.avgDmg?fmt(s.avgDmg):'-'}</td><td class="num">${s.avgVision||'-'}</td>
     <td class="num">${s.mvp?'👑 '+s.mvp:'-'}</td></tr>`).join('')}</tbody></table></div>`;
 }
-var STATRANK_METRICS=[
-  {k:'gd15',t:'15분 맞라인 골드차',f:function(v){return (v>0?'+':'')+Math.round(v);}},
-  {k:'dpm',t:'분당 데미지 (DPM)',f:function(v){return Math.round(v);}},
-  {k:'kda',t:'KDA',f:function(v){return (Math.round(v*100)/100).toFixed(2);}},
-  {k:'killsPg',t:'평균 킬',f:function(v){return (Math.round(v*10)/10).toFixed(1);}},
-  {k:'kp',t:'킬 관여',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}},
-  {k:'cspm',t:'분당 CS',f:function(v){return (Math.round(v*10)/10).toFixed(1);}},
-  {k:'gpm',t:'분당 골드',f:function(v){return Math.round(v);}},
-  {k:'dmgShare',t:'데미지 비중',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}},
-  {k:'goldShare',t:'골드 비중',f:function(v){return (Math.round(v*10)/10).toFixed(1)+'%';}}
-];
-function qStatLeadBadges(pid){var lane=(typeof playerMainLane==='function')?playerMainLane(pid):null;var rm=lane?ratesMap(lane):ratesMap();var leads=[];STATRANK_METRICS.forEach(function(m){var top=null,tv=-Infinity;rm.forEach(function(v,id){if(v.games>=3){var val=v[m.k];if(val!=null&&isFinite(Number(val))&&Number(val)>tv){tv=Number(val);top=id;}}});if(top&&top===pid)leads.push(m.t);});return leads;}
+/* ── 지표 메타(라벨·포맷) + 라인별 지표 정의 = MVP_W(우리가 정한 프로 기준) ── */
+var STAT_META={
+  gd15:['15분 골드차',function(v){return (v>0?'+':'')+Math.round(v);}],
+  xpd15:['15분 경험치차',function(v){return (v>0?'+':'')+Math.round(v);}],
+  csd15:['15분 CS차',function(v){return (v>0?'+':'')+Math.round(v);}],
+  dpm:['분당 데미지',function(v){return Math.round(v);}],
+  dmgShare:['데미지 비중',function(v){return (Math.round(v*10)/10)+'%';}],
+  goldShare:['골드 비중',function(v){return (Math.round(v*10)/10)+'%';}],
+  tankShare:['탱킹 비중',function(v){return (Math.round(v*10)/10)+'%';}],
+  kda:['KDA',function(v){return (Math.round(v*100)/100).toFixed(2);}],
+  kp:['킬 관여',function(v){return (Math.round(v*10)/10)+'%';}],
+  cspm:['분당 CS',function(v){return (Math.round(v*10)/10).toFixed(1);}],
+  gpm:['분당 골드',function(v){return Math.round(v);}],
+  killsPg:['평균 킬',function(v){return (Math.round(v*10)/10).toFixed(1);}],
+  vspm:['분당 시야',function(v){return (Math.round(v*100)/100).toFixed(2);}],
+  objpm:['분당 오브젝트 딜',function(v){return Math.round(v);}],
+  utilpm:['분당 힐·실드',function(v){return Math.round(v);}],
+  ccpm:['분당 CC',function(v){return (Math.round(v*100)/100).toFixed(2);}],
+  soloPg:['솔로킬',function(v){return (Math.round(v*100)/100).toFixed(2);}]
+};
+function metricsForLane(lane){
+  if(lane&&typeof MVP_W!=='undefined'&&MVP_W[lane]){
+    return Object.keys(MVP_W[lane]).filter(function(k){return STAT_META[k];}).sort(function(a,b){return MVP_W[lane][b]-MVP_W[lane][a];});
+  }
+  return ['kda','killsPg','kp','dpm','cspm','gpm']; // 전체(라인 무관 공통)
+}
+function qStatLeadBadges(pid){
+  var lane=(typeof playerMainLane==='function')?playerMainLane(pid):null;
+  var rm=lane?ratesMap(lane):ratesMap();
+  var mks=metricsForLane(lane);var leads=[];
+  mks.forEach(function(k){var top=null,tv=-Infinity;rm.forEach(function(v,id){if(v.games>=3){var val=v[k];if(val!=null&&isFinite(Number(val))&&Number(val)>tv){tv=Number(val);top=id;}}});if(top&&top===pid)leads.push(STAT_META[k][0]);});
+  return leads;
+}
 function pgStatRank(){
   var role=window._srRole||'전체';
   var roles=['전체','탑','정글','미드','원딜','서폿'];
@@ -9662,23 +9679,25 @@ function pgStatRank(){
   var _lastD=_dts.length?_dts[_dts.length-1]:null;
   var rmPrev=_lastD?ratesMap(laneArg,_lastD):null;
   var rows=[];rm.forEach(function(v,id){if(v.games>=minG)rows.push({id:id,name:nameOf(id)||id,v:v});});
-  var hd=head('📊 지표 순위',(role==='전체'?'전체':role)+' 지표 순위·평균 · ▲▼ 최근 내전 등락');
+  var mks=metricsForLane(role==='전체'?null:role);
+  var hd=head('📊 지표 순위',(role==='전체'?'전체 · 라인 무관 공통 지표':role+' 전용 지표 (프로 기준)')+' · ▲▼ 최근 내전 등락');
   if(!rows.length)return hd+chips+mg+'<div class="empty">해당 조건(최소 '+minG+'경기)의 기록이 없어요.</div>';
   var body='';
-  STATRANK_METRICS.forEach(function(m){
-    var list=rows.filter(function(r){var val=r.v[m.k];return val!=null&&isFinite(Number(val));});
+  mks.forEach(function(k){
+    var meta=STAT_META[k];if(!meta)return;
+    var list=rows.filter(function(r){var val=r.v[k];return val!=null&&isFinite(Number(val));});
     if(!list.length)return;
-    list.sort(function(a,b){return Number(b.v[m.k])-Number(a.v[m.k]);});
-    var avg=list.reduce(function(acc,r){return acc+Number(r.v[m.k]);},0)/list.length;
-    var prevRank={};if(rmPrev){var pl=[];rmPrev.forEach(function(v,id){if(v.games>=minG){var val=v[m.k];if(val!=null&&isFinite(Number(val)))pl.push({id:id,val:Number(val)});}});pl.sort(function(a,b){return b.val-a.val;});pl.forEach(function(r,i){prevRank[r.id]=i;});}
+    list.sort(function(a,b){return Number(b.v[k])-Number(a.v[k]);});
+    var avg=list.reduce(function(acc,r){return acc+Number(r.v[k]);},0)/list.length;
+    var prevRank={};if(rmPrev){var pl=[];rmPrev.forEach(function(v,id){if(v.games>=minG){var val=v[k];if(val!=null&&isFinite(Number(val)))pl.push({id:id,val:Number(val)});}});pl.sort(function(a,b){return b.val-a.val;});pl.forEach(function(r,i){prevRank[r.id]=i;});}
     var top=list.slice(0,6);
     var lis=top.map(function(r,i){
       var rk=i===0?'🥇':i===1?'🥈':i===2?'🥉':('<span style="color:var(--mut)">'+(i+1)+'</span>');
       var st=i===0?'font-weight:800;color:var(--gold)':'';
       var arw='';if(rmPrev){var pr=prevRank[r.id];if(pr==null)arw='<span style="color:#5ab0ec;font-size:9px;font-weight:800">NEW</span>';else{var dd=pr-i;arw=dd>0?('<span style="color:#2ecc71;font-size:11px">▲'+dd+'</span>'):dd<0?('<span style="color:#e74c3c;font-size:11px">▼'+(-dd)+'</span>'):'<span style="color:var(--mut);font-size:11px">–</span>';}}
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--line);'+st+'"><span style="display:flex;gap:7px;align-items:center;min-width:0"><span style="width:20px;text-align:center;flex:none">'+rk+'</span><span style="width:26px;text-align:center;flex:none">'+arw+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.name)+'</span></span><b style="flex:none;margin-left:8px">'+m.f(Number(r.v[m.k]))+'</b></div>';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-top:1px solid var(--line);'+st+'"><span style="display:flex;gap:7px;align-items:center;min-width:0"><span style="width:20px;text-align:center;flex:none">'+rk+'</span><span style="width:26px;text-align:center;flex:none">'+arw+'</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.name)+'</span></span><b style="flex:none;margin-left:8px">'+meta[1](Number(r.v[k]))+'</b></div>';
     }).join('');
-    body+='<div class="card" style="padding:12px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:14px">'+m.t+'</b><span class="mini dim">평균 '+m.f(avg)+' · '+list.length+'명</span></div>'+lis+'</div>';
+    body+='<div class="card" style="padding:12px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:14px">'+meta[0]+'</b><span class="mini dim">평균 '+meta[1](avg)+' · '+list.length+'명</span></div>'+lis+'</div>';
   });
   return hd+chips+mg+body;
 }
