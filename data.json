@@ -209,7 +209,7 @@
     "백정",
     "01백정"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "다이아",
@@ -42461,8 +42461,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 450,
- "updatedAt": "2026-06-30T14:51:39.103Z",
+ "rev": 451,
+ "updatedAt": "2026-07-01T13:09:50.944Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
