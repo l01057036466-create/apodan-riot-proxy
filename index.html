@@ -9728,6 +9728,28 @@ function laneCompCardHtml(lane,minG){
   }).join('');
   return '<div class="card" style="padding:12px;margin-bottom:14px;border:1px solid var(--gold)"><b style="font-size:15px;color:var(--gold)">🏆 '+lane+' 종합 순위</b><p class="mini dim" style="margin:2px 0 4px">라인 주요 지표를 종합 — 여러 지표에서 고르게 높을수록 상위 (한 지표 몰빵 ✕)</p>'+rows+'</div>';
 }
+function questProCard(sel,lane){
+  if(typeof laneCompositeRank!=='function'||typeof LANE_PROS==='undefined'||!LANE_PROS[lane])return '';
+  var cr=laneCompositeRank(lane,5);
+  var mi=-1;for(var z=0;z<cr.length;z++){if(cr[z].id===sel){mi=z;break;}}
+  if(mi<0)return '';
+  var pros=LANE_PROS[lane];var goal=pros[0];var held=(mi<3)?pros[mi]:null;
+  var h='<div class="card" style="margin-bottom:14px;border:1px solid var(--gold)"><b style="color:var(--gold)">🏆 '+lane+' 종합 랭킹 & 프로 등극</b><p style="margin:6px 0 0;font-size:15px"><b>'+(mi+1)+'위</b> / '+cr.length+'명'+(held?(' · <span class="pill gold">'+esc(held)+' 칭호</span>'):'')+'</p>';
+  if(mi===0)h+='<p class="mini" style="margin:6px 0 0;color:var(--win)">👑 '+esc(goal)+' 달성! '+lane+' 종합 1위예요.</p>';
+  else h+='<p class="mini dim" style="margin:6px 0 0">🎯 <b>'+esc(goal)+'되기</b>까지 '+mi+'계단 — '+lane+' 주요 지표를 고르게 올리면 순위가 올라가요!</p>';
+  if(mi<3){
+    var rws=[10000,8000,5000];var btns=[];
+    for(var t=mi+1;t<=3;t++){
+      var tr=rws[t-1];var cmid='procomp_'+lane+'_'+t;
+      if(window._qClaimed&&window._qClaimed.has(cmid))btns.push('<span class="pill win">'+t+'위 '+tr.toLocaleString()+' 받음 ✅</span>');
+      else if(window._qIsMe)btns.push('<button class="btn sm gold" style="white-space:nowrap" onclick="questClaimDo(\''+cmid+'\','+tr+',\''+lane+' 종합 '+t+'위\')">🎁 '+t+'위 '+tr.toLocaleString()+' 받기</button>');
+      else btns.push('<span class="pill gold">'+t+'위 '+tr.toLocaleString()+'</span>');
+    }
+    h+='<div style="margin-top:9px;display:flex;flex-wrap:wrap;gap:6px">'+btns.join('')+'</div>';
+  }
+  h+='<p class="mini dim" style="margin:8px 0 0;font-size:10px">보상은 각 tier 1회만 — 1위는 1·2·3위 보상 모두, 2위는 2·3위, 3위는 3위까지.</p></div>';
+  return h;
+}
 function qStatLeadBadges(pid){
   var lane=(typeof playerMainLane==='function')?playerMainLane(pid):null;
   var rm=lane?ratesMap(lane):ratesMap();
@@ -10562,31 +10584,11 @@ function _awQuest(){
   const earnHtml=totalEarn?`<div class="card" style="margin:6px 0 14px;border:1px solid var(--win)"><p class="mini" style="margin:0;color:var(--win)">🎉 달성 미션 <b>${doneN}개</b> · 보상 합계 <b>${km(totalEarn)} APO</b></p></div>`:'';
   var _plLane=(typeof playerMainLane==='function')?playerMainLane(sel):null;
   var _leadHtml='';
-  if(_plLane&&typeof LANE_PROS!=='undefined'&&LANE_PROS[_plLane]&&typeof laneCompositeRank==='function'){
-    var _cr=laneCompositeRank(_plLane,5);
-    var _mi=-1;for(var _z=0;_z<_cr.length;_z++){if(_cr[_z].id===sel){_mi=_z;break;}}
-    var _pros=LANE_PROS[_plLane];var _goal=_pros[0];
-    if(_mi>=0){
-      var _held=(_mi<3)?_pros[_mi]:null;
-      _leadHtml='<div class="card" style="margin-bottom:14px;border:1px solid var(--gold)"><b style="color:var(--gold)">🏆 '+_plLane+' 종합 랭킹 & 프로 등극</b><p style="margin:6px 0 0;font-size:15px"><b>'+(_mi+1)+'위</b> / '+_cr.length+'명'+(_held?(' · <span class="pill gold">'+esc(_held)+' 칭호</span>'):'')+'</p>';
-      if(_mi===0)_leadHtml+='<p class="mini" style="margin:6px 0 0;color:var(--win)">👑 '+esc(_goal)+' 달성! '+_plLane+' 종합 1위예요.</p>';
-      else _leadHtml+='<p class="mini dim" style="margin:6px 0 0">🎯 <b>'+esc(_goal)+'되기</b>까지 '+_mi+'계단 — 한 지표만 말고 '+_plLane+' 주요 지표를 고르게 올리면 종합 순위가 올라가요!</p>';
-      if(_mi<3){
-        var _rws=[10000,8000,5000];var _btns=[];
-        for(var _t=_mi+1;_t<=3;_t++){
-          var _tr=_rws[_t-1];var _cmid='procomp_'+_plLane+'_'+_t;
-          if(window._qClaimed&&window._qClaimed.has(_cmid))_btns.push('<span class="pill win">'+_t+'위 '+_tr.toLocaleString()+' 받음 ✅</span>');
-          else if(window._qIsMe)_btns.push('<button class="btn sm gold" style="white-space:nowrap" onclick="questClaimDo(\''+_cmid+'\','+_tr+',\''+_plLane+' 종합 '+_t+'위\')">🎁 '+_t+'위 '+_tr.toLocaleString()+' 받기</button>');
-          else _btns.push('<span class="pill gold">'+_t+'위 '+_tr.toLocaleString()+'</span>');
-        }
-        _leadHtml+='<div style="margin-top:9px;display:flex;flex-wrap:wrap;gap:6px">'+_btns.join('')+'</div>';
-      }
-      _leadHtml+='<p class="mini dim" style="margin:8px 0 0;font-size:10px">보상은 각 tier 1회만 — 종합 1위는 1·2·3위 보상 모두, 2위는 2·3위, 3위는 3위까지 받아요. 이미 받은 tier는 다시 안 나와요.</p></div>';
-    }
-    else{
-      var _lg=0;try{var _rmq=ratesMap(_plLane);var _vq=_rmq&&_rmq.get?_rmq.get(sel):null;_lg=_vq?_vq.games:0;}catch(_e){}
-      _leadHtml='<div class="card" style="margin-bottom:14px"><b>🏆 '+_plLane+' 종합 랭킹</b><p class="mini dim" style="margin:6px 0 0">'+_plLane+' 5판 이상 기록이 쌓이면 종합 순위·프로 칭호·보상 대상이 돼요'+(_lg?(' (현재 '+_lg+'판, 참고 기록)'):'')+'.</p></div>';
-    }
+  if(typeof laneCompositeRank==='function'&&typeof LANE_PROS!=='undefined'&&typeof playerLanes==='function'){
+    var _myLanes=playerLanes(sel).filter(function(x){return x.games>=5&&LANE_PROS[x.lane];});
+    var _cards=_myLanes.map(function(_ln){return questProCard(sel,_ln.lane);}).filter(function(hh){return hh;});
+    if(_cards.length)_leadHtml=_cards.join('');
+    else _leadHtml='<div class="card" style="margin-bottom:14px"><b>🏆 라인 종합 랭킹</b><p class="mini dim" style="margin:6px 0 0">아직 어느 라인도 5판 이상 기록이 없어요. 한 라인에서 5판 이상 하면 그 라인 종합 순위·프로 칭호·보상 대상이 돼요'+(_plLane?(' (주 라인: '+esc(_plLane)+')'):'')+'.</p></div>';
   }
   var _proHtml='';
   try{ if(typeof LANE_PROS!=='undefined'&&LANE_PROS[lk]){
