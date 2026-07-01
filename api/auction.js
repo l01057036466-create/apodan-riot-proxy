@@ -682,12 +682,14 @@ module.exports = async function handler(req, res) {
       var lkR = []; try { lkR = JSON.parse((await redis(['GET', 'doom:teams'])) || '[]'); } catch (e) { lkR = []; }
       var colOf = {}; lkR.forEach(function (t) { colOf[t.name] = t.color; });
       var resR = []; try { resR = JSON.parse((await redis(['GET', 'doom:results'])) || '[]'); } catch (e) { resR = []; }
+      var gidR = body.gameId ? String(body.gameId).slice(0, 40) : '';
+      if (gidR && resR.some(function (x) { return x.gameId && String(x.gameId) === gidR; })) return res.status(200).json({ ok: true, dup: true });
       var lnR = null;
       if (body.lineup && typeof body.lineup === 'object') {
         var cleanSideR = function (sd) { sd = sd || {}; var picks = (Array.isArray(sd.picks) ? sd.picks : []).slice(0, 5).map(function (x) { x = x || {}; return { p: String(x.p || '').slice(0, 30), c: String(x.c || '').slice(0, 30) }; }); var bans = (Array.isArray(sd.bans) ? sd.bans : []).slice(0, 5).map(function (x) { return String(x || '').slice(0, 30); }); return { picks: picks, bans: bans }; };
         lnR = { a: cleanSideR(body.lineup.a), b: cleanSideR(body.lineup.b) };
       }
-      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '스크림' ? '스크림' : '멸망전'), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), lineup: lnR, at: Date.now() });
+      resR.push({ id: 'r' + Date.now() + Math.floor(Math.random() * 1000), type: (body.type === '스크림' ? '스크림' : '멸망전'), gameId: (gidR || null), date: String(body.date || '').slice(0, 10), aName: aN, aColor: colOf[aN] || '', bName: bN, bColor: colOf[bN] || '', scoreA: sA, scoreB: sB, round: String(body.round || '').slice(0, 30), note: String(body.note || '').slice(0, 100), lineup: lnR, at: Date.now() });
       await redis(['SET', 'doom:results', JSON.stringify(resR)]);
       return res.status(200).json({ ok: true });
     }
