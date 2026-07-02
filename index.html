@@ -2023,12 +2023,12 @@ function makeAwards(){
   // 🏅 수동 영구 칭호 — 이름/별명 매칭 → displayName 타겟 (프로필·랭킹 표시)
   for(const _nm in FORCED_TITLES){const _fp=state.players.find(pl=>pl.displayName===_nm||pl.kakaoName===_nm||(pl.aliases||[]).includes(_nm));const _tg=_fp?_fp.displayName:_nm;FORCED_TITLES[_nm].forEach(_t=>{if(!out.some(a=>a.title===_t&&a.target===_tg))push(_t,_tg,'🏅 명예 영구 칭호');});}
   // ===== 챔피언 장인 칭호 (실제 장인 오마주, 챔피언당 1명) =====
-  const CHAMP_MASTER={'자이라':'닝겐자이라','자크':'박종하','잔나':'아라미','잭스':'샤이','제드':'온재','제라스':'엔마','제리':'괴물쥐','제이스':'제우스','조이':'명조이','직스':'헤징','진':'프레이','질리언':'가재맨','징크스':'고수달','초가스':'Cho God','카르마':'막눈','카밀':'갓키형','카사딘':'도파','카서스':'이석희','카시오페아':'백크','카이사':'땅우양','카직스':'미니언 고립','카타리나':'크림몬','칼리스타':'뜨뜨뜨뜨','케넨':'케넨장관','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'돌카사','크산테':'깨돌이','클레드':'좀비클레드','키아나':'재만이','킨드레드':'표식','타릭':'애디','탈론':'과로사','탐 켄치':'탐탐이','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'항심','파이크':'Davemon','판테온':'나라카일','피들스틱':'테디스틱','피오라':'피오라킹','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'유웨이'};
-  Object.keys(CHAMP_MASTER).forEach(ch=>{
+  const CHAMP_MASTER={'가렌':'쓰리컨드','갈리오':'러브갈리오','갱플랭크':'만기퇴소','그라가스':'박술통','그레이브즈':'치민','그웬':'규버미','나르':'미드메가나르','나미':'퀸주','나서스':'나서스연구원','노틸러스':'호잇','녹턴':'쏘핫트','누누와 윌럼프':'리하우','니달리':'웅플','니코':'오복아','닐라':'유영진','다리우스':'스간','다이애나':'이야공','드레이븐':'코뚱잉','라이즈':'위즐링','라칸':'규폿','람머스':'병찬이구른다','럭스':'여왕럭스','럼블':'레고77','레나타 글라스크':'군체 구교환','레넥톤':'금똥왁왁','레오나':'레오나록시','렉사이':'메리큐','렐':'낭만을추구한렐','렝가':'캐인','루시안':'오뀨','룰루':'순당무','르블랑':'블개','리 신':'Combo Lee','리산드라':'찬세이','리븐':'꿀탱탱','릴리아':'준밧드','마스터 이':'발젭','마오카이':'울부짖는마오카이','모르가나':'모르가나만판다','모데카이저':'페이즈킬러','말자하':'믹테','말파이트':'제로거','문도 박사':'꿀잼사과잼','미스 포츈':'미스포츈 외길인생','바드':'케리아','바루스':'미바','바이':'어쩔바이','베이가':'룬디네','베인':'우지','벡스':'小雪呼呼','벨베스':'치민','벨코즈':'하프실','볼리베어':'만당','브라움':'가슴털 대머리','브랜드':'기쨩이','블라디미르':'새루','블리츠크랭크':'똥그랩','비에고':'승딱','빅토르':'이안','뽀삐':'뽀식이','사미라':'이라333','사이온':'전략적죽음','사일러스':'궁복동','세나':'기미닝','세트':'링규링규링','샤코':'샤코타임','소라카':'어머킹','세라핀':'나인미','세주아니':'고일이','쉔':'뽀융쨩','쉬바나':'추격이','스몰더':'우리 엄마 개쎔','스웨인':'뚱펭이','스카너':'이스굿','쓰레쉬':'개인팟','시비르':'구여름','신 짜오':'1 vs all','신드라':'수라차','신지드':'레고77','아리':'하얗고예쁨','아무무':'클템','아우렐리온 솔':'현솔','아이번':'아이번맨','아지르':'엘더우드','아칼리':'아칼링','아크샨':'인덱시','아트록스':'김민재04','아펠리오스':'바이퍼','알리스타':'울프','야스오':'프제짱','애니':'애블','애니비아':'피닉스박','애쉬':'프레이','에코':'김데데','엘리스':'종학','오공':'세르델','오른':'개리형','오리아나':'도천지','올라프':'우주최강올라프','요릭':'철릭','요네':'삐요라네','우디르':'세체우','우르곳':'김기인','워윅':'세체뽀','유미':'떱냥','이렐리아':'이렐킹','이블린':'큰벌','이즈리얼':'어린이즈','일라오이':'일라킹','자르반 4세':'앰비션','자야':'룰러','자이라':'닝겐자이라','자크':'어니우기','잔나':'멍구러니','잭스':'샤이','제드':'온재','제라스':'히트스캔','제리':'페이즈','제이스':'김망치','조이':'쪼렙이다말로하자','직스':'혜징','진':'프레이','질리언':'가재맨','징크스':'갱승제로','초가스':'코크','카르마':'우야제','카밀':'고부기','카사딘':'카사딘하는사람','카서스':'이석희','카시오페아':'조관우급늪설치','카이사':'제키러브','카직스':'미니언 고립','카타리나':'허블렛','칼리스타':'뜨뜨뜨뜨','케넨':'미토','케이틀린':'데프트','케인':'견백','케일':'국인11','코그모':'고라파동','코르키':'셔먼 코르키','퀸':'물다이아','크산테':'카나인','클레드':'좀비클레드','키아나':'실수는실력','킨드레드':'표식','타릭':'애디','탈론':'시간의 숲','탐 켄치':'해시태그시소','탈리야':'꾸락지','트런들':'트할','트리스타나':'교수 트타','트린다미어':'5초 사나이','트위스티드 페이트':'도파','트위치':'괴물쥐','티모':'운타라','파이크':'헤이스트','판테온':'뇌녹사','피들스틱':'테디스틱','피오라':'롤로노아 김동현','피즈':'달스','하이머딩거':'페터 프레이슈스','헤카림':'이 차가 식기전에','흐웨이':'MS영재','나피리':'개떼몰이','로크':'로크1호','멜':'메다르다','밀리오':'불꽃소년','브라이어':'피식가','소나':'피아노맨','암베사':'암사자','오로라':'영혼토끼','유나라':'이오니아명궁','자헨':'자헨선발대'};
+  [...new Set(PC.map(x=>x.champion))].forEach(ch=>{
     const cands=PC.filter(x=>x.champion===ch&&x.games>=2);
     if(!cands.length)return;
     const b=cands.slice().sort((a,b)=>b.winRate-a.winRate||b.games-a.games)[0];
-    const nm=CHAMP_MASTER[ch];
+    const nm=CHAMP_MASTER[ch]||(ch+' 장인');
     if(b.games>=8&&b.winRate>=65)push('아포단 '+nm,b.name,ch+' 봉인픽 — '+b.games+'판 승률 '+b.winRate+'%');
     else if(b.games>=5&&b.winRate>=60)push(nm,b.name,ch+' 네임드 — '+b.games+'판 승률 '+b.winRate+'%');
     else if(b.games>=2&&b.winRate>=50)push(nm+' 숙련자',b.name,ch+' 숙련자 — '+b.games+'판 승률 '+b.winRate+'%');
@@ -10532,6 +10532,47 @@ async function questClaimDo(mid,reward,label){
     else toast('받기 실패: '+e.message,true);
   }
 }
+function champQuestAgg(pid){ // 선수의 챔피언별 누적 (판·승·킬·솔로킬·한판최고딜)
+  var map={};
+  state.matches.forEach(function(m){m.participants.forEach(function(p){
+    if(p.playerId!==pid)return;var c=canonChamp(p.championId);if(!c)return;
+    var s2=map[c]=map[c]||{g:0,w:0,k:0,solo:0,best:0};
+    s2.g++;if(p.team===m.winnerTeam)s2.w++;
+    s2.k+=num(p.kills);var st=p.stats||{};s2.solo+=num(st.soloKills);
+    var dd=num(st.damageToChampions);if(dd>s2.best)s2.best=dd;
+  });});
+  return map;
+}
+var CHQ_DEFS=[
+  {c:'fw',  t:'첫 승',     rw:150,  ok:function(s){return s.w>=1;},  pr:function(s){return s.w+'/1승';}},
+  {c:'g5',  t:'단골 5판',  rw:300,  ok:function(s){return s.g>=5;},  pr:function(s){return s.g+'/5판';}},
+  {c:'g10', t:'애정 10판', rw:500,  ok:function(s){return s.g>=10;}, pr:function(s){return s.g+'/10판';}},
+  {c:'k30', t:'누적 30킬', rw:500,  ok:function(s){return s.k>=30;}, pr:function(s){return s.k+'/30킬';}},
+  {c:'sl5', t:'솔로킬 5',  rw:800,  ok:function(s){return s.solo>=5;},pr:function(s){return s.solo+'/5솔킬';}},
+  {c:'ms',  t:'장인 인증', rw:2000, ok:function(s){return s.g>=10&&s.w/s.g>=0.6;},pr:function(s){return s.g+'판 '+(s.g?Math.round(s.w/s.g*100):0)+'%(10판 60%)';}}
+];
+function champQuestHtml(sel){
+  var agg=champQuestAgg(sel);
+  var chs=Object.keys(agg).sort(function(a,b){return agg[b].g-agg[a].g||agg[b].w-agg[a].w;});
+  if(!chs.length)return '';
+  var showN=Math.min(6,chs.length);
+  var rows='';
+  for(var i=0;i<showN;i++){
+    var ch=chs[i],st=agg[ch];
+    var wr=st.g?Math.round(st.w/st.g*100):0;
+    var mn=(typeof CHAMP_MASTER!=='undefined'&&CHAMP_MASTER[ch])||(ch+' 장인');
+    var chips=CHQ_DEFS.map(function(q){
+      var mid='chq_'+ch+'_'+q.c;
+      var done=q.ok(st);
+      if(window._qClaimed&&window._qClaimed.has(mid))return '<span class="pill win" style="font-size:10px">'+q.t+' ✅</span>';
+      if(done&&window._qIsMe)return '<button class="btn sm gold" style="font-size:10px;padding:3px 8px" onclick="questClaimDo(\''+mid+'\','+q.rw+',\''+esc(ch)+' '+q.t+'\')">🎁 '+q.t+' '+q.rw+'</button>';
+      if(done)return '<span class="pill gold" style="font-size:10px">'+q.t+' 달성</span>';
+      return '<span class="pill" style="font-size:10px;opacity:.55">'+q.t+' '+q.pr(st)+'</span>';
+    }).join('');
+    rows+='<div style="padding:8px 0;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>'+esc(ch)+'</b><span class="mini dim">'+st.g+'판 승률 '+wr+'% · 목표: '+esc(mn)+'</span></div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">'+chips+'</div></div>';
+  }
+  return '<div class="card" style="margin-bottom:14px"><b>🎯 챔피언 퀘스트</b><p class="mini dim" style="margin:4px 0 2px">많이 한 챔피언 '+showN+'개 — 판수·승리·킬·솔로킬 자동 측정 (10판 60% = 장인 인증 2,000 APO)</p>'+rows+'<p class="mini dim" style="margin:8px 0 0;font-size:10px">스킬 명중(표창 적중 수 등)은 전적 데이터에 없어 측정 불가 — 킬·솔로킬·딜로 대신해요. 보상은 각 1회.</p></div>';
+}
 function _awQuest(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
   if(!ps.length)return head('🎯 포지션 퀘스트','칭호 · 진척도 · 퀘스트')+_awTabs('quest')+'<div class="empty">선수가 없어요.</div>';
@@ -10592,13 +10633,12 @@ function _awQuest(){
   }
   var _proHtml='';
   try{ if(typeof LANE_PROS!=='undefined'&&LANE_PROS[lk]){
-    var _prm=ratesMap(lk);var _pl=[];_prm.forEach(function(v,id){if(v.games>=3)_pl.push({id:id,sc:(typeof talentPerf==='function')?talentPerf(v,lk):0});});
-    _pl.sort(function(a,b){return b.sc-a.sc;});
+    var _pl=(typeof laneCompositeRank==='function')?laneCompositeRank(lk,5):[];
     var _mr=-1;for(var _i=0;_i<_pl.length;_i++){if(_pl[_i].id===sel){_mr=_i;break;}}
     var _pros=LANE_PROS[lk];
     var _ladder=_pros.map(function(pr,i){var who=_pl[i]?(esc(nameOf(_pl[i].id)||'—')):'<span class="mini dim">공석</span>';var mine=!!(_pl[i]&&_pl[i].id===sel);return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--line)'+(mine?';color:var(--gold);font-weight:800':'')+'"><span>'+(i+1)+'위 '+pr+(mine?' ← 나!':'')+'</span><span'+(mine?'':' class="mini dim"')+'>'+who+'</span></div>';}).join('');
     var _goal;
-    if(_mr<0)_goal='아직 '+lk+' 순위권 밖 — 3경기+ 쌓고 「'+_pros[_pros.length-1]+' 되기」부터 도전!';
+    if(_mr<0)_goal='아직 '+lk+' 순위권 밖 — 5판+ 쌓고 「'+_pros[_pros.length-1]+' 되기」부터 도전!';
     else if(_mr===0)_goal='👑 이미 '+lk+' 1위 — '+_pros[0]+' 그 자체!';
     else _goal='🎯 다음 목표: '+_mr+'위 「'+_pros[_mr-1]+' 되기」'+(_mr<_pros.length?(' (지금은 '+_pros[_mr]+' 급)'):'');
     _proHtml='<div class="card" style="margin-bottom:14px;border:1px solid var(--gold)"><b style="color:var(--gold)">🏆 '+lk+' 프로 등극</b><div style="margin:8px 0 6px">'+_ladder+'</div><p class="mini" style="margin:0;color:var(--gold);font-weight:700">'+_goal+'</p></div>';
@@ -10610,7 +10650,7 @@ function _awQuest(){
       <span class="pill blue">주 포지션 ${lk}</span>
       ${rs?`<span class="mini dim">최근 ${rs.games}경기</span>`:'<span class="mini dim">최근 경기 기록 없음</span>'}
     </div>
-  </div>`+_proHtml+_leadHtml+earnHtml+body;
+  </div>`+_proHtml+_leadHtml+((typeof champQuestHtml==='function')?champQuestHtml(sel):'')+earnHtml+body;
 }
 function pgAwardProgress(){
   const ps=state.players.filter(p=>p.active).sort((a,b)=>a.displayName.localeCompare(b.displayName,'ko'));
