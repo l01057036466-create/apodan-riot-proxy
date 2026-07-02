@@ -319,7 +319,7 @@
     "미드",
     "02미드"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "다이아",
    "flexTier": "골드",
@@ -941,7 +941,7 @@
    "aliases": [
     "안농"
    ],
-   "active": true,
+   "active": false,
    "memo": "",
    "soloTier": "마스터",
    "flexTier": "언랭",
@@ -42478,8 +42478,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 453,
- "updatedAt": "2026-07-02T02:38:38.407Z",
+ "rev": 455,
+ "updatedAt": "2026-07-02T02:46:43.276Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
