@@ -965,6 +965,23 @@
    "riotPuuid": "MfhkP-d0Wr3lnG3WmCkV0YQMzySJ7XmEMOS9oDExMRB9_1sPA2kherBb9eedbZtnmXZQEc9vSuE4Hg",
    "soloPos": "",
    "subPos": ""
+  },
+  {
+   "id": "p_t1cwilsmr2wam9n",
+   "displayName": "03 쵸비",
+   "kakaoName": "03 쵸비",
+   "riotName": "쵸 비",
+   "riotTag": "젠지우승",
+   "aliases": [
+    "쵸비"
+   ],
+   "active": true,
+   "memo": "",
+   "soloTier": "골드",
+   "flexTier": "에메랄드",
+   "riotPuuid": "",
+   "soloPos": "",
+   "subPos": ""
   }
  ],
  "matches": [
@@ -42461,8 +42478,8 @@
   "2026-06-12#0": []
  },
  "lineups": [],
- "rev": 451,
- "updatedAt": "2026-07-01T13:09:50.944Z",
+ "rev": 452,
+ "updatedAt": "2026-07-02T02:38:28.668Z",
  "hiddenReviews": [
   "m_8d0tallmqccopjm",
   "m_uj4ihmwmqccopjf"
